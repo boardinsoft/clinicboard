@@ -5,11 +5,7 @@ import { useTabStore } from '@/store/useTabStore';
 import { Close } from '@carbon/icons-react';
 import { useRouter } from 'next/navigation';
 
-interface TabBarProps {
-    isSideNavExpanded: boolean;
-}
-
-export default function TabBar({ isSideNavExpanded }: TabBarProps) {
+export default function TabBar() {
     const { tabs, activeTabId, setActiveTab, removeTab } = useTabStore();
     const router = useRouter();
 
@@ -38,9 +34,7 @@ export default function TabBar({ isSideNavExpanded }: TabBarProps) {
     };
 
     return (
-        <div
-            className={`tab-bar ${isSideNavExpanded ? 'tab-bar--expanded' : 'tab-bar--collapsed'}`}
-        >
+        <div className="tab-bar">
             <div className="tab-bar-scroll-area">
                 {tabs.map((tab) => {
                     const isActive = tab.id === activeTabId;

@@ -377,79 +377,64 @@ body {
   }
 }
 
-// SideNav Redesign (Notion / Modern SaaS Style)
-.cds--side-nav {
-  background-color: var(--cds-background) !important;
+// ============================================
+// Primary Navigation Rail (Icon Only)
+// ============================================
+.clinicboard-primary-rail {
+  background-color: var(--cds-layer-01) !important;
   border-right: 1px solid var(--cds-border-subtle) !important;
-  box-shadow: none !important; // remove Carbon's default shadow if any
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05) !important;
+  z-index: 9000;
+  width: 48px !important; // fixed width
+  max-width: 48px !important;
+  transform: none !important; // Prevent Carbon from hiding the rail off-screen
 
-  &__navigation {
-    padding: 1rem 0.75rem !important;
+  .cds--side-nav__navigation {
+    padding: 0 !important;
   }
 
-  &__items {
+  .cds--side-nav__items {
+    padding: 0 !important;
+  }
+
+  .cds--side-nav__item {
+    border-bottom: 1px solid var(--cds-border-subtle) !important;
+  }
+
+  .cds--side-nav__link {
+    width: 48px !important;
+    height: 48px !important;
+    padding: 0 !important;
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-}
+    align-items: center;
+    justify-content: center;
+    color: var(--cds-icon-secondary) !important;
 
-.cds--side-nav__link {
-  border-radius: 0 !important; // square items
-  height: 2.75rem !important;
-  padding: 0 1rem !important; // padding inside item
-  margin: 0 !important;
-  color: var(--cds-text-secondary) !important;
-  transition: background-color 0.1s ease, color 0.1s ease !important;
+    &:hover {
+      background-color: var(--cds-layer-hover) !important;
+      color: var(--cds-icon-primary) !important;
+    }
 
-  &:hover {
-    background-color: var(--cds-layer-hover) !important;
-    color: var(--cds-text-primary) !important;
-  }
+    &[aria-current="page"],
+    &.cds--side-nav__link--current {
+      background-color: var(--cds-layer-selected) !important;
+      color: var(--cds-icon-primary) !important;
+      /* Subtle indicator for active instead of full blue left border */
+      border-left: 2px solid var(--cds-interactive) !important;
+    }
 
-  &[aria-current="page"],
-  &.cds--side-nav__link--current {
-    background-color: var(--cds-layer-selected) !important;
-    color: var(--cds-text-primary) !important;
-    font-weight: 500 !important;
-
-    // Remove the thick active left border from Carbon
+    /* Remove the thick active left border from Carbon */
     &::before {
       display: none !important;
     }
   }
 
-  // Adjust icon 
   .cds--side-nav__icon {
-    margin-right: 0.75rem !important;
+    margin: 0 !important;
     fill: currentColor !important;
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-  }
-
-  // Adjust text
-  .cds--side-nav__link-text {
-    font-size: 0.875rem !important;
-  }
-}
-
-// Adjust rail/collapsed mode for square items
-.cds--side-nav.cds--side-nav--rail:not(.cds--side-nav--expanded) {
-  .cds--side-nav__navigation {
-    padding: 1rem 0.25rem !important;
-  }
-
-  .cds--side-nav__link {
-    width: 3rem !important;
-    height: 3rem !important;
-    padding: 0 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .cds--side-nav__icon {
-      margin-right: 0 !important;
-    }
+    /* ensure icon looks like the image */
+    width: 20px !important;
+    height: 20px !important;
   }
 
   .cds--side-nav__link-text {
@@ -465,23 +450,15 @@ body {
   top: 48px;
   height: 48px;
   right: 0;
+  left: 48px;
   z-index: 8000;
   background-color: var(--cds-layer-01);
   border-bottom: 1px solid var(--cds-border-subtle);
-  transition: left 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
   display: flex;
   align-items: stretch;
   padding: 0;
   overflow-x: auto;
   overflow-y: hidden;
-
-  &--expanded {
-    left: 256px;
-  }
-
-  &--collapsed {
-    left: 48px;
-  }
 
   @media (max-width: 1056px) {
     left: 0 !important;
@@ -570,18 +547,11 @@ body {
 
 .app-content {
   margin-top: 96px;
+  margin-left: 48px;
   /* 48px header + 48px tabs */
   min-height: calc(100vh - 96px);
   background-color: var(--cds-background);
-  transition: margin-left 0.11s cubic-bezier(0.2, 0, 0.38, 0.9), background-color 0.2s ease;
-
-  &--expanded {
-    margin-left: 256px;
-  }
-
-  &--collapsed {
-    margin-left: 48px;
-  }
+  transition: background-color 0.2s ease;
 
   @media (max-width: 1056px) {
     margin-left: 0 !important;

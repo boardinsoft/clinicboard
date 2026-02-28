@@ -54,24 +54,31 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
-  const [isSideNavExpanded, setIsSideNavExpanded] = useState(true);
   const { addTab } = useTabStore();
 
-  const handleToggleSideNav = () => {
-    setIsSideNavExpanded(!isSideNavExpanded);
-  };
+  // Keep Workspace Tabs in sync with the current URL
+  // This ensures that if the user clicks onto a patient Detail, the "Pacientes" tab 
+  // correctly reflects the /patients/[id] URL instead of resetting to /patients.
+  React.useEffect(() => {
+    if (!pathname) return;
+    const { tabs } = useTabStore.getState();
+    const currentTab = tabs.find(t => {
+      if (t.id === '/patients' && pathname.startsWith('/patients')) return true;
+      if (t.id === '/history' && pathname.startsWith('/history')) return true;
+      if (t.url === pathname) return true;
+      return false;
+    });
+
+    if (currentTab && currentTab.url !== pathname) {
+      useTabStore.setState((state) => ({
+        tabs: state.tabs.map(t => t.id === currentTab.id ? { ...t, url: pathname } : t)
+      }));
+    }
+  }, [pathname]);
 
   return (
     <Theme theme={theme}>
       <Header aria-label="Clinicboard">
-        <button
-          aria-label={isSideNavExpanded ? 'Contraer navegación' : 'Expandir navegación'}
-          onClick={handleToggleSideNav}
-          className="sidebar-toggle"
-          title={isSideNavExpanded ? 'Contraer navegación' : 'Expandir navegación'}
-        >
-          {isSideNavExpanded ? <SidePanelClose size={24} /> : <SidePanelOpen size={24} />}
-        </button>
         <HeaderName href="/" prefix="">
           <span style={{ fontWeight: 600, letterSpacing: '-0.01em' }}>
             clinic
@@ -112,8 +119,9 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
         <SideNav
           aria-label="Navegación principal"
           isRail
-          expanded={isSideNavExpanded}
+          expanded={false}
           isFixedNav={true}
+          className="clinicboard-primary-rail"
         >
           <SideNavItems>
             {navItems.map((item) => {
@@ -129,6 +137,7 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
                     addTab({ id: item.href, title: item.label, url: item.href });
                     router.push(item.href);
                   }}
+                  title={item.label}
                 >
                   {item.label}
                 </SideNavLink>
@@ -138,10 +147,10 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
         </SideNav>
       </Header>
 
-      <TabBar isSideNavExpanded={isSideNavExpanded} />
+      <TabBar />
 
       <Content
-        className={`app-content ${isSideNavExpanded ? 'app-content--expanded' : 'app-content--collapsed'}`}
+        className="app-content"
         role="main"
       >
         <Layer>

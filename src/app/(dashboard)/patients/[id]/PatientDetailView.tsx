@@ -13,6 +13,11 @@ import {
     Tag,
     Breadcrumb,
     BreadcrumbItem,
+    StructuredListWrapper,
+    StructuredListHead,
+    StructuredListRow,
+    StructuredListCell,
+    StructuredListBody,
 } from '@carbon/react';
 import {
     Edit,
@@ -21,9 +26,11 @@ import {
     Activity,
     Chemistry,
     Calendar,
-    Information
+    Information,
+    Add,
 } from '@carbon/icons-react';
 import { useRouter } from 'next/navigation';
+import { useTabStore } from '@/store/useTabStore';
 
 interface PatientDetailViewProps {
     patient: any;
@@ -33,6 +40,10 @@ interface PatientDetailViewProps {
 
 export default function PatientDetailView({ patient, conditions, allergies }: PatientDetailViewProps) {
     const router = useRouter();
+    const { patientViewState, setPatientTab } = useTabStore();
+
+    // Get initial index from store or default to 0
+    const initialTabIndex = patientViewState[patient.id] || 0;
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'N/A';
@@ -88,7 +99,10 @@ export default function PatientDetailView({ patient, conditions, allergies }: Pa
             </div>
 
             <div className="patient-content-wrapper">
-                <Tabs>
+                <Tabs
+                    selectedIndex={initialTabIndex}
+                    onChange={({ selectedIndex }) => setPatientTab(patient.id, selectedIndex)}
+                >
                     <TabList aria-label="Información detallada" contained>
                         <Tab renderIcon={Information}>Información General</Tab>
                         <Tab renderIcon={Activity}>Condiciones ({conditions.length})</Tab>
@@ -101,50 +115,63 @@ export default function PatientDetailView({ patient, conditions, allergies }: Pa
                                 <Column lg={10} md={8} sm={4}>
                                     <div className="patient-info-section">
                                         <h3 className="patient-info-section__title">Datos Personales</h3>
-                                        <div className="patient-data-grid">
-                                            <div className="patient-data-item">
-                                                <span className="patient-data-item__label">Nombre completo</span>
-                                                <span className="patient-data-item__value">{patient.name_given?.join(' ')} {patient.name_family}</span>
-                                            </div>
-                                            <div className="patient-data-item">
-                                                <span className="patient-data-item__label">Fecha de nacimiento</span>
-                                                <span className="patient-data-item__value">{formatDate(patient.birth_date)}</span>
-                                            </div>
-                                            <div className="patient-data-item">
-                                                <span className="patient-data-item__label">Género</span>
-                                                <span className="patient-data-item__value">{getGenderLabel(patient.gender)}</span>
-                                            </div>
-                                        </div>
+                                        <StructuredListWrapper isFlush>
+                                            <StructuredListBody>
+                                                <StructuredListRow>
+                                                    <StructuredListCell noWrap><strong>Nombre completo</strong></StructuredListCell>
+                                                    <StructuredListCell>{patient.name_given?.join(' ')} {patient.name_family}</StructuredListCell>
+                                                </StructuredListRow>
+                                                <StructuredListRow>
+                                                    <StructuredListCell noWrap><strong>Fecha de nacimiento</strong></StructuredListCell>
+                                                    <StructuredListCell>{formatDate(patient.birth_date)}</StructuredListCell>
+                                                </StructuredListRow>
+                                                <StructuredListRow>
+                                                    <StructuredListCell noWrap><strong>Género</strong></StructuredListCell>
+                                                    <StructuredListCell>{getGenderLabel(patient.gender)}</StructuredListCell>
+                                                </StructuredListRow>
+                                            </StructuredListBody>
+                                        </StructuredListWrapper>
                                     </div>
 
-                                    <div className="patient-info-section">
+                                    <div className="patient-info-section" style={{ marginTop: '2rem' }}>
                                         <h3 className="patient-info-section__title">Contacto y Ubicación</h3>
-                                        <div className="patient-data-grid">
-                                            <div className="patient-data-item">
-                                                <span className="patient-data-item__label">Teléfono principal</span>
-                                                <span className="patient-data-item__value">{patient.telecom?.find((t: any) => t.system === 'phone')?.value || 'N/A'}</span>
-                                            </div>
-                                            <div className="patient-data-item">
-                                                <span className="patient-data-item__label">Correo electrónico</span>
-                                                <span className="patient-data-item__value">{patient.telecom?.find((t: any) => t.system === 'email')?.value || 'N/A'}</span>
-                                            </div>
-                                            <div className="patient-data-item">
-                                                <span className="patient-data-item__label">Dirección de habitación</span>
-                                                <span className="patient-data-item__value">{patient.address?.[0]?.text || 'No registrada'}</span>
-                                            </div>
-                                        </div>
+                                        <StructuredListWrapper isFlush>
+                                            <StructuredListBody>
+                                                <StructuredListRow>
+                                                    <StructuredListCell noWrap><strong>Teléfono principal</strong></StructuredListCell>
+                                                    <StructuredListCell>{patient.telecom?.find((t: any) => t.system === 'phone')?.value || 'N/A'}</StructuredListCell>
+                                                </StructuredListRow>
+                                                <StructuredListRow>
+                                                    <StructuredListCell noWrap><strong>Correo electrónico</strong></StructuredListCell>
+                                                    <StructuredListCell>{patient.telecom?.find((t: any) => t.system === 'email')?.value || 'N/A'}</StructuredListCell>
+                                                </StructuredListRow>
+                                                <StructuredListRow>
+                                                    <StructuredListCell noWrap><strong>Dirección de habitación</strong></StructuredListCell>
+                                                    <StructuredListCell>{patient.address?.[0]?.text || 'No registrada'}</StructuredListCell>
+                                                </StructuredListRow>
+                                            </StructuredListBody>
+                                        </StructuredListWrapper>
                                     </div>
                                 </Column>
                                 <Column lg={6} md={8} sm={4}>
                                     <div className="clinical-summary-card">
                                         <h3 className="patient-info-section__title">Resumen Clínico</h3>
-                                        <p className="page-header__subtitle">
+                                        <p className="page-header__subtitle" style={{ fontSize: '0.875rem' }}>
                                             Última consulta: 26 Feb 2026<br />
                                             Próxima cita: Sin citas programadas
                                         </p>
-                                        <div style={{ marginTop: '1.5rem' }}>
-                                            <Button kind="tertiary" size="sm" style={{ width: '100%' }}>
+                                        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                            <Button
+                                                kind="primary"
+                                                size="md"
+                                                style={{ width: '100%' }}
+                                                renderIcon={Add}
+                                                onClick={() => router.push(`/history?patientId=${patient.id}`)}
+                                            >
                                                 Nueva Evolución
+                                            </Button>
+                                            <Button kind="tertiary" size="md" style={{ width: '100%' }}>
+                                                Ver Historial Completo
                                             </Button>
                                         </div>
                                     </div>

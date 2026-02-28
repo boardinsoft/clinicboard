@@ -131,3 +131,105 @@ export async function updatePatient(id: string, formData: {
     revalidatePath(`/patients/${id}`);
     return { data };
 }
+
+export async function getPatients(queryText?: string) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { data: [] };
+
+    let query = supabase
+        .from('patients')
+        .select('*')
+        .eq('practitioner_id', user.id)
+        .eq('active', true)
+        .order('name_family', { ascending: true });
+
+    if (queryText) {
+        query = query.or(`name_family.ilike.%${queryText}%,name_given.cs.{${queryText}}`);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('Error fetching patients:', error);
+        return { data: [] };
+    }
+
+    return { data: data || [] };
+}
+
+export async function getPatientClinicalData(patientId: string) {
+    const supabase = await createServerSupabaseClient();
+
+    const [conditionsResult, allergiesResult] = await Promise.all([
+        supabase.from('conditions').select('*').eq('patient_id', patientId),
+        supabase.from('allergy_intolerances').select('*').eq('patient_id', patientId)
+    ]);
+
+    return {
+        conditions: conditionsResult.data || [],
+        allergies: allergiesResult.data || []
+    };
+}
+
+export async function createEncounter(encounterData: {
+    patient_id: string;
+    evolution_note: string;
+    vital_signs: any;
+    diagnosis: any;
+    plan: string;
+    reason_code?: any;
+}) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { error: 'No autorizado' };
+    }
+
+    const { data, error } = await supabase
+        .from('encounters')
+        .insert([{
+            patient_id: encounterData.patient_id,
+            practitioner_id: user.id,
+            status: 'finished',
+            evolution_note: encounterData.evolution_note,
+            vital_signs: encounterData.vital_signs,
+            diagnosis: encounterData.diagnosis,
+            plan: encounterData.plan,
+            reason_code: encounterData.reason_code || [],
+            start_time: new Date().toISOString(),
+            end_time: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error in createEncounter:', error);
+        return { error: error.message };
+    }
+
+    revalidatePath('/history');
+    return { data };
+}
+
+export async function getEncounters(patientId: string) {
+    const supabase = await createServerSupabaseClient();
+
+    const { data, error } = await supabase
+        .from('encounters')
+        .select(`
+            *,
+            practitioner:practitioners(name_given, name_family)
+        `)
+        .eq('patient_id', patientId)
+        .order('start_time', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching encounters:', error);
+        return { data: [] };
+    }
+
+    return { data: data || [] };
+}
