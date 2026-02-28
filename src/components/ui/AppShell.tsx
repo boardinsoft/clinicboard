@@ -1,13 +1,12 @@
 'use client';
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import {
   Header,
   HeaderName,
-  HeaderNavigation,
-  HeaderMenuItem,
   HeaderGlobalBar,
   HeaderGlobalAction,
+  HeaderMenuButton,
   SideNav,
   SideNavItems,
   SideNavLink,
@@ -25,11 +24,17 @@ import {
   Settings,
   Asleep,
   Sun,
+  Logout,
+  SidePanelClose,
+  SidePanelOpen,
 } from '@carbon/icons-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/providers/ThemeProvider';
 import { signOut } from '@/actions/auth';
 import type { User } from '@supabase/supabase-js';
+import TabBar from './TabBar';
+import { useTabStore } from '@/store/useTabStore';
+import TabContentManager from './TabContentManager';
 
 interface AppShellProps {
   children: ReactNode;
@@ -49,10 +54,24 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+  const [isSideNavExpanded, setIsSideNavExpanded] = useState(true);
+  const { addTab } = useTabStore();
+
+  const handleToggleSideNav = () => {
+    setIsSideNavExpanded(!isSideNavExpanded);
+  };
 
   return (
     <Theme theme={theme}>
       <Header aria-label="Clinicboard">
+        <button
+          aria-label={isSideNavExpanded ? 'Contraer navegación' : 'Expandir navegación'}
+          onClick={handleToggleSideNav}
+          className="sidebar-toggle"
+          title={isSideNavExpanded ? 'Contraer navegación' : 'Expandir navegación'}
+        >
+          {isSideNavExpanded ? <SidePanelClose size={24} /> : <SidePanelOpen size={24} />}
+        </button>
         <HeaderName href="/" prefix="">
           <span style={{ fontWeight: 600, letterSpacing: '-0.01em' }}>
             clinic
@@ -61,22 +80,6 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
             board
           </span>
         </HeaderName>
-
-        <HeaderNavigation aria-label="Clinicboard Navigation">
-          {navItems.map((item) => (
-            <HeaderMenuItem
-              key={item.href}
-              href={item.href}
-              isCurrentPage={pathname === item.href}
-              onClick={(e: React.MouseEvent) => {
-                e.preventDefault();
-                router.push(item.href);
-              }}
-            >
-              {item.label}
-            </HeaderMenuItem>
-          ))}
-        </HeaderNavigation>
 
         <HeaderGlobalBar>
           {(practitioner?.name_given?.[0] || user?.email) && (
@@ -102,14 +105,14 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
             <Settings size={20} />
           </HeaderGlobalAction>
           <HeaderGlobalAction aria-label="Cerrar sesión" onClick={async () => await signOut()}>
-            <UserAvatar size={20} />
+            <Logout size={20} />
           </HeaderGlobalAction>
         </HeaderGlobalBar>
 
         <SideNav
-          aria-label="Navegación lateral"
-          isRail={false}
-          expanded={true}
+          aria-label="Navegación principal"
+          isRail
+          expanded={isSideNavExpanded}
           isFixedNav={true}
         >
           <SideNavItems>
@@ -120,9 +123,10 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
                   key={item.href}
                   href={item.href}
                   renderIcon={IconComponent}
-                  isActive={pathname === item.href}
+                  isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
                   onClick={(e: React.MouseEvent) => {
                     e.preventDefault();
+                    addTab({ id: item.href, title: item.label, url: item.href });
                     router.push(item.href);
                   }}
                 >
@@ -134,8 +138,15 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
         </SideNav>
       </Header>
 
-      <Content className="app-content">
-        <Layer>{children}</Layer>
+      <TabBar isSideNavExpanded={isSideNavExpanded} />
+
+      <Content
+        className={`app-content ${isSideNavExpanded ? 'app-content--expanded' : 'app-content--collapsed'}`}
+        role="main"
+      >
+        <Layer>
+          <TabContentManager>{children}</TabContentManager>
+        </Layer>
       </Content>
     </Theme>
   );

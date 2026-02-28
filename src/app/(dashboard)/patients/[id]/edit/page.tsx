@@ -129,25 +129,27 @@ export default function EditPatientPage() {
     if (loading) return <Loading />;
 
     return (
-        <div style={{ paddingBottom: '2rem' }}>
+        <section aria-label="Edición de Paciente">
             <div className="page-header">
-                <Breadcrumb noTrailingSlash>
-                    <BreadcrumbItem onClick={() => router.push('/patients')}>Pacientes</BreadcrumbItem>
-                    <BreadcrumbItem onClick={() => router.push(`/patients/${id}`)}>
+                <Breadcrumb noTrailingSlash style={{ marginBottom: '1rem' }}>
+                    <BreadcrumbItem href="/patients" onClick={(e) => { e.preventDefault(); router.push('/patients'); }}>
+                        Pacientes
+                    </BreadcrumbItem>
+                    <BreadcrumbItem href={`/patients/${id}`} onClick={(e) => { e.preventDefault(); router.push(`/patients/${id}`); }}>
                         {patientData.familyName}
                     </BreadcrumbItem>
                     <BreadcrumbItem isCurrentPage>Editar</BreadcrumbItem>
                 </Breadcrumb>
-                <h1 className="page-header__title">Editar Paciente</h1>
-                <p className="page-header__subtitle">Modifica la información cumpliendo con FHIR R4.</p>
+                <h1 className="page-header__title">Actualizar Información</h1>
+                <p className="page-header__subtitle">Gestión de datos demográficos cumpliendo con la normativa FHIR.</p>
             </div>
 
-            <Grid style={{ padding: '0 1rem' }}>
+            <Grid fullWidth className="content-padding">
                 <Column lg={12} md={8} sm={4}>
-                    <Tile>
+                    <Tile className="form-tile">
                         <Form onSubmit={handleSubmit}>
                             <Stack gap={7}>
-                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                <div className="form-row">
                                     <TextInput
                                         id="givenNames"
                                         labelText="Nombres"
@@ -166,7 +168,7 @@ export default function EditPatientPage() {
                                     />
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                <div className="form-row">
                                     <Select
                                         id="gender"
                                         labelText="Género"
@@ -190,7 +192,7 @@ export default function EditPatientPage() {
                                     />
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                <div className="form-row">
                                     <TextInput
                                         id="documentId"
                                         labelText="Cédula / Identidad"
@@ -221,9 +223,10 @@ export default function EditPatientPage() {
                                     labelText="Dirección Personal"
                                     value={patientData.address}
                                     onChange={(e) => setPatientData({ ...patientData, address: e.target.value })}
+                                    placeholder="Dirección completa del domicilio..."
                                 />
 
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+                                <div className="form-actions">
                                     <Button kind="ghost" renderIcon={Close} onClick={() => router.push(`/patients/${id}`)}>
                                         Cancelar
                                     </Button>
@@ -238,7 +241,7 @@ export default function EditPatientPage() {
             </Grid>
 
             {notification && (
-                <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999 }}>
+                <div className="toast-container">
                     <ToastNotification
                         kind={notification.type as any}
                         title={notification.title}
@@ -248,6 +251,15 @@ export default function EditPatientPage() {
                     />
                 </div>
             )}
-        </div>
+
+            <style jsx>{`
+                .content-padding {
+                    padding: 0 1rem;
+                }
+                .form-tile {
+                    padding: 2rem;
+                }
+            `}</style>
+        </section>
     );
 }

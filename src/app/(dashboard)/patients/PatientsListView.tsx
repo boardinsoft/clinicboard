@@ -16,6 +16,8 @@ import {
     Button,
     Tag,
     Pagination,
+    Breadcrumb,
+    BreadcrumbItem,
 } from '@carbon/react';
 import { Add, View, Edit } from '@carbon/icons-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -71,13 +73,17 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
     }));
 
     return (
-        <div style={{ padding: 0 }}>
+        <section aria-label="Listado de Pacientes">
             <div className="page-header">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Breadcrumb noTrailingSlash style={{ marginBottom: '1rem' }}>
+                    <BreadcrumbItem href="/">Dashboard</BreadcrumbItem>
+                    <BreadcrumbItem isCurrentPage>Pacientes</BreadcrumbItem>
+                </Breadcrumb>
+                <div className="patient-header">
                     <div>
                         <h1 className="page-header__title">Pacientes</h1>
                         <p className="page-header__subtitle">
-                            Registro de pacientes — FHIR R4 Patient Resource
+                            Registro centralizado de pacientes — Interoperabilidad FHIR R4
                         </p>
                     </div>
                     <Button kind="primary" renderIcon={Add} onClick={() => router.push('/patients/new')}>
@@ -86,7 +92,7 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
                 </div>
             </div>
 
-            <div style={{ padding: '0' }}>
+            <div className="table-wrapper">
                 <DataTable rows={formattedRows} headers={headers as any} isSortable>
                     {({
                         rows,
@@ -102,7 +108,7 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
                                     <TableToolbarSearch
                                         onChange={handleSearch}
                                         defaultValue={searchParams.get('q') || ''}
-                                        placeholder="Buscar paciente por apellido o nombre..."
+                                        placeholder="Buscar por nombre, apellido o ID..."
                                         persistent
                                     />
                                 </TableToolbarContent>
@@ -144,7 +150,7 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
                                                                         size="sm"
                                                                         hasIconOnly
                                                                         renderIcon={View}
-                                                                        iconDescription="Ver paciente"
+                                                                        iconDescription="Ver detalles"
                                                                         onClick={() => router.push(`/patients/${row.id}`)}
                                                                     />
                                                                     <Button
@@ -152,7 +158,7 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
                                                                         size="sm"
                                                                         hasIconOnly
                                                                         renderIcon={Edit}
-                                                                        iconDescription="Editar paciente"
+                                                                        iconDescription="Editar información"
                                                                         onClick={() => router.push(`/patients/${row.id}/edit`)}
                                                                     />
                                                                 </div>
@@ -171,16 +177,17 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
                 </DataTable>
 
                 <Pagination
-                    backwardText="Página anterior"
-                    forwardText="Página siguiente"
-                    itemsPerPageText="Filas por página:"
+                    backwardText="Anterior"
+                    forwardText="Siguiente"
+                    itemsPerPageText="Items por página:"
                     page={page}
                     pageSize={pageSize}
                     pageSizes={[10, 25, 50]}
                     totalItems={totalItems}
                     onChange={handlePagination}
+                    className="patients-pagination"
                 />
             </div>
-        </div>
+        </section>
     );
 }

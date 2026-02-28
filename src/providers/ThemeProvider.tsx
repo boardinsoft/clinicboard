@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type CarbonTheme = 'white' | 'g100';
+type CarbonTheme = 'white' | 'g90';
 
 interface ThemeContextType {
     theme: CarbonTheme;
@@ -13,7 +13,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setThemeState] = useState<CarbonTheme>('g100');
+    const [theme, setThemeState] = useState<CarbonTheme>('g90');
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -32,7 +32,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }, [theme, mounted]);
 
     const toggleTheme = () => {
-        setThemeState((prev) => (prev === 'white' ? 'g100' : 'white'));
+        setThemeState((prev) => (prev === 'white' ? 'g90' : 'white'));
     };
 
     const setTheme = (newTheme: CarbonTheme) => {

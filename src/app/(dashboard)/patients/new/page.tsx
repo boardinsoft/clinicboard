@@ -95,24 +95,24 @@ export default function NewPatientPage() {
     };
 
     return (
-        <div style={{ paddingBottom: '2rem' }}>
+        <section aria-label="Registro de Nuevo Paciente">
             <div className="page-header">
-                <Breadcrumb noTrailingSlash>
-                    <BreadcrumbItem href="#" onClick={(e) => { e.preventDefault(); router.push('/patients'); }}>
+                <Breadcrumb noTrailingSlash style={{ marginBottom: '1rem' }}>
+                    <BreadcrumbItem href="/patients" onClick={(e) => { e.preventDefault(); router.push('/patients'); }}>
                         Pacientes
                     </BreadcrumbItem>
                     <BreadcrumbItem isCurrentPage>Nuevo Paciente</BreadcrumbItem>
                 </Breadcrumb>
-                <h1 className="page-header__title">Registro de Paciente</h1>
-                <p className="page-header__subtitle">Completa la información siguiendo el estándar FHIR R4 Patient.</p>
+                <h1 className="page-header__title">Alta de Paciente</h1>
+                <p className="page-header__subtitle">Registro centralizado bajo estándar FHIR R4 Patient Resource.</p>
             </div>
 
-            <Grid style={{ padding: '0 1rem' }}>
+            <Grid fullWidth className="content-padding">
                 <Column lg={12} md={8} sm={4}>
-                    <Tile>
+                    <Tile className="form-tile">
                         <Form onSubmit={handleSubmit}>
                             <Stack gap={7}>
-                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                <div className="form-row">
                                     <TextInput
                                         id="givenNames"
                                         name="givenNames"
@@ -129,7 +129,7 @@ export default function NewPatientPage() {
                                     />
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                <div className="form-row">
                                     <Select id="gender" name="gender" labelText="Género" defaultValue="unknown" required>
                                         <SelectItem value="unknown" text="Seleccionar género" />
                                         <SelectItem value="female" text="Femenino" />
@@ -145,7 +145,7 @@ export default function NewPatientPage() {
                                     />
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                <div className="form-row">
                                     <TextInput
                                         id="documentId"
                                         name="documentId"
@@ -168,14 +168,19 @@ export default function NewPatientPage() {
                                     placeholder="correo@ejemplo.com"
                                 />
 
-                                <TextArea id="address" name="address" labelText="Dirección Personal" placeholder="Dirección completa..." />
+                                <TextArea
+                                    id="address"
+                                    name="address"
+                                    labelText="Dirección Personal"
+                                    placeholder="Dirección completa del domicilio..."
+                                />
 
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+                                <div className="form-actions">
                                     <Button kind="ghost" renderIcon={Close} onClick={() => router.push('/patients')}>
                                         Cancelar
                                     </Button>
                                     <Button type="submit" kind="primary" renderIcon={Save} disabled={loading}>
-                                        {loading ? 'Guardando...' : 'Guardar Paciente'}
+                                        {loading ? 'Guardando...' : 'Registrar Paciente'}
                                     </Button>
                                 </div>
                             </Stack>
@@ -185,7 +190,7 @@ export default function NewPatientPage() {
             </Grid>
 
             {notification && (
-                <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999 }}>
+                <div className="toast-container">
                     <ToastNotification
                         kind={notification.type as any}
                         title={notification.title}
@@ -195,6 +200,15 @@ export default function NewPatientPage() {
                     />
                 </div>
             )}
-        </div>
+
+            <style jsx>{`
+                .content-padding {
+                    padding: 0 1rem;
+                }
+                .form-tile {
+                    padding: 2rem;
+                }
+            `}</style>
+        </section>
     );
 }

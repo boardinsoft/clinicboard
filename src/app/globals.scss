@@ -27,12 +27,16 @@
 }
 
 // Light Theme (white)
+.cds--white,
 [data-carbon-theme='white'] {
   --cds-background: #ffffff;
-  --cds-layer-01: #f4f4f4;
-  --cds-layer-02: #e0e0e0;
-  --cds-layer-03: #d1d1d1;
-  --cds-field-01: #f4f4f4;
+  --cds-layer: #ffffff;
+  --cds-layer-01: #ffffff;
+  --cds-layer-02: #ffffff;
+  --cds-layer-03: #e0e0e0;
+  --cds-layer-hover: #f4f4f4; // We can keep hover for interaction, or use e0e0e0
+  --cds-layer-selected: #f4f4f4;
+  --cds-field-01: #ffffff;
   --cds-field-02: #ffffff;
 
   --cds-text-primary: #161616;
@@ -52,12 +56,16 @@
   --clinicboard-header-bg: #ffffff;
 }
 
-// Dark Theme (g100)
-[data-carbon-theme='g100'] {
-  --cds-background: #161616;
+// Dark Theme (g90)
+.cds--g90,
+[data-carbon-theme='g90'] {
+  --cds-background: #262626;
+  --cds-layer: #262626;
   --cds-layer-01: #262626;
   --cds-layer-02: #393939;
   --cds-layer-03: #525252;
+  --cds-layer-hover: #393939;
+  --cds-layer-selected: #393939;
   --cds-field-01: #262626;
   --cds-field-02: #393939;
 
@@ -75,7 +83,7 @@
   --cds-support-info: #4589ff;
 
   --clinicboard-sidebar-bg: #262626;
-  --clinicboard-header-bg: #161616;
+  --clinicboard-header-bg: #262626;
 }
 
 // ============================================
@@ -300,6 +308,39 @@ body {
 }
 
 // ============================================
+// Form & Layout Utilities
+// ============================================
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  &>* {
+    flex: 1;
+  }
+
+  @media (max-width: 672px) {
+    flex-direction: column;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--cds-border-subtle);
+}
+
+.toast-container {
+  position: fixed;
+  top: 3.5rem; // Below header
+  right: 1rem;
+  z-index: 9999;
+}
+
+// ============================================
 // AI Accent
 // ============================================
 .ai-gradient {
@@ -314,15 +355,236 @@ body {
 // ============================================
 // Layout
 // ============================================
-.app-content {
-  margin-left: 256px;
-  margin-top: 48px;
-  min-height: calc(100vh - 48px);
-  background-color: var(--cds-background);
-  transition: background-color 0.2s ease;
+.sidebar-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3rem;
+  width: 3rem;
+  color: var(--cds-icon-primary);
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: var(--cds-background-hover);
+  }
+
+  &:focus {
+    outline: 2px solid var(--cds-focus);
+    outline-offset: -2px;
+  }
+}
+
+// SideNav Redesign (Notion / Modern SaaS Style)
+.cds--side-nav {
+  background-color: var(--cds-background) !important;
+  border-right: 1px solid var(--cds-border-subtle) !important;
+  box-shadow: none !important; // remove Carbon's default shadow if any
+
+  &__navigation {
+    padding: 1rem 0.75rem !important;
+  }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+.cds--side-nav__link {
+  border-radius: 0 !important; // square items
+  height: 2.75rem !important;
+  padding: 0 1rem !important; // padding inside item
+  margin: 0 !important;
+  color: var(--cds-text-secondary) !important;
+  transition: background-color 0.1s ease, color 0.1s ease !important;
+
+  &:hover {
+    background-color: var(--cds-layer-hover) !important;
+    color: var(--cds-text-primary) !important;
+  }
+
+  &[aria-current="page"],
+  &.cds--side-nav__link--current {
+    background-color: var(--cds-layer-selected) !important;
+    color: var(--cds-text-primary) !important;
+    font-weight: 500 !important;
+
+    // Remove the thick active left border from Carbon
+    &::before {
+      display: none !important;
+    }
+  }
+
+  // Adjust icon 
+  .cds--side-nav__icon {
+    margin-right: 0.75rem !important;
+    fill: currentColor !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+
+  // Adjust text
+  .cds--side-nav__link-text {
+    font-size: 0.875rem !important;
+  }
+}
+
+// Adjust rail/collapsed mode for square items
+.cds--side-nav.cds--side-nav--rail:not(.cds--side-nav--expanded) {
+  .cds--side-nav__navigation {
+    padding: 1rem 0.25rem !important;
+  }
+
+  .cds--side-nav__link {
+    width: 3rem !important;
+    height: 3rem !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .cds--side-nav__icon {
+      margin-right: 0 !important;
+    }
+  }
+
+  .cds--side-nav__link-text {
+    display: none !important;
+  }
+}
+
+// ============================================
+// Workspace Tab Bar
+// ============================================
+.tab-bar {
+  position: fixed;
+  top: 48px;
+  height: 48px;
+  right: 0;
+  z-index: 8000;
+  background-color: var(--cds-layer-01);
+  border-bottom: 1px solid var(--cds-border-subtle);
+  transition: left 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  &--expanded {
+    left: 256px;
+  }
+
+  &--collapsed {
+    left: 48px;
+  }
 
   @media (max-width: 1056px) {
-    margin-left: 0;
+    left: 0 !important;
+  }
+}
+
+.tab-bar-scroll-area {
+  display: flex;
+  height: 48px;
+  gap: 0;
+}
+
+.workspace-tab {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  min-width: 120px;
+  max-width: 220px;
+  padding: 0 16px;
+  background-color: transparent;
+  border-right: 1px solid var(--cds-border-subtle);
+  border-top: 2px solid transparent;
+  cursor: pointer;
+  color: var(--cds-text-secondary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border-radius: 0 !important;
+
+  &--active {
+    background-color: var(--cds-background);
+    color: var(--cds-text-primary);
+    border-top: 2px solid var(--clinicboard-blue) !important;
+    border-right: 1px solid var(--cds-border-subtle);
+    font-weight: 500;
+    z-index: 10;
+    box-shadow: 0 1px 0 0 var(--cds-background);
+  }
+
+  &:hover:not(.workspace-tab--active) {
+    background-color: var(--cds-layer-hover);
+  }
+
+  &__button {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    color: inherit;
+    font-size: 0.875rem;
+    font-family: inherit;
+    outline: none;
+  }
+
+  &__title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+  }
+
+  &__close {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    margin: 0 -4px 0 4px;
+    cursor: pointer;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+    outline: none;
+
+    &:hover {
+      background-color: var(--cds-layer-03);
+      opacity: 1;
+    }
+  }
+}
+
+.app-content {
+  margin-top: 96px;
+  /* 48px header + 48px tabs */
+  min-height: calc(100vh - 96px);
+  background-color: var(--cds-background);
+  transition: margin-left 0.11s cubic-bezier(0.2, 0, 0.38, 0.9), background-color 0.2s ease;
+
+  &--expanded {
+    margin-left: 256px;
+  }
+
+  &--collapsed {
+    margin-left: 48px;
+  }
+
+  @media (max-width: 1056px) {
+    margin-left: 0 !important;
   }
 }
 
@@ -359,4 +621,117 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background-color: var(--cds-border-strong);
+}
+
+// ============================================
+// Patients Module Semantic Classes
+// ============================================
+.patient-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.patient-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.patient-avatar {
+  width: 64px;
+  height: 64px;
+  background-color: var(--cds-layer-02);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--cds-text-secondary);
+}
+
+.patient-info-section {
+  margin-bottom: 2.5rem;
+
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--cds-text-primary);
+    border-bottom: 1px solid var(--cds-border-subtle);
+    padding-bottom: 0.5rem;
+  }
+}
+
+.patient-data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.patient-data-item {
+  &__label {
+    font-size: 0.75rem;
+    color: var(--cds-text-secondary);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  &__value {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--cds-text-primary);
+  }
+}
+
+.clinical-summary-card {
+  background-color: var(--cds-layer-01);
+  padding: 1.5rem;
+  border: 1px solid var(--cds-border-subtle);
+}
+
+.condition-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--cds-border-subtle);
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: var(--cds-layer-02);
+  }
+
+  &__content {
+    flex: 1;
+  }
+
+  &__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  &__subtitle {
+    font-size: 0.75rem;
+    color: var(--cds-text-secondary);
+    margin: 0;
+  }
+}
+
+.allergy-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+
+  &--high {
+    background-color: var(--cds-support-error);
+  }
+
+  &--medium {
+    background-color: var(--cds-support-warning);
+  }
+
+  &--low {
+    background-color: var(--cds-support-info);
+  }
 }
