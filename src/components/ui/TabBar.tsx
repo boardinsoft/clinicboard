@@ -16,21 +16,23 @@ export default function TabBar() {
 
     const handleCloseTab = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-        const currentTabs = useTabStore.getState().tabs;
 
-        // Si intentamos cerrar la única pestaña o es el home original
-        if (currentTabs.length <= 1) return;
-
+        // Let zustand do the heavy lifting of determining next active tab
         removeTab(id);
 
-        // Si cerramos la pestaña activa, navegar a la nueva pestaña activa resultante
-        if (activeTabId === id) {
-            const newActive = useTabStore.getState().activeTabId;
-            const newTab = useTabStore.getState().tabs.find(t => t.id === newActive);
-            if (newTab) {
-                router.push(newTab.url);
+        // We need the next tick so zustand is fully updated before we inspect it
+        setTimeout(() => {
+            const { activeTabId, tabs } = useTabStore.getState();
+            if (activeTabId) {
+                const nextTab = tabs.find(t => t.id === activeTabId);
+                if (nextTab) {
+                    router.push(nextTab.url);
+                }
+            } else {
+                // If there are no tabs left, go back to the dashboard
+                router.push('/');
             }
-        }
+        }, 0);
     };
 
     return (
@@ -51,16 +53,13 @@ export default function TabBar() {
                                 <span className="workspace-tab__title">{tab.title}</span>
                             </button>
 
-                            {/* Only show close button if there is more than 1 tab, and it's not the last standing */}
-                            {tabs.length > 1 && (
-                                <button
-                                    className="workspace-tab__close"
-                                    onClick={(e) => handleCloseTab(e, tab.id)}
-                                    aria-label="Cerrar pestaña"
-                                >
-                                    <Close size={16} />
-                                </button>
-                            )}
+                            <button
+                                className="workspace-tab__close"
+                                onClick={(e) => handleCloseTab(e, tab.id)}
+                                aria-label="Cerrar pestaña"
+                            >
+                                <Close size={16} />
+                            </button>
                         </div>
                     );
                 })}

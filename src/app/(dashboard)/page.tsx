@@ -46,10 +46,22 @@ export default function DashboardPage() {
   const [upcomingAppointments, setUpcomingAppointments] = useState<any[]>([]);
   const [recentEvolutions, setRecentEvolutions] = useState<any[]>([]);
   const [activityData, setActivityData] = useState<any[]>([]);
+  const [practitioner, setPractitioner] = useState<any>(null);
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     try {
+      // Get current user/practitioner
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: pract } = await supabase
+          .from('practitioners')
+          .select('*')
+          .eq('auth_user_id', user.id)
+          .single();
+        setPractitioner(pract);
+      }
+
       // 1. Fetch Stats
       const today = new Date().toISOString().split('T')[0];
 
@@ -86,7 +98,7 @@ export default function DashboardPage() {
         })));
       }
 
-      // 3. Fetch Recent Conditions/Evolutions as mock for now or real
+      // 3. Fetch Recent Conditions/Evolutions
       const { data: conditions } = await supabase
         .from('conditions')
         .select('*, patients(name_given, name_family)')
@@ -101,7 +113,7 @@ export default function DashboardPage() {
         })));
       }
 
-      // Mock Activity Data for Chart (would need a complex query for real trends)
+      // Mock Activity Data
       setActivityData([
         { day: 'Lun', patients: 18 },
         { day: 'Mar', patients: 22 },
@@ -126,12 +138,14 @@ export default function DashboardPage() {
   if (loading) return <Loading />;
 
   return (
-    <div style={{ padding: 0 }}>
-      {/* Page Header */}
-      <div className="page-header">
-        <h1 className="page-header__title">Dashboard</h1>
-        <p className="page-header__subtitle">
-          Resumen de actividad clínica — {new Date().toLocaleDateString('es-ES', {
+    <div style={{ padding: '2rem 3rem' }}>
+      {/* Page Header / Welcome */}
+      <div className="page-header" style={{ marginBottom: '3rem' }}>
+        <h1 className="page-header__title" style={{ fontSize: '2.5rem', fontWeight: 300 }}>
+          Hola, {practitioner?.name_given?.[0] || 'Doctor'}
+        </h1>
+        <p className="page-header__subtitle" style={{ fontSize: '1.125rem' }}>
+          Bienvenido a su tablero. Resumen de actividad para hoy, {new Date().toLocaleDateString('es-ES', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -139,6 +153,7 @@ export default function DashboardPage() {
           })}
         </p>
       </div>
+
 
       {/* Bento Grid */}
       <div className="bento-grid bento-grid--dashboard" style={{ margin: 0 }}>

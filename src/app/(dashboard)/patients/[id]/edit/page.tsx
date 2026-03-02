@@ -251,15 +251,6 @@ export default function EditPatientPage() {
                     />
                 </div>
             )}
-
-            <style jsx>{`
-                .content-padding {
-                    padding: 0 1rem;
-                }
-                .form-tile {
-                    padding: 2rem;
-                }
-            `}</style>
         </section>
     );
 }

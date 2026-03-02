@@ -5,7 +5,7 @@ export const EncounterStatusEnum = z.enum(['planned', 'arrived', 'triaged', 'in-
 export const encounterSchema = z.object({
     patient_id: z.string().uuid('Invalid patient ID (UUID required)'),
     practitioner_id: z.string().uuid('Invalid practitioner ID (UUID required)'),
-    encounter_class: z.enum(['AMB', 'IMP', 'EMER', 'HH'], { errorMap: () => ({ message: 'Class must be AMB, IMP, EMER, or HH' }) }),
+    encounter_class: z.enum(['AMB', 'IMP', 'EMER', 'HH'], { error: () => 'Class must be AMB, IMP, EMER, or HH' }),
     status: EncounterStatusEnum.optional().default('planned'),
     start_time: z.string().datetime({ message: 'Invalid ISO datetime' }),
     vital_signs: z.object({

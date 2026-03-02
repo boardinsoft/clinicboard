@@ -25,8 +25,8 @@ interface TabState {
 }
 
 export const useTabStore = create<TabState>((set, get) => ({
-    tabs: [{ id: '/', title: 'Dashboard', url: '/' }],
-    activeTabId: '/',
+    tabs: [],
+    activeTabId: null,
 
     addTab: (tab) => {
         const { tabs } = get();
@@ -46,8 +46,7 @@ export const useTabStore = create<TabState>((set, get) => ({
                 activeTabId: activeTabId === id ? newTabs[newTabs.length - 1].id : activeTabId,
             });
         } else {
-            // Fallback to dashboard if all tabs are closed
-            set({ tabs: [{ id: '/', title: 'Dashboard', url: '/' }], activeTabId: '/' });
+            set({ tabs: [], activeTabId: null });
         }
     },
 
