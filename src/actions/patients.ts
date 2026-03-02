@@ -221,7 +221,7 @@ export async function getEncounters(patientId: string) {
         .from('encounters')
         .select(`
             *,
-            practitioner:practitioners(name_given, name_family)
+            practitioner:practitioners(name_given, name_family, specialty)
         `)
         .eq('patient_id', patientId)
         .order('start_time', { ascending: false });
@@ -233,3 +233,4 @@ export async function getEncounters(patientId: string) {
 
     return { data: data || [] };
 }
+

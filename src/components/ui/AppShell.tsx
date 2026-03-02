@@ -30,6 +30,7 @@ import {
   SidePanelOpen,
   Stethoscope,
   Search as SearchIcon,
+  Chat,
 } from '@carbon/icons-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -40,6 +41,7 @@ import { useTabStore } from '@/store/useTabStore';
 import TabContentManager from './TabContentManager';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import SecondaryPanel from './SecondaryPanel';
+import RightPanel from './RightPanel';
 import { Modal } from '@carbon/react';
 import { searchGlobal, SearchResult } from '@/actions/search';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -63,7 +65,7 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const { addTab, activeTabId } = useTabStore();
-  const { secondaryPanelOpen, toggleSecondaryPanel } = useLayoutStore();
+  const { secondaryPanelOpen, toggleSecondaryPanel, rightPanelOpen, toggleRightPanel } = useLayoutStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -117,10 +119,16 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
   const handleResultClick = (result: SearchResult) => {
     setSearchQuery('');
     setSearchResults([]);
-    if (result.type === 'patient') {
-      addTab({ id: result.url, title: result.title, url: result.url });
+
+    // Keep user in History view if already there, otherwise go to patient file
+    if (pathname.startsWith('/history') && result.type === 'patient') {
+      router.push(`/history?patientId=${result.id}`);
+    } else {
+      if (result.type === 'patient') {
+        addTab({ id: result.url, title: result.title, url: result.url });
+      }
+      router.push(result.url);
     }
-    router.push(result.url);
   };
 
   // Keep Workspace Tabs in sync with the current URL
@@ -157,10 +165,10 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
 
   return (
     <Theme theme={theme}>
-      <div className={secondaryPanelOpen ? 'secondary-panel-open' : ''}>
+      <div className={`${secondaryPanelOpen ? 'secondary-panel-open' : ''} ${rightPanelOpen ? 'right-panel-open' : ''}`}>
         <Header aria-label="Clinicboard">
           <HeaderName href="/" prefix="" className="clinicboard-brand-icon">
-            <Stethoscope size={24} style={{ fill: '#A78BFA' }} />
+            <Stethoscope size={24} style={{ fill: 'var(--clinicboard-accent)' }} />
           </HeaderName>
 
           <HeaderGlobalAction
@@ -250,6 +258,13 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
             >
               {theme === 'white' ? <Asleep size={20} /> : <Sun size={20} />}
             </HeaderGlobalAction>
+            <HeaderGlobalAction
+              aria-label={rightPanelOpen ? 'Cerrar panel derecho' : 'Abrir panel derecho'}
+              onClick={toggleRightPanel}
+              isActive={rightPanelOpen}
+            >
+              <Chat size={20} />
+            </HeaderGlobalAction>
             <HeaderGlobalAction aria-label="Notificaciones" onClick={() => { }}>
               <NotificationIcon size={20} />
             </HeaderGlobalAction>
@@ -301,9 +316,10 @@ export default function AppShell({ children, user, practitioner }: AppShellProps
         </Header>
 
         <SecondaryPanel />
+        <RightPanel />
 
         <Content
-          className="app-content"
+          className={`app-content ${secondaryPanelOpen ? 'secondary-panel-open' : ''}`}
           role="main"
         >
           <Layer>

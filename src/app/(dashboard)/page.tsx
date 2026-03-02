@@ -164,7 +164,7 @@ export default function DashboardPage() {
             <div key={stat.label} className="bento-card bento-card--stat">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <span className="bento-card__label">{stat.label}</span>
-                <IconComponent size={20} style={{ color: 'var(--cds-text-secondary)' }} />
+                <IconComponent size={16} style={{ color: 'var(--cds-text-secondary)' }} />
               </div>
               <span className="bento-card__value">{stat.value}</span>
               <span className={`bento-card__delta bento-card__delta--${stat.deltaType}`}>
@@ -319,35 +319,36 @@ export default function DashboardPage() {
               <AreaChart data={activityData}>
                 <defs>
                   <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0F62FE" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#0F62FE" stopOpacity={0} />
+                    <stop offset="0%" stopColor="var(--clinicboard-blue)" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="var(--clinicboard-blue)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis
                   dataKey="day"
-                  tick={{ fill: '#6F6F6F', fontSize: 12 }}
-                  axisLine={{ stroke: '#393939' }}
+                  tick={{ fill: 'var(--cds-text-secondary)', fontSize: 12 }}
+                  axisLine={{ stroke: 'var(--cds-border-subtle)' }}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fill: '#6F6F6F', fontSize: 12 }}
+                  tick={{ fill: 'var(--cds-text-secondary)', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#262626',
-                    border: '1px solid #393939',
+                    background: 'var(--cds-layer-02)',
+                    border: '1px solid var(--cds-border-subtle)',
                     borderRadius: 0,
-                    color: '#F4F4F4',
+                    color: 'var(--cds-text-primary)',
                     fontFamily: 'IBM Plex Sans',
                     fontSize: '0.8125rem',
                   }}
+                  itemStyle={{ color: 'var(--cds-text-primary)' }}
                 />
                 <Area
                   type="monotone"
                   dataKey="patients"
-                  stroke="#0F62FE"
+                  stroke="var(--clinicboard-blue)"
                   strokeWidth={2}
                   fill="url(#blueGrad)"
                 />

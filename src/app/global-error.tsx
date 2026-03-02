@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { WarningAlt } from '@carbon/icons-react';
 
 export default function GlobalError({
     error,
@@ -99,7 +100,9 @@ export default function GlobalError({
             </head>
             <body>
                 <div className="error-card">
-                    <div className="icon">⚠️</div>
+                    <div className="icon">
+                        <WarningAlt size={32} />
+                    </div>
                     <h1>Error Crítico de Aplicación</h1>
                     <p>
                         Clinicboard ha experimentado un fallo general inesperado.

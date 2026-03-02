@@ -41,9 +41,11 @@ import {
     WarningAlt,
     CheckmarkFilled,
     Information,
+    Folder,
 } from '@carbon/icons-react';
 import { useRouter } from 'next/navigation';
 import { getEncounters, getPatientClinicalData } from '@/actions/patients';
+import { useLayoutStore } from '@/store/useLayoutStore';
 
 interface PatientDetailViewProps {
     patient: any;
@@ -114,7 +116,7 @@ function WorkspaceHeader({ patient, router, children }: { patient: any; router: 
                                 <>
                                     <span className="pd-header-meta-divider pd-header-meta-divider--strong" aria-hidden="true">|</span>
                                     <span className="pd-header-meta pd-header-meta--mono">
-                                        <Identification size={14} aria-hidden="true" />
+                                        <Identification size={16} aria-hidden="true" />
                                         {patient.identifiers[0].value}
                                     </span>
                                 </>
@@ -149,8 +151,8 @@ function WorkspaceHeader({ patient, router, children }: { patient: any; router: 
                     <div className="pd-summary-item">
                         <span className="pd-summary-label">Contacto</span>
                         <div className="pd-summary-value">
-                            {phone && <span title="Teléfono"><Phone size={14} /> {phone}</span>}
-                            {email && <span title="Email" style={{ marginLeft: '1rem' }}><Email size={14} /> {email}</span>}
+                            {phone && <span title="Teléfono"><Phone size={16} /> {phone}</span>}
+                            {email && <span title="Email" style={{ marginLeft: '1rem' }}><Email size={16} /> {email}</span>}
                             {!phone && !email && <span className="pd-text-muted">No registrado</span>}
                         </div>
                     </div>
@@ -192,6 +194,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
     const router = useRouter();
     const [encounters, setEncounters] = useState<any[]>([]);
     const [loadingEncounters, setLoadingEncounters] = useState(false);
+    const { setRightPanelOpen } = useLayoutStore();
 
     useEffect(() => {
         const fetchEncounters = async () => {
@@ -202,6 +205,10 @@ export default function PatientDetailView({ patient, conditions: initialConditio
         };
         fetchEncounters();
     }, [patient.id]);
+
+    useEffect(() => {
+        setRightPanelOpen(true);
+    }, [patient, setRightPanelOpen]);
 
     const phone = patient.telecom?.find((t: any) => t.system === 'phone')?.value;
     const email = patient.telecom?.find((t: any) => t.system === 'email')?.value;
@@ -220,194 +227,198 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                     </TabList>
                 </WorkspaceHeader>
 
-                <TabPanels>
-                    {/* ── PANEL: RESUMEN ────────────────────────────────── */}
-                    <TabPanel className="pw-tab-content">
-                        <div style={{ maxWidth: '800px' }}>
-                            <Form aria-label="Información del paciente">
-                                <FormGroup legendText="Información General">
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                                        <TextInput
-                                            id="patient-name"
-                                            labelText="Nombre Completo"
-                                            value={`${patient.name_given?.join(' ')} ${patient.name_family}`}
-                                            readOnly
-                                        />
-                                        <TextInput
-                                            id="patient-id"
-                                            labelText="Cédula / ID"
-                                            value={patient.identifiers?.[0]?.value || '—'}
-                                            readOnly
-                                        />
-                                        <TextInput
-                                            id="patient-dob"
-                                            labelText="Fecha de Nacimiento"
-                                            value={`${formatDate(patient.birth_date)} (${calcAge(patient.birth_date)})`}
-                                            readOnly
-                                        />
-                                        <TextInput
-                                            id="patient-gender"
-                                            labelText="Género"
-                                            value={getGenderLabel(patient.gender)}
-                                            readOnly
-                                        />
-                                    </div>
-                                </FormGroup>
-
-                                <FormGroup legendText="Contacto y Ubicación">
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                                        <TextInput
-                                            id="patient-phone"
-                                            labelText="Teléfono"
-                                            value={phone || '—'}
-                                            readOnly
-                                        />
-                                        <TextInput
-                                            id="patient-email"
-                                            labelText="Correo Electrónico"
-                                            value={email || '—'}
-                                            readOnly
-                                        />
-                                        <TextInput
-                                            id="patient-address"
-                                            labelText="Dirección"
-                                            value={address || '—'}
-                                            style={{ gridColumn: '1 / span 2' }}
-                                            readOnly
-                                        />
-                                    </div>
-                                </FormGroup>
-                            </Form>
-                        </div>
-                    </TabPanel>
-
-                    {/* ── PANEL: CONDICIONES ───────────────────────────── */}
-                    <TabPanel className="pw-tab-content">
-                        <div className="pd-tab-header">
-                            <h3>Condiciones Clínicas</h3>
-                            <Button kind="ghost" size="sm" renderIcon={Add}>Agregar Condición</Button>
-                        </div>
-                        {initialConditions.length === 0 ? (
-                            <EmptyState
-                                icon={Activity}
-                                title="No hay condiciones clínicas"
-                                message="El paciente no tiene diagnósticos o condiciones registradas."
-                            />
-                        ) : (
-                            <div className="pd-list-container">
-                                {initialConditions.map((c: any) => (
-                                    <div key={c.id} className="pd-list-item">
-                                        <div className="pd-list-item__icon pd-list-item__icon--teal">
-                                            <Activity size={16} />
-                                        </div>
-                                        <div className="pd-list-item__content">
-                                            <span className="pd-list-item__title">{c.code_text}</span>
-                                            <span className="pd-list-item__subtitle">Registrado: {formatDate(c.recorded_date)}</span>
-                                        </div>
-                                        <Tag type={c.clinical_status === 'active' ? 'red' : 'green'} size="sm">
-                                            {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
-                                        </Tag>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </TabPanel>
-
-                    {/* ── PANEL: ALERGIAS ──────────────────────────────── */}
-                    <TabPanel className="pw-tab-content">
-                        <div className="pd-tab-header">
-                            <h3>Alergias e Intolerancias</h3>
-                            <Button kind="ghost" size="sm" renderIcon={Add}>Agregar Alergia</Button>
-                        </div>
-                        {initialAllergies.length === 0 ? (
-                            <EmptyState
-                                icon={Chemistry}
-                                title="Sin alergias registradas"
-                                message="No se han reportado alergias o intolerancias para este paciente."
-                            />
-                        ) : (
-                            <div className="pd-list-container">
-                                {initialAllergies.map((a: any) => (
-                                    <div key={a.id} className="pd-list-item">
-                                        <div className="pd-list-item__icon pd-list-item__icon--red">
-                                            <Chemistry size={16} />
-                                        </div>
-                                        <div className="pd-list-item__content">
-                                            <span className="pd-list-item__title">{a.code_text}</span>
-                                            <span className="pd-list-item__subtitle">{a.reaction_text || 'Reacción no especificada'}</span>
-                                        </div>
-                                        <Tag type={a.criticality === 'high' ? 'red' : 'warm-gray'} size="sm">
-                                            {a.criticality === 'high' ? 'Alta' : 'Normal'}
-                                        </Tag>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </TabPanel>
-
-                    {/* ── PANEL: CONSULTAS ────────────────────────────── */}
-                    <TabPanel className="pw-tab-content">
-                        <div className="pd-tab-header">
-                            <h3>Historial de Consultas</h3>
-                            <Button
-                                kind="ghost"
-                                size="sm"
-                                renderIcon={Add}
-                                onClick={() => router.push(`/history?patientId=${patient.id}`)}
-                            >
-                                Nueva Consulta
-                            </Button>
-                        </div>
-                        {loadingEncounters ? (
-                            <div className="pd-loading-overlay"><Loading withOverlay={false} /></div>
-                        ) : encounters.length === 0 ? (
-                            <EmptyState
-                                icon={Calendar}
-                                title="Sin consultas previas"
-                                message="Este paciente aún no registra visitas o evoluciones clínicas."
-                            />
-                        ) : (
-                            <div className="pd-encounters-timeline">
-                                {encounters.map((e: any) => (
-                                    <div
-                                        key={e.id}
-                                        className="pd-timeline-item"
-                                        onClick={() => router.push(`/history?patientId=${patient.id}&encounterId=${e.id}`)}
-                                    >
-                                        <div className="pd-timeline-date">
-                                            <span className="pd-timeline-day">{new Date(e.start_time).getDate()}</span>
-                                            <span className="pd-timeline-month">
-                                                {new Date(e.start_time).toLocaleDateString('es-VE', { month: 'short' }).toUpperCase()}
-                                            </span>
-                                        </div>
-                                        <div className="pd-timeline-content">
-                                            <div className="pd-timeline-header">
-                                                <span className="pd-timeline-year">{new Date(e.start_time).getFullYear()}</span>
-                                                <span className="pd-timeline-dot">•</span>
-                                                <span className="pd-timeline-practitioner">Dr. {e.practitioner?.name_family}</span>
+                <div className="pw-root__body">
+                    <div className="pw-root__content">
+                        <TabPanels>
+                            {/* ── PANEL: RESUMEN ────────────────────────────────── */}
+                            <TabPanel className="pw-tab-content">
+                                <div style={{ maxWidth: '800px' }}>
+                                    <Form aria-label="Información del paciente">
+                                        <FormGroup legendText="Información General">
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                                                <TextInput
+                                                    id="patient-name"
+                                                    labelText="Nombre Completo"
+                                                    defaultValue={`${patient.name_given?.join(' ')} ${patient.name_family}`}
+                                                    light
+                                                />
+                                                <TextInput
+                                                    id="patient-id"
+                                                    labelText="Cédula / ID"
+                                                    defaultValue={patient.identifiers?.[0]?.value || '—'}
+                                                    light
+                                                />
+                                                <TextInput
+                                                    id="patient-dob"
+                                                    labelText="Fecha de Nacimiento"
+                                                    defaultValue={`${formatDate(patient.birth_date)} (${calcAge(patient.birth_date)})`}
+                                                    light
+                                                />
+                                                <TextInput
+                                                    id="patient-gender"
+                                                    labelText="Género"
+                                                    defaultValue={getGenderLabel(patient.gender)}
+                                                    light
+                                                />
                                             </div>
-                                            <p className="pd-timeline-note">
-                                                {e.evolution_note ? (e.evolution_note.substring(0, 120) + (e.evolution_note.length > 120 ? '...' : '')) : 'Sin notas evolutivas.'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </TabPanel>
+                                        </FormGroup>
 
-                    {/* ── PANEL: SIGNOS VITALES ───────────────────────── */}
-                    <TabPanel className="pw-tab-content">
-                        <div className="pd-tab-header">
-                            <h3>Signos Vitales</h3>
-                        </div>
-                        <EmptyState
-                            icon={Activity}
-                            title="Próximamente"
-                            message="Gráficas de evolución y tendencias de signos vitales estarán disponibles aquí."
-                        />
-                    </TabPanel>
-                </TabPanels>
+                                        <FormGroup legendText="Contacto y Ubicación">
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                                                <TextInput
+                                                    id="patient-phone"
+                                                    labelText="Teléfono"
+                                                    defaultValue={phone || '—'}
+                                                    light
+                                                />
+                                                <TextInput
+                                                    id="patient-email"
+                                                    labelText="Correo Electrónico"
+                                                    defaultValue={email || '—'}
+                                                    light
+                                                />
+                                                <TextInput
+                                                    id="patient-address"
+                                                    labelText="Dirección"
+                                                    defaultValue={address || '—'}
+                                                    style={{ gridColumn: '1 / span 2' }}
+                                                    light
+                                                />
+                                            </div>
+                                        </FormGroup>
+                                    </Form>
+                                </div>
+                            </TabPanel>
+
+                            {/* ── PANEL: CONDICIONES ───────────────────────────── */}
+                            <TabPanel className="pw-tab-content">
+                                <div className="pd-tab-header">
+                                    <h3>Condiciones Clínicas</h3>
+                                    <Button kind="ghost" size="sm" renderIcon={Add}>Agregar Condición</Button>
+                                </div>
+                                {initialConditions.length === 0 ? (
+                                    <EmptyState
+                                        icon={Activity}
+                                        title="No hay condiciones clínicas"
+                                        message="El paciente no tiene diagnósticos o condiciones registradas."
+                                    />
+                                ) : (
+                                    <div className="pd-list-container">
+                                        {initialConditions.map((c: any) => (
+                                            <div key={c.id} className="pd-list-item">
+                                                <div className="pd-list-item__icon pd-list-item__icon--teal">
+                                                    <Activity size={16} />
+                                                </div>
+                                                <div className="pd-list-item__content">
+                                                    <span className="pd-list-item__title">{c.code_text}</span>
+                                                    <span className="pd-list-item__subtitle">Registrado: {formatDate(c.recorded_date)}</span>
+                                                </div>
+                                                <Tag type={c.clinical_status === 'active' ? 'red' : 'green'} size="sm">
+                                                    {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
+                                                </Tag>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </TabPanel>
+
+                            {/* ── PANEL: ALERGIAS ──────────────────────────────── */}
+                            <TabPanel className="pw-tab-content">
+                                <div className="pd-tab-header">
+                                    <h3>Alergias e Intolerancias</h3>
+                                    <Button kind="ghost" size="sm" renderIcon={Add}>Agregar Alergia</Button>
+                                </div>
+                                {initialAllergies.length === 0 ? (
+                                    <EmptyState
+                                        icon={Chemistry}
+                                        title="Sin alergias registradas"
+                                        message="No se han reportado alergias o intolerancias para este paciente."
+                                    />
+                                ) : (
+                                    <div className="pd-list-container">
+                                        {initialAllergies.map((a: any) => (
+                                            <div key={a.id} className="pd-list-item">
+                                                <div className="pd-list-item__icon pd-list-item__icon--red">
+                                                    <Chemistry size={16} />
+                                                </div>
+                                                <div className="pd-list-item__content">
+                                                    <span className="pd-list-item__title">{a.code_text}</span>
+                                                    <span className="pd-list-item__subtitle">{a.reaction_text || 'Reacción no especificada'}</span>
+                                                </div>
+                                                <Tag type={a.criticality === 'high' ? 'red' : 'warm-gray'} size="sm">
+                                                    {a.criticality === 'high' ? 'Alta' : 'Normal'}
+                                                </Tag>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </TabPanel>
+
+                            {/* ── PANEL: CONSULTAS ────────────────────────────── */}
+                            <TabPanel className="pw-tab-content">
+                                <div className="pd-tab-header">
+                                    <h3>Historial de Consultas</h3>
+                                    <Button
+                                        kind="ghost"
+                                        size="sm"
+                                        renderIcon={Add}
+                                        onClick={() => router.push(`/history?patientId=${patient.id}`)}
+                                    >
+                                        Nueva Consulta
+                                    </Button>
+                                </div>
+                                {loadingEncounters ? (
+                                    <div className="pd-loading-overlay"><Loading withOverlay={false} /></div>
+                                ) : encounters.length === 0 ? (
+                                    <EmptyState
+                                        icon={Calendar}
+                                        title="Sin consultas previas"
+                                        message="Este paciente aún no registra visitas o evoluciones clínicas."
+                                    />
+                                ) : (
+                                    <div className="pd-encounters-timeline">
+                                        {encounters.map((e: any) => (
+                                            <div
+                                                key={e.id}
+                                                className="pd-timeline-item"
+                                                onClick={() => router.push(`/history?patientId=${patient.id}&encounterId=${e.id}`)}
+                                            >
+                                                <div className="pd-timeline-date">
+                                                    <span className="pd-timeline-day">{new Date(e.start_time).getDate()}</span>
+                                                    <span className="pd-timeline-month">
+                                                        {new Date(e.start_time).toLocaleDateString('es-VE', { month: 'short' }).toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                <div className="pd-timeline-content">
+                                                    <div className="pd-timeline-header">
+                                                        <span className="pd-timeline-year">{new Date(e.start_time).getFullYear()}</span>
+                                                        <span className="pd-timeline-dot">•</span>
+                                                        <span className="pd-timeline-practitioner">Dr. {e.practitioner?.name_family}</span>
+                                                    </div>
+                                                    <p className="pd-timeline-note">
+                                                        {e.evolution_note ? (e.evolution_note.substring(0, 120) + (e.evolution_note.length > 120 ? '...' : '')) : 'Sin notas evolutivas.'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </TabPanel>
+
+                            {/* ── PANEL: SIGNOS VITALES ───────────────────────── */}
+                            <TabPanel className="pw-tab-content">
+                                <div className="pd-tab-header">
+                                    <h3>Signos Vitales</h3>
+                                </div>
+                                <EmptyState
+                                    icon={Activity}
+                                    title="Próximamente"
+                                    message="Gráficas de evolución y tendencias de signos vitales estarán disponibles aquí."
+                                />
+                            </TabPanel>
+                        </TabPanels>
+                    </div>
+                </div>
             </Tabs>
         </div>
     );
