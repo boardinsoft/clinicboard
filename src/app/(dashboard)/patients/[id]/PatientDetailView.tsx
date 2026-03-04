@@ -2,188 +2,182 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-    Button,
-    Tag,
-    Tabs,
-    TabList,
-    Tab,
-    TabPanels,
-    TabPanel,
-    StructuredListWrapper,
-    StructuredListRow,
-    StructuredListCell,
-    StructuredListBody,
-    DataTable,
-    Table,
-    TableHead,
-    TableRow,
-    TableHeader,
-    TableBody,
-    TableCell,
-    TableContainer,
-    Loading,
-    Form,
-    FormGroup,
-    TextInput,
-} from '@carbon/react';
-import {
     Edit,
     User,
     Stethoscope,
-    Add,
+    Plus,
     Phone,
-    Email,
-    Location,
-    Identification,
+    Mail,
+    MapPin,
+    CreditCard,
     Activity,
-    Chemistry,
+    FlaskConical,
+    MoreVertical,
+    FileText,
+    ExternalLink,
+    Trash,
     Calendar,
-    WarningAlt,
-    CheckmarkFilled,
-    Information,
-    Folder,
-} from '@carbon/icons-react';
+    AlertTriangle,
+    ChevronRight,
+} from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useRouter } from 'next/navigation';
-import { getEncounters, getPatientClinicalData } from '@/actions/patients';
+import { getEncounters } from '@/actions/patients';
 import { useLayoutStore } from '@/store/useLayoutStore';
+import { cn } from '@/lib/utils';
+
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { Patient, Condition, AllergyIntolerance, EncounterWithSpecialty } from '@/types/database.types';
+
+// Typed helpers for patient JSONB columns
+interface PatientIdentifier { value?: string }
+interface PatientTelecom { system?: string; value?: string }
+interface PatientAddress { text?: string }
 
 interface PatientDetailViewProps {
-    patient: any;
-    conditions: any[];
-    allergies: any[];
+    patient: Patient;
+    conditions: Condition[];
+    allergies: AllergyIntolerance[];
 }
 
-// ─── Utilities ────────────────────────────────────────────────────────────────
-
-function formatDate(dateString: string | null): string {
-    if (!dateString) return '—';
-    const date = dateString.includes('T')
-        ? new Date(dateString)
-        : new Date(`${dateString}T00:00:00`);
-    return isNaN(date.getTime())
-        ? '—'
-        : date.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-function calcAge(birthDate: string | null): string {
-    if (!birthDate) return '';
-    const diff = Date.now() - new Date(birthDate).getTime();
-    const age = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
-    return `${age} años`;
-}
-
-function getGenderLabel(gender: string): string {
-    const map: Record<string, string> = {
-        male: 'Masculino', female: 'Femenino', other: 'Otro', unknown: 'Desconocido',
-    };
-    return map[gender] || gender || '—';
-}
+import { formatDate, calcAge, getGenderLabel } from '@/lib/clinical';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function WorkspaceHeader({ patient, router, children }: { patient: any; router: any; children?: React.ReactNode }) {
-    const phone = patient.telecom?.find((t: any) => t.system === 'phone')?.value;
-    const email = patient.telecom?.find((t: any) => t.system === 'email')?.value;
-    const address = patient.address?.[0]?.text;
+function WorkspaceHeader({ patient, router, children }: { patient: Patient; router: ReturnType<typeof useRouter>; children?: React.ReactNode }) {
+    const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value;
+    const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value;
+    const address = (patient.address as PatientAddress[] | null)?.[0]?.text;
 
     return (
-        <header className="pw-workspace-header pw-workspace-header--expanded" role="banner">
-            <div className="pw-workspace-header__top">
-                <div className="pw-workspace-header__left" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                    <div className="pd-avatar pd-avatar--large" aria-hidden="true">
-                        <User size={32} />
+        <header className="bg-background border-b border-border/10 shadow-none">
+            <div className="px-8 py-8 flex items-center justify-between">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <User className="w-8 h-8" />
                     </div>
-                    <div className="pw-workspace-header__info pw-workspace-header__title-block">
-                        <h1 className="pw-workspace-header__title" style={{ fontSize: '1.5rem' }}>
+                    <div>
+                        <h1 className="text-3xl font-semibold tracking-tight text-foreground flex items-center gap-3">
                             {patient.name_given?.join(' ')} {patient.name_family}
-                        </h1>
-                        <div className="pw-workspace-header__subtitle" role="text" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '4px' }}>
-                            <Tag type={patient.active ? 'green' : 'gray'} size="sm" aria-label={`Estado: ${patient.active ? 'Activo' : 'Inactivo'}`}>
+                            <Badge variant={patient.active ? "outline" : "secondary"} className={cn(
+                                "font-medium border-0",
+                                patient.active ? "bg-emerald-500/10 text-emerald-700" : "bg-muted text-muted-foreground"
+                            )}>
                                 {patient.active ? 'Activo' : 'Inactivo'}
-                            </Tag>
-
-                            <div className="pd-header-meta-group" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <span className="pd-header-meta">
-                                    <strong>Edad:</strong> {calcAge(patient.birth_date)}
-                                </span>
-                                <span className="pd-header-meta-divider" aria-hidden="true">•</span>
-                                <span className="pd-header-meta">
-                                    <strong>Género:</strong> {getGenderLabel(patient.gender)}
-                                </span>
+                            </Badge>
+                        </h1>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground mt-2">
+                            <div className="flex items-center gap-1.5">
+                                <span className="font-medium text-foreground">Edad:</span> {calcAge(patient.birth_date)}
                             </div>
-
-                            {patient.identifiers?.[0]?.value && (
+                            <span className="text-border">•</span>
+                            <div className="flex items-center gap-1.5">
+                                <span className="font-medium text-foreground">Género:</span> {getGenderLabel(patient.gender)}
+                            </div>
+                            {Array.isArray(patient.identifiers) && (patient.identifiers as PatientIdentifier[])[0]?.value && (
                                 <>
-                                    <span className="pd-header-meta-divider pd-header-meta-divider--strong" aria-hidden="true">|</span>
-                                    <span className="pd-header-meta pd-header-meta--mono">
-                                        <Identification size={16} aria-hidden="true" />
-                                        {patient.identifiers[0].value}
-                                    </span>
+                                    <span className="text-border">|</span>
+                                    <div className="flex items-center gap-1.5 font-mono text-xs bg-muted px-2 py-0.5 rounded-md text-foreground">
+                                        <CreditCard className="w-3.5 h-3.5 text-muted-foreground" />
+                                        {(patient.identifiers as PatientIdentifier[])[0].value}
+                                    </div>
                                 </>
                             )}
                         </div>
                     </div>
                 </div>
-                <div className="pw-workspace-header__actions">
+                <div className="flex items-center gap-2 shrink-0">
                     <Button
-                        kind="ghost"
-                        size="md"
-                        renderIcon={Edit}
-                        onClick={() => router.push(`/patients/${patient.id}/edit`)}
-                        aria-label="Editar perfil del paciente"
-                    >
-                        Editar Perfil
-                    </Button>
-                    <Button
-                        kind="primary"
-                        size="md"
-                        renderIcon={Stethoscope}
                         onClick={() => router.push(`/history?patientId=${patient.id}`)}
-                        aria-label="Iniciar nueva evolución clínica"
+                        className="shadow-sm"
                     >
+                        <Plus className="w-4 h-4 mr-2" />
                         Nueva Evolución
                     </Button>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon" className="border-border/40">
+                                <MoreVertical className="w-4 h-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56 border-border/30">
+                            <DropdownMenuLabel>Acciones del Paciente</DropdownMenuLabel>
+                            <DropdownMenuSeparator className="bg-border/20" />
+                            <DropdownMenuItem onClick={() => router.push(`/patients/${patient.id}/edit`)}>
+                                <Edit className="w-4 h-4 mr-2" /> Editar Perfil
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => window.open(`/api/patients/${patient.id}/fhir`, '_blank')}>
+                                <FileText className="w-4 h-4 mr-2" /> Ver FHIR JSON
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                <ExternalLink className="w-4 h-4 mr-2" /> Abrir en Portal
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-border/20" />
+                            <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/5">
+                                <Trash className="w-4 h-4 mr-2" /> Archivar Paciente
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
-            <div className="pw-workspace-header__middle">
-                <div className="pd-summary-grid">
-                    <div className="pd-summary-item">
-                        <span className="pd-summary-label">Contacto</span>
-                        <div className="pd-summary-value">
-                            {phone && <span title="Teléfono"><Phone size={16} /> {phone}</span>}
-                            {email && <span title="Email" style={{ marginLeft: '1rem' }}><Email size={16} /> {email}</span>}
-                            {!phone && !email && <span className="pd-text-muted">No registrado</span>}
+            <div className="px-8 pb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                    <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">Contacto</span>
+                        <div className="space-y-1">
+                            {phone && <div className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 text-muted-foreground" /> {phone}</div>}
+                            {email && <div className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-muted-foreground" /> {email}</div>}
+                            {!phone && !email && <span className="text-muted-foreground">No registrado</span>}
                         </div>
                     </div>
-                    <div className="pd-summary-item">
-                        <span className="pd-summary-label">Residencia</span>
-                        <div className="pd-summary-value">
-                            {address || <span className="pd-text-muted">Sin dirección registrada</span>}
+                    <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">Residencia</span>
+                        <div>
+                            {address ? (
+                                <div className="flex items-start gap-2">
+                                    <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                                    <span className="line-clamp-2">{address}</span>
+                                </div>
+                            ) : (
+                                <span className="text-muted-foreground">Sin dirección registrada</span>
+                            )}
                         </div>
                     </div>
-                    <div className="pd-summary-item">
-                        <span className="pd-summary-label">Notas rápidas</span>
-                        <div className="pd-summary-value pd-text-muted">
+                    <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">Notas rápidas</span>
+                        <div className="text-muted-foreground line-clamp-2">
                             Paciente requiere atención especial en toma de muestras...
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div className="pw-workspace-header__bottom">
-                {children}
-            </div>
+            {children}
         </header>
     );
 }
 
-function EmptyState({ icon: Icon, title, message }: { icon?: React.ElementType; title: string; message: string }) {
+function EmptyState({ icon: Icon, title, message }: { icon: React.ElementType; title: string; message: string }) {
     return (
-        <div className="pw-empty-state" role="status">
-            {Icon && <Icon size={32} className="pw-empty-state__icon" aria-hidden="true" />}
-            <h4 className="pw-empty-state__title">{title}</h4>
-            <p className="pw-empty-state__text">{message}</p>
+        <div className="flex flex-col items-center justify-center p-12 text-center border rounded-xl border-dashed border-border/60 bg-muted/20">
+            <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                <Icon className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <h4 className="text-lg font-medium text-foreground mb-1">{title}</h4>
+            <p className="text-sm text-muted-foreground max-w-sm">{message}</p>
         </div>
     );
 }
@@ -192,7 +186,7 @@ function EmptyState({ icon: Icon, title, message }: { icon?: React.ElementType; 
 
 export default function PatientDetailView({ patient, conditions: initialConditions, allergies: initialAllergies }: PatientDetailViewProps) {
     const router = useRouter();
-    const [encounters, setEncounters] = useState<any[]>([]);
+    const [encounters, setEncounters] = useState<EncounterWithSpecialty[]>([]);
     const [loadingEncounters, setLoadingEncounters] = useState(false);
     const { setRightPanelOpen } = useLayoutStore();
 
@@ -200,7 +194,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
         const fetchEncounters = async () => {
             setLoadingEncounters(true);
             const { data } = await getEncounters(patient.id);
-            setEncounters(data || []);
+            setEncounters((data || []) as EncounterWithSpecialty[]);
             setLoadingEncounters(false);
         };
         fetchEncounters();
@@ -210,213 +204,237 @@ export default function PatientDetailView({ patient, conditions: initialConditio
         setRightPanelOpen(true);
     }, [patient, setRightPanelOpen]);
 
-    const phone = patient.telecom?.find((t: any) => t.system === 'phone')?.value;
-    const email = patient.telecom?.find((t: any) => t.system === 'email')?.value;
-    const address = patient.address?.[0]?.text;
+    const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value;
+    const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value;
+    const address = (patient.address as PatientAddress[] | null)?.[0]?.text;
 
     return (
-        <div className="pw-root" role="main">
-            <Tabs aria-label="Navegación de detalles del paciente">
+        <div className="h-full flex flex-col bg-background">
+            <Tabs defaultValue="overview" className="flex-1 flex flex-col">
                 <WorkspaceHeader patient={patient} router={router}>
-                    <TabList aria-label="Secciones de información" className="pw-tab-list">
-                        <Tab renderIcon={User}>Resumen</Tab>
-                        <Tab renderIcon={Stethoscope}>Condiciones</Tab>
-                        <Tab renderIcon={WarningAlt}>Alergias</Tab>
-                        <Tab renderIcon={Calendar}>Consultas</Tab>
-                        <Tab renderIcon={Activity}>Signos Vitales</Tab>
-                    </TabList>
+                    <div className="px-8 mt-2">
+                        <TabsList className="mb-4">
+                            {[
+                                { value: 'overview', label: 'Resumen', icon: User },
+                                { value: 'conditions', label: 'Condiciones', icon: Stethoscope },
+                                { value: 'allergies', label: 'Alergias', icon: AlertTriangle },
+                                { value: 'history', label: 'Consultas', icon: Calendar },
+                                { value: 'vitals', label: 'Signos Vitales', icon: Activity },
+                            ].map((tab) => (
+                                <TabsTrigger
+                                    key={tab.value}
+                                    value={tab.value}
+                                    className="gap-2"
+                                >
+                                    <tab.icon className="w-4 h-4" />
+                                    {tab.label}
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </div>
                 </WorkspaceHeader>
 
-                <div className="pw-root__body">
-                    <div className="pw-root__content">
-                        <TabPanels>
-                            {/* ── PANEL: RESUMEN ────────────────────────────────── */}
-                            <TabPanel className="pw-tab-content">
-                                <div style={{ maxWidth: '800px' }}>
-                                    <Form aria-label="Información del paciente">
-                                        <FormGroup legendText="Información General">
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                                                <TextInput
-                                                    id="patient-name"
-                                                    labelText="Nombre Completo"
-                                                    defaultValue={`${patient.name_given?.join(' ')} ${patient.name_family}`}
-                                                    light
-                                                />
-                                                <TextInput
-                                                    id="patient-id"
-                                                    labelText="Cédula / ID"
-                                                    defaultValue={patient.identifiers?.[0]?.value || '—'}
-                                                    light
-                                                />
-                                                <TextInput
-                                                    id="patient-dob"
-                                                    labelText="Fecha de Nacimiento"
-                                                    defaultValue={`${formatDate(patient.birth_date)} (${calcAge(patient.birth_date)})`}
-                                                    light
-                                                />
-                                                <TextInput
-                                                    id="patient-gender"
-                                                    labelText="Género"
-                                                    defaultValue={getGenderLabel(patient.gender)}
-                                                    light
-                                                />
+                <div className="flex-1 overflow-y-auto p-8">
+                    <div className="max-w-5xl">
+                        {/* ── PANEL: RESUMEN ────────────────────────────────── */}
+                        <TabsContent value="overview" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden">
+                            <div className="space-y-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Información General</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label className="text-muted-foreground">Nombre Completo</Label>
+                                                <div className="font-medium">{`${patient.name_given?.join(' ')} ${patient.name_family}`}</div>
                                             </div>
-                                        </FormGroup>
-
-                                        <FormGroup legendText="Contacto y Ubicación">
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                                                <TextInput
-                                                    id="patient-phone"
-                                                    labelText="Teléfono"
-                                                    defaultValue={phone || '—'}
-                                                    light
-                                                />
-                                                <TextInput
-                                                    id="patient-email"
-                                                    labelText="Correo Electrónico"
-                                                    defaultValue={email || '—'}
-                                                    light
-                                                />
-                                                <TextInput
-                                                    id="patient-address"
-                                                    labelText="Dirección"
-                                                    defaultValue={address || '—'}
-                                                    style={{ gridColumn: '1 / span 2' }}
-                                                    light
-                                                />
+                                            <div className="space-y-2">
+                                                <Label className="text-muted-foreground">Cédula / ID</Label>
+                                                <div className="font-medium">{Array.isArray(patient.identifiers) ? (patient.identifiers as PatientIdentifier[])[0]?.value || '—' : '—'}</div>
                                             </div>
-                                        </FormGroup>
-                                    </Form>
-                                </div>
-                            </TabPanel>
-
-                            {/* ── PANEL: CONDICIONES ───────────────────────────── */}
-                            <TabPanel className="pw-tab-content">
-                                <div className="pd-tab-header">
-                                    <h3>Condiciones Clínicas</h3>
-                                    <Button kind="ghost" size="sm" renderIcon={Add}>Agregar Condición</Button>
-                                </div>
-                                {initialConditions.length === 0 ? (
-                                    <EmptyState
-                                        icon={Activity}
-                                        title="No hay condiciones clínicas"
-                                        message="El paciente no tiene diagnósticos o condiciones registradas."
-                                    />
-                                ) : (
-                                    <div className="pd-list-container">
-                                        {initialConditions.map((c: any) => (
-                                            <div key={c.id} className="pd-list-item">
-                                                <div className="pd-list-item__icon pd-list-item__icon--teal">
-                                                    <Activity size={16} />
-                                                </div>
-                                                <div className="pd-list-item__content">
-                                                    <span className="pd-list-item__title">{c.code_text}</span>
-                                                    <span className="pd-list-item__subtitle">Registrado: {formatDate(c.recorded_date)}</span>
-                                                </div>
-                                                <Tag type={c.clinical_status === 'active' ? 'red' : 'green'} size="sm">
-                                                    {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
-                                                </Tag>
+                                            <div className="space-y-2">
+                                                <Label className="text-muted-foreground">Fecha de Nacimiento</Label>
+                                                <div className="font-medium">{`${formatDate(patient.birth_date)} (${calcAge(patient.birth_date)})`}</div>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </TabPanel>
-
-                            {/* ── PANEL: ALERGIAS ──────────────────────────────── */}
-                            <TabPanel className="pw-tab-content">
-                                <div className="pd-tab-header">
-                                    <h3>Alergias e Intolerancias</h3>
-                                    <Button kind="ghost" size="sm" renderIcon={Add}>Agregar Alergia</Button>
-                                </div>
-                                {initialAllergies.length === 0 ? (
-                                    <EmptyState
-                                        icon={Chemistry}
-                                        title="Sin alergias registradas"
-                                        message="No se han reportado alergias o intolerancias para este paciente."
-                                    />
-                                ) : (
-                                    <div className="pd-list-container">
-                                        {initialAllergies.map((a: any) => (
-                                            <div key={a.id} className="pd-list-item">
-                                                <div className="pd-list-item__icon pd-list-item__icon--red">
-                                                    <Chemistry size={16} />
-                                                </div>
-                                                <div className="pd-list-item__content">
-                                                    <span className="pd-list-item__title">{a.code_text}</span>
-                                                    <span className="pd-list-item__subtitle">{a.reaction_text || 'Reacción no especificada'}</span>
-                                                </div>
-                                                <Tag type={a.criticality === 'high' ? 'red' : 'warm-gray'} size="sm">
-                                                    {a.criticality === 'high' ? 'Alta' : 'Normal'}
-                                                </Tag>
+                                            <div className="space-y-2">
+                                                <Label className="text-muted-foreground">Género</Label>
+                                                <div className="font-medium">{getGenderLabel(patient.gender)}</div>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </TabPanel>
+                                        </div>
+                                    </CardContent>
+                                </Card>
 
-                            {/* ── PANEL: CONSULTAS ────────────────────────────── */}
-                            <TabPanel className="pw-tab-content">
-                                <div className="pd-tab-header">
-                                    <h3>Historial de Consultas</h3>
-                                    <Button
-                                        kind="ghost"
-                                        size="sm"
-                                        renderIcon={Add}
-                                        onClick={() => router.push(`/history?patientId=${patient.id}`)}
-                                    >
-                                        Nueva Consulta
-                                    </Button>
-                                </div>
-                                {loadingEncounters ? (
-                                    <div className="pd-loading-overlay"><Loading withOverlay={false} /></div>
-                                ) : encounters.length === 0 ? (
-                                    <EmptyState
-                                        icon={Calendar}
-                                        title="Sin consultas previas"
-                                        message="Este paciente aún no registra visitas o evoluciones clínicas."
-                                    />
-                                ) : (
-                                    <div className="pd-encounters-timeline">
-                                        {encounters.map((e: any) => (
-                                            <div
-                                                key={e.id}
-                                                className="pd-timeline-item"
-                                                onClick={() => router.push(`/history?patientId=${patient.id}&encounterId=${e.id}`)}
-                                            >
-                                                <div className="pd-timeline-date">
-                                                    <span className="pd-timeline-day">{new Date(e.start_time).getDate()}</span>
-                                                    <span className="pd-timeline-month">
-                                                        {new Date(e.start_time).toLocaleDateString('es-VE', { month: 'short' }).toUpperCase()}
-                                                    </span>
-                                                </div>
-                                                <div className="pd-timeline-content">
-                                                    <div className="pd-timeline-header">
-                                                        <span className="pd-timeline-year">{new Date(e.start_time).getFullYear()}</span>
-                                                        <span className="pd-timeline-dot">•</span>
-                                                        <span className="pd-timeline-practitioner">Dr. {e.practitioner?.name_family}</span>
-                                                    </div>
-                                                    <p className="pd-timeline-note">
-                                                        {e.evolution_note ? (e.evolution_note.substring(0, 120) + (e.evolution_note.length > 120 ? '...' : '')) : 'Sin notas evolutivas.'}
-                                                    </p>
-                                                </div>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Contacto y Ubicación</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label className="text-muted-foreground">Teléfono</Label>
+                                                <div className="font-medium">{phone || '—'}</div>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </TabPanel>
+                                            <div className="space-y-2">
+                                                <Label className="text-muted-foreground">Correo Electrónico</Label>
+                                                <div className="font-medium">{email || '—'}</div>
+                                            </div>
+                                            <div className="space-y-2 md:col-span-2">
+                                                <Label className="text-muted-foreground">Dirección Completa</Label>
+                                                <div className="font-medium">{address || '—'}</div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </TabsContent>
 
-                            {/* ── PANEL: SIGNOS VITALES ───────────────────────── */}
-                            <TabPanel className="pw-tab-content">
-                                <div className="pd-tab-header">
-                                    <h3>Signos Vitales</h3>
-                                </div>
+                        {/* ── PANEL: CONDICIONES ───────────────────────────── */}
+                        <TabsContent value="conditions" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden space-y-6">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-xl font-semibold">Condiciones Clínicas</h3>
+                                <Button variant="outline" size="sm">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Agregar Condición
+                                </Button>
+                            </div>
+                            {initialConditions.length === 0 ? (
                                 <EmptyState
                                     icon={Activity}
-                                    title="Próximamente"
-                                    message="Gráficas de evolución y tendencias de signos vitales estarán disponibles aquí."
+                                    title="No hay condiciones clínicas"
+                                    message="El paciente no tiene diagnósticos o condiciones registradas."
                                 />
-                            </TabPanel>
-                        </TabPanels>
+                            ) : (
+                                <div className="space-y-3">
+                                    {initialConditions.map((c) => (
+                                        <Card key={c.id}>
+                                            <CardContent className="p-4 flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                                    <Activity className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="text-base font-semibold truncate">{c.code_display}</h4>
+                                                    <p className="text-sm text-muted-foreground">Registrado: {formatDate(c.onset_date)}</p>
+                                                </div>
+                                                <Badge variant={c.clinical_status === 'active' ? 'destructive' : 'secondary'} className="shrink-0 border-0">
+                                                    {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
+                                                </Badge>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        {/* ── PANEL: ALERGIAS ──────────────────────────────── */}
+                        <TabsContent value="allergies" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden space-y-6">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-xl font-semibold">Alergias e Intolerancias</h3>
+                                <Button variant="outline" size="sm">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Agregar Alergia
+                                </Button>
+                            </div>
+                            {initialAllergies.length === 0 ? (
+                                <EmptyState
+                                    icon={FlaskConical}
+                                    title="Sin alergias registradas"
+                                    message="No se han reportado alergias o intolerancias para este paciente."
+                                />
+                            ) : (
+                                <div className="space-y-3">
+                                    {initialAllergies.map((a) => (
+                                        <Card key={a.id}>
+                                            <CardContent className="p-4 flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+                                                    <FlaskConical className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="text-base font-semibold truncate">{a.code_display}</h4>
+                                                    <p className="text-sm text-muted-foreground truncate">{(Array.isArray(a.reactions) && (a.reactions as Array<{ text?: string }>)[0]?.text) || 'Reacción no especificada'}</p>
+                                                </div>
+                                                <Badge variant={a.criticality === 'high' ? 'destructive' : 'outline'} className="shrink-0 bg-background">
+                                                    {a.criticality === 'high' ? 'Alta' : 'Normal'}
+                                                </Badge>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        {/* ── PANEL: CONSULTAS ────────────────────────────── */}
+                        <TabsContent value="history" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden space-y-6">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-xl font-semibold">Historial de Consultas</h3>
+                                <Button variant="outline" size="sm" onClick={() => router.push(`/history?patientId=${patient.id}`)}>
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Nueva Consulta
+                                </Button>
+                            </div>
+                            {loadingEncounters ? (
+                                <div className="space-y-4">
+                                    <Skeleton className="h-24 w-full" />
+                                    <Skeleton className="h-24 w-full" />
+                                    <Skeleton className="h-24 w-full" />
+                                </div>
+                            ) : encounters.length === 0 ? (
+                                <EmptyState
+                                    icon={Calendar}
+                                    title="Sin consultas previas"
+                                    message="Este paciente aún no registra visitas o evoluciones clínicas."
+                                />
+                            ) : (
+                                <div className="grid grid-cols-1 gap-4">
+                                    {encounters.map((e) => (
+                                        <Card
+                                            key={e.id}
+                                            className="cursor-pointer hover:border-primary/40 hover:bg-accent/5 transition-all group overflow-hidden"
+                                            onClick={() => router.push(`/history?patientId=${patient.id}&encounterId=${e.id}`)}
+                                        >
+                                            <CardContent className="p-0">
+                                                <div className="flex items-start p-5 gap-4">
+                                                    <div className="w-12 h-12 rounded-xl bg-primary/5 group-hover:bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/10 transition-colors">
+                                                        <Calendar className="w-6 h-6" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <p className="font-semibold text-sm">{formatDate(e.start_time)}</p>
+                                                            <Badge variant={e.status === 'finished' ? 'outline' : 'default'} className={cn(
+                                                                "font-medium border-0 h-5 text-[10px]",
+                                                                e.status === 'finished' ? 'bg-emerald-500/10 text-emerald-700' : 'bg-primary/10 text-primary'
+                                                            )}>
+                                                                {e.status === 'finished' ? 'Completada' : 'En curso'}
+                                                            </Badge>
+                                                        </div>
+                                                        <div className="text-sm font-medium text-muted-foreground flex items-center gap-1.5 mb-2">
+                                                            <User className="w-3.5 h-3.5" />
+                                                            Dr. {e.practitioner?.name_family || 'No asignado'}
+                                                        </div>
+                                                        <p className="text-sm text-foreground/80 leading-relaxed line-clamp-2">
+                                                            {e.evolution_note || <span className="text-muted-foreground">Sin notas evolutivas registradas en esta consulta.</span>}
+                                                        </p>
+                                                    </div>
+                                                    <ChevronRight className="w-5 h-5 text-muted-foreground self-center group-hover:text-primary transition-colors" />
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        {/* ── PANEL: SIGNOS VITALES ───────────────────────── */}
+                        <TabsContent value="vitals" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden space-y-6">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-xl font-semibold">Signos Vitales</h3>
+                            </div>
+                            <EmptyState
+                                icon={Activity}
+                                title="Próximamente"
+                                message="Gráficas de evolución y tendencias de signos vitales estarán disponibles aquí en futuras versiones."
+                            />
+                        </TabsContent>
                     </div>
                 </div>
             </Tabs>

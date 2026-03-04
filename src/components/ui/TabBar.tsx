@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import { Button } from '@/components/ui/button';
 import { useTabStore } from '@/store/useTabStore';
-import { Close } from '@carbon/icons-react';
+import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function TabBar() {
     const { tabs, activeTabId, setActiveTab, removeTab } = useTabStore();
@@ -16,11 +17,7 @@ export default function TabBar() {
 
     const handleCloseTab = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-
-        // Let zustand do the heavy lifting of determining next active tab
         removeTab(id);
-
-        // We need the next tick so zustand is fully updated before we inspect it
         setTimeout(() => {
             const { activeTabId, tabs } = useTabStore.getState();
             if (activeTabId) {
@@ -29,41 +26,38 @@ export default function TabBar() {
                     router.push(nextTab.url);
                 }
             } else {
-                // If there are no tabs left, go back to the dashboard
                 router.push('/');
             }
         }, 0);
     };
 
-    return (
-        <div className="tab-bar">
-            <div className="tab-bar-scroll-area">
-                {tabs.map((tab) => {
-                    const isActive = tab.id === activeTabId;
-                    return (
-                        <div
-                            key={tab.id}
-                            className={`workspace-tab ${isActive ? 'workspace-tab--active' : ''}`}
-                        >
-                            <button
-                                className="workspace-tab__button"
-                                onClick={() => handleTabClick(tab.id, tab.url)}
-                                title={tab.title}
-                            >
-                                <span className="workspace-tab__title">{tab.title}</span>
-                            </button>
+    if (tabs.length === 0) return null;
 
-                            <button
-                                className="workspace-tab__close"
-                                onClick={(e) => handleCloseTab(e, tab.id)}
-                                aria-label="Cerrar pestaña"
-                            >
-                                <Close size={16} />
-                            </button>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
+    return (
+        <Tabs value={activeTabId || undefined} onValueChange={(val) => {
+            const tab = tabs.find(t => t.id === val);
+            if (tab) handleTabClick(tab.id, tab.url);
+        }} className="w-full">
+            <TabsList className="justify-start overflow-x-auto no-scrollbar max-w-full">
+                {tabs.map((tab) => (
+                    <TabsTrigger
+                        key={tab.id}
+                        value={tab.id}
+                        className="group relative flex items-center h-7 px-3 gap-2"
+                    >
+                        <span className="truncate max-w-[150px] text-xs">{tab.title}</span>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 rounded-sm opacity-0 group-hover:opacity-60 hover:opacity-100 hover:bg-muted transition-all shrink-0 p-0"
+                            onClick={(e) => handleCloseTab(e, tab.id)}
+                        >
+                            <X className="h-3 w-3" />
+                        </Button>
+                    </TabsTrigger>
+                ))}
+            </TabsList>
+        </Tabs>
     );
 }
+

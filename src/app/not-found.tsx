@@ -1,70 +1,34 @@
 import React from 'react';
 import Link from 'next/link';
-import { Button } from '@carbon/react';
-import { Home } from '@carbon/icons-react';
+import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100vh',
-            textAlign: 'center',
-            backgroundColor: 'var(--cds-background)',
-            color: 'var(--cds-text-primary)'
-        }}>
+        <div className="flex flex-col items-center justify-center min-h-screen text-center bg-background text-foreground p-4">
             {/* Brand Logo/Name */}
-            <div style={{ marginBottom: '3rem' }}>
-                <span style={{ fontSize: '2rem', fontWeight: 600, letterSpacing: '-0.01em' }}>
-                    clinic
-                </span>
-                <span style={{ fontSize: '2rem', fontWeight: 300, color: 'var(--clinicboard-accent)' }}>
-                    board
-                </span>
+            <div className="mb-12 flex items-center justify-center">
+                <span className="text-3xl font-bold tracking-tight">clinic</span>
+                <span className="text-3xl tracking-tight text-primary font-light">board</span>
             </div>
 
             {/* Error Code */}
-            <h1 style={{
-                fontSize: '8rem',
-                fontWeight: 300,
-                lineHeight: 1,
-                margin: 0,
-                color: 'var(--clinicboard-blue)'
-            }}>
+            <h1 className="text-9xl font-light leading-none m-0 text-primary mb-2">
                 404
             </h1>
 
             {/* Message */}
-            <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: 400,
-                marginBottom: '2rem',
-                color: 'var(--cds-text-secondary)'
-            }}>
+            <h2 className="text-2xl font-normal mb-8 text-muted-foreground">
                 Página no encontrada
             </h2>
 
-            <p style={{
-                maxWidth: '400px',
-                marginBottom: '3rem',
-                fontSize: '0.875rem',
-                lineHeight: 1.5,
-                color: 'var(--cds-text-placeholder)'
-            }}>
+            <p className="max-w-md mb-12 text-sm leading-relaxed text-muted-foreground/80">
                 Lo sentimos, la ruta que intentas acceder no existe o ha sido movida permanentemente.
             </p>
 
             {/* Action */}
-            <Link href="/" passHref legacyBehavior>
-                <Button
-                    kind="ghost"
-                    style={{ padding: '0 2rem' }}
-                >
-                    Volver al inicio
-                </Button>
-            </Link>
+            <Button variant="outline" className="px-8" asChild>
+                <Link href="/">Volver al inicio</Link>
+            </Button>
         </div>
     );
 }

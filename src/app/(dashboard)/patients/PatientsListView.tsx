@@ -1,186 +1,195 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useLayoutStore } from '@/store/useLayoutStore';
+import { cn } from '@/lib/utils';
+import { getPatientClinicalData, getEncounters } from '@/actions/patients';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { EncounterWithSpecialty, Condition, AllergyIntolerance, Patient } from '@/types/database.types';
 import {
-    Button,
-    Tag,
-    Pagination,
-    Tabs,
-    Tab,
-    TabList,
-    TabPanels,
-    TabPanel,
-    SkeletonText,
-    SkeletonPlaceholder,
-} from '@carbon/react';
-import {
-    Add,
-    UserAvatar,
-    Warning,
+    Plus,
+    User,
+    AlertTriangle,
+    AlertCircle,
     Stethoscope,
-    Medication,
     Activity,
     Calendar,
     ArrowRight,
-    UserFollow,
-} from '@carbon/icons-react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useLayoutStore } from '@/store/useLayoutStore';
-import { DetailCard } from '@/components/ui/DetailCard';
-import { getPatientClinicalData, getEncounters } from '@/actions/patients';
+    UserPlus,
+    MoreVertical,
+    Edit,
+    Trash
+} from 'lucide-react';
+import {
+} from "@/components/ui/dropdown-menu";
+
+// ─── JSONB column typed helpers ────────────────────────────────────────────────
+interface PatientTelecom { system?: string; value?: string }
+interface PatientAddress { text?: string }
+interface PatientIdentifier { value?: string }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 interface PatientsListViewProps {
-    patients: any[];
+    patients: Patient[];
     totalItems: number;
     page: number;
     pageSize: number;
 }
 
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-function formatDate(dateStr: string | null | undefined): string {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('es', {
-        day: '2-digit', month: 'short', year: 'numeric',
-    });
-}
-
-function calcAge(birthDate: string | null | undefined): string {
-    if (!birthDate) return '—';
-    const diff = Date.now() - new Date(birthDate).getTime();
-    return `${Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25))} años`;
-}
+import { formatDate, calcAge } from '@/lib/clinical';
 
 // ─── Empty state ───────────────────────────────────────────────────────────────
 function NoPatientSelected() {
     return (
-        <div className="pw-empty-state" role="status" aria-label="Sin paciente seleccionado">
-            <UserFollow size={32} className="pw-empty-state__icon" aria-hidden="true" />
-            <p className="pw-empty-state__title">Ningún paciente seleccionado</p>
-            <p className="pw-empty-state__hint">
-                Selecciona un paciente del panel lateral o usa <kbd>⌘K</kbd> para buscar
+        <div className="flex flex-col items-center justify-center h-64 text-muted-foreground bg-background rounded-lg border-2 border-dashed border-border/50 p-8 text-center mt-6">
+            <UserPlus className="w-12 h-12 mb-4 opacity-50" />
+            <p className="text-lg font-medium text-foreground mb-1">Ningún paciente seleccionado</p>
+            <p className="text-sm">
+                Selecciona un paciente o usa <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-xs border">⌘K</kbd> to search
             </p>
         </div>
     );
 }
 
+// ... the rest of the file content needs to be rewritten similarly, splitting into subcomponents.
+// Due to length, I will rewrite the essential structure in Tailwind.
+// ... 
+
 // ─── Tab: Resumen ──────────────────────────────────────────────────────────────
-function TabResumen({ patient }: { patient: any }) {
+function TabResumen({ patient }: { patient: Patient | null }) {
     if (!patient) return <NoPatientSelected />;
 
     const fullName = `${patient.name_given?.join(' ')} ${patient.name_family}`;
-    const phone = (patient.telecom as any[])?.find((t: any) => t.system === 'phone')?.value ?? '—';
-    const email = (patient.telecom as any[])?.find((t: any) => t.system === 'email')?.value ?? '—';
-    const address = (patient.address as any[])?.[0]?.text ?? '—';
-    const docId = (patient.identifiers as any[])?.[0]?.value ?? '—';
+    const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value ?? '—';
+    const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value ?? '—';
+    const address = (patient.address as PatientAddress[] | null)?.[0]?.text ?? '—';
+    const docId = Array.isArray(patient.identifiers) ? (patient.identifiers as PatientIdentifier[])[0]?.value ?? '—' : '—';
 
     return (
-        <div className="pw-tab-content">
-            {/* Patient card */}
-            <div className="pw-patient-card">
-                <div className="pw-patient-card__avatar" aria-hidden="true">
-                    <UserAvatar size={40} />
-                </div>
-                <div className="pw-patient-card__info">
-                    <h2 className="pw-patient-card__name">{fullName}</h2>
-                    <div className="pw-patient-card__meta">
-                        <span>{calcAge(patient.birth_date)}</span>
-                        <span className="pw-sep" aria-hidden="true">·</span>
-                        <span>{patient.gender === 'female' ? 'Femenino' : patient.gender === 'male' ? 'Masculino' : '—'}</span>
-                        <span className="pw-sep" aria-hidden="true">·</span>
-                        <Tag type="blue" size="sm">CI: {docId}</Tag>
-                        {patient.active
-                            ? <Tag type="green" size="sm">Activo</Tag>
-                            : <Tag type="warm-gray" size="sm">Inactivo</Tag>
-                        }
+        <div className="pt-6 space-y-6">
+            <Card>
+                <CardContent className="flex items-center gap-6 p-6">
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <User className="w-8 h-8" />
                     </div>
-                </div>
-            </div>
+                    <div>
+                        <h2 className="text-2xl font-bold tracking-tight mb-2">{fullName}</h2>
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                            <span>{calcAge(patient.birth_date)}</span>
+                            <span>·</span>
+                            <span>{patient.gender === 'female' ? 'Femenino' : patient.gender === 'male' ? 'Masculino' : '—'}</span>
+                            <span>·</span>
+                            <Badge variant="outline" className="font-mono">CI: {docId}</Badge>
+                            {patient.active ? (
+                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-0">Activo</Badge>
+                            ) : (
+                                <Badge variant="secondary">Inactivo</Badge>
+                            )}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
-            {/* Info grid */}
-            <dl className="pw-info-grid">
-                <div className="pw-info-cell">
-                    <dt className="pw-info-cell__label">Fecha de nacimiento</dt>
-                    <dd className="pw-info-cell__value">{formatDate(patient.birth_date)}</dd>
-                </div>
-                <div className="pw-info-cell">
-                    <dt className="pw-info-cell__label">Teléfono</dt>
-                    <dd className="pw-info-cell__value">{phone}</dd>
-                </div>
-                <div className="pw-info-cell">
-                    <dt className="pw-info-cell__label">Correo electrónico</dt>
-                    <dd className="pw-info-cell__value">{email}</dd>
-                </div>
-                <div className="pw-info-cell">
-                    <dt className="pw-info-cell__label">Dirección</dt>
-                    <dd className="pw-info-cell__value">{address}</dd>
-                </div>
-            </dl>
+            <Card className="border-border/10 bg-transparent shadow-none">
+                <CardContent className="p-6">
+                    <dl className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div>
+                            <dt className="text-xs font-medium text-muted-foreground mb-1">Fecha de nacimiento</dt>
+                            <dd className="font-medium">{formatDate(patient.birth_date)}</dd>
+                        </div>
+                        <div>
+                            <dt className="text-xs font-medium text-muted-foreground mb-1">Teléfono</dt>
+                            <dd className="font-medium">{phone}</dd>
+                        </div>
+                        <div>
+                            <dt className="text-xs font-medium text-muted-foreground mb-1">Correo electrónico</dt>
+                            <dd className="font-medium truncate">{email}</dd>
+                        </div>
+                        <div>
+                            <dt className="text-xs font-medium text-muted-foreground mb-1">Dirección</dt>
+                            <dd className="font-medium line-clamp-1">{address}</dd>
+                        </div>
+                    </dl>
+                </CardContent>
+            </Card>
         </div>
     );
 }
 
 // ─── Tab: Condiciones ──────────────────────────────────────────────────────────
 function TabCondiciones({ patientId }: { patientId: string | null }) {
-    const [conditions, setConditions] = useState<any[]>([]);
+    const [conditions, setConditions] = useState<Condition[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (!patientId) return;
-        setLoading(true);
-        getPatientClinicalData(patientId).then(data => {
-            setConditions(data.conditions);
-            setLoading(false);
-        });
+        let cancelled = false;
+        (async () => {
+            setLoading(true);
+            try {
+                const data = await getPatientClinicalData(patientId);
+                if (!cancelled) setConditions(data.conditions as Condition[]);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
     }, [patientId]);
 
     if (!patientId) return <NoPatientSelected />;
 
     return (
-        <div className="pw-tab-content">
-            <div className="pw-section-header">
-                <span className="pw-section-header__title">Condiciones activas</span>
-                <span className="pw-section-header__count">{conditions.length}</span>
+        <div className="pt-6">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b">
+                <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-semibold">Condiciones activas</h3>
+                    <Badge variant="secondary" className="font-mono">{conditions.length}</Badge>
+                </div>
             </div>
+
             {loading ? (
-                <div className="pw-skeleton-list">
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className="pw-skeleton-item">
-                            <SkeletonText heading={false} lineCount={2} />
-                        </div>
-                    ))}
+                <div className="space-y-4">
+                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                 </div>
             ) : conditions.length === 0 ? (
-                <div className="pw-empty-state pw-empty-state--sm" role="status">
-                    <Stethoscope size={24} aria-hidden="true" />
-                    <p>Sin condiciones registradas</p>
+                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground bg-background border border-dashed rounded-xl">
+                    <Stethoscope className="w-10 h-10 mb-3 opacity-20" />
+                    <p className="text-sm">Sin condiciones registradas</p>
                 </div>
             ) : (
-                <ul className="pw-condition-list" role="list">
-                    {conditions.map((c: any) => (
-                        <li key={c.id} className="pw-condition-item" role="listitem">
-                            <div className="pw-condition-item__code">
-                                <Tag type="teal" size="sm">{c.code || '—'}</Tag>
-                            </div>
-                            <div className="pw-condition-item__info">
-                                <span className="pw-condition-item__text">{c.code_text || 'Sin descripción'}</span>
-                                {c.onset_date && (
-                                    <span className="pw-condition-item__date">
-                                        Desde: {formatDate(c.onset_date)}
-                                    </span>
+                <div className="grid grid-cols-1 gap-3">
+                    {conditions.map((c) => (
+                        <Card key={c.id} className="hover:border-primary/30 transition-colors">
+                            <CardContent className="flex items-start justify-between p-4">
+                                <div className="flex gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary shrink-0 border border-primary/10">
+                                        <Stethoscope className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Badge variant="outline" className="font-mono text-[10px] h-5">{c.code || 'S/C'}</Badge>
+                                            <p className="font-semibold text-sm">{c.code_display || 'Sin descripción'}</p>
+                                        </div>
+                                        {c.onset_date && <p className="text-xs text-muted-foreground">Desde: {formatDate(c.onset_date)}</p>}
+                                    </div>
+                                </div>
+                                {c.clinical_status && (
+                                    <Badge variant={c.clinical_status === 'active' ? 'outline' : 'secondary'} className={cn(
+                                        "font-medium border-0 h-6",
+                                        c.clinical_status === 'active' ? 'bg-emerald-500/10 text-emerald-700' : 'bg-muted text-muted-foreground'
+                                    )}>
+                                        {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
+                                    </Badge>
                                 )}
-                            </div>
-                            {c.clinical_status && (
-                                <Tag
-                                    type={c.clinical_status === 'active' ? 'green' : 'warm-gray'}
-                                    size="sm"
-                                >
-                                    {c.clinical_status}
-                                </Tag>
-                            )}
-                        </li>
+                            </CardContent>
+                        </Card>
                     ))}
-                </ul>
+                </div>
             )}
         </div>
     );
@@ -188,61 +197,70 @@ function TabCondiciones({ patientId }: { patientId: string | null }) {
 
 // ─── Tab: Alergias ─────────────────────────────────────────────────────────────
 function TabAlergias({ patientId }: { patientId: string | null }) {
-    const [allergies, setAllergies] = useState<any[]>([]);
+    const [allergies, setAllergies] = useState<AllergyIntolerance[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (!patientId) return;
-        setLoading(true);
-        getPatientClinicalData(patientId).then(data => {
-            setAllergies(data.allergies);
-            setLoading(false);
-        });
+        let cancelled = false;
+        (async () => {
+            setLoading(true);
+            try {
+                const data = await getPatientClinicalData(patientId);
+                if (!cancelled) setAllergies(data.allergies as AllergyIntolerance[]);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
     }, [patientId]);
 
     if (!patientId) return <NoPatientSelected />;
 
     return (
-        <div className="pw-tab-content">
-            <div className="pw-section-header pw-section-header--danger">
-                <Warning size={16} aria-hidden="true" />
-                <span className="pw-section-header__title">Alergias e intolerancias</span>
-                <span className="pw-section-header__count">{allergies.length}</span>
+        <div className="pt-6">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b text-destructive">
+                <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5" />
+                    <h3 className="text-lg font-semibold text-foreground">Alergias e intolerancias</h3>
+                    <Badge variant="destructive" className="font-mono">{allergies.length}</Badge>
+                </div>
             </div>
+
             {loading ? (
-                <div className="pw-skeleton-list">
-                    {[1, 2].map(i => (
-                        <div key={i} className="pw-skeleton-item">
-                            <SkeletonText heading={false} lineCount={2} />
-                        </div>
-                    ))}
+                <div className="space-y-4">
+                    {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                 </div>
             ) : allergies.length === 0 ? (
-                <div className="pw-empty-state pw-empty-state--sm" role="status">
-                    <Warning size={24} aria-hidden="true" />
-                    <p>Sin alergias registradas</p>
+                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground bg-background border border-dashed rounded-xl">
+                    <AlertTriangle className="w-10 h-10 mb-3 opacity-20" />
+                    <p className="text-sm">Sin alergias registradas</p>
                 </div>
             ) : (
-                <ul className="pw-condition-list" role="list">
-                    {allergies.map((a: any) => (
-                        <li key={a.id} className="pw-condition-item pw-condition-item--allergy" role="listitem">
-                            <div className="pw-condition-item__code">
-                                <Tag type="red" size="sm">ALERGIA</Tag>
-                            </div>
-                            <div className="pw-condition-item__info">
-                                <span className="pw-condition-item__text">{a.code_text || 'Sin descripción'}</span>
-                                {a.criticality && (
-                                    <span className="pw-condition-item__date">
-                                        Criticidad: {a.criticality}
-                                    </span>
+                <div className="grid grid-cols-1 gap-3">
+                    {allergies.map((a) => (
+                        <Card key={a.id} className="bg-destructive/5 border-destructive/20 hover:bg-destructive/10 transition-colors">
+                            <CardContent className="flex items-start justify-between p-4">
+                                <div className="flex gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+                                        <AlertCircle className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-sm text-destructive tracking-tight leading-none mb-1">{a.code_display || 'Sin descripción'}</p>
+                                        <p className="text-xs text-destructive/70 font-medium">
+                                            {a.criticality ? `Prioridad ${a.criticality}` : 'Alergía registrada'}
+                                        </p>
+                                    </div>
+                                </div>
+                                {a.category && (
+                                    <Badge variant="outline" className="border-destructive/20 text-destructive text-[10px] uppercase font-mono bg-destructive/5 h-6">
+                                        {a.category}
+                                    </Badge>
                                 )}
-                            </div>
-                            {a.category && (
-                                <Tag type="warm-gray" size="sm">{a.category}</Tag>
-                            )}
-                        </li>
+                            </CardContent>
+                        </Card>
                     ))}
-                </ul>
+                </div>
             )}
         </div>
     );
@@ -250,115 +268,119 @@ function TabAlergias({ patientId }: { patientId: string | null }) {
 
 // ─── Tab: Encuentros ───────────────────────────────────────────────────────────
 function TabEncuentros({ patientId, router }: { patientId: string | null; router: ReturnType<typeof useRouter> }) {
-    const [encounters, setEncounters] = useState<any[]>([]);
+    const [encounters, setEncounters] = useState<EncounterWithSpecialty[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (!patientId) return;
-        setLoading(true);
-        getEncounters(patientId).then(({ data }) => {
-            setEncounters(data || []);
-            setLoading(false);
-        });
+        // Avoid cascading setState: start fetch immediately, update state once done
+        let cancelled = false;
+        (async () => {
+            setLoading(true);
+            try {
+                const { data } = await getEncounters(patientId);
+                if (!cancelled) setEncounters((data || []) as EncounterWithSpecialty[]);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
     }, [patientId]);
 
     if (!patientId) return <NoPatientSelected />;
 
     return (
-        <div className="pw-tab-content">
-            <div className="pw-section-header">
-                <Activity size={16} aria-hidden="true" />
-                <span className="pw-section-header__title">Historial de consultas</span>
-                <span className="pw-section-header__count">{encounters.length}</span>
+        <div className="pt-6">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b">
+                <div className="flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold">Historial de consultas</h3>
+                    <Badge variant="secondary" className="font-mono">{encounters.length}</Badge>
+                </div>
             </div>
+
             {loading ? (
-                <div className="pw-skeleton-list">
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className="pw-skeleton-item">
-                            <SkeletonText heading={false} lineCount={3} />
-                        </div>
-                    ))}
+                <div className="space-y-4">
+                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
                 </div>
             ) : encounters.length === 0 ? (
-                <div className="pw-empty-state pw-empty-state--sm" role="status">
-                    <Calendar size={24} aria-hidden="true" />
-                    <p>Sin consultas registradas</p>
+                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground bg-background border border-dashed rounded-xl">
+                    <Activity className="w-10 h-10 mb-3 opacity-20" />
+                    <p className="text-sm">Sin consultas registradas</p>
                 </div>
             ) : (
-                <ul className="pw-encounter-list" role="list">
-                    {encounters.map((enc: any) => (
-                        <li key={enc.id} className="pw-encounter-item" role="listitem">
-                            <div className="pw-encounter-item__header">
-                                <span className="pw-encounter-item__date">{formatDate(enc.start_time)}</span>
-                                <Tag
-                                    type={enc.status === 'finished' ? 'green' : 'blue'}
-                                    size="sm"
-                                >
-                                    {enc.status === 'finished' ? 'Completada' : 'En curso'}
-                                </Tag>
-                            </div>
-                            <p className="pw-encounter-item__reason">
-                                {enc.reason_code?.[0]?.text || 'Consulta general'}
-                            </p>
-                            {enc.evolution_note && (
-                                <p className="pw-encounter-item__preview">
-                                    {enc.evolution_note.substring(0, 100)}…
-                                </p>
-                            )}
-                            <button
-                                className="pw-encounter-item__link"
-                                onClick={() => router.push(`/history?patientId=${patientId}`)}
-                                aria-label={`Abrir historia clínica del encuentro del ${formatDate(enc.start_time)}`}
-                            >
-                                Ver en Historia Clínica
-                                <ArrowRight size={14} aria-hidden="true" />
-                            </button>
-                        </li>
+                <div className="grid grid-cols-1 gap-4">
+                    {encounters.map((enc) => (
+                        <Card key={enc.id} className="hover:border-primary/40 transition-all group overflow-hidden">
+                            <CardContent className="p-0">
+                                <div className="flex items-start p-5 gap-4">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/5 group-hover:bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/10 transition-colors">
+                                        <Calendar className="w-6 h-6" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <p className="font-semibold text-sm">{formatDate(enc.start_time)}</p>
+                                            <Badge variant={enc.status === 'finished' ? 'outline' : 'default'} className={cn(
+                                                "font-medium border-0 h-5 text-[10px]",
+                                                enc.status === 'finished' ? 'bg-emerald-500/10 text-emerald-700' : 'bg-primary/10 text-primary'
+                                            )}>
+                                                {enc.status === 'finished' ? 'Completada' : 'En curso'}
+                                            </Badge>
+                                        </div>
+                                        <p className="font-medium text-sm mb-1 line-clamp-1">{(Array.isArray(enc.reason_code) ? (enc.reason_code as Array<{ text?: string }>)[0]?.text : undefined) || 'Consulta general'}</p>
+                                        {enc.evolution_note && (
+                                            <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
+                                                {enc.evolution_note}
+                                            </p>
+                                        )}
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 px-0 text-primary hover:bg-transparent hover:text-primary/80 gap-1 text-xs font-semibold"
+                                            onClick={() => router.push(`/history?patientId=${patientId}`)}
+                                        >
+                                            Ver en Historia Clínica <ArrowRight className="w-3.5 h-3.5" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
                     ))}
-                </ul>
+                </div>
             )}
         </div>
     );
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
+import PatientsSidebar from './PatientsSidebar';
+
 export default function PatientsListView({ patients, totalItems, page, pageSize }: PatientsListViewProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { setSecondaryPanel } = useLayoutStore();
 
-    // Track selected patient for tab content
-    const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
+    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
-    // Keep side panel in sync
     useEffect(() => {
         setSecondaryPanel(
-            <div style={{ padding: '0.5rem 0' }}>
-                {patients.map((p: any) => (
-                    <DetailCard
-                        key={p.id}
-                        title={`${p.name_family}, ${p.name_given?.join(' ')}`}
-                        subtitle={(p.identifiers as any[])?.[0]?.value || 'Sin ID'}
-                        meta={p.birth_date ? formatDate(p.birth_date) : '—'}
-                        extra={
-                            <div style={{ fontSize: '0.75rem', marginTop: '4px' }}>
-                                {(p.telecom as any[])?.[0]?.value || 'Sin teléfono'}
-                            </div>
-                        }
-                        tags={p.active ? ['Activo'] : ['Inactivo']}
-                        icon={<UserAvatar size={20} style={{ fill: 'var(--cds-text-secondary)' }} />}
-                        onClick={() => {
-                            setSelectedPatient(p);
-                            router.push(`/patients/${p.id}`);
-                        }}
-                        active={pathname === `/patients/${p.id}`}
-                    />
-                ))}
-            </div>,
+            <PatientsSidebar
+                patients={patients}
+                loading={false}
+                selectedId={selectedPatient?.id || null}
+                onSelect={(id) => {
+                    const p = patients.find(pat => pat.id === id);
+                    if (p) setSelectedPatient(p);
+                    router.push(`/patients/${id}`);
+                }}
+                onNew={() => router.push('/patients/new')}
+                searchQuery={searchParams.get('q') || ''}
+                onSearchChange={(q) => updateParams({ q })}
+            />,
             'Pacientes'
         );
-    }, [patients, pathname]);
+    }, [patients, selectedPatient, searchParams]);
 
     const updateParams = (updates: Record<string, string | number>) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -369,70 +391,68 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
         router.push(`${pathname}?${params.toString()}`);
     };
 
-    const handlePagination = ({ page: p, pageSize: ps }: { page: number; pageSize: number }) => {
-        updateParams({ page: p, pageSize: ps });
+    const handlePagination = (newPage: number) => {
+        updateParams({ page: newPage });
     };
 
     return (
-        <section aria-label="Área de trabajo — Pacientes" className="pw-root">
-
-            {/* ── Workspace Header ──────────────────────────────────────── */}
-            <header className="pw-workspace-header" role="banner">
-                <div className="pw-workspace-header__top">
-                    <div className="pw-workspace-header__title-block">
-                        <h1 className="pw-workspace-header__title">Pacientes</h1>
-                        <p className="pw-workspace-header__subtitle">
+        <section className="flex flex-col h-full bg-background">
+            <header className="px-8 py-6 pb-0 flex-shrink-0">
+                <div className="flex items-start justify-between mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight mb-1">Pacientes</h1>
+                        <p className="text-muted-foreground">
                             <strong>{totalItems}</strong> paciente{totalItems !== 1 ? 's' : ''} registrado{totalItems !== 1 ? 's' : ''}
                         </p>
                     </div>
-                    <Button
-                        kind="primary"
-                        renderIcon={Add}
-                        onClick={() => router.push('/patients/new')}
-                        aria-label="Registrar nuevo paciente"
-                    >
-                        Nuevo Paciente
+                    <Button onClick={() => router.push('/patients/new')} className="gap-2">
+                        <Plus className="w-4 h-4" /> Nuevo Paciente
                     </Button>
                 </div>
 
-                {/* ── Carbon Tabs ─ */}
-                <Tabs aria-label="Secciones del paciente">
-                    <TabList aria-label="Secciones" className="pw-tab-list">
-                        <Tab renderIcon={UserAvatar}>Resumen</Tab>
-                        <Tab renderIcon={Stethoscope}>Condiciones</Tab>
-                        <Tab renderIcon={Warning}>Alergias</Tab>
-                        <Tab renderIcon={Activity}>Encuentros</Tab>
-                    </TabList>
-                    <TabPanels>
-                        <TabPanel>
+                <Tabs defaultValue="resumen" className="w-full flex-1 flex flex-col min-h-0">
+                    <TabsList className="mb-4">
+                        {[
+                            { value: 'resumen', label: 'Resumen', icon: User },
+                            { value: 'condiciones', label: 'Condiciones', icon: Stethoscope },
+                            { value: 'alergias', label: 'Alergias', icon: AlertTriangle },
+                            { value: 'encuentros', label: 'Encuentros', icon: Activity },
+                        ].map((tab) => (
+                            <TabsTrigger
+                                key={tab.value}
+                                value={tab.value}
+                                className="gap-2"
+                            >
+                                <tab.icon className="w-3.5 h-3.5" /> {tab.label}
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+
+                    <div className="flex-1 overflow-y-auto min-h-0 py-4 pb-20">
+                        <TabsContent value="resumen" className="mt-0 outline-none">
                             <TabResumen patient={selectedPatient} />
-                        </TabPanel>
-                        <TabPanel>
+                        </TabsContent>
+                        <TabsContent value="condiciones" className="mt-0 outline-none">
                             <TabCondiciones patientId={selectedPatient?.id ?? null} />
-                        </TabPanel>
-                        <TabPanel>
+                        </TabsContent>
+                        <TabsContent value="alergias" className="mt-0 outline-none">
                             <TabAlergias patientId={selectedPatient?.id ?? null} />
-                        </TabPanel>
-                        <TabPanel>
+                        </TabsContent>
+                        <TabsContent value="encuentros" className="mt-0 outline-none">
                             <TabEncuentros patientId={selectedPatient?.id ?? null} router={router} />
-                        </TabPanel>
-                    </TabPanels>
+                        </TabsContent>
+                    </div>
                 </Tabs>
             </header>
 
-            {/* ── Pagination ────────────────────────────────────────────── */}
+            {/* Pagination */}
             {totalItems > pageSize && (
-                <div className="pw-pagination-bar">
-                    <Pagination
-                        backwardText="Anterior"
-                        forwardText="Siguiente"
-                        itemsPerPageText="Por página:"
-                        onChange={handlePagination}
-                        page={page}
-                        pageSize={pageSize}
-                        pageSizes={[10, 25, 50]}
-                        totalItems={totalItems}
-                    />
+                <div className="sticky bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border/10 flex items-center justify-between z-20">
+                    <p className="text-xs font-medium text-muted-foreground/80">Mostrando página {page}</p>
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => handlePagination(page - 1)} disabled={page <= 1} className="h-8 text-xs">Anterior</Button>
+                        <Button variant="ghost" size="sm" onClick={() => handlePagination(page + 1)} disabled={page * pageSize >= totalItems} className="h-8 text-xs">Siguiente</Button>
+                    </div>
                 </div>
             )}
         </section>

@@ -1,37 +1,44 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Button, Tag, Loading } from '@carbon/react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
     Stethoscope,
-    Add,
+    Plus,
     ChevronDown,
     ChevronRight,
-    Chat,
+    MessageSquare,
     Folder,
-    DocumentMultiple_01,
-    Time,
-    Checkmark,
+    FileText,
+    Clock,
+    CheckCircle2,
     Search,
-} from '@carbon/icons-react';
+} from 'lucide-react';
+import {
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarMenuBadge,
+    SidebarMenuAction,
+} from '@/components/ui/sidebar';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+
+import type { EncounterWithSpecialty, Patient } from '@/types/database.types';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
-interface EncounterWithSpecialty {
-    id: string;
-    start_time: string;
-    evolution_note?: string;
-    status?: string;
-    reason_code?: any[];
-    practitioner?: {
-        name_given?: string[];
-        name_family?: string;
-        specialty?: string;
-    };
-}
 
 interface SpecialtySidebarProps {
-    selectedPatient: any;
+    selectedPatient: Patient | null;
     encounters: EncounterWithSpecialty[];
     isLoading: boolean;
     activeEncounterId: string | null;
@@ -54,8 +61,7 @@ function getSpecialtyLabel(specialty: string | undefined | null): string {
     return specialty.trim();
 }
 
-// Map specialty → Carbon icon (fallback: Stethoscope)
-const SPECIALTY_ICONS: Record<string, React.ComponentType<any>> = {
+const SPECIALTY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
     'Cardiología': Stethoscope,
     'Medicina Interna': Stethoscope,
     'Medicina General': Stethoscope,
@@ -68,52 +74,7 @@ const SPECIALTY_ICONS: Record<string, React.ComponentType<any>> = {
 
 function SpecialtyIcon({ specialty }: { specialty: string }) {
     const Icon = SPECIALTY_ICONS[specialty] ?? Stethoscope;
-    return <Icon size={16} aria-hidden="true" />;
-}
-
-// ─── EncounterRow ───────────────────────────────────────────────────────────────
-
-function EncounterRow({
-    enc,
-    isActive,
-    onClick,
-}: {
-    enc: EncounterWithSpecialty;
-    isActive: boolean;
-    onClick: () => void;
-}) {
-    const status = enc.status || 'finished';
-    const reasonText = Array.isArray(enc.reason_code) && enc.reason_code.length > 0
-        ? enc.reason_code[0]?.text || enc.reason_code[0]?.code || null
-        : null;
-    const preview = enc.evolution_note
-        ? enc.evolution_note.slice(0, 60) + (enc.evolution_note.length > 60 ? '…' : '')
-        : 'Sin nota clínica';
-
-    return (
-        <button
-            className={`hc-enc-row${isActive ? ' hc-enc-row--active' : ''}`}
-            onClick={onClick}
-            aria-selected={isActive}
-            role="option"
-        >
-            <span className={`hc-enc-row__bar hc-enc-row__bar--${status}`} aria-hidden="true" />
-            <span className="hc-enc-row__body">
-                <span className="hc-enc-row__top">
-                    <span className="hc-enc-row__date">{formatShortDate(enc.start_time)}</span>
-                    {status === 'finished' ? (
-                        <Checkmark size={16} aria-label="Finalizado" className="hc-enc-row__status-icon hc-enc-row__status-icon--done" />
-                    ) : (
-                        <Time size={16} aria-label="En curso" className="hc-enc-row__status-icon hc-enc-row__status-icon--pending" />
-                    )}
-                </span>
-                {reasonText && (
-                    <span className="hc-enc-row__reason">{reasonText}</span>
-                )}
-                <span className="hc-enc-row__preview">{preview}</span>
-            </span>
-        </button>
-    );
+    return <Icon className="w-4 h-4" />;
 }
 
 // ─── SpecialtyGroup ─────────────────────────────────────────────────────────────
@@ -131,78 +92,76 @@ function SpecialtyGroup({
     onSelectEncounter: (id: string | null, enc: EncounterWithSpecialty | null) => void;
     defaultOpen?: boolean;
 }) {
-    const [historialOpen, setHistorialOpen] = useState(defaultOpen);
-    const [documentsOpen, setDocumentsOpen] = useState(false);
-
     return (
-        <div className="hc-spec-group" role="group" aria-label={`Especialidad: ${specialty}`}>
-            {/* Specialty header — static label, not collapsible at this level */}
-            <div className="hc-spec-group__header">
-                <SpecialtyIcon specialty={specialty} />
-                <span className="hc-spec-group__name">{specialty}</span>
-                <Tag
-                    type="cool-gray"
-                    size="sm"
-                    className="hc-spec-group__badge"
-                    aria-label={`${encounters.length} encuentros`}
-                >
+        <SidebarGroup className="py-2">
+            <SidebarGroupLabel className="justify-between px-2 text-foreground font-semibold h-8">
+                <div className="flex items-center gap-2">
+                    <SpecialtyIcon specialty={specialty} />
+                    <span>{specialty}</span>
+                </div>
+                <Badge variant="secondary" className="h-5 px-1.5 min-w-5 justify-center rounded-full text-[10px] font-bold">
                     {encounters.length}
-                </Tag>
-            </div>
+                </Badge>
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+                <SidebarMenu>
+                    <Collapsible defaultOpen={defaultOpen} className="group/collapsible">
+                        <SidebarMenuItem>
+                            <CollapsibleTrigger asChild>
+                                <SidebarMenuButton className="px-4 text-muted-foreground hover:text-foreground">
+                                    <FileText className="w-4 h-4" />
+                                    <span>Historial</span>
+                                    <ChevronRight className="ml-auto w-4 h-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                                </SidebarMenuButton>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <div className="pl-6 pr-2 space-y-0.5 mt-1 border-l ml-6">
+                                    {encounters.map(enc => (
+                                        <button
+                                            key={enc.id}
+                                            onClick={() => onSelectEncounter(enc.id, enc)}
+                                            className={`w-full text-left p-2 rounded-md transition-colors text-xs flex flex-col gap-1 ${activeEncounterId === enc.id
+                                                ? 'bg-accent font-medium text-accent-foreground shadow-sm'
+                                                : 'hover:bg-muted text-muted-foreground'
+                                                }`}
+                                        >
+                                            <div className="flex justify-between items-center w-full">
+                                                <span className={activeEncounterId === enc.id ? "text-primary-foreground" : ""}>{formatShortDate(enc.start_time)}</span>
+                                                {enc.status === 'finished' ? (
+                                                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                                                ) : (
+                                                    <Clock className="w-3 h-3 text-amber-500" />
+                                                )}
+                                            </div>
+                                            <p className="line-clamp-1 opacity-70">
+                                                {enc.evolution_note || 'Sin nota clínica'}
+                                            </p>
+                                        </button>
+                                    ))}
+                                </div>
+                            </CollapsibleContent>
+                        </SidebarMenuItem>
+                    </Collapsible>
 
-            {/* Sub-menu: Historial */}
-            <div className="hc-spec-submenu">
-                <button
-                    className="hc-spec-submenu__toggle"
-                    aria-expanded={historialOpen}
-                    onClick={() => setHistorialOpen(o => !o)}
-                >
-                    {historialOpen
-                        ? <ChevronDown size={16} aria-hidden="true" />
-                        : <ChevronRight size={16} aria-hidden="true" />
-                    }
-                    <DocumentMultiple_01 size={16} aria-hidden="true" />
-                    <span>Historial</span>
-                    <span className="hc-spec-submenu__count">{encounters.length}</span>
-                </button>
-
-                {historialOpen && (
-                    <div className="hc-spec-submenu__body" role="listbox" aria-label={`Historial de ${specialty}`}>
-                        {encounters.map(enc => (
-                            <EncounterRow
-                                key={enc.id}
-                                enc={enc}
-                                isActive={activeEncounterId === enc.id}
-                                onClick={() => onSelectEncounter(enc.id, enc)}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* Sub-menu: Documentos (placeholder) */}
-            <div className="hc-spec-submenu">
-                <button
-                    className="hc-spec-submenu__toggle"
-                    aria-expanded={documentsOpen}
-                    onClick={() => setDocumentsOpen(o => !o)}
-                >
-                    {documentsOpen
-                        ? <ChevronDown size={16} aria-hidden="true" />
-                        : <ChevronRight size={16} aria-hidden="true" />
-                    }
-                    <Folder size={16} aria-hidden="true" />
-                    <span>Documentos</span>
-                    <span className="hc-spec-submenu__count">0</span>
-                </button>
-
-                {documentsOpen && (
-                    <div className="hc-spec-submenu__body hc-spec-submenu__body--empty" role="status">
-                        <span className="hc-spec-submenu__empty-text">Sin documentos registrados</span>
-                    </div>
-                )}
-            </div>
-        </div>
+                    <Collapsible className="group/collapsible">
+                        <SidebarMenuItem>
+                            <CollapsibleTrigger asChild>
+                                <SidebarMenuButton className="px-4 text-muted-foreground hover:text-foreground">
+                                    <Folder className="w-4 h-4" />
+                                    <span>Documentos</span>
+                                    <ChevronRight className="ml-auto w-4 h-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                                </SidebarMenuButton>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <div className="pl-10 pr-2 py-2 text-xs text-muted-foreground/60">
+                                    Sin documentos registrados
+                                </div>
+                            </CollapsibleContent>
+                        </SidebarMenuItem>
+                    </Collapsible>
+                </SidebarMenu>
+            </SidebarGroupContent>
+        </SidebarGroup>
     );
 }
 
@@ -216,7 +175,6 @@ export default function SpecialtySidebar({
     onSelectEncounter,
     onNewEncounter,
 }: SpecialtySidebarProps) {
-    // Group encounters by specialty
     const grouped = useMemo(() => {
         const map = new Map<string, EncounterWithSpecialty[]>();
         for (const enc of encounters) {
@@ -224,7 +182,6 @@ export default function SpecialtySidebar({
             if (!map.has(key)) map.set(key, []);
             map.get(key)!.push(enc);
         }
-        // Sort specialties alphabetically, but put "Medicina General" last
         return Array.from(map.entries()).sort(([a], [b]) => {
             if (a === 'Medicina General') return 1;
             if (b === 'Medicina General') return -1;
@@ -232,59 +189,65 @@ export default function SpecialtySidebar({
         });
     }, [encounters]);
 
+    if (!selectedPatient) {
+        return (
+            <div className="flex flex-col items-center justify-center h-40 text-center p-6 text-muted-foreground">
+                <Search className="w-10 h-10 opacity-20 mb-3" />
+                <p className="text-xs">Selecciona un paciente para ver su historial</p>
+            </div>
+        );
+    }
+
+    if (isLoading) {
+        return (
+            <div className="p-4 space-y-8">
+                {[1, 2].map(i => (
+                    <div key={i} className="space-y-4">
+                        <Skeleton className="h-5 w-32" />
+                        <div className="space-y-2 pl-4 border-l ml-2">
+                            <Skeleton className="h-8 w-full" />
+                            <Skeleton className="h-8 w-full" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
     return (
-        <div className="hc-sidebar-inner" aria-label="Panel de especialidades">
-            {/* Header */}
-            <div className="hc-sidebar__header">
-                <div className="hc-sidebar__badge-wrapper">
-                    {encounters.length > 0 && (
-                        <span className="hc-sidebar__badge" aria-label={`${encounters.length} encuentros totales`}>
-                            {encounters.length}
-                        </span>
-                    )}
-                </div>
+        <div className="flex flex-col h-full bg-sidebar/50">
+            <div className="px-4 py-3 flex items-center justify-between border-b bg-sidebar">
+                <h3 className="text-xs font-semibold text-muted-foreground">
+                    Atenciones
+                </h3>
                 <Button
-                    kind="ghost"
-                    size="sm"
-                    hasIconOnly
-                    renderIcon={Add}
-                    iconDescription="Nueva consulta"
-                    tooltipAlignment="end"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 rounded-md hover:bg-primary/10 hover:text-primary transition-colors"
                     onClick={onNewEncounter}
-                    disabled={!selectedPatient}
-                    aria-label="Nueva consulta"
-                />
+                    title="Nueva consulta"
+                >
+                    <Plus className="w-4 h-4" />
+                </Button>
             </div>
 
-            {/* Body */}
-            <div className="hc-sidebar__body">
-                {!selectedPatient ? (
-                    <div className="hc-empty-state hc-empty-state--sm" role="status">
-                        <Search size={32} aria-hidden="true" />
-                        <p>Sin paciente seleccionado</p>
-                    </div>
-                ) : isLoading ? (
-                    <div className="hc-sidebar__loading" aria-live="polite" aria-busy="true">
-                        <Loading withOverlay={false} small description="Cargando historial..." />
-                    </div>
-                ) : encounters.length === 0 ? (
-                    <div className="hc-empty-state hc-empty-state--sm" role="status">
-                        <Chat size={32} aria-hidden="true" />
-                        <p>Sin encuentros previos</p>
+            <div className="flex-1 overflow-y-auto custom-scrollbar pt-2">
+                {encounters.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground opacity-60">
+                        <MessageSquare className="w-8 h-8 mb-2 opacity-20" />
+                        <p className="text-xs">Sin registros previos</p>
                     </div>
                 ) : (
-                    <div className="hc-spec-list">
-                        {grouped.map(([specialty, encs], index) => (
-                            <SpecialtyGroup
-                                key={specialty}
-                                specialty={specialty}
-                                encounters={encs}
-                                activeEncounterId={activeEncounterId}
-                                onSelectEncounter={onSelectEncounter}
-                                defaultOpen={index === 0}
-                            />
-                        ))}
-                    </div>
+                    grouped.map(([specialty, encs], index) => (
+                        <SpecialtyGroup
+                            key={specialty}
+                            specialty={specialty}
+                            encounters={encs}
+                            activeEncounterId={activeEncounterId}
+                            onSelectEncounter={onSelectEncounter}
+                            defaultOpen={index === 0}
+                        />
+                    ))
                 )}
             </div>
         </div>

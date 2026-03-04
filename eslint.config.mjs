@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Scratch test files
+    "zod-test.js",
+    // Supabase Edge Functions use Deno runtime — exclude from Next.js ESLint
+    "supabase/functions/**",
   ]),
 ]);
 

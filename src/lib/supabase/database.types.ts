@@ -64,6 +64,24 @@ export type Database = {
                     },
                 ]
             }
+            cie10: {
+                Row: {
+                    code: string
+                    description: string
+                    search_vector: string | null
+                }
+                Insert: {
+                    code: string
+                    description: string
+                    search_vector?: string | null
+                }
+                Update: {
+                    code?: string
+                    description?: string
+                    search_vector?: string | null
+                }
+                Relationships: []
+            }
             appointments: {
                 Row: {
                     appointment_type: string | null

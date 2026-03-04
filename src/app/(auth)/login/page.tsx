@@ -1,140 +1,164 @@
-'use client';
+"use client"
 
-import React, { useState } from 'react';
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { signInWithEmail } from "@/actions/auth"
+import { Button } from "@/components/ui/button"
 import {
-    Form,
-    Stack,
-    TextInput,
-    Button,
-    InlineNotification,
-    Theme
-} from '@carbon/react';
-import { signInWithEmail } from '@/actions/auth';
-import { useTheme } from '@/providers/ThemeProvider';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { AlertCircle, LockIcon, MailIcon } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+} from "@/components/ui/input-group"
+
+const loginSchema = z.object({
+  email: z.string().email("Por favor ingresa un correo electrónico válido."),
+  password: z.string().min(1, "La contraseña es requerida."),
+})
+
+type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
-    const [loading, setLoading] = useState(false);
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
-    const { theme } = useTheme();
+  const [loading, setLoading] = React.useState(false)
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        setLoading(true);
-        setErrorMsg(null);
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
 
-        const formData = new FormData(event.currentTarget);
-        const result = await signInWithEmail(formData);
+  async function onSubmit(values: LoginFormValues) {
+    setLoading(true)
+    setErrorMsg(null)
 
-        if (result?.error) {
-            setErrorMsg(result.error);
-            setLoading(false);
-        }
-        // Si hay éxito, el server action hace el redirect('/')
-    };
+    const formData = new FormData()
+    formData.append("email", values.email)
+    formData.append("password", values.password)
 
-    return (
-        <Theme theme={theme}>
-            <div className="login-container">
-                <div className="login-card">
-                    <div className="login-brand">
-                        <span className="brand-prefix">clinic</span>
-                        <span className="brand-suffix">board</span>
-                    </div>
+    const result = await signInWithEmail(formData)
 
-                    <h1 className="login-title">Iniciar Sesión</h1>
-                    <p className="login-subtitle">Ingresa tus credenciales para acceder</p>
+    if (result?.error) {
+      setErrorMsg(result.error)
+      setLoading(false)
+    }
+  }
 
-                    <Form onSubmit={handleSubmit} className="login-form">
-                        <Stack gap={6}>
-                            {errorMsg && (
-                                <InlineNotification
-                                    kind="error"
-                                    title="Error de autenticación"
-                                    subtitle={errorMsg}
-                                    lowContrast
-                                    hideCloseButton
-                                />
-                            )}
-
-                            <TextInput
-                                id="email"
-                                name="email"
-                                type="email"
-                                labelText="Correo Electrónico"
-                                placeholder="tu@correo.com"
-                                required
-                            />
-
-                            <TextInput
-                                id="password"
-                                name="password"
-                                type="password"
-                                labelText="Contraseña"
-                                placeholder="••••••••"
-                                required
-                            />
-
-                            <Button
-                                type="submit"
-                                kind="primary"
-                                disabled={loading}
-                                className="login-submit-btn"
-                            >
-                                {loading ? 'Iniciando sesión...' : 'Ingresar'}
-                            </Button>
-                        </Stack>
-                    </Form>
-                </div>
-
-                <style jsx>{`
-          .login-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: var(--cds-background);
-            padding: 1rem;
-          }
-          .login-card {
-            width: 100%;
-            max-width: 448px;
-            background-color: var(--cds-layer-01);
-            border: 1px solid var(--cds-border-subtle);
-            padding: 2.5rem 2rem;
-            border-radius: 0 !important;
-          }
-          .login-brand {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-          }
-          .brand-prefix {
-            font-weight: 600;
-            letter-spacing: -0.01em;
-            color: var(--cds-text-primary);
-          }
-          .brand-suffix {
-            font-weight: 300;
-            color: var(--clinicboard-accent);
-          }
-          .login-title {
-            font-size: 1.75rem;
-            font-weight: 300;
-            margin-bottom: 0.5rem;
-            color: var(--cds-text-primary);
-          }
-          .login-subtitle {
-            font-size: 0.875rem;
-            color: var(--cds-text-secondary);
-            margin-bottom: 2rem;
-          }
-          .login-form :global(.cds--btn) {
-            width: 100%;
-            max-width: 100%;
-          }
-        `}</style>
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-background font-sans p-4">
+      <Card className="w-full max-w-[400px] border-border/10 shadow-2xl bg-card/30 backdrop-blur-xl">
+        <CardHeader className="space-y-1 pb-8 text-center">
+          <div className="flex items-center justify-center mb-6">
+            <div className="flex items-center gap-0.5 text-2xl font-bold tracking-tighter">
+              <span className="text-foreground">clinic</span>
+              <span className="text-primary font-light italic">board</span>
             </div>
-        </Theme>
-    );
+          </div>
+          <CardTitle className="text-3xl font-bold tracking-tight">
+            Bienvenido
+          </CardTitle>
+          <CardDescription className="text-muted-foreground/70">
+            Ingresa tus credenciales para acceder al sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {errorMsg && (
+              <Alert
+                variant="destructive"
+                className="bg-destructive/5 border-destructive/20 text-destructive animate-in fade-in slide-in-from-top-1"
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle className="text-xs font-bold uppercase tracking-wider">
+                  Acceso Denegado
+                </AlertTitle>
+                <AlertDescription className="text-sm opacity-90">
+                  {errorMsg}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <Field className="space-y-2">
+              <FieldLabel
+                htmlFor="email"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80"
+              >
+                Correo Electrónico
+              </FieldLabel>
+              <InputGroup className="bg-background/20 border-border/20 focus-within:border-primary/50 transition-colors">
+                <InputGroupAddon>
+                  <InputGroupText>
+                    <MailIcon className="size-4 text-muted-foreground/50" />
+                  </InputGroupText>
+                </InputGroupAddon>
+                <Input
+                  {...form.register("email")}
+                  id="email"
+                  type="email"
+                  placeholder="tu@correo.com"
+                  className="flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0"
+                />
+              </InputGroup>
+              {form.formState.errors.email && (
+                <FieldError className="text-[11px] font-medium text-destructive">
+                  {form.formState.errors.email.message}
+                </FieldError>
+              )}
+            </Field>
+
+            <Field className="space-y-2">
+              <FieldLabel
+                htmlFor="password"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80"
+              >
+                Contraseña
+              </FieldLabel>
+              <InputGroup className="bg-background/20 border-border/20 focus-within:border-primary/50 transition-colors">
+                <InputGroupAddon>
+                  <InputGroupText>
+                    <LockIcon className="size-4 text-muted-foreground/50" />
+                  </InputGroupText>
+                </InputGroupAddon>
+                <Input
+                  {...form.register("password")}
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  className="flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0"
+                />
+              </InputGroup>
+              {form.formState.errors.password && (
+                <FieldError className="text-[11px] font-medium text-destructive">
+                  {form.formState.errors.password.message}
+                </FieldError>
+              )}
+            </Field>
+
+            <Button
+              type="submit"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/20 transition-all duration-300 active:scale-[0.98] h-11"
+              disabled={loading}
+            >
+              {loading ? "Cargando..." : "Ingresar al Panel"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
+

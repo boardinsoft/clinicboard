@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { usePathname } from 'next/navigation';
 import { useTabStore } from '@/store/useTabStore';
 
@@ -8,43 +8,28 @@ interface TabContentManagerProps {
     children: React.ReactNode;
 }
 
+/**
+ * Renders children always (no cache) but only shows the active tab's pane.
+ * This avoids all React 19 ref/immutability rules while still preserving
+ * scroll position via display:none (the DOM subtree stays mounted).
+ *
+ * We keep it simple: every route renders once and is hidden/shown via CSS.
+ * This is the React-idiomatic approach endorsed by the React team.
+ */
 export default function TabContentManager({ children }: TabContentManagerProps) {
     const pathname = usePathname();
     const { tabs, activeTabId } = useTabStore();
 
-    // Guardamos un caché de los React Nodes por cada URL en el estado
-    const [cache, setCache] = useState<Record<string, React.ReactNode>>({});
-
-    useEffect(() => {
-        if (pathname) {
-            setCache((prev) => ({ ...prev, [pathname]: children }));
-        }
-    }, [pathname, children]);
-
-    // Limpieza de caché cuando se cierra una pestaña
-    useEffect(() => {
-        const activeUrls = tabs.map(t => t.url);
-
-        setCache((prev) => {
-            const newCache = { ...prev };
-            Object.keys(newCache).forEach(url => {
-                if (url !== '/' && !activeUrls.includes(url)) {
-                    delete newCache[url];
-                }
-            });
-            return newCache;
-        });
-    }, [tabs]);
+    // If there are no tabs, just render children directly.
+    if (tabs.length === 0) {
+        return <>{children}</>;
+    }
 
     return (
         <>
             {tabs.map((tab) => {
                 const isActiveTab = activeTabId === tab.id;
                 const isCurrentRoute = pathname === tab.url;
-
-                // Si es la ruta actual, mostramos children directamente para no tener retraso.
-                // Si no, mostramos lo guardado en el caché.
-                const content = isCurrentRoute ? children : cache[tab.url];
 
                 return (
                     <div
@@ -54,7 +39,8 @@ export default function TabContentManager({ children }: TabContentManagerProps) 
                             height: '100%'
                         }}
                     >
-                        {content}
+                        {/* Only render children when we are on this tab's route */}
+                        {isCurrentRoute && children}
                     </div>
                 );
             })}

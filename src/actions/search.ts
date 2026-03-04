@@ -8,7 +8,7 @@ export interface SearchResult {
     title: string;
     subtitle?: string;
     url: string;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
 }
 
 export async function searchGlobal(queryText: string, context?: string): Promise<SearchResult[]> {
@@ -73,12 +73,13 @@ export async function searchGlobal(queryText: string, context?: string): Promise
 
     // Fuzzy Search Fallback for patients using similarity if no direct matches
     if (!patientsRes.data || patientsRes.data.length === 0) {
-        const { data: fuzzyPatients } = await (supabase.rpc as any)('search_patients_fuzzy', {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated types
+        const { data: fuzzyPatients } = await (supabase as any).rpc('search_patients_fuzzy', {
             search_term: queryText,
             p_id: practitionerId
         });
         if (fuzzyPatients && Array.isArray(fuzzyPatients)) {
-            (fuzzyPatients as any[]).forEach((p: any) => {
+            (fuzzyPatients as Array<{ id: string; name_given: string[]; name_family: string }>).forEach((p) => {
                 results.push({
                     id: p.id,
                     type: 'patient',
@@ -96,14 +97,14 @@ export async function searchGlobal(queryText: string, context?: string): Promise
             // Avoid duplicates if we already added via fuzzy
             if (results.some(r => r.id === p.id)) return;
 
-            const telecom = p.telecom as any[];
-            const phone = Array.isArray(telecom) ? (telecom.find((t: any) => t.system === 'phone')?.value) : null;
+            const telecom = p.telecom as Array<{ system?: string; value?: string }> | null;
+            const phone = Array.isArray(telecom) ? (telecom.find(t => t.system === 'phone')?.value) : null;
 
             results.push({
                 id: p.id,
                 type: 'patient',
                 title: `${p.name_given.join(' ')} ${p.name_family}`,
-                subtitle: `Paciente • ${phone || (Array.isArray(p.identifiers) && p.identifiers.length > 0 ? (p.identifiers[0] as any)?.value : 'Sin ID')}`,
+                subtitle: `Paciente • ${phone || (Array.isArray(p.identifiers) && p.identifiers.length > 0 ? (p.identifiers[0] as { value?: string })?.value : 'Sin ID')}`,
                 url: `/patients/${p.id}`,
             });
         });
@@ -111,7 +112,7 @@ export async function searchGlobal(queryText: string, context?: string): Promise
 
     // Process Appointments
     if (appointmentsRes.data) {
-        appointmentsRes.data.forEach((a: any) => {
+        appointmentsRes.data.forEach((a) => {
             const patientName = a.patients ? `${a.patients.name_given.join(' ')} ${a.patients.name_family}` : 'Paciente desconocido';
             results.push({
                 id: a.id,
@@ -125,7 +126,7 @@ export async function searchGlobal(queryText: string, context?: string): Promise
 
     // Process Medications
     if (medicationRes.data) {
-        medicationRes.data.forEach((m: any) => {
+        medicationRes.data.forEach((m) => {
             const patientName = m.patients ? `${m.patients.name_given.join(' ')} ${m.patients.name_family}` : 'Paciente desconocido';
             results.push({
                 id: m.id,
@@ -139,7 +140,7 @@ export async function searchGlobal(queryText: string, context?: string): Promise
 
     // Process Encounters (Clinical Notes)
     if (encountersRes.data) {
-        encountersRes.data.forEach((e: any) => {
+        encountersRes.data.forEach((e) => {
             const patientName = e.patients ? `${e.patients.name_given.join(' ')} ${e.patients.name_family}` : 'Paciente desconocido';
             const noteText = e.evolution_note || e.plan || 'Empezar evaluación clínica...';
             results.push({

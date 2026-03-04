@@ -1,6 +1,13 @@
 import type { Metadata } from 'next';
-import './globals.scss';
+import { Inter } from 'next/font/google';
+import './globals.css';
 import { ThemeProvider } from '@/providers/ThemeProvider';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Clinicboard — Gestión Clínica Inteligente',
@@ -22,9 +29,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body suppressHydrationWarning>
-        <ThemeProvider>
+    <html lang="es" className={inter.variable} suppressHydrationWarning>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           {children}
         </ThemeProvider>
       </body>

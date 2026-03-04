@@ -2,35 +2,26 @@
 
 import React, { useState, useRef } from 'react';
 import {
-    TreeView,
-    TreeNode,
-    OverflowMenu,
-    MenuItem,
-    Button,
-    Tag,
-} from '@carbon/react';
-import {
-    Document,
-    Chemistry,
-    Image,
-    ChevronDown,
-    ChevronRight,
-    Add,
+    FileText,
+    FlaskConical,
+    Image as ImageIcon,
     Download,
-    TrashCan,
-    Edit,
+    Trash2,
+    Edit2,
     Upload,
     Folder,
-    FolderOpen,
-    DocumentPdf,
-    DocumentBlank,
-    Close,
-    Chat,
-} from '@carbon/icons-react';
+    FileIcon,
+    X,
+    MessageSquare,
+    MoreHorizontal
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { usePathname } from 'next/navigation';
-
-// ── Types ─────────────────────────────────────────────────────────────────────
+import { Separator } from '@/components/ui/separator';
 
 interface PatientFile {
     id: string;
@@ -47,28 +38,19 @@ interface DocumentSection {
     files: PatientFile[];
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const FILE_EXTENSION_COLORS: Record<string, string> = {
-    pdf: 'red',
-    jpg: 'teal',
-    png: 'teal',
-    dicom: 'purple',
-    doc: 'blue',
-    other: 'gray',
+const FILE_EXTENSION_COLORS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    pdf: 'destructive',
+    jpg: 'secondary',
+    png: 'secondary',
+    dicom: 'default',
+    doc: 'outline',
+    other: 'outline',
 };
-
-function FileIcon({ type }: { type: PatientFile['type'] }) {
-    if (type === 'pdf') return <DocumentPdf size={16} />;
-    return <DocumentBlank size={16} />;
-}
 
 function formatFileDate(dateStr: string): string {
     const d = new Date(dateStr);
     return d.toLocaleDateString('es-VE', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-
-// ── Section ───────────────────────────────────────────────────────────────────
 
 function DocumentSectionNode({
     section,
@@ -87,106 +69,92 @@ function DocumentSectionNode({
     };
 
     return (
-        <TreeNode
-            id={section.id}
-            aria-label={section.title}
-            label={
-                <div className="pw-rp__section-label">
-                    <Icon size={16} className="pw-rp__section-icon" />
-                    <span>{section.title}</span>
-                    <Tag size="sm" type="gray" className="pw-rp__count-tag">
+        <div className="mb-6">
+            <div className="flex items-center justify-between mb-3 px-1">
+                <div className="flex items-center gap-2">
+                    <Icon className="w-4 h-4 text-primary/70" />
+                    <h4 className="text-sm font-semibold tracking-tight">{section.title}</h4>
+                    <Badge variant="secondary" className="text-[10px] px-1.5 min-w-[20px] justify-center bg-muted/50">
                         {section.files.length}
-                    </Tag>
-                    <button
-                        aria-label={`Subir archivo a ${section.title}`}
-                        className="pw-rp__upload-btn"
-                        onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                    >
-                        <Upload size={16} />
-                    </button>
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        style={{ display: 'none' }}
-                        onChange={handleFileChange}
-                        aria-hidden="true"
-                    />
+                    </Badge>
                 </div>
-            }
-        >
-            {section.files.length === 0 ? (
-                <TreeNode
-                    id={`${section.id}-empty`}
-                    isExpanded={false}
-                    label={
-                        <span className="pw-rp__empty-text">Sin documentos</span>
-                    }
+                <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-muted" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="w-3.5 h-3.5" />
+                </Button>
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileChange}
                 />
-            ) : (
-                section.files.map((file) => (
-                    <TreeNode
-                        key={file.id}
-                        id={file.id}
-                        label={
-                            <div className="pw-rp__file-row">
-                                <FileIcon type={file.type} />
-                                <div className="pw-rp__file-info">
-                                    <span className="pw-rp__file-name" title={file.name}>{file.name}</span>
-                                    <span className="pw-rp__file-meta">{formatFileDate(file.uploadedAt)}{file.size ? ` · ${file.size}` : ''}</span>
+            </div>
+
+            <div className="flex flex-col gap-1.5 pl-4">
+                {section.files.length === 0 ? (
+                    <div className="text-[11px] text-muted-foreground/60 py-2 italic border-l-2 border-muted/20 pl-4 ml-1">
+                        Sin documentos registrados
+                    </div>
+                ) : (
+                    section.files.map((file) => (
+                        <div key={file.id} className="group flex items-center justify-between p-2 rounded-md hover:bg-accent/50 transition-colors border border-transparent hover:border-border/50">
+                            <div className="flex items-center gap-2.5 overflow-hidden">
+                                <div className="p-1.5 rounded bg-muted/30 group-hover:bg-background transition-colors">
+                                    <FileIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                                 </div>
-                                <Tag size="sm" type={FILE_EXTENSION_COLORS[file.type] as any} className="pw-rp__file-tag">
-                                    {file.type.toUpperCase()}
-                                </Tag>
-                                <div className="pw-rp__file-actions" onClick={(e) => e.stopPropagation()}>
-                                    <OverflowMenu
-                                        size="sm"
-                                        aria-label="Acciones del archivo"
-                                        flipped
-                                        menuOptionsClass="pw-rp__context-menu"
-                                    >
-                                        <MenuItem onClick={() => { }} label="Descargar" />
-                                        <MenuItem onClick={() => { }} label="Renombrar" />
-                                        <MenuItem onClick={() => { }} label="Eliminar" kind="danger" />
-                                    </OverflowMenu>
+                                <div className="flex flex-col overflow-hidden">
+                                    <span className="text-[11px] font-medium truncate text-foreground/90">{file.name}</span>
+                                    <span className="text-[9px] text-muted-foreground uppercase tracking-tight">
+                                        {formatFileDate(file.uploadedAt)}{file.size ? ` · ${file.size}` : ''}
+                                    </span>
                                 </div>
                             </div>
-                        }
-                    />
-                ))
-            )}
-        </TreeNode>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <Badge variant={FILE_EXTENSION_COLORS[file.type] || "outline"} className="text-[9px] uppercase font-mono px-1.5 py-0 h-4 border-0">
+                                    {file.type}
+                                </Badge>
+
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <MoreHorizontal className="w-3.5 h-3.5" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-44">
+                                        <DropdownMenuItem className="gap-2">
+                                            <Download className="w-4 h-4 opacity-70" /> Descargar
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="gap-2">
+                                            <Edit2 className="w-4 h-4 opacity-70" /> Renombrar
+                                        </DropdownMenuItem>
+                                        <Separator className="my-1" />
+                                        <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive gap-2">
+                                            <Trash2 className="w-4 h-4" /> Eliminar
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
     );
 }
 
-// ── RightPanel ────────────────────────────────────────────────────────────────
-
 const INITIAL_SECTIONS: DocumentSection[] = [
-    {
-        id: 'documents',
-        title: 'Documentos',
-        icon: Document,
-        files: [],
-    },
-    {
-        id: 'studies',
-        title: 'Estudios',
-        icon: Chemistry,
-        files: [],
-    },
-    {
-        id: 'imaging',
-        title: 'Imagenología',
-        icon: Image,
-        files: [],
-    },
+    { id: 'documents', title: 'Documentos', icon: FileText, files: [] },
+    { id: 'studies', title: 'Estudios', icon: FlaskConical, files: [] },
+    { id: 'imaging', title: 'Imagenología', icon: ImageIcon, files: [] },
 ];
 
-export default function RightPanel({ patientId }: { patientId?: string }) {
+export default function RightPanel() {
     const { rightPanelOpen, toggleRightPanel } = useLayoutStore();
     const pathname = usePathname();
     const [sections, setSections] = useState<DocumentSection[]>(INITIAL_SECTIONS);
     const dropZoneRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
+
+    if (!rightPanelOpen) return null;
 
     const isPatientView = pathname?.startsWith('/patients/');
 
@@ -200,9 +168,7 @@ export default function RightPanel({ patientId }: { patientId?: string }) {
             size: file.size > 0 ? `${(file.size / 1024).toFixed(1)} KB` : undefined,
         };
         setSections((prev) =>
-            prev.map((s) =>
-                s.id === sectionId ? { ...s, files: [...s.files, newFile] } : s
-            )
+            prev.map((s) => s.id === sectionId ? { ...s, files: [...s.files, newFile] } : s)
         );
     };
 
@@ -215,38 +181,31 @@ export default function RightPanel({ patientId }: { patientId?: string }) {
 
     return (
         <aside
-            className={`pw-right-panel${rightPanelOpen ? '' : ' pw-right-panel--hidden'}`}
+            className="w-80 border-l border-border bg-card h-full flex flex-col shrink-0 relative transition-all duration-300 z-10 shadow-[-4px_0_12px_-4px_rgba(0,0,0,0.05)]"
             role="complementary"
-            aria-label="Panel de documentos del paciente"
-            aria-hidden={!rightPanelOpen}
         >
-            {/* Header */}
-            <div className="pw-rp__header">
-                <div className="pw-rp__header-title">
-                    {isPatientView ? <Folder size={16} /> : <Chat size={16} />}
-                    <span>{isPatientView ? 'Documentos' : 'Asistente IA'}</span>
+            <div className="flex items-center justify-between p-4 border-b border-border h-14 bg-card/80 backdrop-blur-sm sticky top-0 z-20">
+                <div className="flex items-center gap-2 text-primary font-semibold tracking-tight">
+                    {isPatientView ? (
+                        <div className="bg-primary/10 p-1.5 rounded-md">
+                            <Folder className="w-4 h-4" />
+                        </div>
+                    ) : (
+                        <div className="bg-primary/10 p-1.5 rounded-md">
+                            <MessageSquare className="w-4 h-4" />
+                        </div>
+                    )}
+                    <span className="text-sm">{isPatientView ? 'Centro de Documentos' : 'Asistente IA'}</span>
                 </div>
-                <Button
-                    kind="ghost"
-                    size="sm"
-                    iconDescription="Cerrar panel"
-                    hasIconOnly
-                    renderIcon={Close}
-                    onClick={toggleRightPanel}
-                    aria-label="Cerrar panel de documentos"
-                    className="pw-rp__close-btn"
-                />
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted" onClick={toggleRightPanel}>
+                    <X className="w-4 h-4 text-muted-foreground" />
+                </Button>
             </div>
 
-            {isPatientView ? (
-                <>
-                    {/* Tree */}
-                    <nav className="pw-rp__tree" aria-label="Árbol de documentos del paciente">
-                        <TreeView
-                            label="Documentos del paciente"
-                            hideLabel
-                            className="pw-rp__treeview"
-                        >
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col space-y-2">
+                {isPatientView ? (
+                    <>
+                        <div className="flex-1 space-y-2">
                             {sections.map((section) => (
                                 <DocumentSectionNode
                                     key={section.id}
@@ -254,31 +213,47 @@ export default function RightPanel({ patientId }: { patientId?: string }) {
                                     onUpload={handleUpload}
                                 />
                             ))}
-                        </TreeView>
-                    </nav>
+                        </div>
 
-                    {/* Drop Zone */}
-                    <div
-                        ref={dropZoneRef}
-                        className={`pw-rp__dropzone${isDragging ? ' pw-rp__dropzone--active' : ''}`}
-                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                        onDragLeave={() => setIsDragging(false)}
-                        onDrop={handleGlobalDrop}
-                        aria-label="Zona de arrastre para subir documentos"
-                        role="region"
-                    >
-                        <Upload size={16} className="pw-rp__dropzone-icon" />
-                        <span className="pw-rp__dropzone-text">
-                            {isDragging ? 'Suelta para subir' : 'Arrastra archivos aquí'}
-                        </span>
+                        <div
+                            ref={dropZoneRef}
+                            className={cn(
+                                "mt-6 border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all duration-300",
+                                isDragging
+                                    ? "border-primary bg-primary/5 text-primary scale-[0.98] shadow-inner"
+                                    : "border-border text-muted-foreground hover:bg-muted/30 hover:border-muted-foreground/40"
+                            )}
+                            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                            onDragLeave={() => setIsDragging(false)}
+                            onDrop={handleGlobalDrop}
+                        >
+                            <Upload className={cn("w-10 h-10 mb-3 transition-opacity", isDragging ? "opacity-100" : "opacity-30")} />
+                            <div className="flex flex-col gap-1">
+                                <span className="text-sm font-medium">
+                                    {isDragging ? 'Subir ahora' : 'Cargar documentos'}
+                                </span>
+                                <span className="text-[11px] opacity-60">PDF, JPG, DICOM</span>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4">
+                        <div className="w-16 h-16 rounded-full bg-muted/40 flex items-center justify-center border border-border/50">
+                            <MessageSquare className="w-8 h-8 opacity-20" />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-sm font-semibold text-foreground">Asistente Médico de IA</h3>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                El asistente estará disponible próximamente para ayudarte con el resumen de historias y análisis clínico.
+                            </p>
+                        </div>
+                        <Button variant="outline" size="sm" disabled className="text-[11px]">
+                            Activar Acceso Temprano
+                        </Button>
                     </div>
-                </>
-            ) : (
-                <div style={{ padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', color: 'var(--cds-text-secondary)' }}>
-                    <Chat size={32} style={{ marginBottom: '1rem', fill: 'var(--cds-text-secondary)', opacity: 0.5 }} />
-                    <p style={{ fontSize: '0.875rem' }}>El Asistente Médico de IA estará disponible próximamente en esta vista.</p>
-                </div>
-            )}
+                )}
+            </div>
         </aside>
     );
 }
+

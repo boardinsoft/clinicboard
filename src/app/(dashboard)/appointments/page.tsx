@@ -2,22 +2,22 @@
 
 import React, { useState } from 'react';
 import {
-    Button,
-    Tile,
-    Tag,
-    Select,
-    SelectItem,
-    TextInput,
-} from '@carbon/react';
-import {
-    Add,
-    Calendar as CalendarIcon,
+    Plus,
     ChevronLeft,
     ChevronRight,
-    Events,
-    Time,
-    UserAvatar,
-} from '@carbon/icons-react';
+    CheckCircle2,
+    Clock,
+    User,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 // Mock appointment data
 const appointmentsByHour: Record<string, Array<{
@@ -55,12 +55,20 @@ const appointmentsByHour: Record<string, Array<{
     '16:00': [],
 };
 
-const statusConfig: Record<string, { label: string; color: string; tagType: 'green' | 'blue' | 'purple' | 'gray' | 'red' }> = {
-    draft: { label: 'Borrador', color: 'var(--cds-text-secondary)', tagType: 'gray' },
-    confirmed: { label: 'Confirmada', color: 'var(--cds-interactive)', tagType: 'blue' },
-    'in-consultation': { label: 'En Consulta', color: 'var(--clinicboard-accent)', tagType: 'purple' },
-    completed: { label: 'Completada', color: 'var(--cds-support-success)', tagType: 'green' },
-    cancelled: { label: 'Cancelada', color: 'var(--cds-support-error)', tagType: 'red' },
+const statusConfig: Record<string, { label: string; colorClass: string; badgeVariant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+    draft: { label: 'Borrador', colorClass: 'border-muted-foreground/30 text-muted-foreground', badgeVariant: 'outline' },
+    confirmed: { label: 'Confirmada', colorClass: 'bg-primary/10 text-primary border-primary/20', badgeVariant: 'secondary' },
+    'in-consultation': { label: 'En Consulta', colorClass: 'bg-accent text-accent-foreground border-accent-foreground/10', badgeVariant: 'secondary' },
+    completed: { label: 'Completada', colorClass: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20', badgeVariant: 'secondary' },
+    cancelled: { label: 'Cancelada', colorClass: '', badgeVariant: 'destructive' },
+};
+
+const statusBorderConfig: Record<string, string> = {
+    draft: 'border-l-muted-foreground/30',
+    confirmed: 'border-l-primary',
+    'in-consultation': 'border-l-accent-foreground',
+    completed: 'border-l-emerald-500',
+    cancelled: 'border-l-destructive',
 };
 
 const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -94,162 +102,152 @@ export default function AppointmentsPage() {
     const completedCount = Object.values(appointmentsByHour).flat().filter(a => a.status === 'completed').length;
 
     return (
-        <div style={{ padding: 0 }}>
-            <div className="page-header">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                        <h1 className="page-header__title">Citas</h1>
-                        <p className="page-header__subtitle">
-                            Gestión de agenda — FHIR R4 Appointment Resource
-                        </p>
-                    </div>
-                    <Button kind="primary" renderIcon={Add}>
-                        Nueva Cita
-                    </Button>
+        <div className="flex flex-col h-[calc(100vh-48px)]">
+            {/* Header */}
+            <div className="flex justify-between items-start py-6 px-8 border-b border-border bg-background flex-shrink-0">
+                <div>
+                    <h1 className="text-2xl font-semibold tracking-tight">Citas</h1>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Gestión de agenda — FHIR R4 Appointment Resource
+                    </p>
                 </div>
+                <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nueva Cita
+                </Button>
             </div>
 
-            <div style={{ display: 'flex', gap: '1px', background: 'var(--cds-border-subtle)' }}>
+            <div className="flex flex-1 overflow-hidden bg-muted/20">
                 {/* Calendar Sidebar */}
-                <div style={{ width: '280px', background: 'var(--cds-layer-01)', padding: '1.5rem', flexShrink: 0 }}>
+                <div className="w-[280px] bg-card border-r border-border p-6 flex-shrink-0 flex flex-col overflow-y-auto">
                     {/* Mini Calendar Header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <Button kind="ghost" size="sm" hasIconOnly renderIcon={ChevronLeft} iconDescription="Semana anterior" />
-                        <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                    <div className="flex justify-between items-center mb-6">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-sm font-semibold capitalize">
                             {selectedDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
                         </span>
-                        <Button kind="ghost" size="sm" hasIconOnly renderIcon={ChevronRight} iconDescription="Semana siguiente" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
                     </div>
 
                     {/* Week Strip */}
-                    <div style={{ display: 'flex', gap: '2px', marginBottom: '1.5rem' }}>
+                    <div className="flex justify-between mb-8 pb-4 border-b border-border/50">
                         {weekDays.map((day, i) => {
                             const isToday = day.toDateString() === new Date().toDateString();
                             const isSelected = day.toDateString() === selectedDate.toDateString();
                             return (
                                 <div
                                     key={i}
-                                    style={{
-                                        flex: 1,
-                                        textAlign: 'center',
-                                        padding: '0.5rem 0',
-                                        cursor: 'pointer',
-                                        background: isSelected ? 'var(--cds-interactive)' : 'var(--cds-layer-02)',
-                                        color: isSelected ? '#fff' : 'var(--cds-text-primary)',
-                                        borderBottom: isToday && !isSelected ? '2px solid var(--clinicboard-accent)' : 'none',
-                                    }}
+                                    className={`flex flex-col items-center justify-center w-8 h-12 rounded-full cursor-pointer transition-colors ${isSelected
+                                        ? 'bg-primary text-primary-foreground shadow-sm'
+                                        : isToday
+                                            ? 'bg-primary/10 text-primary font-medium'
+                                            : 'hover:bg-muted text-muted-foreground'
+                                        }`}
                                 >
-                                    <div style={{ fontSize: '0.625rem', color: isSelected ? 'rgba(255,255,255,0.7)' : 'var(--cds-text-secondary)', marginBottom: '0.25rem' }}>
-                                        {daysOfWeek[day.getDay()]}
+                                    <div className={`text-[10px] mb-0.5 ${isSelected ? 'opacity-80' : ''}`}>
+                                        {daysOfWeek[day.getDay()][0]}
                                     </div>
-                                    <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>{day.getDate()}</div>
+                                    <div className={`text-sm ${isSelected ? 'font-bold' : 'font-medium'}`}>
+                                        {day.getDate()}
+                                    </div>
                                 </div>
                             );
                         })}
                     </div>
 
-                    {/* Stats */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--cds-border-subtle)' }}>
-                            <span style={{ fontSize: '0.8125rem', color: 'var(--cds-text-secondary)' }}>Total</span>
-                            <span style={{ fontSize: '0.8125rem', fontWeight: 600 }}>{totalAppointments}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--cds-border-subtle)' }}>
-                            <span style={{ fontSize: '0.8125rem', color: 'var(--cds-text-secondary)' }}>Confirmadas</span>
-                            <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--cds-interactive)' }}>{confirmedCount}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--cds-border-subtle)' }}>
-                            <span style={{ fontSize: '0.8125rem', color: 'var(--cds-text-secondary)' }}>Completadas</span>
-                            <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--cds-support-success)' }}>{completedCount}</span>
-                        </div>
+                    {/* View Toggle */}
+                    <div className="space-y-3 mb-8">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vista</label>
+                        <Select value={view} onValueChange={(v) => setView(v as 'day' | 'week')}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Seleccionar vista" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="day">Día</SelectItem>
+                                <SelectItem value="week">Semana</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    {/* View Toggle */}
-                    <Select
-                        id="view-select"
-                        labelText="Vista"
-                        value={view}
-                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setView(e.target.value as 'day' | 'week')}
-                    >
-                        <SelectItem value="day" text="Día" />
-                        <SelectItem value="week" text="Semana" />
-                    </Select>
+                    {/* Stats */}
+                    <div className="flex flex-col space-y-4">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Resumen de hoy</label>
+                        <div className="flex justify-between items-center py-2 border-b border-border/50">
+                            <span className="text-sm text-muted-foreground">Total</span>
+                            <span className="text-sm font-semibold">{totalAppointments}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-border/50">
+                            <span className="text-sm text-muted-foreground">Confirmadas</span>
+                            <span className="text-sm font-semibold text-primary">{confirmedCount}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-border/50">
+                            <span className="text-sm text-muted-foreground">Completadas</span>
+                            <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">{completedCount}</span>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Timeline */}
-                <div style={{ flex: 1, background: 'var(--cds-background)', overflowY: 'auto', maxHeight: 'calc(100vh - 140px)' }}>
+                <div className="flex-1 overflow-y-auto bg-background">
                     {/* Date Header */}
-                    <div style={{ padding: '1rem 1.5rem', background: 'var(--cds-layer-01)', borderBottom: '1px solid var(--cds-border-subtle)', position: 'sticky', top: 0, zIndex: 1 }}>
-                        <span style={{ fontSize: '0.875rem', fontWeight: 500, textTransform: 'capitalize' }}>{currentDateStr}</span>
+                    <div className="sticky top-0 z-10 px-6 py-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+                        <span className="text-base font-medium capitalize text-foreground">{currentDateStr}</span>
                     </div>
 
                     {/* Time Slots */}
-                    {Object.entries(appointmentsByHour).map(([time, appointments]) => (
-                        <div
-                            key={time}
-                            style={{
-                                display: 'flex',
-                                borderBottom: '1px solid var(--cds-border-subtle)',
-                                minHeight: appointments.length > 0 ? '80px' : '48px',
-                            }}
-                        >
-                            {/* Time Label */}
-                            <div style={{
-                                width: '80px',
-                                padding: '0.75rem 1rem',
-                                fontFamily: 'IBM Plex Mono',
-                                fontSize: '0.75rem',
-                                color: 'var(--cds-text-secondary)',
-                                borderRight: '1px solid var(--cds-border-subtle)',
-                                flexShrink: 0,
-                            }}>
-                                {time}
-                            </div>
+                    <div className="flex flex-col pb-8">
+                        {Object.entries(appointmentsByHour).map(([time, appointments]) => (
+                            <div
+                                key={time}
+                                className={`flex border-b border-border/50 ${appointments.length > 0 ? 'min-h-[80px]' : 'min-h-[60px]'}`}
+                            >
+                                {/* Time Label */}
+                                <div className="w-[80px] p-4 text-xs font-mono text-muted-foreground border-r border-border/50 flex-shrink-0 text-right pr-4">
+                                    {time}
+                                </div>
 
-                            {/* Appointment Slot */}
-                            <div style={{ flex: 1, padding: appointments.length > 0 ? '0.5rem 1rem' : '0' }}>
-                                {appointments.map((apt) => (
-                                    <div
-                                        key={apt.id}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            padding: '0.75rem 1rem',
-                                            background: 'var(--cds-layer-01)',
-                                            borderLeft: `3px solid ${statusConfig[apt.status].color}`,
-                                            cursor: 'pointer',
-                                            transition: 'background-color 0.15s',
-                                        }}
-                                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--cds-layer-02)')}
-                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--cds-layer-01)')}
-                                    >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                            <UserAvatar size={20} style={{ color: 'var(--cds-text-secondary)' }} />
-                                            <div>
-                                                <div style={{ fontSize: '0.875rem', fontWeight: 500 }}>{apt.patient}</div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                    <span>{apt.type}</span>
-                                                    <span>·</span>
-                                                    <Time size={12} />
-                                                    <span>{apt.duration}min</span>
+                                {/* Appointment Slot */}
+                                <div className="flex-1 p-2">
+                                    {appointments.map((apt) => (
+                                        <div
+                                            key={apt.id}
+                                            className={`flex items-center justify-between p-4 mb-2 last:mb-0 bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer border-l-4 ${statusBorderConfig[apt.status]}`}
+                                        >
+                                            <div className="flex items-center space-x-4">
+                                                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground border border-border">
+                                                    <User className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <div className="text-sm font-semibold text-foreground">{apt.patient}</div>
+                                                    <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                                                        <span className="font-medium text-foreground/70">{apt.type}</span>
+                                                        <span className="text-muted-foreground/50">•</span>
+                                                        <Clock className="w-3.5 h-3.5" />
+                                                        <span>{apt.duration}min</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <Tag type={statusConfig[apt.status].tagType} size="sm">
-                                                {statusConfig[apt.status].label}
-                                            </Tag>
-                                            {apt.status === 'draft' && (
-                                                <Button kind="ghost" size="sm" hasIconOnly renderIcon={Events} iconDescription="Confirmar por WhatsApp" />
-                                            )}
+                                            <div className="flex items-center space-x-3">
+                                                <Badge variant={statusConfig[apt.status].badgeVariant as 'default' | 'secondary' | 'destructive' | 'outline'} className={statusConfig[apt.status].badgeVariant === 'secondary' ? statusConfig[apt.status].colorClass : ''}>
+                                                    {statusConfig[apt.status].label}
+                                                </Badge>
+                                                {apt.status === 'draft' && (
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-emerald-700 hover:bg-emerald-500/10">
+                                                        <CheckCircle2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

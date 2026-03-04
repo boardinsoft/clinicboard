@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { encounterSchema } from '@/lib/schemas/encounter.schema';
 import { EncounterStatus, VitalSigns } from '@/lib/fhir/types';
+import type { Json } from '@/types/database.types';
 
 /**
  * Maps incoming camelCase VitalSigns from the UI to the snake_case schema/DB structure.
@@ -117,7 +118,7 @@ export async function startEncounter(id: string) {
 export async function finishEncounter(id: string, formData: {
     evolution_note?: string;
     vital_signs?: VitalSigns;
-    diagnosis?: any; // FHIR diagnosis structure
+    diagnosis?: Json; // FHIR diagnosis structure
 }) {
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();

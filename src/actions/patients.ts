@@ -3,7 +3,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { patientSchema } from '@/lib/schemas/patient.schema';
-import { z } from 'zod';
+import type { Json } from '@/types/database.types';
 
 export async function createPatient(formData: {
     givenNames: string[];
@@ -176,10 +176,10 @@ export async function getPatientClinicalData(patientId: string) {
 export async function createEncounter(encounterData: {
     patient_id: string;
     evolution_note: string;
-    vital_signs: any;
-    diagnosis: any;
+    vital_signs: Json;
+    diagnosis: Json;
     plan: string;
-    reason_code?: any;
+    reason_code?: Json;
 }) {
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();

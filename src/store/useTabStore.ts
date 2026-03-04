@@ -4,7 +4,17 @@ export interface WorkspaceTab {
     id: string;
     title: string;
     url: string;
-    data?: any; // To store persistent form state or view state
+    data?: unknown; // Intentionally flexible tab data — unknown is safer than any
+}
+
+// Represents the persisted form state for a clinical encounter per patient
+export interface ClinicalFormState {
+    evolution_note?: string;
+    plan?: string;
+    vitals?: Record<string, string | number>;
+    diagnoses?: { code: string; display?: string }[];
+    symptoms?: string[];
+    [key: string]: unknown;
 }
 
 interface TabState {
@@ -13,11 +23,11 @@ interface TabState {
     addTab: (tab: WorkspaceTab) => void;
     removeTab: (id: string) => void;
     setActiveTab: (id: string) => void;
-    setTabData: (id: string, data: any) => void;
+    setTabData: (id: string, data: Record<string, unknown>) => void;
 
     // Clinical and Patient persistence
-    clinicalState: Record<string, any>;
-    setClinicalState: (patientId: string, state: any) => void;
+    clinicalState: Record<string, ClinicalFormState>;
+    setClinicalState: (patientId: string, state: ClinicalFormState) => void;
     patientViewState: Record<string, number>;
     setPatientTab: (patientId: string, tabIndex: number) => void;
     historyTabIndex: number;
@@ -55,14 +65,14 @@ export const useTabStore = create<TabState>((set, get) => ({
     setTabData: (id, data) => {
         set((state) => ({
             tabs: state.tabs.map((tab) =>
-                tab.id === id ? { ...tab, data: { ...tab.data, ...data } } : tab
+                tab.id === id ? { ...tab, data: { ...(tab.data as Record<string, unknown> ?? {}), ...data } } : tab
             ),
         }));
     },
 
     // Clinical and Patient persistence
-    clinicalState: {} as Record<string, any>,
-    setClinicalState: (patientId: string, state: any) => {
+    clinicalState: {} as Record<string, ClinicalFormState>,
+    setClinicalState: (patientId: string, state: ClinicalFormState) => {
         set((prev) => ({
             clinicalState: { ...prev.clinicalState, [patientId]: state }
         }));
@@ -78,3 +88,4 @@ export const useTabStore = create<TabState>((set, get) => ({
     historyTabIndex: 0,
     setHistoryTab: (tabIndex: number) => set({ historyTabIndex: tabIndex }),
 }));
+
