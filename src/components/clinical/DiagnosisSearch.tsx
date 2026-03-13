@@ -13,6 +13,7 @@ interface DiagnosisSearchProps {
     value: string;
     onChange: (value: string) => void;
     disabled?: boolean;
+    labelClassName?: string;
 }
 
 export default function DiagnosisSearch({
@@ -21,7 +22,8 @@ export default function DiagnosisSearch({
     placeholder,
     value,
     onChange,
-    disabled
+    disabled,
+    labelClassName
 }: DiagnosisSearchProps) {
     const [query, setQuery] = useState(value);
     const [results, setResults] = useState<{ code: string; description: string }[]>([]);
@@ -78,7 +80,7 @@ export default function DiagnosisSearch({
     return (
         <div className="relative w-full" ref={containerRef}>
             <div className="space-y-2">
-                <Label htmlFor={id}>{label}</Label>
+                <Label htmlFor={id} className={labelClassName}>{label}</Label>
                 <div className="relative">
                     <Input
                         id={id}

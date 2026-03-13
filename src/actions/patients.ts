@@ -175,11 +175,17 @@ export async function getPatientClinicalData(patientId: string) {
 
 export async function createEncounter(encounterData: {
     patient_id: string;
-    evolution_note: string;
-    vital_signs: Json;
-    diagnosis: Json;
-    plan: string;
+    evolution_note?: string;
+    vital_signs?: Json;
+    diagnosis?: Json;
+    plan?: string;
     reason_code?: Json;
+    encounter_category?: string;
+    encounter_subcategory?: string;
+    subjective?: string;
+    objective?: string;
+    analysis?: string;
+    physical_exam?: Json;
 }) {
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -199,6 +205,12 @@ export async function createEncounter(encounterData: {
             diagnosis: encounterData.diagnosis,
             plan: encounterData.plan,
             reason_code: encounterData.reason_code || [],
+            encounter_category: encounterData.encounter_category,
+            encounter_subcategory: encounterData.encounter_subcategory,
+            subjective: encounterData.subjective,
+            objective: encounterData.objective,
+            analysis: encounterData.analysis,
+            physical_exam: encounterData.physical_exam,
             start_time: new Date().toISOString(),
             end_time: new Date().toISOString()
         }])
@@ -234,3 +246,44 @@ export async function getEncounters(patientId: string) {
     return { data: data || [] };
 }
 
+export async function updatePatientAnamnesis(patientId: string, data: {
+    familyHistory?: string;
+    pastConditions?: string;
+    knownAllergies?: string;
+    surgicalHistory?: string;
+    habitsHistory?: string;
+}) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'No autorizado' };
+
+    // Format logical blocks for JSON fields
+    const family_history = data.familyHistory ? [{ text: data.familyHistory }] : null;
+    const personal_history = [];
+    if (data.pastConditions) personal_history.push({ text: data.pastConditions, label: 'Patológicos' });
+    if (data.surgicalHistory) personal_history.push({ text: data.surgicalHistory, label: 'Quirúrgico' });
+
+    const habits = data.habitsHistory ? [{ text: data.habitsHistory }] : null;
+    const extensions = data.knownAllergies ? [{ url: 'knownAllergies', valueString: data.knownAllergies }] : null;
+
+    const { error } = await supabase
+        .from('patients')
+        .update({
+            family_history,
+            personal_history: personal_history.length > 0 ? personal_history : null,
+            habits,
+            extensions
+        })
+        .eq('id', patientId)
+        .eq('practitioner_id', user.id);
+
+    if (error) {
+        console.error('Error updating patient anamnesis:', error);
+        return { error: error.message };
+    }
+
+    revalidatePath(`/history`);
+    revalidatePath(`/patients/${patientId}`);
+    return { success: true };
+}
