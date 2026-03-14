@@ -1,9 +1,19 @@
 import type { NextConfig } from "next";
 
+// Build a dynamic CSP that works across environments (local, Vercel preview, production)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+const supabaseWss = supabaseUrl.replace('https://', 'wss://');
+
+const cspDirectives = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  `connect-src 'self' ${supabaseUrl} ${supabaseWss}`,
+  "img-src 'self' data: https:",
+  "font-src 'self' data:",
+].join('; ');
+
 const nextConfig: NextConfig = {
-  sassOptions: {
-    silenceDeprecations: ['legacy-js-api'],
-  },
   async headers() {
     return [
       {
@@ -11,23 +21,23 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://kwzyvwsgfxdoafucjpla.supabase.co wss://kwzyvwsgfxdoafucjpla.supabase.co; img-src 'self' data: https:; font-src 'self' data: https://1.www.s81c.com;"
+            value: cspDirectives,
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains'
+            value: 'max-age=31536000; includeSubDomains',
           },
           {
             key: 'X-Content-Type-Options',
-            value: 'nosniff'
+            value: 'nosniff',
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY'
+            value: 'DENY',
           },
           {
             key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
+            value: 'strict-origin-when-cross-origin',
           },
         ],
       },

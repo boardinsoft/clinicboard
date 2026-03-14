@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "supabase db push",
+    "db:reset": "supabase db reset",
+    "vercel:preview": "vercel --prod=false",
+    "vercel:deploy": "vercel --prod"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
