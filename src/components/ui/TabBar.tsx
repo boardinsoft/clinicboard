@@ -46,14 +46,19 @@ export default function TabBar() {
                         className="group relative flex items-center h-7 px-3 gap-2"
                     >
                         <span className="truncate max-w-[150px] text-xs">{tab.title}</span>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-4 w-4 rounded-sm opacity-0 group-hover:opacity-60 hover:opacity-100 hover:bg-muted transition-all shrink-0 p-0"
+                        <div
+                            role="button"
+                            tabIndex={0}
+                            className="h-4 w-4 rounded-sm opacity-0 group-hover:opacity-60 hover:opacity-100 hover:bg-muted transition-all shrink-0 p-0 flex items-center justify-center text-muted-foreground hover:text-foreground"
                             onClick={(e) => handleCloseTab(e, tab.id)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    handleCloseTab(e as any, tab.id);
+                                }
+                            }}
                         >
                             <X className="h-3 w-3" />
-                        </Button>
+                        </div>
                     </TabsTrigger>
                 ))}
             </TabsList>

@@ -13,7 +13,9 @@ import {
     FileIcon,
     X,
     MessageSquare,
-    MoreHorizontal
+    MoreHorizontal,
+    Send,
+    Bot
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,6 +24,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { usePathname } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import {
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarMenuAction,
+} from '@/components/ui/sidebar';
 
 interface PatientFile {
     id: string;
@@ -69,55 +82,56 @@ function DocumentSectionNode({
     };
 
     return (
-        <div className="mb-6">
-            <div className="flex items-center justify-between mb-3 px-1">
+        <SidebarGroup className="py-2">
+            <SidebarGroupLabel className="justify-between px-2 text-foreground font-semibold h-8">
                 <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4 text-primary/70" />
-                    <h4 className="text-sm font-semibold tracking-tight">{section.title}</h4>
-                    <Badge variant="secondary" className="text-[10px] px-1.5 min-w-[20px] justify-center bg-muted/50">
+                    <Icon className="w-4 h-4" />
+                    <span>{section.title}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <Badge variant="secondary" className="h-5 px-1.5 min-w-5 justify-center rounded-full text-[10px] font-bold">
                         {section.files.length}
                     </Badge>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-muted ml-1" onClick={() => fileInputRef.current?.click()}>
+                        <Upload className="w-3.5 h-3.5" />
+                    </Button>
                 </div>
-                <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-muted" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="w-3.5 h-3.5" />
-                </Button>
                 <input
                     ref={fileInputRef}
                     type="file"
                     className="hidden"
                     onChange={handleFileChange}
                 />
-            </div>
+            </SidebarGroupLabel>
 
-            <div className="flex flex-col gap-1.5 pl-4">
+            <SidebarGroupContent>
                 {section.files.length === 0 ? (
-                    <div className="text-[11px] text-muted-foreground/60 py-2 italic border-l-2 border-muted/20 pl-4 ml-1">
+                    <div className="px-4 py-2 text-xs text-muted-foreground/60 italic border-l ml-6">
                         Sin documentos registrados
                     </div>
                 ) : (
-                    section.files.map((file) => (
-                        <div key={file.id} className="group flex items-center justify-between p-2 rounded-md hover:bg-accent/50 transition-colors border border-transparent hover:border-border/50">
-                            <div className="flex items-center gap-2.5 overflow-hidden">
-                                <div className="p-1.5 rounded bg-muted/30 group-hover:bg-background transition-colors">
-                                    <FileIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                                </div>
-                                <div className="flex flex-col overflow-hidden">
-                                    <span className="text-[11px] font-medium truncate text-foreground/90">{file.name}</span>
-                                    <span className="text-[9px] text-muted-foreground uppercase tracking-tight">
-                                        {formatFileDate(file.uploadedAt)}{file.size ? ` · ${file.size}` : ''}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                                <Badge variant={FILE_EXTENSION_COLORS[file.type] || "outline"} className="text-[9px] uppercase font-mono px-1.5 py-0 h-4 border-0">
-                                    {file.type}
-                                </Badge>
+                    <SidebarMenu>
+                        {section.files.map((file) => (
+                            <SidebarMenuItem key={file.id}>
+                                <SidebarMenuButton className="h-auto py-2 w-full flex items-center gap-2.5">
+                                    <FileIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+                                    <div className="flex flex-col flex-1 overflow-hidden">
+                                        <span className="text-[11px] font-medium truncate text-foreground/90 leading-tight">{file.name}</span>
+                                        <span className="text-[9px] text-muted-foreground uppercase tracking-tight">
+                                            {formatFileDate(file.uploadedAt)}{file.size ? ` · ${file.size}` : ''}
+                                        </span>
+                                    </div>
+                                    <Badge variant={FILE_EXTENSION_COLORS[file.type] || "outline"} className="text-[9px] uppercase font-mono px-1 py-0 h-4 border-0 shrink-0">
+                                        {file.type}
+                                    </Badge>
+                                </SidebarMenuButton>
 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <MoreHorizontal className="w-3.5 h-3.5" />
-                                        </Button>
+                                        <SidebarMenuAction showOnHover>
+                                            <MoreHorizontal className="w-4 h-4" />
+                                            <span className="sr-only">Más opciones</span>
+                                        </SidebarMenuAction>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-44">
                                         <DropdownMenuItem className="gap-2">
@@ -132,12 +146,12 @@ function DocumentSectionNode({
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                            </div>
-                        </div>
-                    ))
+                            </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
                 )}
-            </div>
-        </div>
+            </SidebarGroupContent>
+        </SidebarGroup>
     );
 }
 
@@ -153,10 +167,53 @@ export default function RightPanel() {
     const [sections, setSections] = useState<DocumentSection[]>(INITIAL_SECTIONS);
     const dropZoneRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
-
-    if (!rightPanelOpen) return null;
+    
+    // Chat state
+    const [chatInput, setChatInput] = useState('');
+    const [messages, setMessages] = useState<{ id: string; role: 'user' | 'assistant'; text: string; timestamp: Date }[]>([
+        {
+            id: '1',
+            role: 'assistant',
+            text: 'Hola, soy el Asistente Clínico de IA. Puedo ayudarte a resumir historias clínicas, extraer datos relevantes o analizar síntomas. ¿En qué te puedo ayudar hoy?',
+            timestamp: new Date()
+        }
+    ]);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const isPatientView = pathname?.startsWith('/patients/');
+
+    // Auto-scroll logic for chat
+    React.useEffect(() => {
+        if (!isPatientView && scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+        }
+    }, [messages, isPatientView]);
+
+    const handleSendMessage = () => {
+        if (!chatInput.trim()) return;
+        
+        const newUserMsg = {
+            id: Date.now().toString(),
+            role: 'user' as const,
+            text: chatInput,
+            timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, newUserMsg]);
+        setChatInput('');
+        
+        // Simulating AI response
+        setTimeout(() => {
+            setMessages(prev => [...prev, {
+                id: (Date.now() + 1).toString(),
+                role: 'assistant',
+                text: 'Entendido. Esta funcionalidad se conectará a MedGemma pronto.',
+                timestamp: new Date()
+            }]);
+        }, 1000);
+    };
+
+
 
     const handleUpload = (sectionId: string, file: File) => {
         const ext = file.name.split('.').pop()?.toLowerCase() as PatientFile['type'] ?? 'other';
@@ -181,17 +238,20 @@ export default function RightPanel() {
 
     return (
         <aside
-            className="w-80 border-l border-border bg-card h-full flex flex-col shrink-0 relative transition-all duration-300 z-10 shadow-[-4px_0_12px_-4px_rgba(0,0,0,0.05)]"
+            className="h-full w-full bg-sidebar flex flex-col relative z-10"
             role="complementary"
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleGlobalDrop}
         >
-            <div className="flex items-center justify-between p-4 border-b border-border h-14 bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-                <div className="flex items-center gap-2 text-primary font-semibold tracking-tight">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-sidebar-border h-14 bg-sidebar">
+                <div className="flex items-center gap-2 text-foreground font-semibold tracking-tight">
                     {isPatientView ? (
-                        <div className="bg-primary/10 p-1.5 rounded-md">
+                        <div className="bg-primary/10 text-primary p-1.5 rounded-md">
                             <Folder className="w-4 h-4" />
                         </div>
                     ) : (
-                        <div className="bg-primary/10 p-1.5 rounded-md">
+                        <div className="bg-primary/10 text-primary p-1.5 rounded-md">
                             <MessageSquare className="w-4 h-4" />
                         </div>
                     )}
@@ -202,10 +262,10 @@ export default function RightPanel() {
                 </Button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col space-y-2">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
                 {isPatientView ? (
                     <>
-                        <div className="flex-1 space-y-2">
+                        <div className="flex-1 space-y-1">
                             {sections.map((section) => (
                                 <DocumentSectionNode
                                     key={section.id}
@@ -215,45 +275,94 @@ export default function RightPanel() {
                             ))}
                         </div>
 
+                        {/* Dropzone visual indicator within sidebar */}
                         <div
                             ref={dropZoneRef}
                             className={cn(
-                                "mt-6 border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all duration-300",
+                                "m-4 mt-6 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center transition-all duration-300",
                                 isDragging
                                     ? "border-primary bg-primary/5 text-primary scale-[0.98] shadow-inner"
                                     : "border-border text-muted-foreground hover:bg-muted/30 hover:border-muted-foreground/40"
                             )}
-                            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                            onDragLeave={() => setIsDragging(false)}
-                            onDrop={handleGlobalDrop}
                         >
-                            <Upload className={cn("w-10 h-10 mb-3 transition-opacity", isDragging ? "opacity-100" : "opacity-30")} />
+                            <Upload className={cn("w-8 h-8 mb-3 transition-opacity", isDragging ? "opacity-100" : "opacity-30")} />
                             <div className="flex flex-col gap-1">
                                 <span className="text-sm font-medium">
-                                    {isDragging ? 'Subir ahora' : 'Cargar documentos'}
+                                    {isDragging ? 'Soltar aquí' : 'Cargar documentos'}
                                 </span>
-                                <span className="text-[11px] opacity-60">PDF, JPG, DICOM</span>
+                                <span className="text-[11px] opacity-60">Arrastra archivos aquí</span>
                             </div>
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4">
-                        <div className="w-16 h-16 rounded-full bg-muted/40 flex items-center justify-center border border-border/50">
-                            <MessageSquare className="w-8 h-8 opacity-20" />
+                    <div className="flex flex-col h-full relative">
+                        {/* Messages Area */}
+                        <ScrollArea className="flex-1 px-4 py-4" ref={scrollContainerRef}>
+                            <div className="flex flex-col gap-4 pb-20">
+                                {messages.map((msg) => (
+                                    <div 
+                                        key={msg.id} 
+                                        className={cn(
+                                            "flex w-full gap-2", 
+                                            msg.role === 'user' ? "justify-end" : "justify-start"
+                                        )}
+                                    >
+                                        {msg.role === 'assistant' && (
+                                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
+                                                <Bot className="w-3.5 h-3.5 text-primary" />
+                                            </div>
+                                        )}
+                                        <div 
+                                            className={cn(
+                                                "px-3 py-2 rounded-2xl max-w-[85%] text-[13px] leading-relaxed",
+                                                msg.role === 'user' 
+                                                    ? "bg-primary text-primary-foreground rounded-tr-sm" 
+                                                    : "bg-muted text-foreground rounded-tl-sm"
+                                            )}
+                                        >
+                                            <p className="whitespace-pre-wrap">{msg.text}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </ScrollArea>
+
+                        {/* Input Area */}
+                        <div className="absolute flex items-end gap-2 bottom-0 left-0 right-0 p-3 bg-sidebar border-t border-sidebar-border shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
+                            <Textarea 
+                                placeholder="Pregunta sobre la historia clínica..."
+                                className="min-h-[40px] h-[40px] max-h-[120px] resize-none px-3 py-2.5 text-[13px] rounded-xl bg-background border-muted-foreground/20 focus-visible:ring-1 focus-visible:ring-primary/50 shadow-sm"
+                                value={chatInput}
+                                onChange={(e) => setChatInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSendMessage();
+                                    }
+                                }}
+                            />
+                            <Button 
+                                size="icon" 
+                                className="h-10 w-10 shrink-0 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-transform active:scale-95"
+                                onClick={handleSendMessage}
+                                disabled={!chatInput.trim()}
+                            >
+                                <Send className="w-4 h-4" />
+                            </Button>
                         </div>
-                        <div className="space-y-2">
-                            <h3 className="text-sm font-semibold text-foreground">Asistente Médico de IA</h3>
-                            <p className="text-xs text-muted-foreground leading-relaxed">
-                                El asistente estará disponible próximamente para ayudarte con el resumen de historias y análisis clínico.
-                            </p>
-                        </div>
-                        <Button variant="outline" size="sm" disabled className="text-[11px]">
-                            Activar Acceso Temprano
-                        </Button>
                     </div>
                 )}
             </div>
+            {isDragging && (
+                <div className="absolute inset-0 bg-sidebar/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg border-2 border-primary border-dashed m-2 pointer-events-none">
+                    <div className="bg-background p-4 rounded-xl shadow-lg flex flex-col items-center gap-2 text-primary animate-in fade-in zoom-in duration-200">
+                        <Upload className="w-8 h-8" />
+                        <span className="font-semibold text-sm">Soltar documentos aquí</span>
+                    </div>
+                </div>
+            )}
         </aside>
     );
 }
+
 

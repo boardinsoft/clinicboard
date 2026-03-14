@@ -483,13 +483,33 @@ const COMMON_FAMILY_HISTORIES = [
     "Síndrome de Down", "Autismo", "Dislipidemia/Colesterol"
 ].sort();
 
-type WizardProfileKey = 'first_visit' | 'followup_general' | 'followup_postop' | 'followup_exams' | 'followup_psych_meds' | 'followup_wound_care' | 'followup_peds_neonatal' | 'followup_rehab_therapy' | 'followup_prenatal_high_risk' | 'emergency' | 'preventive' | 'procedure' | 'nutrition' | 'nutrition_weight' | 'nutrition_clinical' | 'nutrition_sports' | 'nutrition_pediatric_maternal' | 'nutrition_behavioral' | 'psychotherapy' | 'psych_mood_anxiety' | 'psych_relationships' | 'pediatric' | 'pediatric_growth' | 'pediatric_infectious' | 'pediatric_neurobehavioral' | 'womens_health' | 'womens_routine' | 'womens_prenatal' | 'womens_pathology' | 'sports' | 'sports_clearance' | 'sports_injury' | 'telemedicine' | 'acute_respiratory' | 'acute_gastrointestinal' | 'acute_osteomuscular' | 'acute_neuro' | 'chronic_cardiometabolic' | 'chronic_respiratory' | 'chronic_rheumatological' | 'chronic_neuro' | 'preventive_specialized' | 'occupational_health' | 'procedure_nursing' | 'therapy_infusional' | 'therapy_rehab' | 'emergency_trauma' | 'emergency_cardio_resp' | 'emergency_minor' | 'interconsultation_general' | 'interconsultation_cardiology' | 'interconsultation_neurology' | 'interconsultation_pulmonology' | 'interconsultation_gastroenterology' | 'interconsultation_nephrology' | 'interconsultation_endocrinology' | 'interconsultation_hematology' | 'interconsultation_infectious_diseases' | 'interconsultation_rheumatology' | 'interconsultation_oncology' | 'interconsultation_dermatology' | 'interconsultation_ophthalmology' | 'interconsultation_otolaryngology' | 'interconsultation_urology' | 'interconsultation_orthopedics' | 'interconsultation_psychiatry' | 'interconsultation_geriatrics' | 'interconsultation_gynecology' | 'interconsultation_surgery' | 'interconsultation_allergy' | 'clinical_observation';
+type WizardProfileKey = 'first_visit' | 'followup_general' | 'followup_postop' | 'followup_exams' | 'followup_psych_meds' | 'followup_wound_care' | 'followup_peds_neonatal' | 'followup_rehab_therapy' | 'followup_prenatal_high_risk' | 'emergency' | 'preventive' | 'procedure' | 'nutrition' | 'nutrition_weight' | 'nutrition_clinical' | 'nutrition_sports' | 'nutrition_pediatric_maternal' | 'nutrition_behavioral' | 'psychotherapy' | 'psych_mood_anxiety' | 'psych_relationships' | 'pediatric' | 'pediatric_growth' | 'pediatric_infectious' | 'pediatric_neurobehavioral' | 'womens_health' | 'womens_routine' | 'womens_prenatal' | 'womens_pathology' | 'sports' | 'sports_clearance' | 'sports_injury' | 'telemedicine' | 'acute_respiratory' | 'acute_gastrointestinal' | 'acute_osteomuscular' | 'acute_neuro' | 'chronic_cardiometabolic' | 'chronic_respiratory' | 'chronic_rheumatological' | 'chronic_neuro' | 'preventive_specialized' | 'occupational_health' | 'procedure_nursing' | 'therapy_infusional' | 'therapy_rehab' | 'emergency_trauma' | 'emergency_cardio_resp' | 'emergency_minor' | 'interconsultation_general' | 'interconsultation_cardiology' | 'interconsultation_neurology' | 'interconsultation_pulmonology' | 'interconsultation_gastroenterology' | 'interconsultation_nephrology' | 'interconsultation_endocrinology' | 'interconsultation_hematology' | 'interconsultation_infectious_diseases' | 'interconsultation_rheumatology' | 'interconsultation_oncology' | 'interconsultation_dermatology' | 'interconsultation_ophthalmology' | 'interconsultation_otolaryngology' | 'interconsultation_urology' | 'interconsultation_orthopedics' | 'interconsultation_psychiatry' | 'interconsultation_geriatrics' | 'interconsultation_gynecology' | 'interconsultation_surgery' | 'interconsultation_allergy' | 'second_opinion_oncology' | 'second_opinion_neurology' | 'second_opinion_surgery' | 'second_opinion_cardiology' | 'second_opinion_rare_disease' | 'second_opinion_pain' | 'second_opinion_fertility' | 'second_opinion_ortho' | 'second_opinion_general' | 'clinical_observation';
 
 const WIZARD_PROFILE_MAP: Record<string, WizardProfileKey> = {
     // first_visit
     'Consulta de Primera Vez': 'first_visit',
     'Interconsulta': 'interconsultation_general',
-    'Segunda Opinión Médica': 'first_visit',
+    'Segunda Opinión Médica': 'second_opinion_general',
+    'Confirmación de diagnóstico oncológico': 'second_opinion_oncology',
+    'Alternativas de tratamiento quirúrgico': 'second_opinion_surgery',
+    'Segunda opinión en cirugía de columna': 'second_opinion_surgery',
+    'Re-evaluación de enfermedad autoinmune': 'second_opinion_general', // Default for now
+    'Dudas sobre manejo crónico': 'second_opinion_general',
+    'Opinión sobre enfermedad rara': 'second_opinion_rare_disease',
+    'Evaluación de dolor refractario': 'second_opinion_pain',
+    'Segunda opinión en neurología / epilepsia': 'second_opinion_neurology',
+    'Manejo alternativo de cardiopatía': 'second_opinion_cardiology',
+    'Revaloración de lesión deportiva': 'second_opinion_ortho',
+    'Opciones de fertilidad / reproducción': 'second_opinion_fertility',
+    'Evaluación de intolerancias alimentarias': 'second_opinion_general',
+    'Dudas sobre necesidad de prótesis': 'second_opinion_ortho',
+    'Opinión sobre terapias biológicas': 'second_opinion_general',
+    'Manejo de nódulo tiroideo': 'second_opinion_general',
+    'Revisión de polifarmacia': 'second_opinion_general',
+    'Perspectiva sobre patología psiquiátrica': 'second_opinion_general',
+    'Alternativas en cirugía estética': 'second_opinion_surgery',
+    'Opinión pediátrica compleja': 'second_opinion_general',
+    'Consejería por mal pronóstico': 'second_opinion_oncology',
 
     // followup
     'Consulta de Seguimiento / Control': 'followup_general',
@@ -1240,12 +1260,85 @@ const WIZARD_PROFILES: Record<WizardProfileKey, { title: string; description: st
             { icon: <Zap className="w-5 h-5" />, label: 'Triaje Remoto', key: 'telemed_triage' },
         ],
     },
+    // Second Opinions
+    second_opinion_oncology: {
+        title: 'Segunda Opinión: Oncología',
+        description: 'Revisión externa de diagnósticos de cáncer y protocolos quimioterapéuticos.',
+        steps: [
+            { icon: <Search className="w-5 h-5" />, label: 'Revisión Oncológica', key: 'sec_onco_assessment' },
+            { icon: <ClipboardList className="w-5 h-5" />, label: 'Opinión de Manejo', key: 'sec_onco_plan' },
+        ]
+    },
+    second_opinion_neurology: {
+        title: 'Segunda Opinión: Neurología',
+        description: 'Evaluación de diagnósticos neurológicos complejos y epilepsia refractaria.',
+        steps: [
+            { icon: <Search className="w-5 h-5" />, label: 'Revisión Neurológica', key: 'sec_neuro_assessment' },
+            { icon: <ClipboardList className="w-5 h-5" />, label: 'Alternativas Neurológicas', key: 'sec_neuro_plan' },
+        ]
+    },
+    second_opinion_surgery: {
+        title: 'Segunda Opinión: Cirugía',
+        description: 'Análisis de alternativas quirúrgicas, necesidad de intervención y técnicas mínimamente invasivas.',
+        steps: [
+            { icon: <Search className="w-5 h-5" />, label: 'Evaluación Quirúrgica', key: 'sec_surg_assessment' },
+            { icon: <ClipboardList className="w-5 h-5" />, label: 'Alternativas Quirúrgicas', key: 'sec_surg_plan' },
+        ]
+    },
+    second_opinion_cardiology: {
+        title: 'Segunda Opinión: Cardiología',
+        description: 'Manejo alternativo de cardiopatías, arritmias complejas e indicación de dispositivos.',
+        steps: [
+            { icon: <Search className="w-5 h-5" />, label: 'Revisión Cardiológica', key: 'sec_cardio_assessment' },
+            { icon: <ClipboardList className="w-5 h-5" />, label: 'Opinión Cardiovascular', key: 'sec_cardio_plan' },
+        ]
+    },
+    second_opinion_rare_disease: {
+        title: 'Segunda Opinión: Genética / Enf. Raras',
+        description: 'Abordaje de diagnósticos genéticos, síndromes atípicos y enfermedades huérfanas.',
+        steps: [
+            { icon: <Search className="w-5 h-5" />, label: 'Análisis de Caso', key: 'sec_rare_assessment' },
+            { icon: <ClipboardList className="w-5 h-5" />, label: 'Orientación Genética', key: 'sec_rare_plan' },
+        ]
+    },
+    second_opinion_pain: {
+        title: 'Segunda Opinión: Clínica del Dolor',
+        description: 'Manejo de síndromes dolorosos refractarios, neuropatías crónicas y opciones intervencionistas.',
+        steps: [
+            { icon: <Search className="w-5 h-5" />, label: 'Evaluación del Dolor', key: 'sec_pain_assessment' },
+            { icon: <ClipboardList className="w-5 h-5" />, label: 'Estrategia Analgésica', key: 'sec_pain_plan' },
+        ]
+    },
+    second_opinion_fertility: {
+        title: 'Segunda Opinión: Fertilidad',
+        description: 'Revisión de opciones de reproducción asistida, fallo de implantación y pronóstico reproductivo.',
+        steps: [
+            { icon: <Search className="w-5 h-5" />, label: 'Revisión Reproductiva', key: 'sec_fertility_assessment' },
+            { icon: <ClipboardList className="w-5 h-5" />, label: 'Opciones de Fertilidad', key: 'sec_fertility_plan' },
+        ]
+    },
+    second_opinion_ortho: {
+        title: 'Segunda Opinión: Ortopedia',
+        description: 'Manejo alternativo de patología articular, decisiones sobre prótesis y lesiones complejas.',
+        steps: [
+            { icon: <Search className="w-5 h-5" />, label: 'Revisión Ortopédica', key: 'sec_ortho_assessment' },
+            { icon: <ClipboardList className="w-5 h-5" />, label: 'Alternativas Ortopédicas', key: 'sec_ortho_plan' },
+        ]
+    },
+    second_opinion_general: {
+        title: 'Segunda Opinión Clínica',
+        description: 'Revisión holística de diagnósticos dudosos, polifarmacia y casos médicos generales refractarios.',
+        steps: [
+            { icon: <Search className="w-5 h-5" />, label: 'Revisión Integral', key: 'sec_general_assessment' },
+            { icon: <ClipboardList className="w-5 h-5" />, label: 'Sugerencias Médicas', key: 'sec_general_plan' },
+        ]
+    },
 };
 
 function getWizardProfile(subcategory: string, chiefComplaint?: string): WizardProfileKey {
     if (chiefComplaint) {
         // Special case matching to dynamically find subprofiles
-        const subprofilePrefixes = ['nutrition_', 'pediatric_', 'womens_', 'sports_', 'psych_', 'acute_', 'chronic_', 'preventive_', 'occupational_', 'procedure_', 'therapy_', 'emergency_', 'interconsultation_', 'clinical_observation', 'followup_'];
+        const subprofilePrefixes = ['nutrition_', 'pediatric_', 'womens_', 'sports_', 'psych_', 'acute_', 'chronic_', 'preventive_', 'occupational_', 'procedure_', 'therapy_', 'emergency_', 'interconsultation_', 'clinical_observation', 'followup_', 'second_opinion_'];
 
         for (const [key, profile] of Object.entries(WIZARD_PROFILE_MAP)) {
             // Check if profile corresponds to any of the specific subprofiles
@@ -3559,6 +3652,222 @@ export default function HistoryPage() {
                                                                         <Field>
                                                                             <FieldLabel className="text-xs mb-1.5">Manejo Antihistamínico / Preventivo</FieldLabel>
                                                                             <Textarea {...form.register('treatmentPlan')} placeholder="Urticaria aguda por alérgeno alimentario sospechoso. Antihistamínico H1 2da gen c/12h x 5 días. Corticoide sistémico dosis baja. Evitar camarones..." rows={6} className="resize-none" />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* ─ Steps: Segunda Opinión: Oncología ─ */}
+                                                                {profile.steps[wizardStep]?.key === 'sec_onco_assessment' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Revisión Oncológica</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Análisis de Biopsias y Estadificación Previa</FieldLabel>
+                                                                            <Textarea {...form.register('currentIllness.notes')} placeholder="Paciente con reporte de patología (Fecha) compatible con Adenocarcinoma. Inmunohistoquímica: ER(+), PR(+), HER2(-). PET-CT muestra..." rows={5} />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+                                                                {profile.steps[wizardStep]?.key === 'sec_onco_plan' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Opinión de Manejo Oncológico</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Sugerencias y Plan Terapéutico</FieldLabel>
+                                                                            <Textarea {...form.register('treatmentPlan')} placeholder="De acuerdo con el diagnóstico actual. Sugiero añadir terapia endocrina adyuvante. No considero criterio absoluto para radioterapia en este estadio..." rows={6} className="resize-none" />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* ─ Steps: Segunda Opinión: Neurología ─ */}
+                                                                {profile.steps[wizardStep]?.key === 'sec_neuro_assessment' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Revisión Neurológica</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Análisis de Electroencefalograma e Imágenes</FieldLabel>
+                                                                            <Textarea {...form.register('currentIllness.notes')} placeholder="Revisión de RNM cerebral simple y contrastada (Fecha): Foco epileptogénico temporal derecho... EEG prolongado muestra..." rows={5} />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+                                                                {profile.steps[wizardStep]?.key === 'sec_neuro_plan' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Alternativas Neurológicas</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Sugerencias de Manejo Neurológico</FieldLabel>
+                                                                            <Textarea {...form.register('treatmentPlan')} placeholder="Epilepsia focal estructural refractaria. Considerar evaluación por neurocirugía funcional o rotación a biterapia con Levetiracetam + brivaracetam..." rows={6} className="resize-none" />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* ─ Steps: Segunda Opinión: Cirugía ─ */}
+                                                                {profile.steps[wizardStep]?.key === 'sec_surg_assessment' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Evaluación Quirúrgica</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Análisis del Caso y Pruebas Anatómicas</FieldLabel>
+                                                                            <Textarea {...form.register('currentIllness.notes')} placeholder="Paciente programado para laminectomía L4-L5. TAC de columna evidencia canal estrecho focal pero con estabilidad biomecánica conservada..." rows={5} />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+                                                                {profile.steps[wizardStep]?.key === 'sec_surg_plan' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Alternativas Quirúrgicas</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Opinión sobre Abordaje Quirúrgico</FieldLabel>
+                                                                            <Textarea {...form.register('treatmentPlan')} placeholder="Sugiero intentar bloqueo peridural facetario y programa de estabilización lumbar antes de considerar la artrodesis, dado el bajo grado de listesis..." rows={6} className="resize-none" />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* ─ Steps: Segunda Opinión: Cardiología ─ */}
+                                                                {profile.steps[wizardStep]?.key === 'sec_cardio_assessment' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Revisión Cardiológica</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Análisis de Ecocardiograma y Holter</FieldLabel>
+                                                                            <Textarea {...form.register('currentIllness.notes')} placeholder="Fracción de Eyección (FEVI) del 35%, sin mejoría tras 3 meses de terapia médica óptima. Holter de 24h documenta 3 episodios de TVNS..." rows={5} />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+                                                                {profile.steps[wizardStep]?.key === 'sec_cardio_plan' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Opinión Cardiovascular</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Estrategia Cardiológica Sugerida</FieldLabel>
+                                                                            <Textarea {...form.register('treatmentPlan')} placeholder="Cumple indicación clase I para implante de Cardiodesfibrilador Implantable (CDI) como prevención primaria. Se autoriza programación del dispositivo..." rows={6} className="resize-none" />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* ─ Steps: Segunda Opinión: Enfermedades Raras / Genética ─ */}
+                                                                {profile.steps[wizardStep]?.key === 'sec_rare_assessment' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Análisis de Síndrome Atípico</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Análisis de Pruebas Genéticas o Metabólicas</FieldLabel>
+                                                                            <Textarea {...form.register('currentIllness.notes')} placeholder="Estudio de exoma clínico completo reporta variante VUS en gen X. Fenotipo clínico mixto compatible parcialmente con síndrome Y..." rows={5} />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+                                                                {profile.steps[wizardStep]?.key === 'sec_rare_plan' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Orientación Genética / Rara</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Sugerencias y Consejo Genético</FieldLabel>
+                                                                            <Textarea {...form.register('treatmentPlan')} placeholder="No se puede establecer diagnóstico concluyente aún. Sugerimos prueba de segregación familiar (panel a ambos padres) y reevaluación metabólica en 6 meses..." rows={6} className="resize-none" />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* ─ Steps: Segunda Opinión: Dolor ─ */}
+                                                                {profile.steps[wizardStep]?.key === 'sec_pain_assessment' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Evaluación del Dolor Refractario</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Historial Analgésico y Escalas de Dolor</FieldLabel>
+                                                                            <Textarea {...form.register('currentIllness.notes')} placeholder="Dolor neuropático post-herpético. EVA 8/10 persistente a pesar de uso dual de Pregabalina 300mg/día y Duloxetina 60mg/día por 8 semanas..." rows={5} />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+                                                                {profile.steps[wizardStep]?.key === 'sec_pain_plan' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Estrategia Analgésica</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Alternativas para Manejo del Dolor</FieldLabel>
+                                                                            <Textarea {...form.register('treatmentPlan')} placeholder="Falla terapéutica oral. Sugiero aplicar parches de Lidocaína al 5% tópica como coadyuvante y programar bloqueo simpático o infiltración intercostal guiada..." rows={6} className="resize-none" />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* ─ Steps: Segunda Opinión: Fertilidad ─ */}
+                                                                {profile.steps[wizardStep]?.key === 'sec_fertility_assessment' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Revisión Reproductiva</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Análisis Embrionario y Hormonal</FieldLabel>
+                                                                            <Textarea {...form.register('currentIllness.notes')} placeholder="Pareja con 2 intentos fallidos de FIV previos (Baja reserva ovárica + Teratozoospermia leve). Niveles de AMH 0.4 ng/mL..." rows={5} />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+                                                                {profile.steps[wizardStep]?.key === 'sec_fertility_plan' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Opciones de Fertilidad</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Opinión sobre Pronóstico Reproductivo</FieldLabel>
+                                                                            <Textarea {...form.register('treatmentPlan')} placeholder="Pronóstico reservado con óvulos propios. Se discute detalladamente la alternativa de ovodonación. Sugerimos ICSI con selección espermática PICSI en próximo ciclo..." rows={6} className="resize-none" />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* ─ Steps: Segunda Opinión: Ortopedia ─ */}
+                                                                {profile.steps[wizardStep]?.key === 'sec_ortho_assessment' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Revisión Ortopédica / Deportiva</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Análisis de Pruebas de Imagen y Estabilidad</FieldLabel>
+                                                                            <Textarea {...form.register('currentIllness.notes')} placeholder="RMN de rodilla derecha muestra lesión compleja del menisco interno y desgaste condral grado III. Paciente deportista de alto impacto..." rows={5} />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+                                                                {profile.steps[wizardStep]?.key === 'sec_ortho_plan' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Alternativas Ortopédicas</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Sugerencias Quirúrgicas o Conservadoras</FieldLabel>
+                                                                            <Textarea {...form.register('treatmentPlan')} placeholder="Evitar artroscopia de primera línea dado el daño condral asociado. Sugiero iniciar visosuplementación con ácido hialurónico intraarticular y adaptar la descarga deportiva por 3 meses..." rows={6} className="resize-none" />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* ─ Steps: Segunda Opinión: Clínica General ─ */}
+                                                                {profile.steps[wizardStep]?.key === 'sec_general_assessment' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Revisión Clínica Integral</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Antecedentes, Polifarmacia y Diagnósticos Previos</FieldLabel>
+                                                                            <Textarea {...form.register('currentIllness.notes')} placeholder="Paciente evaluado por fatiga crónica inespecífica, refiriendo diagnóstico previo de 'sensibilidad química múltiple'. Exámenes de laboratorios básicos normales..." rows={5} />
+                                                                        </Field>
+                                                                    </div>
+                                                                )}
+                                                                {profile.steps[wizardStep]?.key === 'sec_general_plan' && (
+                                                                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                                        <div>
+                                                                            <h3 className="text-sm font-semibold mb-1">Sugerencias Médicas de Segunda Opinión</h3>
+                                                                        </div>
+                                                                        <Field>
+                                                                            <FieldLabel className="text-xs mb-1.5">Análisis Crítico y Planes Alternativos</FieldLabel>
+                                                                            <Textarea {...form.register('treatmentPlan')} placeholder="Sugiero reevaluar bajo la óptica de un Síndrome de Fatiga Crónica / EM. Retirar los 3 neuromoduladores actuales que pueden estar empeorando el letargo. Derivación holística..." rows={6} className="resize-none" />
                                                                         </Field>
                                                                     </div>
                                                                 )}

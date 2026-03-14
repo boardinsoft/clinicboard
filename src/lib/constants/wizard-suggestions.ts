@@ -163,6 +163,33 @@ export const FIELD_SUGGESTION_MAP: Record<string, Record<string, string[]>> = {
             'Rinitis Alérgica', 'Asma Alérgica', 'Dermatitis Atópica / Eczema', 'Anafilaxia Previa', 'Alergia a Medicamentos (Penicilina/AINEs)',
             'Alergia Alimentaria Severa', 'Urticaria Crónica', 'Alergia a Picadura de Insectos', 'Angioedema', 'Sensibilidad a Látex'
         ],
+        second_opinion_oncology: [
+            'Tratamiento oncológico previo (Qx, Qt, Rt)', 'Cáncer primario conocido', 'Metástasis documentadas', 'Biopsia previa con resultado incierto', 'Marcadores tumorales elevados'
+        ],
+        second_opinion_neurology: [
+            'Diagnóstico previo de epilepsia', 'Enfermedad desmielinizante subyacente', 'ACV agudo/crónico', 'Migraña refractaria', 'Deterioro cognitivo progresivo'
+        ],
+        second_opinion_surgery: [
+            'Cirugía previa fallida/complicada', 'Múltiples reintervenciones (abdomen hostil)', 'Adherencias severas', 'Riesgo quirúrgico elevado', 'Material protésico infectado'
+        ],
+        second_opinion_cardiology: [
+            'Falla cardíaca refractaria a tratamiento', 'Valvulopatía severa', 'Arritmia no controlada', 'Cardiopatía isquémica compleja', 'Indicación previa de marcapasos/CDI'
+        ],
+        second_opinion_rare_disease: [
+            'Estudio genético previo inconcluso', 'Síndrome polimalformativo', 'Enfermedad huérfana diagnosticada', 'Asesoramiento por consanguinidad', 'Enfermedad metabólica congénita'
+        ],
+        second_opinion_pain: [
+            'Dolor crónico refractario a opioides', 'Neuralgia del trigémino/post-herpética', 'Fibromialgia severa', 'Síndrome de dolor regional complejo', 'Cirugía de columna fallida (FBSS)'
+        ],
+        second_opinion_fertility: [
+            'FIV previas fallidas', 'Abortos recurrentes', 'Baja reserva ovárica / AMH disminuida', 'Infertilidad masculina severa (Azoospermia)', 'Anomalías genéticas embrionarias'
+        ],
+        second_opinion_ortho: [
+            'Prótesis articular dolorosa / aflojamiento', 'Infección periprotésica / Osteomielitis', 'Lesión deportiva refractaria a físico', 'Displasia congénita severa', 'Fractura no consolidada (Pseudoartrosis)'
+        ],
+        second_opinion_general: [
+            'Polimorbilidad compleja', 'Diagnóstico previo contradictorio', 'Efectos adversos severos a tratamientos', 'Diagnóstico de exclusión en estudio', 'Diferimiento de procedimiento mayor'
+        ],
         default: [
             'Hipertensión Arterial', 'Diabetes Mellitus Tipo 2', 'Dislipidemia', 'Asma', 'Gastritis',
             'Reflujo Gastroesofágico', 'Hipotiroidismo', 'Enfermedad Renal Crónica', 'Artritis Reumatoide', 'Artrosis',
@@ -304,6 +331,33 @@ export const FIELD_SUGGESTION_MAP: Record<string, Record<string, string[]>> = {
         interconsultation_allergy: [
             'Exposición Constante a Mascotas', 'Falta de Ventilación en el Hogar', 'Uso Constante de Aromatizantes/Inciensos', 'Exposición a Ácaros (Alfombras/Peluches)', 'Automediación con Antihistamínicos'
         ],
+        second_opinion_oncology: [
+            'Consumo activo de tabaco/alcohol en tratamiento', 'Exposición a carcinógenos', 'Terapias alternativas no convencionales', 'Uso de suplementos no reportados', 'Dieta restrictiva por el cáncer'
+        ],
+        second_opinion_neurology: [
+            'Mala adherencia al tratamiento antiepiléptico', 'Alteración severa del sueño', 'Automedicación con psicofármacos', 'Consumo de sustancias estimulantes', 'Exposición continua a desencadenantes (luces, pantallas)'
+        ],
+        second_opinion_surgery: [
+            'Uso no reportado de anticoagulantes', 'Tabaquismo intenso preventivo de cicatrización', 'Ayuno prequirúrgico prolongado previo', 'Inmovilidad prolongada', 'Consumo de inmunosupresores'
+        ],
+        second_opinion_cardiology: [
+            'Transgresiones dietéticas recurrentes (Sodio)', 'Abandono de terapia antiplaquetaria', 'Sedentarismo post-infarto', 'Consumo de antiinflamatorios (AINEs) crónico', 'Insomnio / Apnea del sueño no tratada'
+        ],
+        second_opinion_rare_disease: [
+            'Dietas extremadamente selectivas (metabolismo)', 'Consumo de terapias "milagro"', 'Aislamiento social y hábitos reclusivos', 'Alteraciones profundas del ciclo sueño-vigilia', 'Automedicación por dolor crónico'
+        ],
+        second_opinion_pain: [
+            'Uso desordenado de opioides de rescate', 'Automediación con múltiples analgésicos', 'Inactividad física por temor al dolor (kinesiofobia)', 'Catastrofización del dolor', 'Búsqueda constante de intervencionismos'
+        ],
+        second_opinion_fertility: [
+            'Exposición constante a disruptores endocrinos', 'Tabaquismo y cafeína excesiva', 'Uso de esteroides anabólicos (hombres)', 'Estrés crónico y ansiedad severa', 'Dietas hipocalóricas estrictas'
+        ],
+        second_opinion_ortho: [
+            'Sobrecarga articular continua en el trabajo', 'Práctica deportiva de alto impacto sobre lesión', 'Inadecuado uso de órtesis o apoyos', 'Falta de adherencia a rehabilitación física', 'Exceso de peso corporal intercurrente'
+        ],
+        second_opinion_general: [
+            'Shopping médico (múltiples consultores)', 'Automedicación a partir de internet', 'Rechazo a tratamientos convencionales (vacunas, medicación)', 'Uso simultáneo de múltiples remedios homeopáticos', 'Falta de constancia en seguimientos'
+        ],
         default: [
             'Tabaquismo activo', 'Ex tabaquismo', 'Nunca fumador', 'Alcohol ocasional social', 'Bebe alcohol frecuentemente',
             'Sedentarismo', 'Actividad física regular (3+ veces/semana)', 'Dieta balanceada', 'Dieta rica en grasas/carbohidratos', 'Uso de drogas recreativas',
@@ -441,6 +495,33 @@ export const FIELD_SUGGESTION_MAP: Record<string, Record<string, string[]>> = {
         ],
         interconsultation_allergy: [
             'Atopia Familiar Severa (Madre/Padre)', 'Asma Severa Familiar', 'Alergias Alimentarias Hereditarias', 'Inmunodeficiencia Primaria Familiar', 'Angioedema Hereditario'
+        ],
+        second_opinion_oncology: [
+            'Alta carga de cáncer en familia (mismo tipo u otros relacionados)', 'Mutaciones BRCA familiares', 'Síndrome de Lynch (Ca Colorrectal)', 'Fallecimiento temprano de familiares por cáncer', 'Diagnósticos múltiples de cáncer antes de 50 años'
+        ],
+        second_opinion_neurology: [
+            'Trastornos neurodegenerativos hereditarios (Huntington)', 'Alzheimer de inicio temprano en padres', 'Epilepsia intratable en hermanos', 'Distrofias musculares familiares', 'Encefalopatías no filiadas en familia'
+        ],
+        second_opinion_surgery: [
+            'Hemorragias masivas en cirugías de familiares', 'Reacciones adversas a anestesia graves (Hipertermia Maligna)', 'Infecciones quirúrgicas a repetición en familia', 'Mala cicatrización sistémica', 'Eventos trombóticos en perioperatorios de padres'
+        ],
+        second_opinion_cardiology: [
+            'Muerte súbita por arritmias en familiares jóvenes', 'Cardiopatías dilatadas/hipertróficas familiares', 'Infartos prematuros (hombres <55, mujeres <65)', 'Marcapasos/Desfibriladores en familiares de primer grado', 'Hipercolesterolemia familiar severa'
+        ],
+        second_opinion_rare_disease: [
+            'Consanguinidad (primos, parientes cercanos)', 'Múltiples abortos no explicados en familia', 'Anomalías genéticas/cromosómicas ya conocidas en familia', 'Hermanos con fenotipo/retraso similar no diagnosticado', 'Muerte temprana en infancia en varios miembros de familia'
+        ],
+        second_opinion_pain: [
+            'Fibromialgia de alta agregación familiar', 'Migrañas hemiparéticas o complejas en familia', 'Trastornos de somatización familiares', 'Antecedente de dolor crónico intratable en padres', 'Enfermedades reumáticas incapacitantes en familia'
+        ],
+        second_opinion_fertility: [
+            'Falla ovárica oculta/precoz en madre o hermanas', 'Endometriosis familiar severa', 'Infertilidad no explicada en hermanos', 'Malformaciones uterinas en familia directas', 'Anomalías cromosómicas estructurales (translocaciones) conocidas'
+        ],
+        second_opinion_ortho: [
+            'Enfermedad de Paget u otras osteopatías metabólicas', 'Artroplastia temprana en padre o madre', 'Displasia ósea hereditaria (Acondroplasia, Osteogénesis)', 'Escoliosis idiopática familiar severa', 'Tumores óseos en edad joven en familia'
+        ],
+        second_opinion_general: [
+            'Diagnósticos "raros" no confirmados en múltiples miembros', 'Ansiedad por la salud (hipocondría) prevalente en familia', 'Enfermedades crónicas superpuestas complejas', 'Intolerancias múltiples (ambientales, medicamentosas) sistémicas en familia', 'Fallecimientos con "diagnóstico indeterminado" prevalentes'
         ],
         default: [
             'Cáncer (varios tipos)', 'Diabetes Mellitus', 'Hipertensión Arterial', 'Enfermedades Cardíacas', 'ACV / Infarto Cerebral',

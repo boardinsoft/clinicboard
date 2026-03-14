@@ -30,6 +30,11 @@ import {
 import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@/components/ui/resizable';
 
 import {
   LayoutDashboard,
@@ -218,7 +223,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { addTab, activeTabId } = useTabStore();
-  const { toggleRightPanel } = useLayoutStore();
+  const { toggleRightPanel, rightPanelOpen } = useLayoutStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -445,12 +450,23 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
 
         {/* ── Main content + right panel ── */}
         <div className="flex flex-1 overflow-hidden bg-background">
-          <main className="flex-1 overflow-y-auto bg-background relative">
-            <div className="h-full p-4 md:p-6 bg-background">
-              {!activeTabId ? children : <TabContentManager>{children}</TabContentManager>}
-            </div>
-          </main>
-          <RightPanel />
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel defaultSize={rightPanelOpen ? "75%" : "100%"} minSize="50%">
+              <main className="flex-1 overflow-y-auto bg-background relative h-full">
+                <div className="h-full p-4 md:p-6 bg-background">
+                  {!activeTabId ? children : <TabContentManager>{children}</TabContentManager>}
+                </div>
+              </main>
+            </ResizablePanel>
+            {rightPanelOpen && (
+              <>
+                <ResizableHandle withHandle className="w-1 bg-border/40 hover:bg-border/80 transition-colors" />
+                <ResizablePanel defaultSize="25%" minSize="20%" maxSize="50%">
+                  <RightPanel />
+                </ResizablePanel>
+              </>
+            )}
+          </ResizablePanelGroup>
         </div>
       </div>
     </div>
