@@ -50,3 +50,14 @@ next-env.d.ts
 skills-lock.json
 zod-test.js
 zod-test.ts
+
+# supabase
+supabase/.temp/
+supabase/.branch
+
+# python (api/)
+__pycache__/
+*.pyc
+venv/
+.venv/
+env/
