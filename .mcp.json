@@ -3,6 +3,14 @@
     "vercel": {
       "type": "http",
       "url": "https://mcp.vercel.com"
+    },
+    "testsprite": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@testsprite/testsprite-mcp"
+      ],
+      "env": {}
     }
   }
 }
