@@ -1657,12 +1657,12 @@ export default function HistoryPage() {
 
                     // Extract persisted Anamnesis data
                     const p = patient as Patient;
-                    const famHist = Array.isArray(p.family_history) ? (p.family_history[0] as any)?.text || '' : '';
-                    const habitsHist = Array.isArray(p.habits) ? (p.habits[0] as any)?.text || '' : '';
-                    const persHist = Array.isArray(p.personal_history) ? p.personal_history as any[] : [];
+                    const famHist = Array.isArray(p.family_history) ? (p.family_history[0] as { text?: string })?.text || '' : '';
+                    const habitsHist = Array.isArray(p.habits) ? (p.habits[0] as { text?: string })?.text || '' : '';
+                    const persHist = Array.isArray(p.personal_history) ? p.personal_history as { label?: string, text?: string }[] : [];
                     const pastCond = persHist.find(h => h.label === 'Patológicos')?.text || '';
                     const surgHist = persHist.find(h => h.label === 'Quirúrgico')?.text || '';
-                    const ext = Array.isArray(p.extensions) ? p.extensions as any[] : [];
+                    const ext = Array.isArray(p.extensions) ? p.extensions as { url?: string, valueString?: string }[] : [];
                     const knownAllergies = ext.find(e => e.url === 'knownAllergies')?.valueString || '';
 
                     // Note: If tabData had values, we might not want to overwrite them if the patient is the same.

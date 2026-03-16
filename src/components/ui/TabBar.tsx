@@ -53,7 +53,7 @@ export default function TabBar() {
                             onClick={(e) => handleCloseTab(e, tab.id)}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' || e.key === ' ') {
-                                    handleCloseTab(e as any, tab.id);
+                                    handleCloseTab(e as unknown as React.MouseEvent, tab.id);
                                 }
                             }}
                         >
