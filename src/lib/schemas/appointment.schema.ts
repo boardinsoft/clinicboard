@@ -2,21 +2,22 @@ import { z } from 'zod';
 
 export const AppointmentStatusEnum = z.enum(['proposed', 'pending', 'booked', 'arrived', 'fulfilled', 'cancelled', 'noshow']);
 
+const dateStringSchema = z.string()
+    .refine(val => !isNaN(Date.parse(val)), { message: "Invalid date format" })
+    .refine(val => {
+        const date = new Date(val);
+        const minutes = date.getMinutes();
+        return minutes % 15 === 0;
+    }, { message: "La hora debe ser en intervalos de 15 minutos (ej: :00, :15, :30, :45)" });
+
 export const appointmentSchema = z.object({
     patient_id: z.string().uuid('Invalid patient ID (UUID required)'),
     practitioner_id: z.string().uuid('Invalid practitioner ID (UUID required)'),
-    start_time: z.string().datetime({ message: 'Invalid ISO datetime' }),
-    end_time: z.string().datetime({ message: 'Invalid ISO datetime' }),
+    start_time: dateStringSchema,
+    end_time: dateStringSchema,
     status: AppointmentStatusEnum.optional().default('proposed'),
     description: z.string().optional(),
     appointment_type: z.string().min(1, 'Appointment type is required'),
-}).refine((data) => {
-    const start = new Date(data.start_time).getTime();
-    const end = new Date(data.end_time).getTime();
-    return end > start;
-}, {
-    message: "End time must be after start time",
-    path: ["end_time"],
 });
 
 export type AppointmentSchemaType = z.infer<typeof appointmentSchema>;

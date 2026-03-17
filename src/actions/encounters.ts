@@ -7,7 +7,32 @@ import { EncounterStatus, VitalSigns } from '@/lib/fhir/types';
 import type { Json } from '@/types/database.types';
 
 /**
- * Maps incoming camelCase VitalSigns from the UI to the snake_case schema/DB structure.
+ * FHIR R4 Encounter State Machine
+ */
+const VALID_ENCOUNTER_TRANSITIONS: Record<EncounterStatus, EncounterStatus[]> = {
+    'planned': ['arrived', 'cancelled', 'in-progress'],
+    'arrived': ['triaged', 'in-progress', 'cancelled'],
+    'triaged': ['in-progress', 'cancelled'],
+    'in-progress': ['onleave', 'finished', 'cancelled'],
+    'onleave': ['in-progress', 'finished'],
+    'finished': [], // Terminal
+    'cancelled': [], // Terminal
+    'entered-in-error': [],
+    'unknown': ['planned', 'arrived', 'triaged', 'in-progress', 'finished', 'cancelled']
+};
+
+function validateEncounterTransition(current: EncounterStatus, target: EncounterStatus): { isValid: boolean; error?: string } {
+    if (current === target) return { isValid: true };
+    const allowed = VALID_ENCOUNTER_TRANSITIONS[current] || [];
+    if (allowed.includes(target)) return { isValid: true };
+    return {
+        isValid: false,
+        error: `Transición de encuentro inválida: de '${current}' a '${target}'. Permitidos: [${allowed.join(', ')}]`
+    };
+}
+
+/**
+ * Maps incoming VitalSigns from UI to DB structure.
  */
 function mapVitalSigns(signs?: VitalSigns) {
     if (!signs) return undefined;
@@ -24,159 +49,204 @@ function mapVitalSigns(signs?: VitalSigns) {
 
 /**
  * createEncounter(data)
- * Create an encounter in 'planned' status.
  */
 export async function createEncounter(formData: {
     patient_id: string;
     encounter_class: 'AMB' | 'IMP' | 'EMER' | 'HH';
     start_time: string;
-    vital_signs?: VitalSigns;
-    evolution_note?: string;
+    appointment_id?: string;
+    status?: EncounterStatus;
 }) {
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
-        return { error: 'No autorizado. Sesión no encontrada.' };
-    }
+    if (!user) return { error: 'No autorizado' };
 
-    // Prepare data with defaults and mapped vital signs
     const encounterData = {
         ...formData,
-        vital_signs: mapVitalSigns(formData.vital_signs),
         practitioner_id: user.id,
-        status: 'planned' as EncounterStatus,
+        status: formData.status || 'planned',
     };
 
-    // Validate with schema
     const validation = encounterSchema.safeParse(encounterData);
-
-    if (!validation.success) {
-        return { error: validation.error.flatten().fieldErrors };
-    }
+    if (!validation.success) return { error: validation.error.flatten().fieldErrors };
 
     const { data, error } = await supabase
         .from('encounters')
         .insert([{
             patient_id: validation.data.patient_id,
-            practitioner_id: validation.data.practitioner_id,
+            practitioner_id: user.id,
             encounter_class: validation.data.encounter_class,
             status: validation.data.status,
             start_time: validation.data.start_time,
-            vital_signs: validation.data.vital_signs,
-            evolution_note: validation.data.evolution_note,
+            appointment_id: validation.data.appointment_id,
         }])
         .select()
         .single();
 
-    if (error) {
-        console.error('Error in createEncounter:', error);
-        return { error: error.message };
-    }
+    if (error) return { error: error.message };
 
     revalidatePath('/history');
     return { data };
 }
 
 /**
- * startEncounter(id)
- * Transition from 'planned' to 'in-progress'.
+ * saveEncounterDraft(id, formData)
+ * Auto-save or draft update. Keep status 'in-progress'.
  */
-export async function startEncounter(id: string) {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return { error: 'No autorizado' };
-    }
-
-    const { data, error } = await supabase
-        .from('encounters')
-        .update({
-            status: 'in-progress',
-            start_time: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .eq('practitioner_id', user.id)
-        .eq('status', 'planned')
-        .select()
-        .single();
-
-    if (error) {
-        console.error('Error in startEncounter:', error);
-        return { error: 'Error al iniciar encuentro. Verifique que el encuentro sea el propietario y esté en estado "planned".' };
-    }
-
-    revalidatePath('/history');
-    return { data };
-}
-
-/**
- * finishEncounter(id, formData)
- * Transition from 'in-progress' to 'finished'.
- */
-export async function finishEncounter(id: string, formData: {
+export async function saveEncounterDraft(id: string, formData: {
+    subjective?: string;
+    objective?: string;
+    analysis?: string;
+    plan?: string;
     evolution_note?: string;
     vital_signs?: VitalSigns;
-    diagnosis?: Json; // FHIR diagnosis structure
+    physical_exam?: any;
+    diagnosis?: Json;
 }) {
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
-        return { error: 'No autorizado' };
-    }
+    if (!user) return { error: 'No autorizado' };
+
+    // Get current status to ensure it's in-progress or similar
+    const { data: encounter } = await supabase
+        .from('encounters')
+        .select('status')
+        .eq('id', id)
+        .single();
+
+    if (!encounter) return { error: 'Encuentro no encontrado' };
+    if (encounter.status === 'finished') return { error: 'No se puede editar un encuentro finalizado.' };
+
+    const { data, error } = await supabase
+        .from('encounters')
+        .update({
+            subjective: formData.subjective,
+            objective: formData.objective,
+            analysis: formData.analysis,
+            plan: formData.plan,
+            evolution_note: formData.evolution_note,
+            vital_signs: mapVitalSigns(formData.vital_signs),
+            physical_exam: formData.physical_exam,
+            diagnosis: formData.diagnosis,
+            updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .eq('practitioner_id', user.id)
+        .select()
+        .single();
+
+    if (error) return { error: error.message };
+    return { data };
+}
+
+/**
+ * finalizeEncounter(id)
+ * Close and Sign. Transition to 'finished'.
+ */
+export async function finalizeEncounter(id: string) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'No autorizado' };
+
+    const { data: encounter } = await supabase
+        .from('encounters')
+        .select('status')
+        .eq('id', id)
+        .single();
+
+    if (!encounter) return { error: 'Encuentro no encontrado' };
+
+    const transition = validateEncounterTransition(encounter.status as EncounterStatus, 'finished');
+    if (!transition.isValid) return { error: transition.error };
 
     const { data, error } = await supabase
         .from('encounters')
         .update({
             status: 'finished',
             end_time: new Date().toISOString(),
-            evolution_note: formData.evolution_note,
-            vital_signs: mapVitalSigns(formData.vital_signs),
-            diagnosis: formData.diagnosis,
         })
         .eq('id', id)
         .eq('practitioner_id', user.id)
-        .eq('status', 'in-progress')
         .select()
         .single();
 
+    if (error) return { error: error.message };
+
+    revalidatePath('/history');
+    return { data };
+}
+
+export async function getEncounters(patientId: string) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { data: [] };
+
+    const { data, error } = await supabase
+        .from('encounters')
+        .select(`
+            *,
+            practitioner:practitioners(name_given, name_family, specialty)
+        `)
+        .eq('patient_id', patientId)
+        .order('start_time', { ascending: false });
+
     if (error) {
-        console.error('Error in finishEncounter:', error);
-        return { error: 'Error al finalizar encuentro. Verifique que sea el propietario y esté "in-progress".' };
+        console.error('Error fetching encounters:', error);
+        return { data: [] };
     }
+
+    return { data: data || [] };
+}
+
+/**
+ * createAddendum(encounterId, content)
+ * Adds an immutable note to a finished encounter.
+ */
+export async function createAddendum(encounterId: string, content: string) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'No autorizado' };
+
+    const { data, error } = await supabase
+        .from('encounter_addenda')
+        .insert([{
+            encounter_id: encounterId,
+            author_id: user.id,
+            content,
+            created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+    if (error) return { error: error.message };
 
     revalidatePath('/history');
     return { data };
 }
 
 /**
- * updateEncounterNote(id, evolution_note)
- * Only update clinical notes.
+ * getAddenda(encounterId)
  */
-export async function updateEncounterNote(id: string, evolution_note: string) {
+export async function getAddenda(encounterId: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return { error: 'No autorizado' };
-    }
-
     const { data, error } = await supabase
-        .from('encounters')
-        .update({
-            evolution_note,
-        })
-        .eq('id', id)
-        .eq('practitioner_id', user.id)
-        .select()
-        .single();
+        .from('encounter_addenda')
+        .select(`
+            *,
+            author:practitioners(name_family, name_given)
+        `)
+        .eq('encounter_id', encounterId)
+        .order('created_at', { ascending: true });
 
     if (error) {
-        console.error('Error in updateEncounterNote:', error);
-        return { error: error.message };
+        console.error('Error fetching addenda:', error);
+        return { data: [] };
     }
 
-    return { data };
+    return { data: data || [] };
 }

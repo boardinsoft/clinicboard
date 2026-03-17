@@ -131,7 +131,9 @@ export type EncounterStatus =
     | 'in-progress'
     | 'onleave'
     | 'finished'
-    | 'cancelled';
+    | 'cancelled'
+    | 'entered-in-error'
+    | 'unknown';
 
 export interface VitalSigns {
     bloodPressureSystolic?: number;

@@ -6,6 +6,100 @@ import { appointmentSchema } from '@/lib/schemas/appointment.schema';
 import { AppointmentStatus } from '@/lib/fhir/types';
 
 /**
+ * Transiciones permitidas para citas (Appointment) basadas en FHIR R4.
+ */
+const VALID_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
+    proposed: ['pending', 'booked', 'cancelled'],
+    pending: ['booked', 'cancelled'],
+    booked: ['arrived', 'cancelled', 'noshow'],
+    arrived: ['fulfilled', 'cancelled', 'noshow'],
+    fulfilled: [], // Terminal
+    cancelled: [], // Terminal
+    noshow: [],    // Terminal
+};
+
+/**
+ * Valida si una transición de estado es permitida.
+ */
+function validateTransition(current: AppointmentStatus, target: AppointmentStatus): { isValid: boolean; error?: string } {
+    if (current === target) return { isValid: true };
+    const allowed = VALID_TRANSITIONS[current] || [];
+    if (allowed.includes(target)) {
+        return { isValid: true };
+    }
+    return {
+        isValid: false,
+        error: `Transición de estado inválida: de '${current}' a '${target}'. Estados permitidos desde '${current}': [${allowed.join(', ')}]`
+    };
+}
+
+/**
+ * Valida reglas de negocio para horarios de citas.
+ */
+function validateAppointmentTimes(startTime: string, endTime: string): { isValid: boolean; error?: string } {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const now = new Date(Date.now() - 5 * 60 * 1000); // 5 min buffer
+
+    // 1. Fecha Futura
+    if (start < now) {
+        return { isValid: false, error: 'No se pueden agendar citas en el pasado.' };
+    }
+
+    // 2. Orden cronológico y duración
+    const durationMin = (end.getTime() - start.getTime()) / (1000 * 60);
+    if (durationMin < 15 || durationMin > 120) {
+        return { isValid: false, error: 'La cita debe durar entre 15 y 120 minutos.' };
+    }
+
+    // 3. Horas de operación (8:00 - 20:00)
+    const startHour = start.getHours();
+    const endHour = end.getHours();
+    const endMin = end.getMinutes();
+
+    if (startHour < 8 || startHour >= 20) {
+        return { isValid: false, error: 'La hora de inicio debe estar entre las 08:00 AM y las 07:45 PM.' };
+    }
+    if (endHour > 20 || (endHour === 20 && endMin > 0)) {
+        return { isValid: false, error: 'La cita no puede terminar después de las 08:00 PM.' };
+    }
+
+    return { isValid: true };
+}
+
+/**
+ * Verifica si hay solapamiento de horarios para un profesional.
+ */
+async function checkOverlap(supabase: any, practitionerId: string, startTime: string, endTime: string, currentId?: string) {
+    let query = supabase
+        .from('appointments')
+        .select('id, start_time, end_time')
+        .eq('practitioner_id', practitionerId)
+        .in('status', ['proposed', 'pending', 'booked', 'arrived'])
+        .lt('start_time', endTime)
+        .gt('end_time', startTime);
+
+    if (currentId) {
+        query = query.neq('id', currentId);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+        console.error('Error checking overlap:', error);
+        return { error: 'Error al verificar disponibilidad' };
+    }
+
+    if (data && data.length > 0) {
+        return { 
+            hasOverlap: true, 
+            message: 'El profesional ya tiene una cita programada en este horario.' 
+        };
+    }
+
+    return { hasOverlap: false };
+}
+
+/**
  * createAppointment(data)
  * Guard auth, validate with appointmentSchema, fhir_id=uuid, status='proposed', 
  * insert with practitioner_id=user.id. revalidatePath('/appointments').
@@ -34,6 +128,24 @@ export async function createAppointment(formData: {
 
     if (!validation.success) {
         return { error: validation.error.flatten().fieldErrors };
+    }
+
+    // Checking business rules for times
+    const timeVal = validateAppointmentTimes(validation.data.start_time, validation.data.end_time);
+    if (!timeVal.isValid) {
+        return { error: timeVal.error };
+    }
+
+    // Checking for overlap
+    const overlapResult = await checkOverlap(
+        supabase, 
+        user.id, 
+        validation.data.start_time, 
+        validation.data.end_time
+    );
+
+    if (overlapResult.hasOverlap) {
+        return { error: overlapResult.message };
     }
 
     const { data, error } = await supabase
@@ -73,21 +185,42 @@ export async function confirmAppointment(id: string) {
         return { error: 'No autorizado' };
     }
 
+    // First check what is the current status
+    const { data: currentAppt, error: checkError } = await supabase
+        .from('appointments')
+        .select('status')
+        .eq('id', id)
+        .single();
+    
+    if (checkError) {
+        console.warn('Could not pre-check status (RLS?):', checkError.message);
+    }
+
+    const currentStatus = (currentAppt?.status as AppointmentStatus) || 'proposed';
+    
+    if (currentStatus === 'booked') {
+        return { success: true, message: 'La cita ya estaba confirmada' };
+    }
+
+    const validation = validateTransition(currentStatus, 'booked');
+    if (!validation.isValid) {
+        return { error: validation.error };
+    }
+
     const { data, error } = await supabase
         .from('appointments')
         .update({ status: 'booked' })
         .eq('id', id)
-        .eq('practitioner_id', user.id)
-        .in('status', ['proposed', 'pending'])
+        .eq('status', currentStatus)
         .select()
         .single();
 
     if (error) {
-        console.error('Error in confirmAppointment:', error);
-        return {
-            error: error.code === 'PGRST116'
-                ? 'No se puede confirmar la cita. Solo se permiten citas en estado "proposed" o "pending".'
-                : error.message
+        console.error('Error in confirmAppointment:', error, 'ID:', id);
+        return { 
+            error: error.code === 'PGRST116' 
+                ? `Estado actual (${currentAppt?.status || 'desconocido'}) no permite confirmar. Solo Propuestas o Pendientes.`
+                : error.message 
         };
     }
 
@@ -108,7 +241,19 @@ export async function cancelAppointment(id: string, reason?: string) {
         return { error: 'No autorizado' };
     }
 
-    // Capture current description if we want to append, but task says "save reason in description"
+    // Check current status
+    const { data: currentAppt } = await supabase
+        .from('appointments')
+        .select('status')
+        .eq('id', id)
+        .single();
+
+    const currentStatus = (currentAppt?.status as AppointmentStatus) || 'proposed';
+    const validation = validateTransition(currentStatus, 'cancelled');
+    if (!validation.isValid) {
+        return { error: validation.error };
+    }
+
     const { data, error } = await supabase
         .from('appointments')
         .update({
@@ -116,7 +261,7 @@ export async function cancelAppointment(id: string, reason?: string) {
             description: reason ? `Cancelación: ${reason}` : 'Cancelada sin motivo especificado'
         })
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('status', currentStatus)
         .select()
         .single();
 
@@ -141,11 +286,25 @@ export async function markArrived(id: string) {
         return { error: 'No autorizado' };
     }
 
+    // Check current status
+    const { data: currentAppt } = await supabase
+        .from('appointments')
+        .select('status')
+        .eq('id', id)
+        .single();
+
+    const currentStatus = (currentAppt?.status as AppointmentStatus) || 'proposed';
+    const validation = validateTransition(currentStatus, 'arrived');
+    if (!validation.isValid) {
+        return { error: validation.error };
+    }
+
     const { data, error } = await supabase
         .from('appointments')
         .update({ status: 'arrived' })
         .eq('id', id)
         .eq('practitioner_id', user.id)
+        .eq('status', currentStatus)
         .select()
         .single();
 
@@ -170,11 +329,25 @@ export async function fulfillAppointment(id: string) {
         return { error: 'No autorizado' };
     }
 
+    // Check current status
+    const { data: currentAppt } = await supabase
+        .from('appointments')
+        .select('status')
+        .eq('id', id)
+        .single();
+
+    const currentStatus = (currentAppt?.status as AppointmentStatus) || 'proposed';
+    const validation = validateTransition(currentStatus, 'fulfilled');
+    if (!validation.isValid) {
+        return { error: validation.error };
+    }
+
     const { data, error } = await supabase
         .from('appointments')
         .update({ status: 'fulfilled' })
         .eq('id', id)
         .eq('practitioner_id', user.id)
+        .eq('status', currentStatus)
         .select()
         .single();
 
@@ -185,4 +358,268 @@ export async function fulfillAppointment(id: string) {
 
     revalidatePath('/appointments');
     return { data };
+}
+
+/**
+ * markNoShow(id)
+ * Guard auth, update status='noshow', verify ownership.
+ */
+export async function markNoShow(id: string) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { error: 'No autorizado' };
+    }
+
+    // Check current status
+    const { data: currentAppt } = await supabase
+        .from('appointments')
+        .select('status')
+        .eq('id', id)
+        .single();
+
+    const currentStatus = (currentAppt?.status as AppointmentStatus) || 'proposed';
+    const validation = validateTransition(currentStatus, 'noshow');
+    if (!validation.isValid) {
+        return { error: validation.error };
+    }
+
+    const { data, error } = await supabase
+        .from('appointments')
+        .update({ status: 'noshow' })
+        .eq('id', id)
+        .eq('practitioner_id', user.id)
+        .eq('status', currentStatus)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error in markNoShow:', error);
+        return { error: error.message };
+    }
+
+    revalidatePath('/appointments');
+    return { data };
+}
+
+/**
+ * getAppointments(filters)
+ * Read-only action to fetch appointments with patient join.
+ */
+export async function getAppointments(filters?: {
+    date?: string;       // ISO date string (YYYY-MM-DD) — filtra citas del día
+    status?: AppointmentStatus[];  // Array de estados FHIR a incluir
+    patientId?: string;  // Filtrar por paciente específico
+}) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { data: [] };
+    }
+
+    let query = supabase
+        .from('appointments')
+        .select(`
+            *, 
+            patient:patients(
+                id, 
+                name_given, 
+                name_family, 
+                gender, 
+                birth_date, 
+                telecom, 
+                identifiers
+            )
+        `)
+        .eq('practitioner_id', user.id);
+
+    if (filters?.date) {
+        const startOfDay = `${filters.date}T00:00:00.000Z`;
+        const endOfDay = `${filters.date}T23:59:59.999Z`;
+        query = query.gte('start_time', startOfDay).lt('start_time', endOfDay);
+    }
+
+    if (filters?.status && filters.status.length > 0) {
+        query = query.in('status', filters.status);
+    }
+
+    if (filters?.patientId) {
+        query = query.eq('patient_id', filters.patientId);
+    }
+
+    const { data, error } = await query.order('start_time', { ascending: true });
+
+    if (error) {
+        console.error('Error in getAppointments:', error);
+        return { data: [] };
+    }
+
+    return { data: data || [] };
+}
+
+/**
+ * rescheduleAppointment(id, newStartTime, newEndTime)
+ * Permite cambiar el horario de una cita existente.
+ * Reinicia el estado a 'proposed'.
+ */
+export async function rescheduleAppointment(id: string, newStartTime: string, newEndTime: string) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'No autorizado' };
+
+    // Check current status
+    const { data: currentAppt } = await supabase
+        .from('appointments')
+        .select('status')
+        .eq('id', id)
+        .single();
+
+    const currentStatus = (currentAppt?.status as AppointmentStatus) || 'proposed';
+    
+    // Reschedule typically goes back to 'proposed' or stays 'booked' if it was booked?
+    // The previous code set it to 'proposed'. Let's follow that but validate.
+    const validation = validateTransition(currentStatus, 'proposed');
+    if (!validation.isValid && currentStatus !== 'proposed') {
+        return { error: validation.error };
+    }
+
+    // Checking business rules for times
+    const timeVal = validateAppointmentTimes(newStartTime, newEndTime);
+    if (!timeVal.isValid) {
+        return { error: timeVal.error };
+    }
+
+    // Checking for overlap
+    const overlapResult = await checkOverlap(
+        supabase, 
+        user.id, 
+        newStartTime, 
+        newEndTime, 
+        id
+    );
+
+    if (overlapResult.hasOverlap) {
+        return { error: overlapResult.message };
+    }
+
+    const { data, error } = await supabase
+        .from('appointments')
+        .update({
+            start_time: newStartTime,
+            end_time: newEndTime,
+            status: 'proposed'
+        })
+        .eq('id', id)
+        .eq('practitioner_id', user.id)
+        .eq('status', currentStatus)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error in rescheduleAppointment:', error);
+        return { error: error.message };
+    }
+
+    revalidatePath('/appointments');
+    return { data };
+}
+
+/**
+ * cleanupExpiredAppointments()
+ * Cancela automáticamente citas en estado 'proposed' o 'pending' 
+ * cuya hora de inicio sea anterior a la actual.
+ */
+export async function cleanupExpiredAppointments() {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'No autorizado' };
+
+    const now = new Date().toISOString();
+
+    const { data, error } = await supabase
+        .from('appointments')
+        .update({
+            status: 'cancelled',
+            description: 'Cancelación automática: La cita expiró sin ser confirmada o atendida.'
+        })
+        .eq('practitioner_id', user.id)
+        .in('status', ['proposed', 'pending'])
+        .lt('start_time', now)
+        .select();
+
+    if (error) {
+        console.error('Error in cleanupExpiredAppointments:', error);
+        return { error: error.message };
+    }
+
+    if (data && data.length > 0) {
+        revalidatePath('/appointments');
+    }
+
+    return { count: data?.length || 0 };
+}
+
+/**
+ * startConsultationFromAppointment(appointmentId)
+ * 1. Valida que la cita esté en estado 'arrived' o 'booked'.
+ * 2. Cambia el estado de la cita a 'fulfilled'.
+ * 3. Crea un Encounter en estado 'in-progress' vinculado.
+ * 4. Retorna el ID del encounter para redirección.
+ */
+export async function startConsultationFromAppointment(appointmentId: string) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'No autorizado' };
+
+    // 1. Validar cita
+    const { data: appt, error: apptError } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('id', appointmentId)
+        .single();
+
+    if (apptError || !appt) return { error: 'Cita no encontrada' };
+
+    const currentStatus = (appt.status as AppointmentStatus) || 'proposed';
+    if (!['booked', 'arrived'].includes(currentStatus)) {
+        return { error: `No se puede iniciar consulta desde una cita en estado '${currentStatus}'. Solo desde 'Confirmada' o 'En Espera'.` };
+    }
+
+    // 2. Marcar cita como cumplida (fulfilled)
+    const { error: updateError } = await supabase
+        .from('appointments')
+        .update({ status: 'fulfilled' })
+        .eq('id', appointmentId);
+
+    if (updateError) return { error: 'Error al actualizar estado de la cita' };
+
+    // 3. Crear encuentro (Encounter)
+    const { createEncounter } = await import('@/actions/encounters');
+    
+    const encounterResult = await createEncounter({
+        patient_id: appt.patient_id,
+        encounter_class: 'AMB',
+        start_time: new Date().toISOString(),
+        appointment_id: appointmentId,
+        status: 'in-progress'
+    });
+
+    if (encounterResult.error) {
+        // Rollback? No es crítico si ya se cumplió la cita.
+        return { error: encounterResult.error };
+    }
+
+    revalidatePath('/appointments');
+    revalidatePath('/history');
+
+    return { 
+        success: true, 
+        encounterId: encounterResult.data?.id,
+        patientId: appt.patient_id
+    };
 }

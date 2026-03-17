@@ -292,6 +292,45 @@ export type Database = {
           },
         ]
       }
+      encounter_addenda: {
+        Row: {
+          id: string
+          encounter_id: string
+          author_id: string
+          content: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          encounter_id: string
+          author_id: string
+          content: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          encounter_id?: string
+          author_id?: string
+          content?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "encounter_addenda_encounter_id_fkey"
+            columns: ["encounter_id"]
+            isOneToOne: false
+            referencedRelation: "encounters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "encounter_addenda_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       medication_requests: {
         Row: {
           authored_on: string | null
