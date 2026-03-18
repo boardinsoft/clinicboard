@@ -59,7 +59,6 @@ import {
     confirmAppointment,
     cancelAppointment, 
     markArrived, 
-    fulfillAppointment, 
     markNoShow, 
     rescheduleAppointment,
     startConsultationFromAppointment

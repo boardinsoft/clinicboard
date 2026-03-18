@@ -4,6 +4,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { appointmentSchema } from '@/lib/schemas/appointment.schema';
 import { AppointmentStatus } from '@/lib/fhir/types';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '@/types/database.types';
 
 /**
  * Transiciones permitidas para citas (Appointment) basadas en FHIR R4.
@@ -70,7 +72,7 @@ function validateAppointmentTimes(startTime: string, endTime: string): { isValid
 /**
  * Verifica si hay solapamiento de horarios para un profesional.
  */
-async function checkOverlap(supabase: any, practitionerId: string, startTime: string, endTime: string, currentId?: string) {
+async function checkOverlap(supabase: SupabaseClient<Database>, practitionerId: string, startTime: string, endTime: string, currentId?: string) {
     let query = supabase
         .from('appointments')
         .select('id, start_time, end_time')

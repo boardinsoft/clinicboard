@@ -3,7 +3,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { patientSchema } from '@/lib/schemas/patient.schema';
-import type { Json } from '@/types/database.types';
 
 export async function createPatient(formData: {
     givenNames: string[];

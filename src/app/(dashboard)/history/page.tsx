@@ -22,9 +22,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent, CardHeader, CardTitle, CardAction, CardDescription } from '@/components/ui/card';
-import { Field, FieldError, FieldLabel, FieldGroup, FieldDescription } from '@/components/ui/field';
-import { InputGroup, InputGroupAddon, InputGroupText, InputGroupInput } from '@/components/ui/input-group';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Stepper, StepperHeader, StepperIcon, StepperItem, StepperSeparator } from '@/components/ui/stepper';
@@ -55,10 +55,6 @@ import {
     Settings2,
     Users,
     ClipboardList,
-    ChevronRight,
-    ChevronLeft,
-    Check,
-    AlertCircle,
     Search,
     Microscope,
     Utensils,
@@ -134,6 +130,18 @@ const encounterSchema = z.object({
 });
 
 type EncounterFormValues = z.infer<typeof encounterSchema>;
+
+interface AddendumRow {
+    id: string;
+    encounter_id: string;
+    author_id: string;
+    content: string;
+    created_at: string;
+    author?: {
+        name_family: string;
+        name_given: string[];
+    };
+}
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 const defaultVitals = {
@@ -264,11 +272,6 @@ function getCategoryForSubcategory(sub: string) {
 }
 
 
-function calcAge(birthDate: string | null): string {
-    if (!birthDate) return '—';
-    const diff = Date.now() - new Date(birthDate).getTime();
-    return `${Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25))} años`;
-}
 
 const SUGGESTION_MAP: Record<string, string[]> = {
     // 1. Emergencia / Urgencia
@@ -1443,7 +1446,7 @@ function HistoryWorkspaceHeader({
                                 </span>
                                 <span className="text-muted-foreground">·</span>
                                 <span className="text-xs bg-muted px-2 py-0.5 rounded-full font-mono">
-                                    {(selectedPatient?.identifiers as any)?.[0]?.value || 'S/D'}
+                                    {(selectedPatient?.identifiers as Array<Record<string, string>> | null)?.[0]?.value || 'S/D'}
                                 </span>
                             </p>
                             {isReadOnly && (
@@ -1532,20 +1535,18 @@ export default function HistoryPage() {
     const [pastEncounters, setPastEncounters] = useState<EncounterWithSpecialty[]>([]);
     const [activeEncounterId, setActiveEncounterId] = useState<string | null>(null);
     const [isReadOnly, setIsReadOnly] = useState(false);
-    const [isLoadingDetails, setIsLoadingDetails] = useState(false);
     const [isLoadingEncounters, setIsLoadingEncounters] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [wizardStep, setWizardStep] = useState(0);
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [chiefComplaintSelectKey, setChiefComplaintSelectKey] = useState(0);
     const [familyHistorySelectKey, setFamilyHistorySelectKey] = useState(0);
-    const [addenda, setAddenda] = useState<any[]>([]);
+    const [addenda, setAddenda] = useState<AddendumRow[]>([]);
     const [isAddingAddendum, setIsAddingAddendum] = useState(false);
     const [newAddendumContent, setNewAddendumContent] = useState('');
     const [isSavingAddendum, setIsSavingAddendum] = useState(false);
 
     const appointmentId = searchParams.get('appointmentId');
-    const encounterId = searchParams.get('encounterId');
 
     // Initialize Form
     const form = useForm<EncounterFormValues>({
@@ -1580,7 +1581,7 @@ export default function HistoryPage() {
         if (enc) {
             // Check if reason_code is an array of objects
             const chiefComplaint = (Array.isArray(enc.reason_code) 
-                ? (enc.reason_code as any[])[0]?.text 
+                ? (enc.reason_code as Array<Record<string, string>>)[0]?.text 
                 : typeof enc.reason_code === 'string' ? enc.reason_code : '') || '';
 
             form.reset({
@@ -1588,9 +1589,9 @@ export default function HistoryPage() {
                 evolutionNote: enc.evolution_note || '',
                 treatmentPlan: enc.plan || '',
                 chiefComplaint,
-                vitals: (enc.vital_signs as any) || defaultVitals,
-                physicalExam: (enc.physical_exam as any) || defaultValues.physicalExam,
-                diagnoses: (enc.diagnosis as any[]) || [],
+                vitals: (enc.vital_signs as Record<string, unknown>) || defaultVitals,
+                physicalExam: (enc.physical_exam as unknown as EncounterFormValues["physicalExam"]) || defaultValues.physicalExam,
+                diagnoses: (enc.diagnosis as unknown as EncounterFormValues["diagnoses"]) || [],
                 encounterCategory: enc.encounter_category || '',
                 encounterSubcategory: enc.encounter_subcategory || '',
             });
@@ -1617,7 +1618,7 @@ export default function HistoryPage() {
         setIsSaving(true);
 
         const abnormalFindings = Object.entries(values.physicalExam)
-            .filter(([_, v]) => !v.normal)
+            .filter(([, v]) => !v.normal)
             .map(([k, v]) => `${PHYSICAL_SYSTEMS.find(s => s.id === k)?.label || k}: ${v.notes}`)
             .join(' | ');
 
@@ -1746,7 +1747,6 @@ export default function HistoryPage() {
                 const patient = data?.find((p) => p.id === pid);
                 if (patient) {
                     setSelectedPatient(patient as Patient);
-                    setIsLoadingDetails(true);
                     setIsLoadingEncounters(true);
 
                     // Extract persisted Anamnesis data
@@ -1785,7 +1785,7 @@ export default function HistoryPage() {
                                 setIsReadOnly(readOnly);
                                 
                                 const chiefComplaint = (Array.isArray(encounter.reason_code) 
-                                    ? (encounter.reason_code as any[])[0]?.text 
+                                    ? (encounter.reason_code as Array<Record<string, string>>)[0]?.text 
                                     : typeof encounter.reason_code === 'string' ? encounter.reason_code : '') || '';
 
                                 form.reset({
@@ -1793,9 +1793,9 @@ export default function HistoryPage() {
                                     evolutionNote: encounter.evolution_note || '',
                                     treatmentPlan: encounter.plan || '',
                                     chiefComplaint,
-                                    vitals: (encounter.vital_signs as any) || defaultVitals,
-                                    physicalExam: (encounter.physical_exam as any) || defaultValues.physicalExam,
-                                    diagnoses: (encounter.diagnosis as any[]) || [],
+                                    vitals: (encounter.vital_signs as Record<string, unknown>) || defaultVitals,
+                                    physicalExam: (encounter.physical_exam as unknown as EncounterFormValues["physicalExam"]) || defaultValues.physicalExam,
+                                    diagnoses: (encounter.diagnosis as unknown as EncounterFormValues["diagnoses"]) || [],
                                     encounterCategory: encounter.encounter_category || '',
                                     encounterSubcategory: encounter.encounter_subcategory || '',
                                 });
@@ -1808,7 +1808,6 @@ export default function HistoryPage() {
                     } catch (error) {
                         console.error('Error fetching clinical data:', error);
                     } finally {
-                        setIsLoadingDetails(false);
                         setIsLoadingEncounters(false);
                         if (!encId) setRightPanelOpen(true);
                     }
@@ -1833,7 +1832,7 @@ export default function HistoryPage() {
                 const list = await getAddenda(activeEncounterId);
                 setAddenda(list.data);
             }
-        } catch (e) {
+        } catch (_) {
             toast.error('Error inesperado');
         } finally {
             setIsSavingAddendum(false);
@@ -4668,7 +4667,7 @@ export default function HistoryPage() {
                                                     <Controller
                                                         control={form.control}
                                                         name="diagnoses"
-                                                        render={({ field }) => (
+                                                        render={({ field: _ }) => (
                                                             <DiagnosisSearch
                                                                 id="diagnosis-initial"
                                                                 label=""
@@ -4694,7 +4693,7 @@ export default function HistoryPage() {
                                                         <Controller
                                                             control={form.control}
                                                             name={`diagnoses.${index}.code`}
-                                                            render={({ field: diagnosisField }) => (
+                                                            render={({ field: _ }) => (
                                                                 <DiagnosisSearch
                                                                     id={`diagnosis-${index}`}
                                                                     label={index === 0 ? "Diagnóstico principal" : `Relacionado #${index}`}

@@ -162,7 +162,7 @@ const INITIAL_SECTIONS: DocumentSection[] = [
 ];
 
 export default function RightPanel() {
-    const { rightPanelOpen, toggleRightPanel } = useLayoutStore();
+    const { toggleRightPanel } = useLayoutStore();
     const pathname = usePathname();
     const [sections, setSections] = useState<DocumentSection[]>(INITIAL_SECTIONS);
     const dropZoneRef = useRef<HTMLDivElement>(null);

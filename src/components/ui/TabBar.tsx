@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { useTabStore } from '@/store/useTabStore';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';

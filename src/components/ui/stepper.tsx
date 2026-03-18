@@ -7,9 +7,11 @@ export interface StepperProps extends Omit<React.HTMLAttributes<HTMLDivElement>,
 }
 
 const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
-    ({ className, value, onChange, ...props }, ref) => {
+    ({ className, ...props }, ref) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { value, onChange, ...divProps } = props as Record<string, unknown>;
         return (
-            <div ref={ref} className={cn("flex w-full items-center", className)} {...props} />
+            <div ref={ref} className={cn("flex w-full items-center", className)} {...divProps} />
         )
     }
 )
@@ -21,12 +23,14 @@ export interface StepperItemProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const StepperItem = React.forwardRef<HTMLDivElement, StepperItemProps>(
-    ({ className, value, disabled, ...props }, ref) => {
+    ({ className, disabled, ...props }, ref) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { value, ...divProps } = props as Record<string, unknown>;
         return (
             <div
                 ref={ref}
                 className={cn("flex items-center", disabled && "opacity-50 pointer-events-none", className)}
-                {...props}
+                {...divProps}
             />
         )
     }

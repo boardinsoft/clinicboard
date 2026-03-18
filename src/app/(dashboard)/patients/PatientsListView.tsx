@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { cn } from '@/lib/utils';
-import { getPatientClinicalData, getEncounters } from '@/actions/patients';
+import { getPatientClinicalData } from '@/actions/patients';
+import { getEncounters } from '@/actions/encounters';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,12 +22,7 @@ import {
     Calendar,
     ArrowRight,
     UserPlus,
-    MoreVertical,
-    Edit,
-    Trash
 } from 'lucide-react';
-import {
-} from "@/components/ui/dropdown-menu";
 
 // ─── JSONB column typed helpers ────────────────────────────────────────────────
 interface PatientTelecom { system?: string; value?: string }
@@ -363,6 +359,15 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
 
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
+    const updateParams = React.useCallback((updates: Record<string, string | number>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        Object.entries(updates).forEach(([key, value]) => {
+            if (value) params.set(key, String(value));
+            else params.delete(key);
+        });
+        router.push(`${pathname}?${params.toString()}`);
+    }, [pathname, router, searchParams]);
+
     useEffect(() => {
         setSecondaryPanel(
             <PatientsSidebar
@@ -380,16 +385,7 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
             />,
             'Pacientes'
         );
-    }, [patients, selectedPatient, searchParams]);
-
-    const updateParams = (updates: Record<string, string | number>) => {
-        const params = new URLSearchParams(searchParams.toString());
-        Object.entries(updates).forEach(([key, value]) => {
-            if (value) params.set(key, String(value));
-            else params.delete(key);
-        });
-        router.push(`${pathname}?${params.toString()}`);
-    };
+    }, [patients, selectedPatient, searchParams, router, setSecondaryPanel, updateParams]);
 
     const handlePagination = (newPage: number) => {
         updateParams({ page: newPage });

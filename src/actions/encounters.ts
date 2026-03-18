@@ -101,7 +101,7 @@ export async function saveEncounterDraft(id: string, formData: {
     plan?: string;
     evolution_note?: string;
     vital_signs?: VitalSigns;
-    physical_exam?: any;
+    physical_exam?: Json;
     diagnosis?: Json;
 }) {
     const supabase = await createServerSupabaseClient();
