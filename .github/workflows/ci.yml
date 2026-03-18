@@ -5,10 +5,12 @@ on:
     branches:
       - develop
       - main
+      - 'feature/**'
   push:
     branches:
       - develop
       - main
+      - 'feature/**'
   workflow_dispatch:
 
 jobs:
