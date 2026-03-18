@@ -1,30 +1,35 @@
 ---
-description: Flujo de trabajo automatizado para desarrollar nuevas funcionalidades siguiendo la arquitectura de CI/CD local, staging y producción.
+description: Flujo de trabajo automatizado para desarrollar nuevas funcionalidades siguiendo la arquitectura de CI/CD orientada a entornos Cloud (Staging y Producción).
 ---
 
-# Flujo de Desarrollo (CI/CD Feature Workflow)
+# Flujo de Desarrollo Cloud (Cloud-Only Workflow)
 
-Cuando el usuario pida desarrollar una nueva funcionalidad o invocar este workflow (`/construir-feature`), debes actuar como desarrollador y seguir **estrictamente** los siguientes pasos en orden.
+Este workflow está diseñado para trabajar directamente con entornos en la nube (Supabase y Vercel), evitando la dependencia de proxies o entornos locales pesados. Se enfoca en despliegues rápidos en ramas de Staging y Previsualización.
 
-## Paso 1: Preparación del Entorno (Ramas)
-1. Analiza qué funcionalidad se te ha pedido desarrollar.
-2. Comprueba la rama actual. Asegúrate de iniciar siempre partiendo de la rama `develop` asegurándote que esté actualizada (`git pull origin develop`).
-3. Crea y cámbiate a una nueva rama de trabajo llamada `feature/<nombre-descriptivo-corto>`.
+Al invocar `/construir-feature`, sigue estos pasos estrictamente:
 
-## Paso 2: Cambios de Base de Datos (Supabase Local)
-1. Si la funcionalidad solicitada requiere cambios o nuevas tablas en la base de datos, debes ejecutar el CLI de Supabase para generar una migración: `npx supabase migration new <nombre-migracion>`.
-2. Escribe el SQL necesario y pertinente dentro de la carpeta `supabase/migrations/`.
-3. Informa al usuario o verifica el entorno local para aplicar esta migración de prueba sin afectar la base de datos real.
+## Paso 1: Gestión de Ramas y Git
+1. Analiza el requerimiento solicitado.
+2. Asegúrate de estar en `develop` y sincronizado (`git pull origin develop`).
+3. Crea una rama `feature/<nombre-descriptivo>`.
 
-## Paso 3: Desarrollo
-1. Identifica qué archivos de `/src/` (Componentes, Acciones, Rutas) debes alterar o crear para satisfacer el requerimiento en Next.js.
-2. Escribe el código necesario siguiendo las directrices estéticas y técnicas establecidas para "clinicboard".
-3. Valida y corrige cualquier error del linter.
+## Paso 2: Cambios en el Esquema (Cloud Staging)
+1. Si necesitas cambios en la DB, crea una migración: `npx supabase migration new <nombre>`.
+2. Escribe el SQL en `supabase/migrations/`.
+3. Informa al usuario: "Migración preparada. Se aplicará automáticamente al empujar a la rama de Staging en la nube".
 
-## Paso 4: Pruebas Automáticas (QA)
-1. Utiliza las integraciones de prueba, como **TestSprite MCP**, para instruir a la creación y ejecución de tests correspondientes para tu nuevo código, validando los flujos críticos.
+## Paso 3: Desarrollo de la Funcionalidad
+1. Modifica o crea archivos en `/src/` (Next.js, Server Actions, UI).
+2. Sigue las guías de estilo estético (vibrante, premium).
+3. Resuelve errores de linter en tiempo real.
 
-## Paso 5: Commit y Preparar Despliegue (Staging)
-1. Asegúrate de añadir los archivos con git usando `git add .` (O de forma granular si es adecuado).
-2. Haz el commit utilizando un estilo descriptivo tipo *conventional commits*. Por ejemplo: `feat: Añadir [<nueva función>]`.
-3. Detente aquí y notifica al usuario: "He terminado en local y probado el nuevo código. La rama `feature/<nombre>` está lista para que le hagas un Pull Request hacia `develop`."
+## Paso 4: Despliegue y Pruebas en Cloud (Preview)
+1. Haz commit de tus cambios: `feat: <descripción del cambio>`.
+2. Empuja la rama al origen: `git push origin feature/<nombre>`.
+3. Vercel generará automáticamente una **Preview URL**. 
+4. Utiliza **TestSprite MCP** indicando la URL de previsualización de Vercel para ejecutar pruebas de QA directamente sobre el servidor en la nube.
+
+## Paso 5: Promoción a Staging/Producción
+1. Si las pruebas en la URL de preview son exitosas, notifica al usuario.
+2. Crea el Pull Request hacia `develop` para que las GitHub Actions desplieguen en el entorno de Staging definitivo.
+3. Finaliza con el resumen de la tarea.
