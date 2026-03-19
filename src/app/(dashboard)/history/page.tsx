@@ -1832,7 +1832,7 @@ export default function HistoryPage() {
                 const list = await getAddenda(activeEncounterId);
                 setAddenda(list.data);
             }
-        } catch (_) {
+        } catch {
             toast.error('Error inesperado');
         } finally {
             setIsSavingAddendum(false);
@@ -4667,7 +4667,7 @@ export default function HistoryPage() {
                                                     <Controller
                                                         control={form.control}
                                                         name="diagnoses"
-                                                        render={({ field: _ }) => (
+                                                        render={() => (
                                                             <DiagnosisSearch
                                                                 id="diagnosis-initial"
                                                                 label=""
@@ -4693,7 +4693,7 @@ export default function HistoryPage() {
                                                         <Controller
                                                             control={form.control}
                                                             name={`diagnoses.${index}.code`}
-                                                            render={({ field: _ }) => (
+                                                            render={() => (
                                                                 <DiagnosisSearch
                                                                     id={`diagnosis-${index}`}
                                                                     label={index === 0 ? "Diagnóstico principal" : `Relacionado #${index}`}

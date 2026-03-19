@@ -749,3 +749,23 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
+export type Patient = Tables<'patients'> & {
+  family_history?: string | null;
+  habits?: string | null;
+  personal_history?: string | null;
+  surgical_history?: string | null;
+  hospitalization_history?: string | null;
+  review_of_systems?: string | null;
+};
+export type Condition = Tables<'conditions'>;
+export type AllergyIntolerance = Tables<'allergy_intolerances'>;
+export type Appointment = Tables<'appointments'>;
+export type Encounter = Tables<'encounters'> & {
+  encounter_category?: string | null;
+  encounter_subcategory?: string | null;
+};
+export type EncounterWithSpecialty = Encounter & { 
+  practitioner?: { name_given: string[], name_family: string, specialty: string | null } 
+};
+export type Practitioner = Tables<'practitioners'>;

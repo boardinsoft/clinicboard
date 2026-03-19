@@ -64,7 +64,7 @@ export default function WalkInQueuePanel({
             } else {
                 onRefresh();
             }
-        } catch (err) {
+        } catch {
             toast.error('Error de red');
         }
     };

@@ -1,4 +1,4 @@
-import { format, isAfter, isBefore, addMinutes, subMinutes, differenceInMinutes } from 'date-fns';
+import { isAfter, isBefore, addMinutes, subMinutes, differenceInMinutes } from 'date-fns';
 import { Appointment } from '@/lib/fhir/types';
 
 // Business Rule Constants

@@ -241,7 +241,8 @@ export async function getAddenda(encounterId: string) {
             author:practitioners(name_family, name_given)
         `)
         .eq('encounter_id', encounterId)
-        .order('created_at', { ascending: true });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .order('created_at', { ascending: true }) as any;
 
     if (error) {
         console.error('Error fetching addenda:', error);

@@ -87,8 +87,8 @@ export default function NewAppointmentDialog({
 
     const defaultTimes = getDefaultTimes();
 
-    const form = useForm<any>({
-        resolver: zodResolver(appointmentSchema) as any,
+    const form = useForm<AppointmentSchemaType>({
+        resolver: zodResolver(appointmentSchema),
         defaultValues: {
             patient_id: '',
             practitioner_id: '00000000-0000-0000-0000-000000000000',

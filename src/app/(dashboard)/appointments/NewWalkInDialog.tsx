@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
     Dialog, 
@@ -25,14 +25,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { createWalkInAppointment } from '@/actions/appointments';
 import { Loader2, Zap } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { Patient } from '@/lib/fhir/types';
 import { PatientSearchField } from '@/components/patients/PatientSearchField';
 
 interface NewWalkInDialogProps {
@@ -49,6 +46,12 @@ const APPOINTMENT_TYPES = [
     "Emergencia"
 ];
 
+interface WalkInFormValues {
+    patient_id: string;
+    appointment_type: string;
+    description: string;
+}
+
 export default function NewWalkInDialog({
     open,
     onOpenChange,
@@ -56,7 +59,7 @@ export default function NewWalkInDialog({
 }: NewWalkInDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const form = useForm({
+    const form = useForm<WalkInFormValues>({
         defaultValues: {
             patient_id: '',
             appointment_type: 'Consulta General',
@@ -65,7 +68,7 @@ export default function NewWalkInDialog({
     });
 
 
-    const onSubmit = async (values: any) => {
+    const onSubmit = async (values: WalkInFormValues) => {
         if (!values.patient_id) {
             toast.error('Selecciona un paciente');
             return;
@@ -95,8 +98,6 @@ export default function NewWalkInDialog({
             setIsSubmitting(false);
         }
     };
-
-    const selectedPatientId = form.watch('patient_id');
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
