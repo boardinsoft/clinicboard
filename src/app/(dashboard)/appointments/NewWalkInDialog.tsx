@@ -29,12 +29,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Search, User, Loader2, CheckCircle2, Zap } from 'lucide-react';
-import { useDebounce } from '@/hooks/useDebounce';
-import { getPatients } from '@/actions/patients';
 import { createWalkInAppointment } from '@/actions/appointments';
+import { Loader2, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Patient } from '@/lib/fhir/types';
+import { PatientSearchField } from '@/components/patients/PatientSearchField';
 
 interface NewWalkInDialogProps {
     open: boolean;
@@ -55,11 +54,7 @@ export default function NewWalkInDialog({
     onOpenChange,
     onCreated
 }: NewWalkInDialogProps) {
-    const [patientQuery, setPatientQuery] = useState('');
-    const [patients, setPatients] = useState<Patient[]>([]);
-    const [isSearching, setIsSearching] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const debouncedQuery = useDebounce(patientQuery, 300);
 
     const form = useForm({
         defaultValues: {
@@ -69,27 +64,6 @@ export default function NewWalkInDialog({
         }
     });
 
-    // Patient search effect
-    useEffect(() => {
-        if (debouncedQuery.length < 2) {
-            setPatients([]);
-            return;
-        }
-
-        const search = async () => {
-            setIsSearching(true);
-            try {
-                const result = await getPatients(debouncedQuery);
-                setPatients((result.data as unknown as Patient[]) || []);
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setIsSearching(false);
-            }
-        };
-
-        search();
-    }, [debouncedQuery]);
 
     const onSubmit = async (values: any) => {
         if (!values.patient_id) {
@@ -111,7 +85,6 @@ export default function NewWalkInDialog({
             } else {
                 toast.success('Paciente registrado en cola');
                 form.reset();
-                setPatientQuery('');
                 onCreated();
                 onOpenChange(false);
             }
@@ -145,74 +118,10 @@ export default function NewWalkInDialog({
                             control={form.control}
                             name="patient_id"
                             render={({ field }) => (
-                                <FormItem className="relative">
-                                    <FormLabel>Paciente</FormLabel>
-                                    <FormControl>
-                                        <div className="relative">
-                                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                placeholder="Buscar por nombre o CI..."
-                                                className="pl-9"
-                                                value={patientQuery}
-                                                onChange={(e) => setPatientQuery(e.target.value)}
-                                                autoComplete="off"
-                                            />
-                                            {isSearching && (
-                                                <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-primary" />
-                                            )}
-                                        </div>
-                                    </FormControl>
-                                    
-                                    {patients.length > 0 && !selectedPatientId && (
-                                        <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-xl max-h-48 overflow-y-auto">
-                                            {patients.map((p) => (
-                                                <button
-                                                    key={p.id}
-                                                    type="button"
-                                                    className="w-full px-4 py-2.5 text-left hover:bg-accent flex items-center gap-3"
-                                                    onClick={() => {
-                                                        field.onChange(p.id);
-                                                        setPatientQuery(`${p.name_family}, ${p.name_given?.join(' ')}`);
-                                                        setPatients([]);
-                                                    }}
-                                                >
-                                                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs shrink-0">
-                                                        <User className="h-4 w-4" />
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className="text-sm font-semibold truncate">
-                                                            {p.name_family}, {p.name_given?.join(' ')}
-                                                        </span>
-                                                        <span className="text-[10px] text-muted-foreground font-mono">
-                                                            {p.identifiers?.[0]?.value || 'Sin CI'}
-                                                        </span>
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {selectedPatientId && (
-                                        <div className="flex items-center justify-between p-2 mt-2 bg-emerald-50 border border-emerald-100 rounded-lg">
-                                            <div className="flex items-center gap-2">
-                                                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                                                <span className="text-xs font-bold text-emerald-700">Paciente Seleccionado</span>
-                                            </div>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                className="h-6 text-[10px]"
-                                                onClick={() => {
-                                                    field.onChange('');
-                                                    setPatientQuery('');
-                                                }}
-                                            >
-                                                Cambiar
-                                            </Button>
-                                        </div>
-                                    )}
-                                    <FormMessage />
-                                </FormItem>
+                                <PatientSearchField
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                />
                             )}
                         />
 
@@ -274,7 +183,9 @@ export default function NewWalkInDialog({
                                 {isSubmitting ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 ) : (
-                                    <Zap className="mr-2 h-4 w-4" />
+                                    <div className="mr-2 h-4 w-4 flex items-center justify-center">
+                                       <div className="w-1 h-3 bg-white rounded-full animate-pulse" />
+                                    </div>
                                 )}
                                 Registrar en Cola
                             </Button>

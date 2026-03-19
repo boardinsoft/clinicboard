@@ -26,18 +26,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Search, User, Calendar, Clock, Loader2, CheckCircle2, Plus } from 'lucide-react';
-import { useDebounce } from '@/hooks/useDebounce';
-import { getPatients } from '@/actions/patients';
+import { Calendar, Clock, Loader2, Plus } from 'lucide-react';
 import { createAppointment } from '@/actions/appointments';
 import { appointmentSchema, type AppointmentSchemaType } from '@/lib/schemas/appointment.schema';
 import { cn } from '@/lib/utils';
-import type { Patient } from '@/lib/fhir/types';
+import { PatientSearchField } from '@/components/patients/PatientSearchField';
 import { nowInVE } from '@/lib/date-utils';
 import { AppointmentPicker } from '@/components/ui/appointment-picker';
 import { format, parse } from 'date-fns';
@@ -63,11 +60,7 @@ export default function NewAppointmentDialog({
     onOpenChange,
     onCreated
 }: NewAppointmentDialogProps) {
-    const [patientQuery, setPatientQuery] = useState('');
-    const [patients, setPatients] = useState<Patient[]>([]);
-    const [isSearching, setIsSearching] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const debouncedQuery = useDebounce(patientQuery, 300);
 
     // Initial times (today, now + 30min)
     const getDefaultTimes = () => {
@@ -77,12 +70,12 @@ export default function NewAppointmentDialog({
         end.setMinutes(end.getMinutes() + 30);
         
         // Format for input datetime-local: YYYY-MM-DDTHH:mm
-        const format = (d: Date) => {
+        const formatStr = (d: Date) => {
             const pad = (n: number) => n.toString().padStart(2, '0');
             return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
         };
         
-        return { start: format(start), end: format(end) };
+        return { start: formatStr(start), end: formatStr(end) };
     };
 
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(nowInVE());
@@ -94,10 +87,8 @@ export default function NewAppointmentDialog({
 
     const defaultTimes = getDefaultTimes();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const form = useForm<any>({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        resolver: zodResolver(appointmentSchema) as unknown as any,
+        resolver: zodResolver(appointmentSchema) as any,
         defaultValues: {
             patient_id: '',
             practitioner_id: '00000000-0000-0000-0000-000000000000',
@@ -130,27 +121,6 @@ export default function NewAppointmentDialog({
         }
     }, [selectedDate, selectedTime, form]);
 
-    // Patient search effect
-    useEffect(() => {
-        if (debouncedQuery.length < 2) {
-            setPatients([]);
-            return;
-        }
-
-        const search = async () => {
-            setIsSearching(true);
-            try {
-                const result = await getPatients(debouncedQuery);
-                setPatients((result.data as unknown as Patient[]) || []);
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setIsSearching(false);
-            }
-        };
-
-        search();
-    }, [debouncedQuery]);
 
     const onSubmit = async (values: AppointmentSchemaType) => {
         setIsSubmitting(true);
@@ -181,8 +151,6 @@ export default function NewAppointmentDialog({
         }
     };
 
-    const selectedPatientId = form.watch('patient_id');
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
@@ -194,87 +162,20 @@ export default function NewAppointmentDialog({
                 </DialogHeader>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 py-2">
-                        {/* Patient Search */}
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-2">
                         <FormField
                             control={form.control}
                             name="patient_id"
                             render={({ field }) => (
-                                <FormItem className="relative">
-                                    <FormLabel>Paciente</FormLabel>
-                                    <FormControl>
-                                        <div className="relative">
-                                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                placeholder="Buscar por nombre o apellido..."
-                                                className="pl-9"
-                                                value={patientQuery}
-                                                onChange={(e) => setPatientQuery(e.target.value)}
-                                                autoComplete="off"
-                                            />
-                                            {isSearching && (
-                                                <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-primary" />
-                                            )}
-                                        </div>
-                                    </FormControl>
-                                    
-                                    {/* Search Results Dropdown */}
-                                    {patients.length > 0 && !selectedPatientId && (
-                                        <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-xl max-h-48 overflow-y-auto">
-                                            {patients.map((p) => (
-                                                <button
-                                                    key={p.id}
-                                                    type="button"
-                                                    className="w-full px-4 py-2.5 text-left hover:bg-accent flex items-center gap-3 transition-colors"
-                                                    onClick={() => {
-                                                        field.onChange(p.id);
-                                                        setPatientQuery(`${p.name_family}, ${p.name_given?.join(' ')}`);
-                                                        setPatients([]);
-                                                    }}
-                                                >
-                                                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs shrink-0">
-                                                        <User className="h-4 w-4" />
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className="text-sm font-semibold truncate capitalize">
-                                                            {p.name_family}, {p.name_given?.join(' ')}
-                                                        </span>
-                                                        <span className="text-[10px] text-muted-foreground font-mono">
-                                                            {p.identifiers?.[0]?.value || 'Sin CI'}
-                                                        </span>
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {/* Selected Patient Feedback */}
-                                    {selectedPatientId && (
-                                        <div className="flex items-center justify-between p-2 mt-2 bg-primary/5 border border-primary/20 rounded-lg">
-                                            <div className="flex items-center gap-2">
-                                                <CheckCircle2 className="h-4 w-4 text-primary" />
-                                                <span className="text-xs font-bold text-primary">Paciente Seleccionado</span>
-                                            </div>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                className="h-6 text-[10px] text-muted-foreground hover:text-destructive"
-                                                onClick={() => {
-                                                    field.onChange('');
-                                                    setPatientQuery('');
-                                                }}
-                                            >
-                                                Cambiar
-                                            </Button>
-                                        </div>
-                                    )}
-                                    <FormMessage />
-                                </FormItem>
+                                <PatientSearchField 
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                />
                             )}
                         />
 
                         {/* Date and Time Selection */}
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                                 <Calendar className="w-3.5 h-3.5" />
                                 Programación de la Cita
@@ -286,7 +187,7 @@ export default function NewAppointmentDialog({
                                 onTimeChange={setSelectedTime}
                                 className="w-full"
                             />
-                            <div className="flex flex-wrap gap-4 text-[10px] text-muted-foreground bg-muted/20 p-2 rounded border border-dashed">
+                            <div className="flex flex-wrap gap-4 text-[10px] text-muted-foreground bg-muted/20 p-2.5 rounded-lg border border-dashed border-muted-foreground/20">
                                 <div className="flex items-center gap-1.5">
                                     <Clock className="w-3 h-3 text-primary" />
                                     <span>Duración estimada: <strong>30 minutos</strong></span>
@@ -298,31 +199,35 @@ export default function NewAppointmentDialog({
                             </div>
                         </div>
 
-                        {/* Appointment Type */}
-                        <FormField
-                            control={form.control}
-                            name="appointment_type"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Tipo de Cita</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="h-9 text-sm">
-                                                <SelectValue placeholder="Selecciona un tipo" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {APPOINTMENT_TYPES.map(type => (
-                                                <SelectItem key={type} value={type} className="text-sm">
-                                                    {type}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            {/* Appointment Type */}
+                            <FormField
+                                control={form.control}
+                                name="appointment_type"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Tipo de Cita</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="h-10 text-sm">
+                                                    <SelectValue placeholder="Selecciona un tipo" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {APPOINTMENT_TYPES.map(type => (
+                                                    <SelectItem key={type} value={type} className="text-sm">
+                                                        {type}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {/* Status (Hidden or read-only for new appointments usually) */}
+                        </div>
 
                         {/* Description */}
                         <FormField
@@ -334,7 +239,7 @@ export default function NewAppointmentDialog({
                                     <FormControl>
                                         <Textarea 
                                             placeholder="Detalles adicionales opcionales..." 
-                                            className="resize-none min-h-[80px] text-sm"
+                                            className="resize-none min-h-[100px] text-sm focus-visible:ring-primary/30"
                                             {...field} 
                                         />
                                     </FormControl>
@@ -343,19 +248,19 @@ export default function NewAppointmentDialog({
                             )}
                         />
 
-                        <DialogFooter className="pt-2">
+                        <DialogFooter className="pt-4 border-t border-muted-foreground/10 bg-muted/5 -mx-6 px-6 -mb-2">
                             <Button 
                                 type="button" 
-                                variant="outline" 
+                                variant="ghost" 
                                 onClick={() => onOpenChange(false)}
-                                className="h-9 px-6"
+                                className="h-10 px-6"
                             >
                                 Cancelar
                             </Button>
                             <Button 
                                 type="submit" 
                                 disabled={isSubmitting}
-                                className={cn("h-9 px-8 shadow-lg shadow-primary/20", isSubmitting && "opacity-80")}
+                                className={cn("h-10 px-8 font-semibold shadow-lg shadow-primary/20 transition-all active:scale-95", isSubmitting && "opacity-80")}
                             >
                                 {isSubmitting ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

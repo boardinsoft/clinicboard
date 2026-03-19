@@ -145,7 +145,8 @@ export async function getPatients(queryText?: string) {
         .order('name_family', { ascending: true });
 
     if (queryText) {
-        query = query.or(`name_family.ilike.%${queryText}%,name_given.cs.{${queryText}}`);
+        // Search by family name (ilike), given names (contained in array), or identifiers (contained as JSONB object)
+        query = query.or(`name_family.ilike.%${queryText}%,name_given.cs.{"${queryText}"},identifiers.cs.[{"value":"${queryText}"}]`);
     }
 
     const { data, error } = await query;
