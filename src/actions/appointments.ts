@@ -643,8 +643,13 @@ export async function createWalkInAppointment(payload: {
     if (!user) return { error: 'No autorizado' };
 
     const now = new Date();
+    // Round down to the nearest 15-minute interval to satisfy DB trigger
+    const minutes = now.getMinutes();
+    const roundedMinutes = Math.floor(minutes / 15) * 15;
+    now.setMinutes(roundedMinutes, 0, 0);
+    
     const startTime = now.toISOString();
-    const endTime = new Date(now.getTime() + 30 * 60000).toISOString();
+    const endTime = new Date(now.getTime() + 15 * 60000).toISOString();
 
     // Calcular la posición en cola basada en el día local de Venezuela
     const { nowInVE, toISODate } = await import('@/lib/date-utils');
