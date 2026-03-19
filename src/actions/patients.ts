@@ -137,22 +137,31 @@ export async function getPatients(queryText?: string) {
 
     if (!user) return { data: [] };
 
-    let query = supabase
-        .from('patients')
-        .select('*')
-        .eq('practitioner_id', user.id)
-        .eq('active', true)
-        .order('name_family', { ascending: true });
+    if (!queryText || queryText.length < 2) {
+        // Return standard list if no query
+        const { data, error } = await supabase
+            .from('patients')
+            .select('*')
+            .eq('practitioner_id', user.id)
+            .eq('active', true)
+            .order('name_family', { ascending: true })
+            .limit(20);
 
-    if (queryText) {
-        // Search by family name (ilike), given names (contained in array), or identifiers (contained as JSONB object)
-        query = query.or(`name_family.ilike.%${queryText}%,name_given.cs.{"${queryText}"},identifiers.cs.[{"value":"${queryText}"}]`);
+        if (error) {
+            console.error('Error fetching patients:', error);
+            return { data: [] };
+        }
+        return { data: data || [] };
     }
 
-    const { data, error } = await query;
+    // Use the robust RPC for searching across names and identifiers
+    const { data, error } = await supabase.rpc('search_patients_v2', {
+        search_term: queryText,
+        p_id: user.id
+    });
 
     if (error) {
-        console.error('Error fetching patients:', error);
+        console.error('Error in search_patients_v2 RPC:', error);
         return { data: [] };
     }
 

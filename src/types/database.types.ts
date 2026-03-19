@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
@@ -60,6 +60,44 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointment_audit_log: {
+        Row: {
+          appointment_id: string
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          new_status: Database["public"]["Enums"]["appointment_status"] | null
+          notes: string | null
+          old_status: Database["public"]["Enums"]["appointment_status"] | null
+        }
+        Insert: {
+          appointment_id: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_status?: Database["public"]["Enums"]["appointment_status"] | null
+          notes?: string | null
+          old_status?: Database["public"]["Enums"]["appointment_status"] | null
+        }
+        Update: {
+          appointment_id?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_status?: Database["public"]["Enums"]["appointment_status"] | null
+          notes?: string | null
+          old_status?: Database["public"]["Enums"]["appointment_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_audit_log_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
             referencedColumns: ["id"]
           },
         ]
@@ -198,15 +236,83 @@ export type Database = {
           },
         ]
       }
+      encounter_addenda: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string | null
+          encounter_id: string
+          id: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string | null
+          encounter_id: string
+          id?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string | null
+          encounter_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "encounter_addenda_encounter_id_fkey"
+            columns: ["encounter_id"]
+            isOneToOne: false
+            referencedRelation: "encounters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      encounter_audit_log: {
+        Row: {
+          changed_at: string | null
+          changed_by: string | null
+          encounter_id: string
+          id: string
+          new_status: string | null
+          notes: string | null
+          old_status: string | null
+        }
+        Insert: {
+          changed_at?: string | null
+          changed_by?: string | null
+          encounter_id: string
+          id?: string
+          new_status?: string | null
+          notes?: string | null
+          old_status?: string | null
+        }
+        Update: {
+          changed_at?: string | null
+          changed_by?: string | null
+          encounter_id?: string
+          id?: string
+          new_status?: string | null
+          notes?: string | null
+          old_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "encounter_audit_log_encounter_id_fkey"
+            columns: ["encounter_id"]
+            isOneToOne: false
+            referencedRelation: "encounters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       encounters: {
         Row: {
           analysis: string | null
           appointment_id: string | null
           created_at: string | null
           diagnosis: Json | null
-          encounter_category: string | null
           encounter_class: string | null
-          encounter_subcategory: string | null
           end_time: string | null
           evolution_note: string | null
           fhir_id: string
@@ -228,17 +334,13 @@ export type Database = {
           appointment_id?: string | null
           created_at?: string | null
           diagnosis?: Json | null
-          encounter_category?: string | null
           encounter_class?: string | null
-          encounter_subcategory?: string | null
           end_time?: string | null
           evolution_note?: string | null
           fhir_id?: string
           id?: string
           objective?: string | null
           patient_id: string
-          physical_exam?: Json | null
-          plan?: string | null
           practitioner_id: string
           reason_code?: Json | null
           start_time?: string
@@ -252,17 +354,13 @@ export type Database = {
           appointment_id?: string | null
           created_at?: string | null
           diagnosis?: Json | null
-          encounter_category?: string | null
           encounter_class?: string | null
-          encounter_subcategory?: string | null
           end_time?: string | null
           evolution_note?: string | null
           fhir_id?: string
           id?: string
           objective?: string | null
           patient_id?: string
-          physical_exam?: Json | null
-          plan?: string | null
           practitioner_id?: string
           reason_code?: Json | null
           start_time?: string
@@ -293,45 +391,6 @@ export type Database = {
             referencedRelation: "practitioners"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      encounter_addenda: {
-        Row: {
-          id: string
-          encounter_id: string
-          author_id: string
-          content: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          encounter_id: string
-          author_id: string
-          content: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          encounter_id?: string
-          author_id?: string
-          content?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "encounter_addenda_encounter_id_fkey"
-            columns: ["encounter_id"]
-            isOneToOne: false
-            referencedRelation: "encounters"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "encounter_addenda_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "practitioners"
-            referencedColumns: ["id"]
-          }
         ]
       }
       medication_requests: {
@@ -407,91 +466,6 @@ export type Database = {
           },
         ]
       }
-      order_kit_items: {
-        Row: {
-          created_at: string | null
-          dosage_instruction: Json | null
-          id: string
-          item_type: string | null
-          kit_id: string | null
-          laboratory_code: string | null
-          laboratory_name: string | null
-          medication_code: string | null
-          medication_display: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          dosage_instruction?: Json | null
-          id?: string
-          item_type?: string | null
-          kit_id?: string | null
-          laboratory_code?: string | null
-          laboratory_name?: string | null
-          medication_code?: string | null
-          medication_display?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          dosage_instruction?: Json | null
-          id?: string
-          item_type?: string | null
-          kit_id?: string | null
-          laboratory_code?: string | null
-          laboratory_name?: string | null
-          medication_code?: string | null
-          medication_display?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_kit_items_kit_id_fkey"
-            columns: ["kit_id"]
-            isOneToOne: false
-            referencedRelation: "order_kits"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      order_kits: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          diagnosis_code: string | null
-          id: string
-          practitioner_id: string | null
-          title: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          diagnosis_code?: string | null
-          id?: string
-          practitioner_id?: string | null
-          title: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          diagnosis_code?: string | null
-          id?: string
-          practitioner_id?: string | null
-          title?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_kits_practitioner_id_fkey"
-            columns: ["practitioner_id"]
-            isOneToOne: false
-            referencedRelation: "practitioners"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       patients: {
         Row: {
           active: boolean | null
@@ -500,15 +474,12 @@ export type Database = {
           created_at: string | null
           encrypted_notes: string | null
           extensions: Json | null
-          family_history: Json | null
           fhir_id: string
           gender: Database["public"]["Enums"]["gender_type"] | null
-          habits: Json | null
           id: string
           identifiers: Json | null
           name_family: string
           name_given: string[]
-          personal_history: Json | null
           practitioner_id: string | null
           telecom: Json | null
           updated_at: string | null
@@ -520,15 +491,12 @@ export type Database = {
           created_at?: string | null
           encrypted_notes?: string | null
           extensions?: Json | null
-          family_history?: Json | null
           fhir_id?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
-          habits?: Json | null
           id?: string
           identifiers?: Json | null
           name_family: string
           name_given: string[]
-          personal_history?: Json | null
           practitioner_id?: string | null
           telecom?: Json | null
           updated_at?: string | null
@@ -540,15 +508,12 @@ export type Database = {
           created_at?: string | null
           encrypted_notes?: string | null
           extensions?: Json | null
-          family_history?: Json | null
           fhir_id?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
-          habits?: Json | null
           id?: string
           identifiers?: Json | null
           name_family?: string
           name_given?: string[]
-          personal_history?: Json | null
           practitioner_id?: string | null
           telecom?: Json | null
           updated_at?: string | null
@@ -608,44 +573,6 @@ export type Database = {
         }
         Relationships: []
       }
-      text_macros: {
-        Row: {
-          content: string
-          created_at: string | null
-          id: string
-          practitioner_id: string | null
-          shortcut: string
-          title: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          content: string
-          created_at?: string | null
-          id?: string
-          practitioner_id?: string | null
-          shortcut: string
-          title?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          content?: string
-          created_at?: string | null
-          id?: string
-          practitioner_id?: string | null
-          shortcut?: string
-          title?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "text_macros_practitioner_id_fkey"
-            columns: ["practitioner_id"]
-            isOneToOne: false
-            referencedRelation: "practitioners"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
@@ -660,35 +587,45 @@ export type Database = {
           similarity_score: number
         }[]
       }
+      search_patients_v2: {
+        Args: { p_id: string; search_term: string }
+        Returns: {
+          active: boolean
+          id: string
+          identifiers: Json
+          name_family: string
+          name_given: string[]
+        }[]
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       appointment_status:
-      | "proposed"
-      | "pending"
-      | "booked"
-      | "arrived"
-      | "fulfilled"
-      | "cancelled"
-      | "noshow"
+        | "proposed"
+        | "pending"
+        | "booked"
+        | "arrived"
+        | "fulfilled"
+        | "cancelled"
+        | "noshow"
       encounter_status:
-      | "planned"
-      | "arrived"
-      | "triaged"
-      | "in-progress"
-      | "onleave"
-      | "finished"
-      | "cancelled"
+        | "planned"
+        | "arrived"
+        | "triaged"
+        | "in-progress"
+        | "onleave"
+        | "finished"
+        | "cancelled"
       gender_type: "male" | "female" | "other" | "unknown"
       medication_status:
-      | "draft"
-      | "active"
-      | "on-hold"
-      | "cancelled"
-      | "completed"
-      | "stopped"
-      | "unknown"
+        | "draft"
+        | "active"
+        | "on-hold"
+        | "cancelled"
+        | "completed"
+        | "stopped"
+        | "unknown"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -702,156 +639,113 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-  : never = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-  ? R
-  : never
+    ? R
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])
-  ? (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-      Row: infer R
-    }
-  ? R
-  : never
-  : never
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
+      Insert: infer I
+    }
+    ? I
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Update: infer U
-  }
-  ? U
-  : never
+      Update: infer U
+    }
+    ? U
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Update: infer U
-  }
-  ? U
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-  | keyof DefaultSchema["Enums"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-  : never
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-  | keyof DefaultSchema["CompositeTypes"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-  : never
-
-export const Constants = {
-  public: {
-    Enums: {
-      appointment_status: [
-        "proposed",
-        "pending",
-        "booked",
-        "arrived",
-        "fulfilled",
-        "cancelled",
-        "noshow",
-      ],
-      encounter_status: [
-        "planned",
-        "arrived",
-        "triaged",
-        "in-progress",
-        "onleave",
-        "finished",
-        "cancelled",
-      ],
-      gender_type: ["male", "female", "other", "unknown"],
-      medication_status: [
-        "draft",
-        "active",
-        "on-hold",
-        "cancelled",
-        "completed",
-        "stopped",
-        "unknown",
-      ],
-    },
-  },
-} as const;
-
-export type Patient = Tables<'patients'>;
-export type Condition = Tables<'conditions'>;
-export type AllergyIntolerance = Tables<'allergy_intolerances'>;
-export type Appointment = Tables<'appointments'>;
-export type Encounter = Tables<'encounters'>;
-export type EncounterWithSpecialty = Encounter & { practitioner?: { name_given: string[], name_family: string, specialty: string | null } };
-export type Practitioner = Tables<'practitioners'>;
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
