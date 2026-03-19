@@ -18,9 +18,12 @@ import AppointmentsTimeline from './AppointmentsTimeline';
 import AppointmentsKanban from './AppointmentsKanban';
 import AppointmentDetailSheet from './AppointmentDetailSheet';
 import NewAppointmentDialog from './NewAppointmentDialog';
-import { getAppointments } from '@/actions/appointments';
+import NewWalkInDialog from './NewWalkInDialog';
+import WalkInQueuePanel from './WalkInQueuePanel';
+import { getAppointments, startConsultationFromAppointment } from '@/actions/appointments';
 import { nowInVE, toISODate } from '@/lib/date-utils';
 import type { Appointment, AppointmentStatus } from '@/lib/fhir/types';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 interface AppointmentsViewProps {
@@ -28,16 +31,18 @@ interface AppointmentsViewProps {
 }
 
 export default function AppointmentsView({ initialAppointments }: AppointmentsViewProps) {
-    const [view, setView] = useState<'timeline' | 'kanban'>('timeline');
+    const [view, setView] = useState<'timeline' | 'kanban' | 'queue'>('timeline');
     const [selectedDate, setSelectedDate] = useState<Date>(nowInVE());
     const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
     const [statusFilter, setStatusFilter] = useState<AppointmentStatus[]>([]);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [newDialogOpen, setNewDialogOpen] = useState(false);
+    const [walkInDialogOpen, setWalkInDialogOpen] = useState(false);
     const [hasCleanedUp, setHasCleanedUp] = useState(false);
 
     const [isPending, startTransition] = useTransition();
+    const router = useRouter();
 
     const { setSecondaryPanel } = useLayoutStore();
 
@@ -132,7 +137,7 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                     {/* View Switcher */}
                     <Tabs 
                         value={view} 
-                        onValueChange={(v) => setView(v as 'timeline' | 'kanban')}
+                        onValueChange={(v) => setView(v as 'timeline' | 'kanban' | 'queue')}
                         className="w-auto"
                     >
                         <TabsList className="bg-muted/50 p-1 h-9">
@@ -150,6 +155,18 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                                 <LayoutGrid className="w-3.5 h-3.5" />
                                 <span className="hidden sm:inline">Flujo</span>
                             </TabsTrigger>
+                            {appointments.some(a => a.queue_position !== null) && (
+                                <TabsTrigger 
+                                    value="queue" 
+                                    className="px-3 py-1.5 text-xs gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                                >
+                                    <div className="relative">
+                                        <Plus className="w-3.5 h-3.5 rotate-45" />
+                                        <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                                    </div>
+                                    <span className="hidden sm:inline">Cola</span>
+                                </TabsTrigger>
+                            )}
                         </TabsList>
                     </Tabs>
 
@@ -185,6 +202,16 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
 
                     <Button 
                         size="sm" 
+                        variant="outline"
+                        className="h-9 gap-2 border-orange-200 text-orange-700 bg-orange-50/50 hover:bg-orange-50 transition-all"
+                        onClick={() => setWalkInDialogOpen(true)}
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline whitespace-nowrap">Por Orden</span>
+                    </Button>
+
+                    <Button 
+                        size="sm" 
                         className="h-9 gap-2 shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30"
                         onClick={() => setNewDialogOpen(true)}
                     >
@@ -197,7 +224,7 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
             {/* Main Content Area */}
             <main className="flex-1 overflow-hidden relative">
                 <div className="absolute inset-0">
-                    {view === 'timeline' ? (
+                    {view === 'timeline' && (
                         <AppointmentsTimeline 
                             appointments={appointments}
                             onSelect={(id) => {
@@ -207,7 +234,8 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                             selectedId={selectedAppointmentId}
                             selectedDate={selectedDate}
                         />
-                    ) : (
+                    )}
+                    {view === 'kanban' && (
                         <AppointmentsKanban 
                             appointments={appointments}
                             onSelect={(id) => {
@@ -215,6 +243,24 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                                 setDetailOpen(true);
                             }}
                             selectedId={selectedAppointmentId}
+                        />
+                    )}
+                    {view === 'queue' && (
+                        <WalkInQueuePanel 
+                            appointments={appointments}
+                            onSelect={(id) => {
+                                setSelectedAppointmentId(id);
+                                setDetailOpen(true);
+                            }}
+                            onRefresh={refreshData}
+                            onStartConsultation={async (id) => {
+                                const result = await startConsultationFromAppointment(id);
+                                if (result.error) toast.error('Error al iniciar consulta');
+                                else {
+                                    toast.success('Consulta iniciada');
+                                    router.refresh();
+                                }
+                            }}
                         />
                     )}
                 </div>
@@ -230,6 +276,12 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                 <NewAppointmentDialog 
                     open={newDialogOpen}
                     onOpenChange={setNewDialogOpen}
+                    onCreated={refreshData}
+                />
+
+                <NewWalkInDialog 
+                    open={walkInDialogOpen}
+                    onOpenChange={setWalkInDialogOpen}
                     onCreated={refreshData}
                 />
             </main>

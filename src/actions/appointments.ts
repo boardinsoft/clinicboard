@@ -11,10 +11,10 @@ import { Database } from '@/types/database.types';
  * Transiciones permitidas para citas (Appointment) basadas en FHIR R4.
  */
 const VALID_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
-    proposed: ['pending', 'booked', 'cancelled'],
-    pending: ['proposed', 'booked', 'cancelled'],
-    booked: ['proposed', 'arrived', 'cancelled', 'noshow'],
-    arrived: ['proposed', 'fulfilled', 'cancelled', 'noshow'],
+    proposed: ['pending', 'booked', 'noshow', 'cancelled'],
+    pending: ['proposed', 'booked', 'noshow', 'cancelled'],
+    booked: ['proposed', 'arrived', 'noshow', 'cancelled'],
+    arrived: ['proposed', 'fulfilled', 'noshow', 'cancelled'],
     fulfilled: [], // Terminal
     cancelled: [], // Terminal
     noshow: [],    // Terminal
@@ -624,4 +624,85 @@ export async function startConsultationFromAppointment(appointmentId: string) {
         encounterId: encounterResult.data?.id,
         patientId: appt.patient_id
     };
+}
+/**
+ * createWalkInAppointment(patientId)
+ * Creates an appointment with status 'arrived' directly, 
+ * bypassing future date/overlap validations and assigning it to the queue.
+ */
+export async function createWalkInAppointment(payload: { 
+    patient_id: string; 
+    description?: string; 
+    appointment_type?: string; 
+}) {
+    const { patient_id: patientId, description, appointment_type: appointmentType } = payload;
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'No autorizado' };
+
+    const startTime = new Date().toISOString();
+    const endTime = new Date(Date.now() + 30 * 60000).toISOString();
+
+    // Calculate next queue position for today
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const { data: lastInQueue } = await supabase
+        .from('appointments')
+        .select('queue_position')
+        .eq('practitioner_id', user.id)
+        .gte('start_time', startOfDay.toISOString())
+        .order('queue_position', { ascending: false })
+        .limit(1)
+        .single();
+
+    const nextPosition = (lastInQueue?.queue_position || 0) + 1;
+
+    const { data, error } = await supabase
+        .from('appointments')
+        .insert([{
+            patient_id: patientId,
+            practitioner_id: user.id,
+            status: 'arrived',
+            start_time: startTime,
+            end_time: endTime,
+            description: description || 'Consulta por orden de llegada (Walk-In)',
+            queue_position: nextPosition,
+            appointment_type: appointmentType || 'walk-in'
+        }])
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error in createWalkInAppointment:', error);
+        return { error: error.message };
+    }
+
+    revalidatePath('/appointments');
+    return { data };
+}
+
+/**
+ * updateQueuePosition(appointmentId, newPosition)
+ */
+export async function updateQueuePosition(id: string, newPosition: number) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'No autorizado' };
+
+    const { error } = await supabase
+        .from('appointments')
+        .update({ queue_position: newPosition })
+        .eq('id', id)
+        .eq('practitioner_id', user.id);
+
+    if (error) {
+        console.error('Error in updateQueuePosition:', error);
+        return { error: error.message };
+    }
+
+    revalidatePath('/appointments');
+    return { success: true };
 }

@@ -65,6 +65,11 @@ import {
 } from '@/actions/appointments';
 import { AppointmentPicker } from '@/components/ui/appointment-picker';
 import { format, parse } from 'date-fns';
+import { 
+    isWithinCheckinWindow, 
+    isEligibleForNoShow, 
+    getAppointmentTemporalLabel 
+} from '@/lib/appointments/appointment-rules';
 import type { Appointment, AppointmentStatus } from '@/lib/fhir/types';
 
 interface AppointmentDetailSheetProps {
@@ -226,10 +231,17 @@ export default function AppointmentDetailSheet({
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className="sm:max-w-md flex flex-col p-0 gap-0">
                 <SheetHeader className="p-6 pb-2">
-                    <div className="flex items-center justify-between mb-2">
-                        <Badge variant={config.variant} className={cn("uppercase text-[10px] font-bold tracking-widest", config.color)}>
-                            {config.label}
-                        </Badge>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                            <Badge variant={config.variant} className={cn("uppercase text-[10px] font-bold tracking-widest", config.color)}>
+                                {config.label}
+                            </Badge>
+                            {getAppointmentTemporalLabel(appointment) && (
+                                <Badge variant="destructive" className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider animate-pulse">
+                                    {getAppointmentTemporalLabel(appointment)}
+                                </Badge>
+                            )}
+                        </div>
                         <span className="text-[10px] font-mono text-muted-foreground">
                             ID: {appointment.id.split('-')[0]}
                         </span>
@@ -400,14 +412,23 @@ export default function AppointmentDetailSheet({
                         {/* 2. Booked (Confirmed) -> Arrived or Cancel */}
                         {appointment.status === 'booked' && (
                             <>
-                                <Button 
-                                    className="w-full gap-2 bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/10"
-                                    onClick={() => handleAction(markArrived, 'Paciente marcado como llegó')}
-                                    disabled={isPending}
-                                >
-                                    <User className="w-4 h-4" />
-                                    Marcar Llegada / En Sala
-                                </Button>
+                                {isWithinCheckinWindow(appointment.start_time).allowed ? (
+                                    <Button 
+                                        className="w-full gap-2 bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/10"
+                                        onClick={() => handleAction(markArrived, 'Paciente marcado como llegó')}
+                                        disabled={isPending}
+                                    >
+                                        <User className="w-4 h-4" />
+                                        Marcar Llegada / En Sala
+                                    </Button>
+                                ) : isWithinCheckinWindow(appointment.start_time).reason === 'early' ? (
+                                    <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-center">
+                                        <p className="text-[11px] font-semibold text-blue-700 uppercase tracking-tight">
+                                            Llegada disponible en {isWithinCheckinWindow(appointment.start_time).minutesUntilOpen} min
+                                        </p>
+                                    </div>
+                                ) : null}
+
                                 <div className="grid grid-cols-2 gap-2">
                                     <Button 
                                         variant="outline" 
@@ -420,12 +441,17 @@ export default function AppointmentDetailSheet({
                                     </Button>
                                     <Button 
                                         variant="outline" 
-                                        className="w-full text-red-500 hover:bg-red-50 border-red-100"
+                                        className={cn(
+                                            "w-full border-red-100",
+                                            isEligibleForNoShow(appointment.start_time) 
+                                                ? "bg-red-50 text-red-600 border-red-200" 
+                                                : "text-red-400 hover:bg-red-50"
+                                        )}
                                         onClick={() => handleAction(markNoShow, 'Paciente marcado como no asistió')}
                                         disabled={isPending}
                                     >
                                         <AlertCircle className="w-4 h-4 mr-2" />
-                                        Inasistencia
+                                        {isEligibleForNoShow(appointment.start_time) ? 'No se presentó' : 'Inasistencia'}
                                     </Button>
                                 </div>
                                 <Button 

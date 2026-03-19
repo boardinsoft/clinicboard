@@ -74,6 +74,7 @@ export type Database = {
           id: string
           patient_id: string
           practitioner_id: string
+          queue_position: number | null
           reason_code: Json | null
           start_time: string
           status: Database["public"]["Enums"]["appointment_status"] | null
@@ -88,6 +89,7 @@ export type Database = {
           id?: string
           patient_id: string
           practitioner_id: string
+          queue_position?: number | null
           reason_code?: Json | null
           start_time: string
           status?: Database["public"]["Enums"]["appointment_status"] | null
@@ -102,6 +104,7 @@ export type Database = {
           id?: string
           patient_id?: string
           practitioner_id?: string
+          queue_position?: number | null
           reason_code?: Json | null
           start_time?: string
           status?: Database["public"]["Enums"]["appointment_status"] | null

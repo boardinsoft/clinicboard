@@ -1,0 +1,92 @@
+import { format, isAfter, isBefore, addMinutes, subMinutes, differenceInMinutes } from 'date-fns';
+import { Appointment } from '@/lib/fhir/types';
+
+// Business Rule Constants
+export const CHECK_IN_WINDOW_MINUTES = 60;     // ±60 minutes from start time
+export const NO_SHOW_GRACE_PERIOD_MINUTES = 15; // 15 minutes after start time
+
+export interface TemporalState {
+    allowed: boolean;
+    reason?: string;
+    minutesUntilOpen?: number;
+}
+
+/**
+ * Checks if the patient is within the check-in window (±CHECK_IN_WINDOW_MINUTES).
+ */
+export function isWithinCheckinWindow(startTime: string | Date): TemporalState {
+    const start = new Date(startTime);
+    const now = new Date();
+    
+    const openingTime = subMinutes(start, CHECK_IN_WINDOW_MINUTES);
+    const closingTime = addMinutes(start, CHECK_IN_WINDOW_MINUTES);
+
+    if (isBefore(now, openingTime)) {
+        return { 
+            allowed: false, 
+            reason: 'early',
+            minutesUntilOpen: differenceInMinutes(openingTime, now)
+        };
+    }
+
+    if (isAfter(now, closingTime)) {
+        return { 
+            allowed: false, 
+            reason: 'expired' 
+        };
+    }
+
+    return { allowed: true };
+}
+
+/**
+ * Checks if an appointment is eligible to be marked as No-Show.
+ * A patient can be marked as No-Show if:
+ * 1. They are within the check-in window (to allow marking if they haven't arrived)
+ * 2. OR the grace period has passed.
+ */
+export function isEligibleForNoShow(startTime: string | Date): boolean {
+    const start = new Date(startTime);
+    const now = new Date();
+    const graceTime = addMinutes(start, NO_SHOW_GRACE_PERIOD_MINUTES);
+    
+    // Can mark as noshow once the grace period is over, regardless of window
+    return isAfter(now, graceTime);
+}
+
+/**
+ * Checks if a "Proposed" or "Pending" appointment has expired (more than 24h old).
+ */
+export function isExpiredProposal(startTime: string | Date): boolean {
+    const start = new Date(startTime);
+    const now = new Date();
+    const expirationThreshold = subMinutes(now, 1440); // 24 hours
+    
+    return isBefore(start, expirationThreshold);
+}
+
+/**
+ * Descriptive temporal helper for UI badges.
+ */
+export function getAppointmentTemporalLabel(appointment: Appointment): string | null {
+    if (['fulfilled', 'cancelled', 'noshow'].includes(appointment.status)) return null;
+    
+    const start = new Date(appointment.start_time);
+    const now = new Date();
+    const graceTime = addMinutes(start, NO_SHOW_GRACE_PERIOD_MINUTES);
+
+    if (isAfter(now, graceTime)) {
+        return 'VENCIDA';
+    }
+
+    const window = isWithinCheckinWindow(start);
+    if (window.allowed) {
+        return 'EN VENTANA';
+    }
+
+    if (window.reason === 'early' && (window.minutesUntilOpen || 0) <= 30) {
+        return 'INMINENTE';
+    }
+
+    return null;
+}

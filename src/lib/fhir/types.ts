@@ -294,6 +294,7 @@ export interface Appointment {
     appointment_type?: string;
     reason_code: CodeableConcept[];
     description?: string;
+    queue_position?: number;
     created_at: string;
     updated_at: string;
     // Joined
