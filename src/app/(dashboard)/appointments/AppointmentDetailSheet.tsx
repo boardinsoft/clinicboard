@@ -178,15 +178,34 @@ export default function AppointmentDetailSheet({
 
         setIsPending(true);
         try {
+            // datePart is yyyy-MM-dd
             const datePart = format(newDate, 'yyyy-MM-dd');
+            // Parse hh:mm aa (e.g. 09:30 AM) to HH:mm (09:30)
             const timePart = format(parse(newTime, 'hh:mm aa', new Date()), 'HH:mm');
-            const startISO = new Date(`${datePart}T${timePart}`).toISOString();
-            const endISO = new Date(new Date(startISO).getTime() + 30 * 60000).toISOString();
+            
+            // Critical part: Construct the date. 
+            // In a medical app, the date/time picked is intended to be the local time of the practice.
+            // Using a T in between without Z means it is parsed as local browser time.
+            const fullDateString = `${datePart}T${timePart}:00`; 
+            const localDate = new Date(fullDateString);
+            
+            if (isNaN(localDate.getTime())) {
+                throw new Error('Fecha u hora inválida');
+            }
+
+            const startISO = localDate.toISOString();
+            const endISO = new Date(localDate.getTime() + 30 * 60000).toISOString();
+
+            console.log('--- Reprogramando Cita ---');
+            console.log('Local string:', fullDateString);
+            console.log('ISO Start:', startISO);
+            console.log('ISO End:', endISO);
 
             const result = await rescheduleAppointment(appointment.id, startISO, endISO);
             
             if (result.error) {
-                toast.error(result.error);
+                console.error('Error del servidor:', result.error);
+                toast.error(typeof result.error === 'string' ? result.error : 'Error al reprogramar en el servidor');
             } else {
                 toast.success('Cita reprogramada exitosamente');
                 onAction();
@@ -194,8 +213,8 @@ export default function AppointmentDetailSheet({
                 onOpenChange(false);
             }
         } catch (error) {
-            console.error(error);
-            toast.error('Error al reprogramar');
+            console.error('Excepción en handleReschedule:', error);
+            toast.error('Error inesperado al procesar la fecha o comunicación');
         } finally {
             setIsPending(false);
         }

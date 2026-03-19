@@ -12,9 +12,9 @@ import { Database } from '@/types/database.types';
  */
 const VALID_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
     proposed: ['pending', 'booked', 'cancelled'],
-    pending: ['booked', 'cancelled'],
-    booked: ['arrived', 'cancelled', 'noshow'],
-    arrived: ['fulfilled', 'cancelled', 'noshow'],
+    pending: ['proposed', 'booked', 'cancelled'],
+    booked: ['proposed', 'arrived', 'cancelled', 'noshow'],
+    arrived: ['proposed', 'fulfilled', 'cancelled', 'noshow'],
     fulfilled: [], // Terminal
     cancelled: [], // Terminal
     noshow: [],    // Terminal
