@@ -438,8 +438,9 @@ export async function getAppointments(filters?: {
         .eq('practitioner_id', user.id);
 
     if (filters?.date) {
-        const startOfDay = `${filters.date}T00:00:00.000Z`;
-        const endOfDay = `${filters.date}T23:59:59.999Z`;
+        // Usar offset -04:00 para Venezuela en lugar de Z (UTC)
+        const startOfDay = `${filters.date}T00:00:00-04:00`;
+        const endOfDay = `${filters.date}T23:59:59-04:00`;
         query = query.gte('start_time', startOfDay).lt('start_time', endOfDay);
     }
 
@@ -641,24 +642,25 @@ export async function createWalkInAppointment(payload: {
 
     if (!user) return { error: 'No autorizado' };
 
-    const startTime = new Date().toISOString();
-    const endTime = new Date(Date.now() + 30 * 60000).toISOString();
+    const now = new Date();
+    const startTime = now.toISOString();
+    const endTime = new Date(now.getTime() + 30 * 60000).toISOString();
 
-    // Calculate next queue position for today
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    // Calcular la posición en cola basada en el día local de Venezuela
+    const { nowInVE, toISODate } = await import('@/lib/date-utils');
+    const localToday = toISODate(nowInVE());
+    const startOfLocalDay = `${localToday}T00:00:00-04:00`;
     
     const { data: lastInQueue } = await supabase
         .from('appointments')
         .select('queue_position')
         .eq('practitioner_id', user.id)
-        .gte('start_time', startOfDay.toISOString())
+        .gte('start_time', startOfLocalDay)
         .order('queue_position', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
     const nextPosition = (lastInQueue?.queue_position || 0) + 1;
-
     const { data, error } = await supabase
         .from('appointments')
         .insert([{
@@ -673,6 +675,8 @@ export async function createWalkInAppointment(payload: {
         }])
         .select()
         .single();
+
+    console.log('[createWalkInAppointment] Insert result:', { data, error });
 
     if (error) {
         console.error('Error in createWalkInAppointment:', error);
