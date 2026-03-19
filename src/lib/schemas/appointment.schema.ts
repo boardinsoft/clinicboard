@@ -15,7 +15,7 @@ export const appointmentSchema = z.object({
     practitioner_id: z.string().uuid('Invalid practitioner ID (UUID required)'),
     start_time: dateStringSchema,
     end_time: dateStringSchema,
-    status: AppointmentStatusEnum.default('proposed'),
+    status: AppointmentStatusEnum,
     description: z.string().optional(),
     appointment_type: z.string().min(1, 'Appointment type is required'),
 });
