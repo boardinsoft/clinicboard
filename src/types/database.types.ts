@@ -765,7 +765,9 @@ export type Encounter = Tables<'encounters'> & {
   encounter_category?: string | null;
   encounter_subcategory?: string | null;
 };
-export type EncounterWithSpecialty = Encounter & { 
+export type EncounterWithSpecialty = Tables<'encounters'> & {
+  encounter_category?: string | null;
+  encounter_subcategory?: string | null;
   practitioner?: { name_given: string[], name_family: string, specialty: string | null } 
 };
 export type Practitioner = Tables<'practitioners'>;

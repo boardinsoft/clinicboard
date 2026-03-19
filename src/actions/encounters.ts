@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { encounterSchema } from '@/lib/schemas/encounter.schema';
 import { EncounterStatus, VitalSigns } from '@/lib/fhir/types';
-import type { Json } from '@/types/database.types';
+import type { Json, EncounterWithSpecialty } from '@/types/database.types';
 
 /**
  * FHIR R4 Encounter State Machine
@@ -179,7 +179,7 @@ export async function finalizeEncounter(id: string) {
     return { data };
 }
 
-export async function getEncounters(patientId: string) {
+export async function getEncounters(patientId: string): Promise<{ data: EncounterWithSpecialty[] }> {
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -199,7 +199,7 @@ export async function getEncounters(patientId: string) {
         return { data: [] };
     }
 
-    return { data: data || [] };
+    return { data: (data || []) as EncounterWithSpecialty[] };
 }
 
 /**
