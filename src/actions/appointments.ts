@@ -643,9 +643,9 @@ export async function createWalkInAppointment(payload: {
     if (!user) return { error: 'No autorizado' };
 
     const now = new Date();
-    // Round down to the nearest 15-minute interval to satisfy DB trigger
+    // Round up to the nearest 15-minute interval to satisfy DB trigger and avoid "past time" error
     const minutes = now.getMinutes();
-    const roundedMinutes = Math.floor(minutes / 15) * 15;
+    const roundedMinutes = Math.ceil((minutes + 1) / 15) * 15;
     now.setMinutes(roundedMinutes, 0, 0);
     
     const startTime = now.toISOString();
