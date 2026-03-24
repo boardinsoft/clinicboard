@@ -255,10 +255,12 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                             onRefresh={refreshData}
                             onStartConsultation={async (id) => {
                                 const result = await startConsultationFromAppointment(id);
-                                if (result.error) toast.error('Error al iniciar consulta');
-                                else {
+                                if (result.error) {
+                                    toast.error(typeof result.error === 'string' ? result.error : 'Error al iniciar consulta');
+                                } else if (result.success) {
                                     toast.success('Consulta iniciada');
-                                    router.refresh();
+                                    refreshData();
+                                    router.push(`/history?patientId=${result.patientId}&encounterId=${result.encounterId || ''}`);
                                 }
                             }}
                         />

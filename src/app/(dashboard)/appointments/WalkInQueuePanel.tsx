@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { Appointment } from '@/lib/fhir/types';
 import { format } from 'date-fns';
-import { updateQueuePosition } from '@/actions/appointments';
+import { swapQueuePositions } from '@/actions/appointments';
 import { toast } from 'sonner';
 
 interface WalkInQueuePanelProps {
@@ -52,14 +52,16 @@ export default function WalkInQueuePanel({
     const swapPositions = async (idx1: number, idx2: number) => {
         const app1 = queue[idx1];
         const app2 = queue[idx2];
-        
+
         if (!app1 || !app2) return;
 
         try {
-            const res1 = await updateQueuePosition(app1.id, app2.queue_position!);
-            const res2 = await updateQueuePosition(app2.id, app1.queue_position!);
-            
-            if (res1.error || res2.error) {
+            const result = await swapQueuePositions(
+                app1.id, app1.queue_position!,
+                app2.id, app2.queue_position!
+            );
+
+            if (result.error) {
                 toast.error('Error al reordenar la cola');
             } else {
                 onRefresh();

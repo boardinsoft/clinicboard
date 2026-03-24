@@ -2,6 +2,7 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import { appointmentSchema } from '@/lib/schemas/appointment.schema';
 import { AppointmentStatus } from '@/lib/fhir/types';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -129,7 +130,7 @@ export async function createAppointment(formData: {
     const validation = appointmentSchema.safeParse(appointmentData);
 
     if (!validation.success) {
-        return { error: validation.error.flatten().fieldErrors };
+        return { error: z.flattenError(validation.error).fieldErrors };
     }
 
     // Checking business rules for times
@@ -187,19 +188,20 @@ export async function confirmAppointment(id: string) {
         return { error: 'No autorizado' };
     }
 
-    // First check what is the current status
+    // First check what is the current status — scoped to this practitioner
     const { data: currentAppt, error: checkError } = await supabase
         .from('appointments')
         .select('status')
         .eq('id', id)
+        .eq('practitioner_id', user.id)
         .single();
-    
-    if (checkError) {
-        console.warn('Could not pre-check status (RLS?):', checkError.message);
+
+    if (checkError || !currentAppt) {
+        return { error: 'Cita no encontrada o sin permisos.' };
     }
 
     const currentStatus = (currentAppt?.status as AppointmentStatus) || 'proposed';
-    
+
     if (currentStatus === 'booked') {
         return { success: true, message: 'La cita ya estaba confirmada' };
     }
@@ -213,6 +215,7 @@ export async function confirmAppointment(id: string) {
         .from('appointments')
         .update({ status: 'booked' })
         .eq('id', id)
+        .eq('practitioner_id', user.id)
         .eq('status', currentStatus)
         .select()
         .single();
@@ -243,12 +246,17 @@ export async function cancelAppointment(id: string, reason?: string) {
         return { error: 'No autorizado' };
     }
 
-    // Check current status
+    // Check current status — scoped to this practitioner
     const { data: currentAppt } = await supabase
         .from('appointments')
         .select('status')
         .eq('id', id)
+        .eq('practitioner_id', user.id)
         .single();
+
+    if (!currentAppt) {
+        return { error: 'Cita no encontrada o sin permisos.' };
+    }
 
     const currentStatus = (currentAppt?.status as AppointmentStatus) || 'proposed';
     const validation = validateTransition(currentStatus, 'cancelled');
@@ -263,6 +271,7 @@ export async function cancelAppointment(id: string, reason?: string) {
             description: reason ? `Cancelación: ${reason}` : 'Cancelada sin motivo especificado'
         })
         .eq('id', id)
+        .eq('practitioner_id', user.id)
         .eq('status', currentStatus)
         .select()
         .single();
@@ -579,31 +588,51 @@ export async function startConsultationFromAppointment(appointmentId: string) {
 
     if (!user) return { error: 'No autorizado' };
 
-    // 1. Validar cita
+    // 1. Validar cita — scoped to this practitioner
     const { data: appt, error: apptError } = await supabase
         .from('appointments')
         .select('*')
         .eq('id', appointmentId)
+        .eq('practitioner_id', user.id)
         .single();
 
-    if (apptError || !appt) return { error: 'Cita no encontrada' };
+    if (apptError || !appt) return { error: 'Cita no encontrada o sin permisos.' };
 
     const currentStatus = (appt.status as AppointmentStatus) || 'proposed';
     if (!['booked', 'arrived'].includes(currentStatus)) {
         return { error: `No se puede iniciar consulta desde una cita en estado '${currentStatus}'. Solo desde 'Confirmada' o 'En Espera'.` };
     }
 
-    // 2. Marcar cita como cumplida (fulfilled)
+    // 2. Verificar idempotencia: si ya existe un encuentro para esta cita, retornarlo
+    const { data: existingEncounter } = await supabase
+        .from('encounters')
+        .select('id, patient_id')
+        .eq('appointment_id', appointmentId)
+        .eq('practitioner_id', user.id)
+        .not('status', 'eq', 'cancelled')
+        .maybeSingle();
+
+    if (existingEncounter) {
+        revalidatePath('/appointments');
+        return {
+            success: true,
+            encounterId: existingEncounter.id,
+            patientId: existingEncounter.patient_id,
+        };
+    }
+
+    // 3. Marcar cita como cumplida (fulfilled)
     const { error: updateError } = await supabase
         .from('appointments')
         .update({ status: 'fulfilled' })
-        .eq('id', appointmentId);
+        .eq('id', appointmentId)
+        .eq('practitioner_id', user.id);
 
-    if (updateError) return { error: 'Error al actualizar estado de la cita' };
+    if (updateError) return { error: 'Error al actualizar estado de la cita.' };
 
-    // 3. Crear encuentro (Encounter)
+    // 4. Crear encuentro (Encounter)
     const { createEncounter } = await import('@/actions/encounters');
-    
+
     const encounterResult = await createEncounter({
         patient_id: appt.patient_id,
         encounter_class: 'AMB',
@@ -613,17 +642,22 @@ export async function startConsultationFromAppointment(appointmentId: string) {
     });
 
     if (encounterResult.error) {
-        // Rollback? No es crítico si ya se cumplió la cita.
-        return { error: encounterResult.error };
+        // Rollback: revertir la cita al estado anterior si el encuentro no pudo crearse
+        await supabase
+            .from('appointments')
+            .update({ status: currentStatus })
+            .eq('id', appointmentId)
+            .eq('practitioner_id', user.id);
+        return { error: typeof encounterResult.error === 'string' ? encounterResult.error : 'Error al crear el encuentro clínico.' };
     }
 
     revalidatePath('/appointments');
     revalidatePath('/history');
 
-    return { 
-        success: true, 
+    return {
+        success: true,
         encounterId: encounterResult.data?.id,
-        patientId: appt.patient_id
+        patientId: appt.patient_id,
     };
 }
 /**
@@ -693,7 +727,7 @@ export async function createWalkInAppointment(payload: {
 }
 
 /**
- * updateQueuePosition(appointmentId, newPosition)
+ * updateQueuePosition(id, newPosition)
  */
 export async function updateQueuePosition(id: string, newPosition: number) {
     const supabase = await createServerSupabaseClient();
@@ -710,6 +744,62 @@ export async function updateQueuePosition(id: string, newPosition: number) {
     if (error) {
         console.error('Error in updateQueuePosition:', error);
         return { error: error.message };
+    }
+
+    revalidatePath('/appointments');
+    return { success: true };
+}
+
+/**
+ * swapQueuePositions(id1, pos1, id2, pos2)
+ * Swaps queue positions between two appointments atomically.
+ * Uses a temporary position to avoid unique constraint violations.
+ */
+export async function swapQueuePositions(
+    id1: string, pos1: number,
+    id2: string, pos2: number
+) {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'No autorizado' };
+
+    const TEMP_POSITION = -1;
+
+    // Step 1: Move id1 to a temporary position to avoid conflicts
+    const { error: e1 } = await supabase
+        .from('appointments')
+        .update({ queue_position: TEMP_POSITION })
+        .eq('id', id1)
+        .eq('practitioner_id', user.id);
+
+    if (e1) return { error: e1.message };
+
+    // Step 2: Move id2 to pos1
+    const { error: e2 } = await supabase
+        .from('appointments')
+        .update({ queue_position: pos1 })
+        .eq('id', id2)
+        .eq('practitioner_id', user.id);
+
+    if (e2) {
+        // Partial rollback: restore id1
+        await supabase.from('appointments').update({ queue_position: pos1 }).eq('id', id1).eq('practitioner_id', user.id);
+        return { error: e2.message };
+    }
+
+    // Step 3: Move id1 (from temp) to pos2
+    const { error: e3 } = await supabase
+        .from('appointments')
+        .update({ queue_position: pos2 })
+        .eq('id', id1)
+        .eq('practitioner_id', user.id);
+
+    if (e3) {
+        // Partial rollback: restore both
+        await supabase.from('appointments').update({ queue_position: pos1 }).eq('id', id1).eq('practitioner_id', user.id);
+        await supabase.from('appointments').update({ queue_position: pos2 }).eq('id', id2).eq('practitioner_id', user.id);
+        return { error: e3.message };
     }
 
     revalidatePath('/appointments');

@@ -2,6 +2,7 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import { prescriptionSchema } from '@/lib/schemas/prescription.schema';
 import { MedicationRequestStatus } from '@/lib/fhir/types';
 
@@ -26,6 +27,18 @@ export async function createPrescription(formData: {
         return { error: 'No autorizado. Sesión no encontrada.' };
     }
 
+    // Verify the patient belongs to this practitioner
+    const { data: patient } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('id', formData.patient_id)
+        .eq('practitioner_id', user.id)
+        .single();
+
+    if (!patient) {
+        return { error: 'Paciente no encontrado o sin permisos.' };
+    }
+
     const prescriptionData = {
         ...formData,
         prescriber_id: user.id,
@@ -35,7 +48,7 @@ export async function createPrescription(formData: {
     const validation = prescriptionSchema.safeParse(prescriptionData);
 
     if (!validation.success) {
-        return { error: validation.error.flatten().fieldErrors };
+        return { error: z.flattenError(validation.error).fieldErrors };
     }
 
     const { data, error } = await supabase

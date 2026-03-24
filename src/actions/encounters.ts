@@ -2,6 +2,7 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import { encounterSchema } from '@/lib/schemas/encounter.schema';
 import { EncounterStatus, VitalSigns } from '@/lib/fhir/types';
 import type { Json, EncounterWithSpecialty } from '@/types/database.types';
@@ -69,7 +70,7 @@ export async function createEncounter(formData: {
     };
 
     const validation = encounterSchema.safeParse(encounterData);
-    if (!validation.success) return { error: validation.error.flatten().fieldErrors };
+    if (!validation.success) return { error: z.flattenError(validation.error).fieldErrors };
 
     const { data, error } = await supabase
         .from('encounters')
@@ -109,14 +110,15 @@ export async function saveEncounterDraft(id: string, formData: {
 
     if (!user) return { error: 'No autorizado' };
 
-    // Get current status to ensure it's in-progress or similar
+    // Get current status — scoped to this practitioner
     const { data: encounter } = await supabase
         .from('encounters')
         .select('status')
         .eq('id', id)
+        .eq('practitioner_id', user.id)
         .single();
 
-    if (!encounter) return { error: 'Encuentro no encontrado' };
+    if (!encounter) return { error: 'Encuentro no encontrado o sin permisos.' };
     if (encounter.status === 'finished') return { error: 'No se puede editar un encuentro finalizado.' };
 
     const { data, error } = await supabase

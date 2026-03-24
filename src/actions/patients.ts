@@ -2,6 +2,7 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import { patientSchema } from '@/lib/schemas/patient.schema';
 
 export async function createPatient(formData: {
@@ -27,7 +28,7 @@ export async function createPatient(formData: {
     });
 
     if (!validation.success) {
-        return { error: validation.error.flatten().fieldErrors };
+        return { error: z.flattenError(validation.error).fieldErrors };
     }
 
     const supabase = await createServerSupabaseClient();
@@ -88,7 +89,7 @@ export async function updatePatient(id: string, formData: {
     });
 
     if (!validation.success) {
-        return { error: validation.error.flatten().fieldErrors };
+        return { error: z.flattenError(validation.error).fieldErrors };
     }
 
     const supabase = await createServerSupabaseClient();
@@ -170,6 +171,19 @@ export async function getPatients(queryText?: string) {
 
 export async function getPatientClinicalData(patientId: string) {
     const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { conditions: [], allergies: [] };
+
+    // Verify the patient belongs to this practitioner before exposing clinical data
+    const { data: patient } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('id', patientId)
+        .eq('practitioner_id', user.id)
+        .single();
+
+    if (!patient) return { conditions: [], allergies: [] };
 
     const [conditionsResult, allergiesResult] = await Promise.all([
         supabase.from('conditions').select('*').eq('patient_id', patientId),

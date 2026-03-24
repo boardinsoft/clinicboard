@@ -2,6 +2,7 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import { conditionSchema } from '@/lib/schemas/condition.schema';
 
 /**
@@ -45,7 +46,7 @@ export async function createCondition(formData: {
     const validation = conditionSchema.safeParse(conditionData);
 
     if (!validation.success) {
-        return { error: validation.error.flatten().fieldErrors };
+        return { error: z.flattenError(validation.error).fieldErrors };
     }
 
     // 3. Insert record

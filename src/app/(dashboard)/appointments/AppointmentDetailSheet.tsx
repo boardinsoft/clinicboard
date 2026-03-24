@@ -199,7 +199,11 @@ export default function AppointmentDetailSheet({
             }
 
             const startISO = localDate.toISOString();
-            const endISO = new Date(localDate.getTime() + 30 * 60000).toISOString();
+            // Preserve original appointment duration; fall back to 30 min
+            const originalDurationMs = appointment.end_time && appointment.start_time
+                ? new Date(appointment.end_time).getTime() - new Date(appointment.start_time).getTime()
+                : 30 * 60000;
+            const endISO = new Date(localDate.getTime() + originalDurationMs).toISOString();
 
             console.log('--- Reprogramando Cita ---');
             console.log('Local string:', fullDateString);

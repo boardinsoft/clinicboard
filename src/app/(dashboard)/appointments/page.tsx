@@ -10,10 +10,10 @@ export default async function AppointmentsPage() {
 
     if (!user) return null;
 
-    // Default fetch for today in Venezuela
+    // Default fetch for today in Venezuela (UTC-4, no DST)
     const today = toISODate(nowInVE());
-    const startOfDay = `${today}T00:00:00.000Z`;
-    const endOfDay = `${today}T23:59:59.999Z`;
+    const startOfDay = `${today}T00:00:00-04:00`;
+    const endOfDay = `${today}T23:59:59-04:00`;
 
     const { data: appointments } = await supabase
         .from('appointments')
