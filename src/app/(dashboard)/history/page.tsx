@@ -4,13 +4,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTabStore } from '@/store/useTabStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
-import { getPatients, getPatientClinicalData, createEncounter, getEncounters, updatePatientAnamnesis } from '@/actions/patients';
+import { getPatients, getPatientClinicalData, updatePatientAnamnesis } from '@/actions/patients';
+import { createEncounter as createEncounterAction, saveEncounterDraft, finalizeEncounter, getEncounters } from '@/actions/encounters';
 import type { Patient, Condition, AllergyIntolerance, EncounterWithSpecialty } from '@/types/database.types';
 import type { Json } from '@/types/database.types';
 import type { Path, UseFormRegister } from 'react-hook-form';
 import SpecialtySidebar from './SpecialtySidebar';
 import DiagnosisSearch from '@/components/clinical/DiagnosisSearch';
 import { FIELD_SUGGESTION_MAP } from '@/lib/constants/wizard-suggestions';
+import { cn } from '@/lib/utils';
 
 // Shadcn UI Components
 import { Button } from '@/components/ui/button';
@@ -20,9 +22,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent, CardHeader, CardTitle, CardAction, CardDescription } from '@/components/ui/card';
-import { Field, FieldError, FieldLabel, FieldGroup, FieldDescription } from '@/components/ui/field';
-import { InputGroup, InputGroupAddon, InputGroupText, InputGroupInput } from '@/components/ui/input-group';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Stepper, StepperHeader, StepperIcon, StepperItem, StepperSeparator } from '@/components/ui/stepper';
@@ -53,10 +55,6 @@ import {
     Settings2,
     Users,
     ClipboardList,
-    ChevronRight,
-    ChevronLeft,
-    Check,
-    AlertCircle,
     Search,
     Microscope,
     Utensils,
@@ -132,6 +130,18 @@ const encounterSchema = z.object({
 });
 
 type EncounterFormValues = z.infer<typeof encounterSchema>;
+
+interface AddendumRow {
+    id: string;
+    encounter_id: string;
+    author_id: string;
+    content: string;
+    created_at: string;
+    author?: {
+        name_family: string;
+        name_given: string[];
+    };
+}
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 const defaultVitals = {
@@ -262,11 +272,6 @@ function getCategoryForSubcategory(sub: string) {
 }
 
 
-function calcAge(birthDate: string | null): string {
-    if (!birthDate) return '—';
-    const diff = Date.now() - new Date(birthDate).getTime();
-    return `${Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25))} años`;
-}
 
 const SUGGESTION_MAP: Record<string, string[]> = {
     // 1. Emergencia / Urgencia
@@ -1412,14 +1417,20 @@ function FieldSuggestions({
 function HistoryWorkspaceHeader({
     selectedPatient,
     isSaving,
+    isReadOnly,
     onSave,
+    onFinalize,
     onReset,
+    activeEncounterId,
     children
 }: {
     selectedPatient: Patient | null;
     isSaving: boolean;
+    isReadOnly: boolean;
     onSave: () => void;
+    onFinalize: () => void;
     onReset: () => void;
+    activeEncounterId: string | null;
     children?: React.ReactNode;
 }) {
     return (
@@ -1428,44 +1439,72 @@ function HistoryWorkspaceHeader({
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight mb-1">Historia Clínica</h1>
                     {selectedPatient ? (
-                        <p className="text-sm text-foreground flex items-center gap-2">
-                            <span className="font-semibold text-primary">
-                                {selectedPatient.name_family}, {selectedPatient.name_given?.join(' ')}
-                            </span>
-                            <span className="text-muted-foreground">·</span>
-                            <span className="text-muted-foreground">
-                                {calcAge(selectedPatient.birth_date)}
-                            </span>
-                            <span className="text-muted-foreground">·</span>
-                            <span className="text-muted-foreground">
-                                {selectedPatient.gender === 'female' ? 'Femenino' : 'Masculino'}
-                            </span>
-                        </p>
+                        <div className="flex flex-col gap-1">
+                            <p className="text-sm text-foreground flex items-center gap-2">
+                                <span className="font-semibold text-primary">
+                                    {selectedPatient?.name_family}, {selectedPatient?.name_given?.join(' ')}
+                                </span>
+                                <span className="text-muted-foreground">·</span>
+                                <span className="text-xs bg-muted px-2 py-0.5 rounded-full font-mono">
+                                    {(selectedPatient?.identifiers as Array<Record<string, string>> | null)?.[0]?.value || 'S/D'}
+                                </span>
+                            </p>
+                            {isReadOnly && (
+                                <Badge variant="outline" className="w-fit gap-1.5 border-amber-200 bg-amber-50 text-amber-700 animate-in fade-in slide-in-from-left-2">
+                                    <Shield className="w-3 h-3" /> Encuentro Finalizado (Solo Lectura)
+                                </Badge>
+                            )}
+                        </div>
                     ) : (
-                        <p className="text-sm text-muted-foreground">
-                            Selecciona un paciente del panel lateral para comenzar
+                        <p className="text-sm text-muted-foreground font-medium flex items-center gap-2">
+                            <Users className="w-4 h-4 opacity-50" /> Seleccione un paciente para comenzar
                         </p>
                     )}
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={onReset}
-                        disabled={!selectedPatient}
-                        aria-label="Limpiar formulario"
-                        title="Limpiar formulario"
+                <div className="flex items-center gap-2.5">
+                    {activeEncounterId && !isReadOnly && (
+                        <Button 
+                            variant="destructive"
+                            size="sm"
+                            className="h-9 px-4 font-bold border-2 border-primary/10 shadow-lg shadow-primary/10 transition-all hover:scale-105 active:scale-95 gap-2"
+                            onClick={onFinalize}
+                            disabled={isSaving}
+                        >
+                            <CheckCircle2 className="w-4 h-4" /> Finalizar Acto
+                        </Button>
+                    )}
+                    
+                    <Button 
+                        form="history-form"
+                        variant={isReadOnly ? "outline" : "default"}
+                        size="sm"
+                        className={cn(
+                            "h-9 px-4 font-bold transition-all hover:scale-105 active:scale-95 gap-2",
+                            !isReadOnly && "shadow-lg shadow-primary/10"
+                        )}
+                        onClick={(e) => {
+                            if (isReadOnly) {
+                                e.preventDefault();
+                                toast.info("Este encuentro está finalizado y no puede ser modificado.");
+                                return;
+                            }
+                            onSave();
+                        }}
+                        disabled={isSaving || isReadOnly}
                     >
-                        <RefreshCw className="w-5 h-5" />
+                        {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        {isReadOnly ? "Nota Permanente" : activeEncounterId ? "Actualizar Borrador" : "Guardar Registro"}
                     </Button>
-                    <Button
-                        onClick={onSave}
-                        disabled={isSaving || !selectedPatient}
-                        className="gap-2 min-w-[120px]"
+
+                    <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="h-9 px-4 font-semibold text-muted-foreground hover:bg-muted/50 rounded-xl"
+                        onClick={onReset}
+                        disabled={isSaving}
                     >
-                        <Save className="w-4 h-4" />
-                        {isSaving ? 'Guardando…' : 'Guardar'}
+                        Limpiar
                     </Button>
                 </div>
             </div>
@@ -1495,13 +1534,19 @@ export default function HistoryPage() {
     );
     const [pastEncounters, setPastEncounters] = useState<EncounterWithSpecialty[]>([]);
     const [activeEncounterId, setActiveEncounterId] = useState<string | null>(null);
-    const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+    const [isReadOnly, setIsReadOnly] = useState(false);
     const [isLoadingEncounters, setIsLoadingEncounters] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [wizardStep, setWizardStep] = useState(0);
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [chiefComplaintSelectKey, setChiefComplaintSelectKey] = useState(0);
     const [familyHistorySelectKey, setFamilyHistorySelectKey] = useState(0);
+    const [addenda, setAddenda] = useState<AddendumRow[]>([]);
+    const [isAddingAddendum, setIsAddingAddendum] = useState(false);
+    const [newAddendumContent, setNewAddendumContent] = useState('');
+    const [isSavingAddendum, setIsSavingAddendum] = useState(false);
+
+    const appointmentId = searchParams.get('appointmentId');
 
     // Initialize Form
     const form = useForm<EncounterFormValues>({
@@ -1531,14 +1576,34 @@ export default function HistoryPage() {
 
     const handleEncounterSelect = useCallback((id: string | null, enc: EncounterWithSpecialty | null) => {
         setActiveEncounterId(id);
+        const readOnly = enc?.status === 'finished';
+        setIsReadOnly(readOnly);
         if (enc) {
+            // Check if reason_code is an array of objects
+            const chiefComplaint = (Array.isArray(enc.reason_code) 
+                ? (enc.reason_code as Array<Record<string, string>>)[0]?.text 
+                : typeof enc.reason_code === 'string' ? enc.reason_code : '') || '';
+
             form.reset({
                 ...defaultValues,
-                evolutionNote: enc.evolution_note || 'Sin nota clínica.',
-                chiefComplaint: (Array.isArray(enc.reason_code) ? (enc.reason_code as Array<{ text?: string }>)[0]?.text : undefined) || '',
+                evolutionNote: enc.evolution_note || '',
+                treatmentPlan: enc.plan || '',
+                chiefComplaint,
+                vitals: (enc.vital_signs as Record<string, unknown>) || defaultVitals,
+                physicalExam: (enc.physical_exam as unknown as EncounterFormValues["physicalExam"]) || defaultValues.physicalExam,
+                diagnoses: (enc.diagnosis as unknown as EncounterFormValues["diagnoses"]) || [],
+                encounterCategory: enc.encounter_category || '',
+                encounterSubcategory: enc.encounter_subcategory || '',
             });
+
+            if (readOnly) {
+                import('@/actions/encounters').then(m => m.getAddenda(enc.id)).then(res => setAddenda(res.data));
+            } else {
+                setAddenda([]);
+            }
         } else {
             handleReset();
+            setAddenda([]);
         }
     }, [handleReset, form]);
 
@@ -1553,7 +1618,7 @@ export default function HistoryPage() {
         setIsSaving(true);
 
         const abnormalFindings = Object.entries(values.physicalExam)
-            .filter(([_, v]) => !v.normal)
+            .filter(([, v]) => !v.normal)
             .map(([k, v]) => `${PHYSICAL_SYSTEMS.find(s => s.id === k)?.label || k}: ${v.notes}`)
             .join(' | ');
 
@@ -1576,53 +1641,83 @@ export default function HistoryPage() {
             habitsHistory: values.habitsHistory,
         });
 
-        let evolutionText = `MOTIVO:\n${values.chiefComplaint}\n\nSÍNTOMAS ADICIONALES:\n${values.symptoms.join(', ')}\n\nENFERMEDAD ACTUAL:\n${illnessDesc}`;
-        if (values.reviewOfSystems) evolutionText += `\n\nREVISIÓN DE SISTEMAS / OTROS:\n${values.reviewOfSystems}`;
-        if (values.laboratoryExams) evolutionText += `\n\nLABORATORIOS:\n${values.laboratoryExams}`;
-        if (values.imagingExams) evolutionText += `\n\nIMÁGENES Y OTROS ESTUDIOS:\n${values.imagingExams}`;
+        const subjective = `MOTIVO: ${values.chiefComplaint} | ENFERMEDAD ACTUAL: ${illnessDesc.replace(/\n/g, ' ')}`;
+        const objective = `SIGNOS VITALES: ${JSON.stringify(values.vitals)} | HALLAZGOS FÍSICOS: ${abnormalFindings || 'Normal'} | EVOLUCIÓN: ${values.evolutionNote}`;
+        
+        let res;
+        if (activeEncounterId) {
+            // Update draft
+            res = await saveEncounterDraft(activeEncounterId, {
+                subjective,
+                objective,
+                analysis: '',
+                plan: values.treatmentPlan,
+                evolution_note: values.evolutionNote,
+                vital_signs: values.vitals,
+                physical_exam: values.physicalExam as unknown as Json,
+                diagnosis: values.diagnoses.map(d => ({ code: d.code, description: d.description, type: d.type })),
+            });
+        } else {
+            // Create new encounter
+            res = await createEncounterAction({
+                patient_id: selectedPatient.id,
+                encounter_class: 'AMB',
+                start_time: new Date().toISOString(),
+                appointment_id: appointmentId || undefined,
+            });
 
-        evolutionText += `\n\nEXAMEN FÍSICO:\n${abnormalFindings || 'Dentro de límites normales'}\n\nEVOLUCIÓN:\n${values.evolutionNote}`;
+            if (res.data) {
+                // Now save data part
+                await saveEncounterDraft(res.data.id, {
+                    subjective,
+                    objective,
+                    analysis: '',
+                    plan: values.treatmentPlan,
+                    evolution_note: values.evolutionNote,
+                    vital_signs: values.vitals,
+                    physical_exam: values.physicalExam as unknown as Json,
+                    diagnosis: values.diagnoses.map(d => ({ code: d.code, description: d.description, type: d.type })),
+                });
+                setActiveEncounterId(res.data.id);
+            }
+        }
 
-        const reqEncounter = createEncounter({
-            patient_id: selectedPatient.id,
-            evolution_note: evolutionText,
-            vital_signs: values.vitals,
-            diagnosis: values.diagnoses.map(d => ({ code: d.code, description: d.description, type: d.type })),
-            plan: values.treatmentPlan,
-            reason_code: [{ text: values.chiefComplaint }, ...values.symptoms.map(s => ({ text: s }))],
-            encounter_category: values.encounterCategory || undefined,
-            encounter_subcategory: values.encounterSubcategory || undefined,
-            subjective: `MOTIVO: ${values.chiefComplaint} | ENFERMEDAD ACTUAL: ${illnessDesc.replace(/\n/g, ' ')}`,
-            objective: `SIGNOS VITALES: ${JSON.stringify(values.vitals)} | HALLAZGOS FÍSICOS: ${abnormalFindings || 'Normal'} | EVOLUCIÓN: ${values.evolutionNote}`,
-            analysis: '',
-            physical_exam: values.physicalExam as unknown as Json,
-        });
-
-        const [res, updateAnamRes] = await Promise.all([reqEncounter, reqAnamnesis]);
-
+        await reqAnamnesis;
         setIsSaving(false);
 
         if (res.error) {
-            toast.error('Error al guardar', {
-                description: typeof res.error === 'string' ? res.error : 'No se pudo registrar la consulta.'
+            toast.error('Error al guardar borrador', {
+                description: typeof res.error === 'string' ? res.error : 'No se pudo guardar el borrador.'
             });
         } else {
-            toast.success('Encuentro guardado', {
-                description: 'La evolución clínica se registró correctamente.'
+            toast.success('Borrador guardado', {
+                description: 'Los cambios se guardaron como borrador del encuentro.'
             });
 
             const { data: encs } = await getEncounters(selectedPatient.id);
             setPastEncounters((encs || []) as EncounterWithSpecialty[]);
+        }
+    };
 
-            // Keep weight and height for next time
-            form.reset({
-                ...defaultValues,
-                vitals: {
-                    ...defaultVitals,
-                    weight: values.vitals.weight,
-                    height: values.vitals.height
-                }
+    const handleFinalize = async () => {
+        if (!activeEncounterId) return;
+        setIsSaving(true);
+        const res = await finalizeEncounter(activeEncounterId);
+        setIsSaving(false);
+        if (res.error) {
+            toast.error('Error al finalizar', { description: res.error as string });
+        } else {
+            toast.success('Encuentro finalizado', { 
+                description: 'El acto médico ha sido cerrado y firmado con éxito.' 
             });
+            if (selectedPatient) {
+                const { data: encs } = await getEncounters(selectedPatient.id);
+                setPastEncounters((encs || []) as EncounterWithSpecialty[]);
+                const finished = (encs || []).find(e => e.id === activeEncounterId);
+                if (finished) {
+                    handleEncounterSelect(activeEncounterId, finished as EncounterWithSpecialty);
+                }
+            }
         }
     };
 
@@ -1652,7 +1747,6 @@ export default function HistoryPage() {
                 const patient = data?.find((p) => p.id === pid);
                 if (patient) {
                     setSelectedPatient(patient as Patient);
-                    setIsLoadingDetails(true);
                     setIsLoadingEncounters(true);
 
                     // Extract persisted Anamnesis data
@@ -1665,8 +1759,6 @@ export default function HistoryPage() {
                     const ext = Array.isArray(p.extensions) ? p.extensions as { url?: string, valueString?: string }[] : [];
                     const knownAllergies = ext.find(e => e.url === 'knownAllergies')?.valueString || '';
 
-                    // Note: If tabData had values, we might not want to overwrite them if the patient is the same.
-                    // But init() mostly runs once initially or when patientId param changes.
                     form.reset({
                         ...defaultValues,
                         familyHistory: famHist,
@@ -1686,24 +1778,66 @@ export default function HistoryPage() {
                         setPastEncounters((encs || []) as EncounterWithSpecialty[]);
 
                         if (encId && encs) {
-                            const encounter = encs?.find(e => e.id === encId);
+                            const encounter = encs.find(e => e.id === encId);
                             if (encounter) {
                                 setActiveEncounterId(encId);
-                                form.setValue('evolutionNote', encounter.evolution_note || 'Sin nota clínica.');
+                                const readOnly = encounter.status === 'finished';
+                                setIsReadOnly(readOnly);
+                                
+                                const chiefComplaint = (Array.isArray(encounter.reason_code) 
+                                    ? (encounter.reason_code as Array<Record<string, string>>)[0]?.text 
+                                    : typeof encounter.reason_code === 'string' ? encounter.reason_code : '') || '';
+
+                                form.reset({
+                                    ...form.getValues(),
+                                    evolutionNote: encounter.evolution_note || '',
+                                    treatmentPlan: encounter.plan || '',
+                                    chiefComplaint,
+                                    vitals: (encounter.vital_signs as Record<string, unknown>) || defaultVitals,
+                                    physicalExam: (encounter.physical_exam as unknown as EncounterFormValues["physicalExam"]) || defaultValues.physicalExam,
+                                    diagnoses: (encounter.diagnosis as unknown as EncounterFormValues["diagnoses"]) || [],
+                                    encounterCategory: encounter.encounter_category || '',
+                                    encounterSubcategory: encounter.encounter_subcategory || '',
+                                });
+
+                                if (readOnly) {
+                                    import('@/actions/encounters').then(m => m.getAddenda(encounter.id)).then(res => setAddenda(res.data));
+                                }
                             }
                         }
                     } catch (error) {
                         console.error('Error fetching clinical data:', error);
                     } finally {
-                        setIsLoadingDetails(false);
                         setIsLoadingEncounters(false);
-                        setRightPanelOpen(true);
+                        if (!encId) setRightPanelOpen(true);
                     }
                 }
             }
         }
         init();
     }, [searchParams, setRightPanelOpen, form]);
+
+    const handleAddAddendum = async () => {
+        if (!activeEncounterId || !newAddendumContent.trim()) return;
+        setIsSavingAddendum(true);
+        try {
+            const { createAddendum, getAddenda } = await import('@/actions/encounters');
+            const res = await createAddendum(activeEncounterId, newAddendumContent);
+            if (res.error) {
+                toast.error('Error al guardar addenda: ' + res.error);
+            } else {
+                toast.success('Addenda guardada correctamente');
+                setNewAddendumContent('');
+                setIsAddingAddendum(false);
+                const list = await getAddenda(activeEncounterId);
+                setAddenda(list.data);
+            }
+        } catch {
+            toast.error('Error inesperado');
+        } finally {
+            setIsSavingAddendum(false);
+        }
+    };
 
     return (
         <div className="flex flex-col h-full bg-background overflow-hidden">
@@ -1714,7 +1848,14 @@ export default function HistoryPage() {
                     <HistoryWorkspaceHeader
                         selectedPatient={selectedPatient}
                         isSaving={isSaving}
+                        isReadOnly={isReadOnly}
+                        activeEncounterId={activeEncounterId}
                         onSave={form.handleSubmit(onSave as SubmitHandler<EncounterFormValues>)}
+                        onFinalize={() => {
+                            if (confirm('¿Desea finalizar este encuentro? Una vez finalizado, la nota clínica será permanente y no podrá editarse directamente.')) {
+                                handleFinalize();
+                            }
+                        }}
                         onReset={handleReset}
                     >
                         <TabsList className="mb-4 bg-muted/10 border-border/10">
@@ -1727,11 +1868,16 @@ export default function HistoryPage() {
                             <TabsTrigger value="plan" className="gap-2 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary transition-all">
                                 <Stethoscope className="w-4 h-4" /> Evaluación y Plan
                             </TabsTrigger>
+                            {isReadOnly && (
+                                <TabsTrigger value="addenda" className="gap-2 px-6 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800 transition-all">
+                                    <ClipboardList className="w-4 h-4" /> Historial y Addenda
+                                </TabsTrigger>
+                            )}
                         </TabsList>
                     </HistoryWorkspaceHeader>
 
                     {/* ── Body ────────────────────────────────────────────── */}
-                    <div className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto px-6 py-6 pb-24">
+                    <fieldset disabled={isReadOnly} className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto px-6 py-6 pb-24 border-none p-0 m-0">
 
                         {/* Panels */}
                         <TabsContent value="subjective" className="m-0 space-y-8 outline-none focus:outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -4521,7 +4667,7 @@ export default function HistoryPage() {
                                                     <Controller
                                                         control={form.control}
                                                         name="diagnoses"
-                                                        render={({ field }) => (
+                                                        render={() => (
                                                             <DiagnosisSearch
                                                                 id="diagnosis-initial"
                                                                 label=""
@@ -4547,7 +4693,7 @@ export default function HistoryPage() {
                                                         <Controller
                                                             control={form.control}
                                                             name={`diagnoses.${index}.code`}
-                                                            render={({ field: diagnosisField }) => (
+                                                            render={() => (
                                                                 <DiagnosisSearch
                                                                     id={`diagnosis-${index}`}
                                                                     label={index === 0 ? "Diagnóstico principal" : `Relacionado #${index}`}
@@ -4624,10 +4770,92 @@ export default function HistoryPage() {
                                 </CardContent>
                             </Card>
                         </TabsContent>
-                    </div>
-                </Tabs >
-            </form >
-        </div >
+                    </fieldset>
+
+                    {isReadOnly && activeEncounterId && (
+                        <TabsContent value="addenda" className="m-0 space-y-8 outline-none focus:outline-none animate-in fade-in slide-in-from-bottom-2 duration-300 flex-1 overflow-y-auto w-full max-w-5xl mx-auto px-6 py-6 pb-24">
+                            <div className="space-y-6">
+                                <Alert className="bg-amber-50 border-amber-200 text-amber-800">
+                                    <Shield className="w-4 h-4 text-amber-600" />
+                                    <AlertTitle className="text-sm font-bold">Registro Permanente</AlertTitle>
+                                    <AlertDescription className="text-xs">
+                                        Este acto médico ha sido finalizado y firmado. No es posible editar la nota original, pero puede añadir aclaraciones o información complementaria mediante una <b>Addenda</b>.
+                                    </AlertDescription>
+                                </Alert>
+
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-sm font-bold flex items-center gap-2">
+                                            <ClipboardList className="w-4 h-4 text-primary" /> Historial de Addendas
+                                        </h3>
+                                        {!isAddingAddendum && (
+                                            <Button size="sm" onClick={() => setIsAddingAddendum(true)} className="gap-2">
+                                                <Plus className="w-4 h-4" /> Nueva Addenda
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    {isAddingAddendum && (
+                                        <Card className="border-amber-200 bg-amber-50/30 overflow-hidden shadow-sm animate-in zoom-in-95 duration-200">
+                                            <CardHeader className="p-4 border-b border-amber-100 bg-amber-50">
+                                                <CardTitle className="text-xs font-bold text-amber-900 uppercase tracking-wider">Nueva Nota Aclaratoria</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="p-4 space-y-4">
+                                                <Textarea 
+                                                    value={newAddendumContent}
+                                                    onChange={(e) => setNewAddendumContent(e.target.value)}
+                                                    placeholder="Escriba la información complementaria aquí..."
+                                                    className="resize-none min-h-[120px] bg-white border-amber-200 focus:ring-amber-500"
+                                                />
+                                                <div className="flex justify-end gap-2">
+                                                    <Button variant="ghost" size="sm" onClick={() => setIsAddingAddendum(false)} disabled={isSavingAddendum}>Cancelar</Button>
+                                                    <Button size="sm" onClick={handleAddAddendum} disabled={isSavingAddendum || !newAddendumContent.trim()} className="bg-amber-600 hover:bg-amber-700 text-white gap-2">
+                                                        {isSavingAddendum ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                                        Guardar Addenda
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    <div className="space-y-4">
+                                        {addenda.length === 0 && !isAddingAddendum ? (
+                                            <div className="text-center py-12 border-2 border-dashed border-muted/20 rounded-2xl bg-muted/5">
+                                                <p className="text-sm text-muted-foreground font-medium">No se han registrado addendas para este encuentro.</p>
+                                            </div>
+                                        ) : (
+                                            addenda.map((ad, idx) => (
+                                                <Card key={ad.id} className="border-border/10 overflow-hidden shadow-none bg-background/50">
+                                                    <CardHeader className="p-4 py-3 bg-muted/10 border-b border-border/5 flex flex-row items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                                                {idx + 1}
+                                                            </div>
+                                                            <span className="text-xs font-bold text-foreground">
+                                                                {ad.author?.name_family}, {ad.author?.name_given?.join(' ')}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-[10px] font-mono text-muted-foreground">
+                                                            {new Date(ad.created_at).toLocaleString('es-ES', { 
+                                                                year: 'numeric', month: 'short', day: '2-digit', 
+                                                                hour: '2-digit', minute: '2-digit' 
+                                                            })}
+                                                        </span>
+                                                    </CardHeader>
+                                                    <CardContent className="p-4 text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                                                        {ad.content}
+                                                    </CardContent>
+                                                </Card>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </TabsContent>
+                    )}
+                </Tabs>
+            </form>
+        </div>
     );
 }
 

@@ -2,8 +2,8 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import { patientSchema } from '@/lib/schemas/patient.schema';
-import type { Json } from '@/types/database.types';
 
 export async function createPatient(formData: {
     givenNames: string[];
@@ -28,7 +28,7 @@ export async function createPatient(formData: {
     });
 
     if (!validation.success) {
-        return { error: validation.error.flatten().fieldErrors };
+        return { error: z.flattenError(validation.error).fieldErrors };
     }
 
     const supabase = await createServerSupabaseClient();
@@ -89,7 +89,7 @@ export async function updatePatient(id: string, formData: {
     });
 
     if (!validation.success) {
-        return { error: validation.error.flatten().fieldErrors };
+        return { error: z.flattenError(validation.error).fieldErrors };
     }
 
     const supabase = await createServerSupabaseClient();
@@ -138,21 +138,31 @@ export async function getPatients(queryText?: string) {
 
     if (!user) return { data: [] };
 
-    let query = supabase
-        .from('patients')
-        .select('*')
-        .eq('practitioner_id', user.id)
-        .eq('active', true)
-        .order('name_family', { ascending: true });
+    if (!queryText || queryText.length < 2) {
+        // Return standard list if no query
+        const { data, error } = await supabase
+            .from('patients')
+            .select('*')
+            .eq('practitioner_id', user.id)
+            .eq('active', true)
+            .order('name_family', { ascending: true })
+            .limit(20);
 
-    if (queryText) {
-        query = query.or(`name_family.ilike.%${queryText}%,name_given.cs.{${queryText}}`);
+        if (error) {
+            console.error('Error fetching patients:', error);
+            return { data: [] };
+        }
+        return { data: data || [] };
     }
 
-    const { data, error } = await query;
+    // Use the robust RPC for searching across names and identifiers
+    const { data, error } = await supabase.rpc('search_patients_v2', {
+        search_term: queryText,
+        p_id: user.id
+    });
 
     if (error) {
-        console.error('Error fetching patients:', error);
+        console.error('Error in search_patients_v2 RPC:', error);
         return { data: [] };
     }
 
@@ -161,6 +171,19 @@ export async function getPatients(queryText?: string) {
 
 export async function getPatientClinicalData(patientId: string) {
     const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { conditions: [], allergies: [] };
+
+    // Verify the patient belongs to this practitioner before exposing clinical data
+    const { data: patient } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('id', patientId)
+        .eq('practitioner_id', user.id)
+        .single();
+
+    if (!patient) return { conditions: [], allergies: [] };
 
     const [conditionsResult, allergiesResult] = await Promise.all([
         supabase.from('conditions').select('*').eq('patient_id', patientId),
@@ -171,79 +194,6 @@ export async function getPatientClinicalData(patientId: string) {
         conditions: conditionsResult.data || [],
         allergies: allergiesResult.data || []
     };
-}
-
-export async function createEncounter(encounterData: {
-    patient_id: string;
-    evolution_note?: string;
-    vital_signs?: Json;
-    diagnosis?: Json;
-    plan?: string;
-    reason_code?: Json;
-    encounter_category?: string;
-    encounter_subcategory?: string;
-    subjective?: string;
-    objective?: string;
-    analysis?: string;
-    physical_exam?: Json;
-}) {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return { error: 'No autorizado' };
-    }
-
-    const { data, error } = await supabase
-        .from('encounters')
-        .insert([{
-            patient_id: encounterData.patient_id,
-            practitioner_id: user.id,
-            status: 'finished',
-            evolution_note: encounterData.evolution_note,
-            vital_signs: encounterData.vital_signs,
-            diagnosis: encounterData.diagnosis,
-            plan: encounterData.plan,
-            reason_code: encounterData.reason_code || [],
-            encounter_category: encounterData.encounter_category,
-            encounter_subcategory: encounterData.encounter_subcategory,
-            subjective: encounterData.subjective,
-            objective: encounterData.objective,
-            analysis: encounterData.analysis,
-            physical_exam: encounterData.physical_exam,
-            start_time: new Date().toISOString(),
-            end_time: new Date().toISOString()
-        }])
-        .select()
-        .single();
-
-    if (error) {
-        console.error('Error in createEncounter:', error);
-        return { error: error.message };
-    }
-
-    revalidatePath('/history');
-    return { data };
-}
-
-export async function getEncounters(patientId: string) {
-    const supabase = await createServerSupabaseClient();
-
-    const { data, error } = await supabase
-        .from('encounters')
-        .select(`
-            *,
-            practitioner:practitioners(name_given, name_family, specialty)
-        `)
-        .eq('patient_id', patientId)
-        .order('start_time', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching encounters:', error);
-        return { data: [] };
-    }
-
-    return { data: data || [] };
 }
 
 export async function updatePatientAnamnesis(patientId: string, data: {

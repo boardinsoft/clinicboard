@@ -2,6 +2,7 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import { allergySchema } from '@/lib/schemas/allergy.schema';
 
 /**
@@ -46,7 +47,7 @@ export async function createAllergy(formData: {
     const validation = allergySchema.safeParse(inputData);
 
     if (!validation.success) {
-        return { error: validation.error.flatten().fieldErrors };
+        return { error: z.flattenError(validation.error).fieldErrors };
     }
 
     // 3. Insert into allergy_intolerances

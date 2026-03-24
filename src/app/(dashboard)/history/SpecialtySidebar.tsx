@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     Stethoscope,
     Plus,
-    ChevronDown,
     ChevronRight,
     MessageSquare,
     Folder,
@@ -23,8 +22,6 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarMenuBadge,
-    SidebarMenuAction,
 } from '@/components/ui/sidebar';
 import {
     Collapsible,

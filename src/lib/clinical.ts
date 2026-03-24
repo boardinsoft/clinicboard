@@ -1,16 +1,7 @@
+import { formatDate as coreFormatDate } from './date-utils';
+
 export function formatDate(dateString: string | null | undefined): string {
-    if (!dateString) return '—';
-    const date = dateString.includes('T')
-        ? new Date(dateString)
-        : new Date(`${dateString}T00:00:00`);
-
-    if (isNaN(date.getTime())) return '—';
-
-    return date.toLocaleDateString('es-VE', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-    });
+    return coreFormatDate(dateString);
 }
 
 export function calcAge(birthDate: string | null | undefined): string {

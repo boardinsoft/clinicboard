@@ -131,7 +131,9 @@ export type EncounterStatus =
     | 'in-progress'
     | 'onleave'
     | 'finished'
-    | 'cancelled';
+    | 'cancelled'
+    | 'entered-in-error'
+    | 'unknown';
 
 export interface VitalSigns {
     bloodPressureSystolic?: number;
@@ -292,6 +294,7 @@ export interface Appointment {
     appointment_type?: string;
     reason_code: CodeableConcept[];
     description?: string;
+    queue_position?: number;
     created_at: string;
     updated_at: string;
     // Joined

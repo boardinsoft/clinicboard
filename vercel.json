@@ -2,11 +2,5 @@
   "framework": "nextjs",
   "regions": ["iad1"],
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "git": {
-    "deploymentEnabled": {
-      "main": true,
-      "develop": true
-    }
-  }
+  "installCommand": "npm install"
 }
