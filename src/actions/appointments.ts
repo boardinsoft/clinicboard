@@ -7,6 +7,7 @@ import { appointmentSchema } from '@/lib/schemas/appointment.schema';
 import { AppointmentStatus } from '@/lib/fhir/types';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@/types/database.types';
+import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
 
 /**
  * Transiciones permitidas para citas (Appointment) basadas en FHIR R4.
@@ -115,15 +116,15 @@ export async function createAppointment(formData: {
     description?: string;
 }) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
-        return { error: 'No autorizado. Sesión no encontrada.' };
+    if (!practitionerId) {
+        return { error: 'No autorizado. Perfil de profesional no encontrado.' };
     }
 
     const appointmentData = {
         ...formData,
-        practitioner_id: user.id,
+        practitioner_id: practitionerId,
         status: 'proposed' as AppointmentStatus,
     };
 
@@ -142,7 +143,7 @@ export async function createAppointment(formData: {
     // Checking for overlap
     const overlapResult = await checkOverlap(
         supabase, 
-        user.id, 
+        practitionerId, 
         validation.data.start_time, 
         validation.data.end_time
     );
@@ -193,7 +194,7 @@ export async function confirmAppointment(id: string) {
         .from('appointments')
         .select('status')
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .single();
 
     if (checkError || !currentAppt) {
@@ -215,7 +216,7 @@ export async function confirmAppointment(id: string) {
         .from('appointments')
         .update({ status: 'booked' })
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .eq('status', currentStatus)
         .select()
         .single();
@@ -251,7 +252,7 @@ export async function cancelAppointment(id: string, reason?: string) {
         .from('appointments')
         .select('status')
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .single();
 
     if (!currentAppt) {
@@ -271,7 +272,7 @@ export async function cancelAppointment(id: string, reason?: string) {
             description: reason ? `Cancelación: ${reason}` : 'Cancelada sin motivo especificado'
         })
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .eq('status', currentStatus)
         .select()
         .single();
@@ -314,7 +315,7 @@ export async function markArrived(id: string) {
         .from('appointments')
         .update({ status: 'arrived' })
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .eq('status', currentStatus)
         .select()
         .single();
@@ -357,7 +358,7 @@ export async function fulfillAppointment(id: string) {
         .from('appointments')
         .update({ status: 'fulfilled' })
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .eq('status', currentStatus)
         .select()
         .single();
@@ -400,7 +401,7 @@ export async function markNoShow(id: string) {
         .from('appointments')
         .update({ status: 'noshow' })
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .eq('status', currentStatus)
         .select()
         .single();
@@ -424,11 +425,9 @@ export async function getAppointments(filters?: {
     patientId?: string;  // Filtrar por paciente específico
 }) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
-        return { data: [] };
-    }
+    if (!practitionerId) return { data: [] };
 
     let query = supabase
         .from('appointments')
@@ -444,7 +443,7 @@ export async function getAppointments(filters?: {
                 identifiers
             )
         `)
-        .eq('practitioner_id', user.id);
+        .eq('practitioner_id', practitionerId);
 
     if (filters?.date) {
         // Usar offset -04:00 para Venezuela en lugar de Z (UTC)
@@ -525,7 +524,7 @@ export async function rescheduleAppointment(id: string, newStartTime: string, ne
             status: 'proposed'
         })
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .eq('status', currentStatus)
         .select()
         .single();
@@ -558,7 +557,7 @@ export async function cleanupExpiredAppointments() {
             status: 'cancelled',
             description: 'Cancelación automática: La cita expiró sin ser confirmada o atendida.'
         })
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .in('status', ['proposed', 'pending'])
         .lt('start_time', now)
         .select();
@@ -593,7 +592,7 @@ export async function startConsultationFromAppointment(appointmentId: string) {
         .from('appointments')
         .select('*')
         .eq('id', appointmentId)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .single();
 
     if (apptError || !appt) return { error: 'Cita no encontrada o sin permisos.' };
@@ -608,7 +607,7 @@ export async function startConsultationFromAppointment(appointmentId: string) {
         .from('encounters')
         .select('id, patient_id')
         .eq('appointment_id', appointmentId)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .not('status', 'eq', 'cancelled')
         .maybeSingle();
 
@@ -626,7 +625,7 @@ export async function startConsultationFromAppointment(appointmentId: string) {
         .from('appointments')
         .update({ status: 'fulfilled' })
         .eq('id', appointmentId)
-        .eq('practitioner_id', user.id);
+        .eq('practitioner_id', practitionerId);
 
     if (updateError) return { error: 'Error al actualizar estado de la cita.' };
 
@@ -647,7 +646,7 @@ export async function startConsultationFromAppointment(appointmentId: string) {
             .from('appointments')
             .update({ status: currentStatus })
             .eq('id', appointmentId)
-            .eq('practitioner_id', user.id);
+            .eq('practitioner_id', practitionerId);
         return { error: typeof encounterResult.error === 'string' ? encounterResult.error : 'Error al crear el encuentro clínico.' };
     }
 
@@ -693,7 +692,7 @@ export async function createWalkInAppointment(payload: {
     const { data: lastInQueue } = await supabase
         .from('appointments')
         .select('queue_position')
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .gte('start_time', startOfLocalDay)
         .order('queue_position', { ascending: false })
         .limit(1)
@@ -731,15 +730,15 @@ export async function createWalkInAppointment(payload: {
  */
 export async function updateQueuePosition(id: string, newPosition: number) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { error: 'No autorizado' };
+    if (!practitionerId) return { error: 'No autorizado' };
 
     const { error } = await supabase
         .from('appointments')
         .update({ queue_position: newPosition })
         .eq('id', id)
-        .eq('practitioner_id', user.id);
+        .eq('practitioner_id', practitionerId);
 
     if (error) {
         console.error('Error in updateQueuePosition:', error);
@@ -771,7 +770,7 @@ export async function swapQueuePositions(
         .from('appointments')
         .update({ queue_position: TEMP_POSITION })
         .eq('id', id1)
-        .eq('practitioner_id', user.id);
+        .eq('practitioner_id', practitionerId);
 
     if (e1) return { error: e1.message };
 
@@ -780,11 +779,11 @@ export async function swapQueuePositions(
         .from('appointments')
         .update({ queue_position: pos1 })
         .eq('id', id2)
-        .eq('practitioner_id', user.id);
+        .eq('practitioner_id', practitionerId);
 
     if (e2) {
         // Partial rollback: restore id1
-        await supabase.from('appointments').update({ queue_position: pos1 }).eq('id', id1).eq('practitioner_id', user.id);
+        await supabase.from('appointments').update({ queue_position: pos1 }).eq('id', id1).eq('practitioner_id', practitionerId);
         return { error: e2.message };
     }
 
@@ -793,12 +792,12 @@ export async function swapQueuePositions(
         .from('appointments')
         .update({ queue_position: pos2 })
         .eq('id', id1)
-        .eq('practitioner_id', user.id);
+        .eq('practitioner_id', practitionerId);
 
     if (e3) {
         // Partial rollback: restore both
-        await supabase.from('appointments').update({ queue_position: pos1 }).eq('id', id1).eq('practitioner_id', user.id);
-        await supabase.from('appointments').update({ queue_position: pos2 }).eq('id', id2).eq('practitioner_id', user.id);
+        await supabase.from('appointments').update({ queue_position: pos1 }).eq('id', id1).eq('practitioner_id', practitionerId);
+        await supabase.from('appointments').update({ queue_position: pos2 }).eq('id', id2).eq('practitioner_id', practitionerId);
         return { error: e3.message };
     }
 

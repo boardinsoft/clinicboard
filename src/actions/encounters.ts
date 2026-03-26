@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { encounterSchema } from '@/lib/schemas/encounter.schema';
 import { EncounterStatus, VitalSigns } from '@/lib/fhir/types';
+import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
 import type { Json, EncounterWithSpecialty } from '@/types/database.types';
 
 /**
@@ -59,13 +60,13 @@ export async function createEncounter(formData: {
     status?: EncounterStatus;
 }) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { error: 'No autorizado' };
+    if (!practitionerId) return { error: 'No autorizado. Perfil de profesional no encontrado.' };
 
     const encounterData = {
         ...formData,
-        practitioner_id: user.id,
+        practitioner_id: practitionerId,
         status: formData.status || 'planned',
     };
 
@@ -76,7 +77,7 @@ export async function createEncounter(formData: {
         .from('encounters')
         .insert([{
             patient_id: validation.data.patient_id,
-            practitioner_id: user.id,
+            practitioner_id: practitionerId,
             encounter_class: validation.data.encounter_class,
             status: validation.data.status,
             start_time: validation.data.start_time,
@@ -106,16 +107,16 @@ export async function saveEncounterDraft(id: string, formData: {
     diagnosis?: Json;
 }) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { error: 'No autorizado' };
+    if (!practitionerId) return { error: 'No autorizado' };
 
     // Get current status — scoped to this practitioner
     const { data: encounter } = await supabase
         .from('encounters')
         .select('status')
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .single();
 
     if (!encounter) return { error: 'Encuentro no encontrado o sin permisos.' };
@@ -135,7 +136,7 @@ export async function saveEncounterDraft(id: string, formData: {
             updated_at: new Date().toISOString(),
         })
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .select()
         .single();
 
@@ -149,9 +150,9 @@ export async function saveEncounterDraft(id: string, formData: {
  */
 export async function finalizeEncounter(id: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { error: 'No autorizado' };
+    if (!practitionerId) return { error: 'No autorizado' };
 
     const { data: encounter } = await supabase
         .from('encounters')
@@ -171,7 +172,7 @@ export async function finalizeEncounter(id: string) {
             end_time: new Date().toISOString(),
         })
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .select()
         .single();
 

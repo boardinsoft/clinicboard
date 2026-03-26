@@ -21,7 +21,7 @@ export default async function DashboardLayout({
     const { data: practitioner } = await supabase
         .from('practitioners')
         .select('*')
-        .eq('id', user.id)
+        .eq('auth_user_id', user.id)
         .single();
 
     return (

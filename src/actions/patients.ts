@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { patientSchema } from '@/lib/schemas/patient.schema';
+import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
 
 export async function createPatient(formData: {
     givenNames: string[];
@@ -32,10 +33,10 @@ export async function createPatient(formData: {
     }
 
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
-        return { error: 'No autorizado. Sesión no encontrada.' };
+    if (!practitionerId) {
+        return { error: 'No autorizado. Perfil de profesional no encontrado.' };
     }
 
     const { data, error } = await supabase
@@ -52,7 +53,7 @@ export async function createPatient(formData: {
             ],
             address: validation.data.address ? [{ text: validation.data.address }] : [],
             active: true,
-            practitioner_id: user.id
+            practitioner_id: practitionerId
         }])
         .select()
         .single();
@@ -93,9 +94,9 @@ export async function updatePatient(id: string, formData: {
     }
 
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
+    if (!practitionerId) {
         return { error: 'No autorizado' };
     }
 
@@ -114,7 +115,7 @@ export async function updatePatient(id: string, formData: {
             address: validation.data.address ? [{ text: validation.data.address }] : []
         })
         .eq('id', id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .select()
         .single();
 
@@ -134,16 +135,16 @@ export async function updatePatient(id: string, formData: {
 
 export async function getPatients(queryText?: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { data: [] };
+    if (!practitionerId) return { data: [] };
 
     if (!queryText || queryText.length < 2) {
         // Return standard list if no query
         const { data, error } = await supabase
             .from('patients')
             .select('*')
-            .eq('practitioner_id', user.id)
+            .eq('practitioner_id', practitionerId)
             .eq('active', true)
             .order('name_family', { ascending: true })
             .limit(20);
@@ -158,7 +159,7 @@ export async function getPatients(queryText?: string) {
     // Use the robust RPC for searching across names and identifiers
     const { data, error } = await supabase.rpc('search_patients_v2', {
         search_term: queryText,
-        p_id: user.id
+        p_id: practitionerId
     });
 
     if (error) {
@@ -171,16 +172,16 @@ export async function getPatients(queryText?: string) {
 
 export async function getPatientClinicalData(patientId: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { conditions: [], allergies: [] };
+    if (!practitionerId) return { conditions: [], allergies: [] };
 
     // Verify the patient belongs to this practitioner before exposing clinical data
     const { data: patient } = await supabase
         .from('patients')
         .select('id')
         .eq('id', patientId)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .single();
 
     if (!patient) return { conditions: [], allergies: [] };
@@ -204,9 +205,9 @@ export async function updatePatientAnamnesis(patientId: string, data: {
     habitsHistory?: string;
 }) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { error: 'No autorizado' };
+    if (!practitionerId) return { error: 'No autorizado' };
 
     // Format logical blocks for JSON fields
     const family_history = data.familyHistory ? [{ text: data.familyHistory }] : null;
@@ -226,7 +227,7 @@ export async function updatePatientAnamnesis(patientId: string, data: {
             extensions
         })
         .eq('id', patientId)
-        .eq('practitioner_id', user.id);
+        .eq('practitioner_id', practitionerId);
 
     if (error) {
         console.error('Error updating patient anamnesis:', error);
