@@ -183,9 +183,9 @@ export async function createAppointment(formData: {
  */
 export async function confirmAppointment(id: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
+    if (!practitionerId) {
         return { error: 'No autorizado' };
     }
 
@@ -241,9 +241,9 @@ export async function confirmAppointment(id: string) {
  */
 export async function cancelAppointment(id: string, reason?: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
+    if (!practitionerId) {
         return { error: 'No autorizado' };
     }
 
@@ -292,9 +292,9 @@ export async function cancelAppointment(id: string, reason?: string) {
  */
 export async function markArrived(id: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
+    if (!practitionerId) {
         return { error: 'No autorizado' };
     }
 
@@ -335,9 +335,9 @@ export async function markArrived(id: string) {
  */
 export async function fulfillAppointment(id: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
+    if (!practitionerId) {
         return { error: 'No autorizado' };
     }
 
@@ -378,9 +378,9 @@ export async function fulfillAppointment(id: string) {
  */
 export async function markNoShow(id: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
+    if (!practitionerId) {
         return { error: 'No autorizado' };
     }
 
@@ -477,9 +477,9 @@ export async function getAppointments(filters?: {
  */
 export async function rescheduleAppointment(id: string, newStartTime: string, newEndTime: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { error: 'No autorizado' };
+    if (!practitionerId) return { error: 'No autorizado' };
 
     // Check current status
     const { data: currentAppt } = await supabase
@@ -506,7 +506,7 @@ export async function rescheduleAppointment(id: string, newStartTime: string, ne
     // Checking for overlap
     const overlapResult = await checkOverlap(
         supabase, 
-        user.id, 
+        practitionerId,
         newStartTime, 
         newEndTime, 
         id
@@ -545,9 +545,9 @@ export async function rescheduleAppointment(id: string, newStartTime: string, ne
  */
 export async function cleanupExpiredAppointments() {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { error: 'No autorizado' };
+    if (!practitionerId) return { error: 'No autorizado' };
 
     const now = new Date().toISOString();
 
@@ -583,9 +583,9 @@ export async function cleanupExpiredAppointments() {
  */
 export async function startConsultationFromAppointment(appointmentId: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { error: 'No autorizado' };
+    if (!practitionerId) return { error: 'No autorizado' };
 
     // 1. Validar cita — scoped to this practitioner
     const { data: appt, error: apptError } = await supabase
@@ -671,9 +671,9 @@ export async function createWalkInAppointment(payload: {
 }) {
     const { patient_id: patientId, description, appointment_type: appointmentType } = payload;
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { error: 'No autorizado' };
+    if (!practitionerId) return { error: 'No autorizado' };
 
     const now = new Date();
     // Round up to the nearest 15-minute interval to satisfy DB trigger and avoid "past time" error
@@ -703,7 +703,7 @@ export async function createWalkInAppointment(payload: {
         .from('appointments')
         .insert([{
             patient_id: patientId,
-            practitioner_id: user.id,
+            practitioner_id: practitionerId,
             status: 'arrived',
             start_time: startTime,
             end_time: endTime,
@@ -759,9 +759,9 @@ export async function swapQueuePositions(
     id2: string, pos2: number
 ) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) return { error: 'No autorizado' };
+    if (!practitionerId) return { error: 'No autorizado' };
 
     const TEMP_POSITION = -1;
 
