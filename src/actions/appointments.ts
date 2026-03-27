@@ -103,6 +103,41 @@ async function checkOverlap(supabase: SupabaseClient<Database>, practitionerId: 
 }
 
 /**
+ * Verifica que un paciente no tenga ya una cita activa ('proposed', 'pending', 'booked', 'arrived') 
+ * del mismo tipo con el mismo profesional.
+ */
+async function checkDuplicateType(
+    supabase: SupabaseClient<Database>, 
+    practitionerId: string, 
+    patientId: string, 
+    appointmentType: string
+) {
+    if (!appointmentType) return { hasDuplicate: false };
+
+    const { data, error } = await supabase
+        .from('appointments')
+        .select('id, appointment_type')
+        .eq('practitioner_id', practitionerId)
+        .eq('patient_id', patientId)
+        .eq('appointment_type', appointmentType)
+        .in('status', ['proposed', 'pending', 'booked', 'arrived']);
+
+    if (error) {
+        console.error('Error checking duplicate type:', error);
+        return { error: 'Error al verificar duplicados.' };
+    }
+
+    if (data && data.length > 0) {
+        return {
+            hasDuplicate: true,
+            message: `El paciente ya tiene una cita activa de tipo '${appointmentType}'. Complétala o cancélala antes de crear otra.`
+        };
+    }
+
+    return { hasDuplicate: false };
+}
+
+/**
  * createAppointment(data)
  * Guard auth, validate with appointmentSchema, fhir_id=uuid, status='proposed', 
  * insert with practitioner_id=user.id. revalidatePath('/appointments').
@@ -149,6 +184,20 @@ export async function createAppointment(formData: {
 
     if (overlapResult.hasOverlap) {
         return { error: overlapResult.message };
+    }
+
+    // Checking for duplicate active appointment of the same type
+    if (validation.data.appointment_type) {
+        const duplicateResult = await checkDuplicateType(
+            supabase,
+            user.id,
+            validation.data.patient_id,
+            validation.data.appointment_type
+        );
+        
+        if (duplicateResult.hasDuplicate) {
+            return { error: duplicateResult.message };
+        }
     }
 
     const { data, error } = await supabase
@@ -234,11 +283,11 @@ export async function confirmAppointment(id: string) {
 }
 
 /**
- * cancelAppointment(id, reason?)
- * Guard auth, update status='cancelled', save reason in description, 
+ * cancelAppointment(id, reason)
+ * Guard auth, update status='cancelled', save reason in description & cancellation_reason
  * verify ownership.
  */
-export async function cancelAppointment(id: string, reason?: string) {
+export async function cancelAppointment(id: string, reason: string) {
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -264,11 +313,16 @@ export async function cancelAppointment(id: string, reason?: string) {
         return { error: validation.error };
     }
 
+    if (!reason || reason.trim().length < 3) {
+        return { error: 'Se requiere un motivo válido para cancelar (mínimo 3 caracteres).' };
+    }
+
     const { data, error } = await supabase
         .from('appointments')
         .update({
             status: 'cancelled',
-            description: reason ? `Cancelación: ${reason}` : 'Cancelada sin motivo especificado'
+            description: `Cancelación: ${reason}`,
+            cancellation_reason: reason
         })
         .eq('id', id)
         .eq('practitioner_id', user.id)
@@ -386,7 +440,7 @@ export async function markNoShow(id: string) {
     // Check current status
     const { data: currentAppt } = await supabase
         .from('appointments')
-        .select('status')
+        .select('status, end_time')
         .eq('id', id)
         .single();
 
@@ -394,6 +448,13 @@ export async function markNoShow(id: string) {
     const validation = validateTransition(currentStatus, 'noshow');
     if (!validation.isValid) {
         return { error: validation.error };
+    }
+
+    if (currentAppt?.end_time) {
+        const { isEligibleForNoShow } = await import('@/lib/appointments/appointment-rules');
+        if (!isEligibleForNoShow(currentAppt.end_time)) {
+             return { error: 'El tiempo de la cita no ha finalizado. No se puede marcar como inasistencia aún.' };
+        }
     }
 
     const { data, error } = await supabase
@@ -552,27 +613,47 @@ export async function cleanupExpiredAppointments() {
 
     const now = new Date().toISOString();
 
-    const { data, error } = await supabase
+    // 1. Cancelar citas pendientes en el pasado
+    const { data: cancelledData, error: cancelError } = await supabase
         .from('appointments')
         .update({
             status: 'cancelled',
-            description: 'Cancelación automática: La cita expiró sin ser confirmada o atendida.'
+            description: 'Cancelación automática: La cita expiró sin ser confirmada o atendida.',
+            cancellation_reason: 'Expiración automática del sistema'
         })
         .eq('practitioner_id', user.id)
         .in('status', ['proposed', 'pending'])
         .lt('start_time', now)
         .select();
 
-    if (error) {
-        console.error('Error in cleanupExpiredAppointments:', error);
-        return { error: error.message };
+    if (cancelError) {
+        console.error('Error in cleanupExpiredAppointments (cancel):', cancelError);
+        return { error: cancelError.message };
     }
 
-    if (data && data.length > 0) {
+    // 2. Marcar como No-Show citas Booked que ya pasaron su hora de finalización
+    const { data: noShowData, error: noShowError } = await supabase
+        .from('appointments')
+        .update({
+            status: 'noshow'
+        })
+        .eq('practitioner_id', user.id)
+        .eq('status', 'booked')
+        .lt('end_time', now)
+        .select();
+        
+    if (noShowError) {
+        console.error('Error in cleanupExpiredAppointments (noshow):', noShowError);
+        return { error: noShowError.message };
+    }
+
+    const totalModified = (cancelledData?.length || 0) + (noShowData?.length || 0);
+
+    if (totalModified > 0) {
         revalidatePath('/appointments');
     }
 
-    return { count: data?.length || 0 };
+    return { count: totalModified };
 }
 
 /**
@@ -690,6 +771,20 @@ export async function createWalkInAppointment(payload: {
     const localToday = toISODate(nowInVE());
     const startOfLocalDay = `${localToday}T00:00:00-04:00`;
     
+    // Checking for duplicate active appointment of the same type
+    if (appointmentType) {
+        const duplicateResult = await checkDuplicateType(
+            supabase,
+            user.id,
+            patientId,
+            appointmentType
+        );
+        
+        if (duplicateResult.hasDuplicate) {
+            return { error: duplicateResult.message };
+        }
+    }
+
     const { data: lastInQueue } = await supabase
         .from('appointments')
         .select('queue_position')
