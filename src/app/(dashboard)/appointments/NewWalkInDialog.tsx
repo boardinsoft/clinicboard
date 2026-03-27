@@ -27,6 +27,15 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { createWalkInAppointment } from '@/actions/appointments';
 import { Loader2, Zap } from 'lucide-react';
@@ -58,6 +67,7 @@ export default function NewWalkInDialog({
     onCreated
 }: NewWalkInDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [duplicateError, setDuplicateError] = useState<string | null>(null);
 
     const form = useForm<WalkInFormValues>({
         defaultValues: {
@@ -83,7 +93,12 @@ export default function NewWalkInDialog({
             });
             
             if (result.error) {
-                toast.error(typeof result.error === 'string' ? result.error : 'Error al registrar llegada');
+                const errorMsg = typeof result.error === 'string' ? result.error : 'Error al registrar llegada';
+                if (typeof result.error === 'string' && result.error.includes('ya tiene una cita activa')) {
+                    setDuplicateError(result.error);
+                } else {
+                    toast.error(errorMsg);
+                }
                 console.error(result.error);
             } else {
                 toast.success('Paciente registrado en cola');
@@ -100,6 +115,19 @@ export default function NewWalkInDialog({
     };
 
     return (
+        <>
+        <AlertDialog open={!!duplicateError} onOpenChange={(open) => { if (!open) setDuplicateError(null); }}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Cita duplicada detectada</AlertDialogTitle>
+                    <AlertDialogDescription>{duplicateError}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogAction onClick={() => setDuplicateError(null)}>Entendido</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
@@ -195,5 +223,6 @@ export default function NewWalkInDialog({
                 </Form>
             </DialogContent>
         </Dialog>
+        </>
     );
 }
