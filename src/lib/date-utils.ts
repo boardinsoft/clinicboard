@@ -74,3 +74,37 @@ export function nowInVE(): Date {
 export function toISODate(date: Date): string {
     return date.toLocaleDateString('en-CA', { timeZone: DEFAULT_TIMEZONE }); // YYYY-MM-DD
 }
+
+/**
+ * Returns a human-readable relative time string (e.g. "hace 5 min", "hace 2 horas").
+ */
+export function formatRelativeTime(date: string | Date | null | undefined): string {
+    if (!date) return '—';
+    const d = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(d.getTime())) return '—';
+
+    const now = nowInVE();
+    // Convert target to local TZ for comparison 
+    const localTarget = new Date(d.toLocaleString('en-US', { timeZone: DEFAULT_TIMEZONE }));
+
+    const diffMs = now.getTime() - localTarget.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 60) {
+        return `hace ${Math.max(0, diffMins)} min`;
+    }
+
+    const diffHours = Math.floor(diffMins / 60);
+    
+    // Check if it's the same day
+    if (now.getDate() === localTarget.getDate() && now.getMonth() === localTarget.getMonth() && now.getFullYear() === localTarget.getFullYear()) {
+         return `hace ${diffHours} hr${diffHours > 1 ? 's' : ''}`;
+    }
+
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 0) {
+        return 'ayer';
+    }
+    
+    return `hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
+}

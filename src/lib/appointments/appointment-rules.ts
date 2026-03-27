@@ -42,16 +42,14 @@ export function isWithinCheckinWindow(startTime: string | Date): TemporalState {
 /**
  * Checks if an appointment is eligible to be marked as No-Show.
  * A patient can be marked as No-Show if:
- * 1. They are within the check-in window (to allow marking if they haven't arrived)
- * 2. OR the grace period has passed.
+ * 1. The appointment's end time has passed.
  */
-export function isEligibleForNoShow(startTime: string | Date): boolean {
-    const start = new Date(startTime);
+export function isEligibleForNoShow(endTime: string | Date): boolean {
+    const end = new Date(endTime);
     const now = new Date();
-    const graceTime = addMinutes(start, NO_SHOW_GRACE_PERIOD_MINUTES);
     
-    // Can mark as noshow once the grace period is over, regardless of window
-    return isAfter(now, graceTime);
+    // Can mark as noshow once the appointment is over
+    return isAfter(now, end);
 }
 
 /**

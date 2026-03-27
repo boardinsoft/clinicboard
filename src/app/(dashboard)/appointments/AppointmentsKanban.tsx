@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { formatTime, nowInVE } from '@/lib/date-utils';
+import { formatTime, nowInVE, formatRelativeTime } from '@/lib/date-utils';
 import type { Appointment, AppointmentStatus } from '@/lib/fhir/types';
 
 interface AppointmentsKanbanProps {
@@ -152,8 +152,8 @@ export default function AppointmentsKanban({
                                                             {apt.appointment_type || 'Consulta'}
                                                         </Badge>
                                                         {apt.status === 'arrived' && (
-                                                            <Badge className="h-4 px-1 py-0 text-[8px] bg-orange-500 hover:bg-orange-500 border-none font-bold text-white uppercase animate-pulse">
-                                                                En Espera
+                                                            <Badge className="h-4 px-2 py-0.5 text-[9px] bg-orange-500 hover:bg-orange-600 border-none font-bold text-white uppercase animate-pulse">
+                                                                Tiempo de espera: {formatRelativeTime(apt.updated_at)}
                                                             </Badge>
                                                         )}
                                                         {isPast && (
