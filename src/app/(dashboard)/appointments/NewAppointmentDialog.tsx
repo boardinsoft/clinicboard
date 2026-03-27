@@ -29,6 +29,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Calendar, Clock, Loader2, Plus } from 'lucide-react';
 import { createAppointment } from '@/actions/appointments';
@@ -61,6 +70,7 @@ export default function NewAppointmentDialog({
     onCreated
 }: NewAppointmentDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [duplicateError, setDuplicateError] = useState<string | null>(null);
 
     // Initial times (today, now + 30min)
     const getDefaultTimes = () => {
@@ -135,7 +145,12 @@ export default function NewAppointmentDialog({
             const result = await createAppointment(payload);
             
             if (result.error) {
-                toast.error('Error al crear la cita');
+                const errorMsg = typeof result.error === 'string' ? result.error : 'Error al crear la cita';
+                if (typeof result.error === 'string' && result.error.includes('ya tiene una cita activa')) {
+                    setDuplicateError(result.error);
+                } else {
+                    toast.error(errorMsg);
+                }
                 console.error(result.error);
             } else {
                 toast.success('Cita agendada exitosamente');
@@ -152,6 +167,19 @@ export default function NewAppointmentDialog({
     };
 
     return (
+        <>
+        <AlertDialog open={!!duplicateError} onOpenChange={(open) => { if (!open) setDuplicateError(null); }}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Cita duplicada detectada</AlertDialogTitle>
+                    <AlertDialogDescription>{duplicateError}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogAction onClick={() => setDuplicateError(null)}>Entendido</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
@@ -274,5 +302,6 @@ export default function NewAppointmentDialog({
                 </Form>
             </DialogContent>
         </Dialog>
+        </>
     );
 }

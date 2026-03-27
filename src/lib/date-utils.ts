@@ -76,7 +76,8 @@ export function toISODate(date: Date): string {
 }
 
 /**
- * Returns a human-readable relative time string (e.g. "hace 5 min", "hace 2 horas").
+ * Returns a human-readable relative time string showing combined units
+ * (e.g. "hace 5 min", "hace 1h 30min", "hace 2 días 3h").
  */
 export function formatRelativeTime(date: string | Date | null | undefined): string {
     if (!date) return '—';
@@ -84,27 +85,31 @@ export function formatRelativeTime(date: string | Date | null | undefined): stri
     if (isNaN(d.getTime())) return '—';
 
     const now = nowInVE();
-    // Convert target to local TZ for comparison 
+    // Convert target to local TZ for comparison
     const localTarget = new Date(d.toLocaleString('en-US', { timeZone: DEFAULT_TIMEZONE }));
 
     const diffMs = now.getTime() - localTarget.getTime();
+
+    if (diffMs < 0) return 'hace un momento';
+
     const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 60) {
-        return `hace ${Math.max(0, diffMins)} min`;
-    }
+    if (diffMins < 1) return 'hace un momento';
+    if (diffMins < 60) return `hace ${diffMins} min`;
 
     const diffHours = Math.floor(diffMins / 60);
-    
-    // Check if it's the same day
-    if (now.getDate() === localTarget.getDate() && now.getMonth() === localTarget.getMonth() && now.getFullYear() === localTarget.getFullYear()) {
-         return `hace ${diffHours} hr${diffHours > 1 ? 's' : ''}`;
+    const remainingMins = diffMins % 60;
+
+    if (diffHours < 24) {
+        return remainingMins > 0
+            ? `hace ${diffHours}h ${remainingMins}min`
+            : `hace ${diffHours}h`;
     }
 
     const diffDays = Math.floor(diffHours / 24);
-    if (diffDays === 0) {
-        return 'ayer';
-    }
-    
-    return `hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
+    const remainingHours = diffHours % 24;
+
+    return remainingHours > 0
+        ? `hace ${diffDays} día${diffDays > 1 ? 's' : ''} ${remainingHours}h`
+        : `hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
 }
