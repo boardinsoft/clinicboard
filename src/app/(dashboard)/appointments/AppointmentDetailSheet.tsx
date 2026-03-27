@@ -55,7 +55,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { calcAge, getGenderLabel } from '@/lib/clinical';
-import { formatTime, formatDate, nowInVE, formatRelativeTime } from '@/lib/date-utils';
+import { formatTime, formatDate, nowInVE, formatRelativeTime, formatDuration } from '@/lib/date-utils';
 import { 
     confirmAppointment,
     cancelAppointment, 
@@ -469,7 +469,7 @@ export default function AppointmentDetailSheet({
                                 ) : isWithinCheckinWindow(appointment.start_time).reason === 'early' ? (
                                     <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-center">
                                         <p className="text-[11px] font-semibold text-blue-700 uppercase tracking-tight">
-                                            Llegada disponible en {isWithinCheckinWindow(appointment.start_time).minutesUntilOpen} min
+                                            Llegada disponible en {formatDuration(isWithinCheckinWindow(appointment.start_time).minutesUntilOpen ?? 0)}
                                         </p>
                                     </div>
                                 ) : null}
