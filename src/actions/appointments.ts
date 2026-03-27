@@ -191,7 +191,7 @@ export async function createAppointment(formData: {
     if (validation.data.appointment_type) {
         const duplicateResult = await checkDuplicateType(
             supabase,
-            user.id,
+            practitionerId,
             validation.data.patient_id,
             validation.data.appointment_type
         );
@@ -636,7 +636,7 @@ export async function cleanupExpiredAppointments() {
         .update({
             status: 'noshow'
         })
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .eq('status', 'booked')
         .lt('end_time', now)
         .select();
@@ -774,7 +774,7 @@ export async function createWalkInAppointment(payload: {
     if (appointmentType) {
         const duplicateResult = await checkDuplicateType(
             supabase,
-            user.id,
+            practitionerId,
             patientId,
             appointmentType
         );
