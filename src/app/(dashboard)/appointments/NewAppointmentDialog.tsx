@@ -135,7 +135,7 @@ export default function NewAppointmentDialog({
             const result = await createAppointment(payload);
             
             if (result.error) {
-                toast.error('Error al crear la cita');
+                toast.error(typeof result.error === 'string' ? result.error : 'Error al crear la cita');
                 console.error(result.error);
             } else {
                 toast.success('Cita agendada exitosamente');

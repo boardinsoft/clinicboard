@@ -83,7 +83,7 @@ export default function NewWalkInDialog({
             });
             
             if (result.error) {
-                toast.error('Error al registrar llegada');
+                toast.error(typeof result.error === 'string' ? result.error : 'Error al registrar llegada');
                 console.error(result.error);
             } else {
                 toast.success('Paciente registrado en cola');

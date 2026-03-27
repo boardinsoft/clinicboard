@@ -367,7 +367,10 @@ export async function markArrived(id: string) {
 
     const { data, error } = await supabase
         .from('appointments')
-        .update({ status: 'arrived' })
+        .update({ 
+            status: 'arrived',
+            updated_at: new Date().toISOString()
+        })
         .eq('id', id)
         .eq('practitioner_id', practitionerId)
         .eq('status', currentStatus)
