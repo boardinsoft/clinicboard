@@ -76,6 +76,27 @@ export function toISODate(date: Date): string {
 }
 
 /**
+ * Converts a duration in minutes to a human-readable string with combined units
+ * (e.g. 45 → "45 min", 90 → "1h 30min", 1500 → "1d 1h").
+ */
+export function formatDuration(minutes: number): string {
+    if (minutes < 1) return 'un momento';
+    if (minutes < 60) return `${minutes} min`;
+
+    const hours = Math.floor(minutes / 60);
+    const remainingMins = minutes % 60;
+
+    if (hours < 24) {
+        return remainingMins > 0 ? `${hours}h ${remainingMins}min` : `${hours}h`;
+    }
+
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+
+    return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
+}
+
+/**
  * Returns a human-readable relative time string showing combined units
  * (e.g. "hace 5 min", "hace 1h 30min", "hace 2 días 3h").
  */
