@@ -16,13 +16,13 @@ interface AppointmentsTimelineProps {
 }
 
 const FHIR_STATUS_CONFIG: Record<AppointmentStatus, { label: string; badgeVariant: 'default' | 'secondary' | 'destructive' | 'outline'; borderClass: string; textClass: string }> = {
-    proposed: { label: 'Propuesta', badgeVariant: 'outline', borderClass: 'border-l-slate-400/30', textClass: 'text-slate-400' },
-    pending: { label: 'Pendiente', badgeVariant: 'outline', borderClass: 'border-l-amber-400', textClass: 'text-amber-600' },
-    booked: { label: 'Confirmada', badgeVariant: 'secondary', borderClass: 'border-l-blue-500', textClass: 'text-blue-600' },
-    arrived: { label: 'Llegada', badgeVariant: 'secondary', borderClass: 'border-l-orange-500', textClass: 'text-orange-600' },
-    fulfilled: { label: 'Completada', badgeVariant: 'secondary', borderClass: 'border-l-emerald-500', textClass: 'text-emerald-700' },
-    cancelled: { label: 'Cancelada', badgeVariant: 'destructive', borderClass: 'border-l-red-500', textClass: 'text-red-700' },
-    noshow: { label: 'No asistió', badgeVariant: 'outline', borderClass: 'border-l-slate-600', textClass: 'text-slate-600' },
+    proposed: { label: 'Propuesta', badgeVariant: 'outline', borderClass: 'border-l-muted-foreground/30', textClass: 'text-muted-foreground/60' },
+    pending: { label: 'Pendiente', badgeVariant: 'outline', borderClass: 'border-l-amber-400', textClass: 'text-amber-600 dark:text-amber-500' },
+    booked: { label: 'Confirmada', badgeVariant: 'secondary', borderClass: 'border-l-blue-500', textClass: 'text-blue-600 dark:text-blue-400' },
+    arrived: { label: 'Llegada', badgeVariant: 'secondary', borderClass: 'border-l-orange-500', textClass: 'text-orange-600 dark:text-orange-400' },
+    fulfilled: { label: 'Completada', badgeVariant: 'secondary', borderClass: 'border-l-emerald-500', textClass: 'text-emerald-700 dark:text-emerald-500' },
+    cancelled: { label: 'Cancelada', badgeVariant: 'destructive', borderClass: 'border-l-red-500', textClass: 'text-red-700 dark:text-red-500' },
+    noshow: { label: 'No asistió', badgeVariant: 'outline', borderClass: 'border-l-muted-foreground', textClass: 'text-muted-foreground' },
 };
 
 // Work hours: 08:00 to 18:00 every 30 mins

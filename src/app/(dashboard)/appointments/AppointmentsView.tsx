@@ -203,7 +203,7 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                     <Button 
                         size="sm" 
                         variant="outline"
-                        className="h-9 gap-2 border-orange-200 text-orange-700 bg-orange-50/50 hover:bg-orange-50 transition-all"
+                        className="h-9 gap-2 border-orange-500/30 text-orange-600 dark:text-orange-400 bg-orange-500/5 hover:bg-orange-500/10 transition-all shadow-sm shadow-orange-500/5"
                         onClick={() => setWalkInDialogOpen(true)}
                     >
                         <Plus className="w-4 h-4" />

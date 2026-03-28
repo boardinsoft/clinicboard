@@ -46,7 +46,7 @@ const COLUMNS: ColumnConfig[] = [
         title: 'En Espera', 
         statuses: ['arrived'], 
         icon: Clock,
-        headerColor: 'text-orange-600',
+        headerColor: 'text-orange-600 dark:text-orange-400',
         colorClass: 'bg-orange-500/5 border-t-orange-500/40'
     },
     { 
@@ -54,13 +54,13 @@ const COLUMNS: ColumnConfig[] = [
         title: 'En Consulta / Finalizadas', 
         statuses: ['fulfilled'], 
         icon: CheckCircle,
-        headerColor: 'text-emerald-600',
+        headerColor: 'text-emerald-600 dark:text-emerald-400',
         colorClass: 'bg-emerald-500/5 border-t-emerald-500/40'
     }
 ];
 
 const STATUS_DOT_COLORS: Record<string, string> = {
-    proposed: 'bg-slate-400',
+    proposed: 'bg-muted-foreground/30',
     pending: 'bg-amber-400',
     booked: 'bg-blue-500',
     arrived: 'bg-orange-500',
@@ -157,7 +157,7 @@ export default function AppointmentsKanban({
                                                             </Badge>
                                                         )}
                                                         {isPast && (
-                                                            <Badge className="h-4 px-1 py-0 text-[8px] bg-amber-100 border border-amber-200 font-bold text-amber-700 uppercase gap-1">
+                                                            <Badge className="h-4 px-1 py-0 text-[8px] bg-amber-500/10 border border-amber-500/20 font-bold text-amber-700 dark:text-amber-400 uppercase gap-1">
                                                                 <AlertCircle className="w-2.5 h-2.5" />
                                                                 Horario Pasado
                                                             </Badge>
