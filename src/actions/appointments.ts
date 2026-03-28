@@ -663,7 +663,7 @@ export async function cleanupExpiredAppointments() {
  * 3. Crea un Encounter en estado 'in-progress' vinculado.
  * 4. Retorna el ID del encounter para redirección.
  */
-export async function startConsultationFromAppointment(appointmentId: string) {
+export async function startConsultationFromAppointment(appointmentId: string, delayReason?: string) {
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -702,10 +702,16 @@ export async function startConsultationFromAppointment(appointmentId: string) {
         };
     }
 
-    // 3. Marcar cita como cumplida (fulfilled)
+    // 3. Marcar cita como cumplida (fulfilled) - y agregar motivo de retraso si es necesario
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updatePayload: any = { status: 'fulfilled' };
+    if (delayReason) {
+        updatePayload.description = `[Retraso de Consulta: ${delayReason}]` + (appt.description ? `\n\nMotivo original: ${appt.description}` : '');
+    }
+
     const { error: updateError } = await supabase
         .from('appointments')
-        .update({ status: 'fulfilled' })
+        .update(updatePayload)
         .eq('id', appointmentId)
         .eq('practitioner_id', user.id);
 
