@@ -168,7 +168,7 @@ export default function AppointmentsKanban({
             getItemValue={(apt) => apt.id}
             className="h-full"
         >
-            <KanbanBoard className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 h-full overflow-hidden">
+            <KanbanBoard className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 h-full overflow-hidden">
                 {COLUMNS.map((column) => {
                     const Icon = column.icon;
                     const items = kanbanValue[column.id] ?? [];
@@ -177,7 +177,6 @@ export default function AppointmentsKanban({
                         <KanbanColumn
                             key={column.id}
                             value={column.id}
-                            disabled
                             className={cn(
                                 'rounded-xl border-t-4 shadow-sm h-full max-h-full overflow-hidden',
                                 column.colorClass
@@ -221,7 +220,6 @@ export default function AppointmentsKanban({
                                         <KanbanItem
                                             key={apt.id}
                                             value={apt.id}
-                                            disabled
                                         >
                                             <AppointmentCard
                                                 apt={apt}
