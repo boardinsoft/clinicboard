@@ -102,6 +102,7 @@ export default function AppointmentDetailSheet({
     const [cancelReason, setCancelReason] = React.useState('');
     const [rescheduleMode, setRescheduleMode] = React.useState(false);
     const [showConsultationAlert, setShowConsultationAlert] = React.useState(false);
+    const [consultationDelayReason, setConsultationDelayReason] = React.useState('');
     
     // Reschedule states
     const [newDate, setNewDate] = React.useState<Date | undefined>(undefined);
@@ -159,7 +160,8 @@ export default function AppointmentDetailSheet({
     const handleStartConsultation = async () => {
         setIsPending(true);
         try {
-            const result = await startConsultationFromAppointment(appointment.id);
+            const reason = isPastAppointment && consultationDelayReason.trim() ? consultationDelayReason : undefined;
+            const result = await startConsultationFromAppointment(appointment.id, reason);
             if (result.error) {
                 toast.error(typeof result.error === 'string' ? result.error : 'Error al iniciar consulta');
             } else if (result.success) {
@@ -610,7 +612,10 @@ export default function AppointmentDetailSheet({
                 </Dialog>
 
                 {/* Consultation Start Alert */}
-                <AlertDialog open={showConsultationAlert} onOpenChange={setShowConsultationAlert}>
+                <AlertDialog open={showConsultationAlert} onOpenChange={(open) => {
+                    setShowConsultationAlert(open);
+                    if (!open) setConsultationDelayReason('');
+                }}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>¿Iniciar consulta clínica?</AlertDialogTitle>
@@ -619,11 +624,38 @@ export default function AppointmentDetailSheet({
                                 Esto cambiará el estado de la cita a Completada y comenzará un nuevo encuentro en la Historia Clínica.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
+
+                        {isPastAppointment && (
+                            <div className="py-2 space-y-3">
+                                <Label className="text-xs font-semibold uppercase text-muted-foreground">
+                                    Motivo de retraso requerido
+                                </Label>
+                                <div className="flex flex-wrap gap-2">
+                                    {['Llegó tarde el paciente', 'Retraso en consulta anterior', 'Emergencia previa', 'Administrativo'].map(suggestion => (
+                                        <Badge 
+                                            key={suggestion} 
+                                            variant="secondary" 
+                                            className="cursor-pointer hover:bg-primary/20"
+                                            onClick={() => setConsultationDelayReason(suggestion)}
+                                        >
+                                            {suggestion}
+                                        </Badge>
+                                    ))}
+                                </div>
+                                <Textarea
+                                    placeholder="O escribe el motivo del retraso..."
+                                    value={consultationDelayReason}
+                                    onChange={(e) => setConsultationDelayReason(e.target.value)}
+                                    className="min-h-[80px]"
+                                />
+                            </div>
+                        )}
+
                         <AlertDialogFooter>
                             <AlertDialogCancel disabled={isPending}>Volver</AlertDialogCancel>
                             <AlertDialogAction 
                                 onClick={handleStartConsultation}
-                                disabled={isPending}
+                                disabled={isPending || (isPastAppointment && consultationDelayReason.trim().length < 3)}
                             >
                                 {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                                 Iniciar Consulta
