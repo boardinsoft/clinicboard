@@ -28,34 +28,22 @@ interface ColumnConfig {
 }
 
 const COLUMNS: ColumnConfig[] = [
-    {
-        id: 'proposed',
-        title: 'Propuestas',
-        statuses: ['proposed', 'pending'],
-    },
-    {
-        id: 'confirmed',
-        title: 'Confirmadas',
-        statuses: ['booked'],
-    },
-    {
-        id: 'arrived',
-        title: 'En Espera',
-        statuses: ['arrived'],
-    },
-    {
-        id: 'completed',
-        title: 'En Consulta / Finalizadas',
-        statuses: ['fulfilled'],
-    },
+    { id: 'proposed',  title: 'Propuestas',                statuses: ['proposed', 'pending'] },
+    { id: 'confirmed', title: 'Confirmadas',               statuses: ['booked'] },
+    { id: 'arrived',   title: 'En Espera',                 statuses: ['arrived'] },
+    { id: 'completed', title: 'En Consulta / Finalizadas', statuses: ['fulfilled'] },
 ];
 
-const STATUS_DOT_COLORS: Record<string, string> = {
-    proposed: 'bg-muted-foreground/30',
-    pending: 'bg-amber-400',
-    booked: 'bg-blue-500',
-    arrived: 'bg-orange-500',
-    fulfilled: 'bg-emerald-500',
+// Mapa de estado → etiqueta + color de texto semántico
+// Los colores usan var(--apt-status-*) definidos en globals.css
+const STATUS_CONFIG: Record<AppointmentStatus, { label: string; colorStyle: string }> = {
+    proposed:  { label: 'Propuesta',  colorStyle: 'var(--apt-status-proposed)' },
+    pending:   { label: 'Pendiente',  colorStyle: 'var(--apt-status-pending)' },
+    booked:    { label: 'Confirmada', colorStyle: 'var(--apt-status-booked)' },
+    arrived:   { label: 'En espera',  colorStyle: 'var(--apt-status-arrived)' },
+    fulfilled: { label: 'Completada', colorStyle: 'var(--apt-status-fulfilled)' },
+    cancelled: { label: 'Cancelada',  colorStyle: 'var(--apt-status-cancelled)' },
+    noshow:    { label: 'No asistió', colorStyle: 'var(--apt-status-noshow)' },
 };
 
 const COLUMN_STATUSES: Record<string, AppointmentStatus[]> = Object.fromEntries(
@@ -85,53 +73,76 @@ function AppointmentCard({
         ? `${apt.patient.name_family}, ${apt.patient.name_given?.join(' ')}`
         : 'Paciente desconocido';
     const isPast = new Date(apt.start_time) < now && apt.status !== 'fulfilled';
+    const statusCfg = STATUS_CONFIG[apt.status];
 
     return (
         <Card
             onClick={onClick}
             className={cn(
-                'cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] border-border/40 hover:border-primary/30 group',
+                'cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]',
+                'border-border/40 hover:border-primary/30 group',
                 isActive ? 'ring-2 ring-primary/50 shadow-md border-primary' : 'shadow-sm'
             )}
         >
-            <CardContent className="p-3">
-                <div className="flex items-start justify-between gap-1 mb-2">
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground/80">
-                        <Clock className="w-3 h-3" />
+            <CardContent style={{ padding: 'var(--apt-card-padding)' }}>
+                {/* Fila superior: hora + etiqueta de estado */}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                    <div
+                        className="flex items-center gap-1.5 font-mono text-foreground/70"
+                        style={{ fontSize: 'var(--apt-card-time-size)' }}
+                    >
+                        <Clock className="w-3 h-3 shrink-0" />
                         {formatTime(apt.start_time)}
                     </div>
-                    <div
-                        className={cn(
-                            'w-1.5 h-1.5 rounded-full',
-                            STATUS_DOT_COLORS[apt.status] || 'bg-slate-300'
-                        )}
-                    />
+                    {statusCfg && (
+                        <span
+                            className="font-medium shrink-0"
+                            style={{
+                                fontSize: 'var(--apt-card-badge-size)',
+                                color: statusCfg.colorStyle,
+                            }}
+                        >
+                            {statusCfg.label}
+                        </span>
+                    )}
                 </div>
 
-                <div className="text-[13px] font-bold leading-tight group-hover:text-primary transition-colors">
+                {/* Nombre del paciente */}
+                <div
+                    className="font-semibold leading-tight group-hover:text-primary transition-colors"
+                    style={{ fontSize: 'var(--apt-card-title-size)' }}
+                >
                     {patientName}
                 </div>
 
-                <div className="mt-2 flex flex-wrap gap-2">
+                {/* Badges secundarios */}
+                <div className="mt-2 flex flex-wrap gap-1.5">
                     <Badge
                         variant="outline"
-                        className="h-4 px-1 py-0 text-[8px] bg-muted/30 border-none font-medium text-muted-foreground uppercase opacity-80"
+                        className="border-none bg-muted/50 text-muted-foreground font-medium uppercase"
+                        style={{ fontSize: 'var(--apt-card-badge-size)' }}
                     >
                         {apt.appointment_type || 'Consulta'}
                     </Badge>
                     {apt.status === 'arrived' && (
-                        <Badge className="h-4 px-2 py-0.5 text-[9px] bg-orange-500 border-none font-bold text-white uppercase">
-                            Tiempo de espera: {formatRelativeTime(apt.updated_at)}
+                        <Badge
+                            className="bg-transparent border-none font-medium text-orange-600 dark:text-orange-400 uppercase"
+                            style={{ fontSize: 'var(--apt-card-badge-size)' }}
+                        >
+                            {formatRelativeTime(apt.updated_at)}
                         </Badge>
                     )}
                     {isPast && (
-                        <Badge className="h-4 px-1 py-0 text-[8px] bg-amber-500/10 border border-amber-500/20 font-bold text-amber-700 dark:text-amber-400 uppercase gap-1">
+                        <Badge
+                            className="bg-amber-500/10 border border-amber-500/20 font-medium text-amber-700 dark:text-amber-400 uppercase gap-1"
+                            style={{ fontSize: 'var(--apt-card-badge-size)' }}
+                        >
                             <AlertCircle className="w-2.5 h-2.5" />
-                            Horario Pasado
+                            Horario pasado
                         </Badge>
                     )}
                     {apt.status === 'fulfilled' && (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[var(--apt-status-fulfilled)]" />
                     )}
                 </div>
             </CardContent>
@@ -164,13 +175,13 @@ export default function AppointmentsKanban({
                             className="bg-muted/40 rounded-xl h-full max-h-full overflow-hidden border border-border/50"
                         >
                             {/* Column Header */}
-                            <div className="px-4 py-3 flex items-center justify-between shrink-0">
+                            <div className="px-4 py-3 flex items-center justify-between shrink-0 border-b border-border/40">
                                 <h3 className="text-sm font-semibold text-foreground">
                                     {column.title}
                                 </h3>
                                 <Badge
                                     variant="secondary"
-                                    className="h-5 px-1.5 min-w-5 justify-center font-mono text-[10px]"
+                                    className="h-5 px-1.5 min-w-5 justify-center font-mono text-[11px]"
                                 >
                                     {items.length}
                                 </Badge>
@@ -179,18 +190,16 @@ export default function AppointmentsKanban({
                             {/* Items */}
                             <KanbanColumnContent
                                 value={column.id}
-                                className="flex-1 px-2 pt-1 pb-4 overflow-y-auto gap-2 min-h-0"
+                                className="kanban-col-fade flex-1 px-2 pt-2 pb-4 overflow-y-auto gap-2 min-h-0"
                             >
                                 {items.length === 0 ? (
-                                    <div className="py-12 flex flex-col items-center justify-center opacity-20 select-none">
-                                        <span className="text-xs font-medium">Sin citas</span>
+                                    <div className="py-12 flex flex-col items-center justify-center gap-1 opacity-40 select-none">
+                                        <span className="text-xs font-semibold">Sin citas</span>
+                                        <span className="text-[11px] text-muted-foreground">Bandeja vacía por ahora</span>
                                     </div>
                                 ) : (
                                     items.map((apt) => (
-                                        <KanbanItem
-                                            key={apt.id}
-                                            value={apt.id}
-                                        >
+                                        <KanbanItem key={apt.id} value={apt.id}>
                                             <AppointmentCard
                                                 apt={apt}
                                                 isActive={selectedId === apt.id}

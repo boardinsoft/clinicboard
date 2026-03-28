@@ -126,6 +126,46 @@
     --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.60);
   }
 
+  /* ── Appointment Card Tokens ──────────────────────────────────────
+     Typography scale para cards de citas. Referencia para futuros
+     diseños: usar var(--apt-card-*) en lugar de valores arbitrarios.
+  ────────────────────────────────────────────────────────────────── */
+  :root {
+    --apt-card-padding:      0.75rem;    /* p-3  */
+    --apt-card-time-size:    0.75rem;    /* text-xs — hora de la cita */
+    --apt-card-title-size:   0.875rem;   /* text-sm — nombre del paciente */
+    --apt-card-badge-size:   0.6875rem;  /* 11px   — badges de estado/tipo */
+    --apt-card-radius:       calc(var(--radius) * 1.5);
+
+    /* Colores semánticos de estado — light */
+    --apt-status-proposed:   oklch(0.55 0.01 264);   /* slate neutro */
+    --apt-status-pending:    oklch(0.65 0.14 75);    /* amber */
+    --apt-status-booked:     oklch(0.55 0.18 260);   /* primary blue */
+    --apt-status-arrived:    oklch(0.60 0.17 38);    /* orange */
+    --apt-status-fulfilled:  oklch(0.50 0.14 145);   /* emerald */
+    --apt-status-cancelled:  oklch(0.55 0.18 25);    /* red */
+    --apt-status-noshow:     oklch(0.50 0.10 25);    /* muted red */
+
+    /* Kanban estructural */
+    --kanban-col-bg:         oklch(0.97 0 0 / 0.5);
+    --kanban-col-radius:     0.75rem;
+    --kanban-col-gap:        0.5rem;
+    --kanban-fade-size:      2.5rem;
+  }
+
+  .dark {
+    /* Colores semánticos de estado — dark */
+    --apt-status-proposed:   oklch(0.65 0.01 264);
+    --apt-status-pending:    oklch(0.78 0.14 75);
+    --apt-status-booked:     oklch(0.70 0.18 260);
+    --apt-status-arrived:    oklch(0.73 0.17 38);
+    --apt-status-fulfilled:  oklch(0.65 0.14 145);
+    --apt-status-cancelled:  oklch(0.65 0.18 25);
+    --apt-status-noshow:     oklch(0.60 0.10 25);
+
+    --kanban-col-bg:         oklch(0.26 0 0 / 0.6);
+  }
+
   * {
     @apply border-border;
     box-sizing: border-box;
@@ -142,5 +182,21 @@
     font-family: var(--font-sans);
     letter-spacing: var(--tracking-normal);
     line-height: 1.5;
+  }
+}
+
+@layer components {
+  /* Fade inferior para columnas scrollables — indica contenido adicional */
+  .kanban-col-fade {
+    mask-image: linear-gradient(
+      to bottom,
+      black calc(100% - var(--kanban-fade-size, 2.5rem)),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black calc(100% - var(--kanban-fade-size, 2.5rem)),
+      transparent 100%
+    );
   }
 }
