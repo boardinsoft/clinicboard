@@ -67,7 +67,7 @@ export default function NewWalkInDialog({
     onCreated
 }: NewWalkInDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [duplicateError, setDuplicateError] = useState<string | null>(null);
+    const [alertError, setAlertError] = useState<string | null>(null);
 
     const form = useForm<WalkInFormValues>({
         defaultValues: {
@@ -94,8 +94,13 @@ export default function NewWalkInDialog({
             
             if (result.error) {
                 const errorMsg = typeof result.error === 'string' ? result.error : 'Error al registrar llegada';
-                if (typeof result.error === 'string' && result.error.includes('ya tiene una cita activa')) {
-                    setDuplicateError(result.error);
+                const isBlockingError = typeof result.error === 'string' && (
+                    result.error.includes('ya tiene una cita activa') || 
+                    result.error.includes('ya tiene una cita agendada')
+                );
+
+                if (isBlockingError) {
+                    setAlertError(result.error as string);
                 } else {
                     toast.error(errorMsg);
                 }
@@ -116,14 +121,14 @@ export default function NewWalkInDialog({
 
     return (
         <>
-        <AlertDialog open={!!duplicateError} onOpenChange={(open) => { if (!open) setDuplicateError(null); }}>
+        <AlertDialog open={!!alertError} onOpenChange={(open) => { if (!open) setAlertError(null); }}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Cita duplicada detectada</AlertDialogTitle>
-                    <AlertDialogDescription>{duplicateError}</AlertDialogDescription>
+                    <AlertDialogTitle>Conflicto de Cita</AlertDialogTitle>
+                    <AlertDialogDescription>{alertError}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogAction onClick={() => setDuplicateError(null)}>Entendido</AlertDialogAction>
+                    <AlertDialogAction onClick={() => setAlertError(null)}>Entendido</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
