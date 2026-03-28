@@ -84,7 +84,7 @@ const STATUS_CONFIG: Record<AppointmentStatus, { label: string; variant: 'defaul
     proposed: { label: 'Propuesta', variant: 'outline', color: 'text-slate-500' },
     pending: { label: 'Pendiente', variant: 'outline', color: 'text-amber-500' },
     booked: { label: 'Confirmada', variant: 'secondary', color: 'text-blue-600 bg-blue-50' },
-    arrived: { label: 'En Espera', variant: 'default', color: 'bg-orange-500 hover:bg-orange-600' },
+    arrived: { label: 'En Espera', variant: 'default', color: 'bg-orange-500' },
     fulfilled: { label: 'Completada', variant: 'secondary', color: 'text-emerald-700 bg-emerald-50' },
     cancelled: { label: 'Cancelada', variant: 'destructive', color: '' },
     noshow: { label: 'No asistió', variant: 'outline', color: 'text-red-400' },
@@ -268,13 +268,13 @@ export default function AppointmentDetailSheet({
                                 {config.label}
                             </Badge>
                             {getAppointmentTemporalLabel(appointment) && (
-                                <Badge variant="destructive" className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider animate-pulse">
+                                <Badge variant="destructive" className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                                     {getAppointmentTemporalLabel(appointment)}
                                 </Badge>
                             )}
                         </div>
                         {appointment.status === 'arrived' && (
-                            <Badge variant="outline" className="text-[10px] font-mono border-orange-200 text-orange-600 ml-2 animate-pulse">
+                            <Badge variant="outline" className="text-[10px] font-mono border-orange-200 text-orange-600 ml-2">
                                 {formatRelativeTime(appointment.updated_at)}
                             </Badge>
                         )}
@@ -376,7 +376,7 @@ export default function AppointmentDetailSheet({
                                     <AlertCircle className="w-3 h-3" />
                                     Tipo de atención
                                 </div>
-                                <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10 hover:bg-primary/10">
+                                <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10">
                                     {appointment.appointment_type || 'Consulta General'}
                                 </Badge>
                             </div>

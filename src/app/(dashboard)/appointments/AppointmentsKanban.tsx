@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Clock, CheckCircle2, CalendarCheck, ClipboardList, CheckCircle, AlertCircle } from 'lucide-react';
+import { Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,9 +25,6 @@ interface ColumnConfig {
     id: string;
     title: string;
     statuses: AppointmentStatus[];
-    icon: React.ElementType;
-    colorClass: string;
-    headerColor: string;
 }
 
 const COLUMNS: ColumnConfig[] = [
@@ -35,33 +32,21 @@ const COLUMNS: ColumnConfig[] = [
         id: 'proposed',
         title: 'Propuestas',
         statuses: ['proposed', 'pending'],
-        icon: ClipboardList,
-        colorClass: 'bg-muted/30 border-t-muted-foreground/40',
-        headerColor: 'text-muted-foreground',
     },
     {
         id: 'confirmed',
         title: 'Confirmadas',
         statuses: ['booked'],
-        icon: CalendarCheck,
-        headerColor: 'text-primary',
-        colorClass: 'bg-primary/5 border-t-primary/40',
     },
     {
         id: 'arrived',
         title: 'En Espera',
         statuses: ['arrived'],
-        icon: Clock,
-        headerColor: 'text-orange-600 dark:text-orange-400',
-        colorClass: 'bg-orange-500/5 border-t-orange-500/40',
     },
     {
         id: 'completed',
         title: 'En Consulta / Finalizadas',
         statuses: ['fulfilled'],
-        icon: CheckCircle,
-        headerColor: 'text-emerald-600 dark:text-emerald-400',
-        colorClass: 'bg-emerald-500/5 border-t-emerald-500/40',
     },
 ];
 
@@ -135,7 +120,7 @@ function AppointmentCard({
                         {apt.appointment_type || 'Consulta'}
                     </Badge>
                     {apt.status === 'arrived' && (
-                        <Badge className="h-4 px-2 py-0.5 text-[9px] bg-orange-500 hover:bg-orange-600 border-none font-bold text-white uppercase animate-pulse">
+                        <Badge className="h-4 px-2 py-0.5 text-[9px] bg-orange-500 border-none font-bold text-white uppercase">
                             Tiempo de espera: {formatRelativeTime(apt.updated_at)}
                         </Badge>
                     )}
@@ -170,36 +155,22 @@ export default function AppointmentsKanban({
         >
             <KanbanBoard className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 h-full overflow-hidden">
                 {COLUMNS.map((column) => {
-                    const Icon = column.icon;
                     const items = kanbanValue[column.id] ?? [];
 
                     return (
                         <KanbanColumn
                             key={column.id}
                             value={column.id}
-                            className={cn(
-                                'rounded-xl border-t-4 shadow-sm h-full max-h-full overflow-hidden',
-                                column.colorClass
-                            )}
+                            className="bg-muted/40 rounded-xl h-full max-h-full overflow-hidden border border-border/50"
                         >
                             {/* Column Header */}
-                            <div className="p-3 flex items-center justify-between bg-background/40 backdrop-blur-sm rounded-t-lg shrink-0">
-                                <div className="flex items-center gap-2">
-                                    <div
-                                        className={cn(
-                                            'p-1.5 rounded-md bg-background border shadow-xs',
-                                            column.headerColor
-                                        )}
-                                    >
-                                        <Icon className="w-4 h-4" />
-                                    </div>
-                                    <h3 className={cn('text-sm font-bold', column.headerColor)}>
-                                        {column.title}
-                                    </h3>
-                                </div>
+                            <div className="px-4 py-3 flex items-center justify-between shrink-0">
+                                <h3 className="text-sm font-semibold text-foreground">
+                                    {column.title}
+                                </h3>
                                 <Badge
-                                    variant="outline"
-                                    className="h-5 px-1.5 min-w-5 justify-center bg-background/80 font-mono text-[10px] border-none shadow-none"
+                                    variant="secondary"
+                                    className="h-5 px-1.5 min-w-5 justify-center font-mono text-[10px]"
                                 >
                                     {items.length}
                                 </Badge>
@@ -208,12 +179,11 @@ export default function AppointmentsKanban({
                             {/* Items */}
                             <KanbanColumnContent
                                 value={column.id}
-                                className="flex-1 px-2 pt-2 pb-4 overflow-y-auto gap-3 min-h-0"
+                                className="flex-1 px-2 pt-1 pb-4 overflow-y-auto gap-2 min-h-0"
                             >
                                 {items.length === 0 ? (
                                     <div className="py-12 flex flex-col items-center justify-center opacity-20 select-none">
-                                        <Icon className="w-10 h-10 mb-2" />
-                                        <span className="text-xs font-medium">Bandeja vacía</span>
+                                        <span className="text-xs font-medium">Sin citas</span>
                                     </div>
                                 ) : (
                                     items.map((apt) => (

@@ -218,7 +218,7 @@ export default function NewWalkInDialog({
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 ) : (
                                     <div className="mr-2 h-4 w-4 flex items-center justify-center">
-                                       <div className="w-1 h-3 bg-white rounded-full animate-pulse" />
+                                       <div className="w-1 h-3 bg-white rounded-full" />
                                     </div>
                                 )}
                                 Registrar en Cola
