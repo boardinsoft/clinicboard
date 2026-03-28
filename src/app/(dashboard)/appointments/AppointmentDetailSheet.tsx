@@ -423,14 +423,16 @@ export default function AppointmentDetailSheet({
                         {/* 1. Proposed / Pending -> Confirm or Cancel */}
                         {(appointment.status === 'proposed' || appointment.status === 'pending') && (
                             <>
-                                <Button 
-                                    className="w-full gap-2 shadow-lg shadow-blue-500/10" 
-                                    onClick={() => handleAction(confirmAppointment, 'Cita confirmada correctamente')}
-                                    disabled={isPending}
-                                >
-                                    <ClipboardCheck className="w-4 h-4" />
-                                    Confirmar Cita
-                                </Button>
+                                {!isEligibleForNoShow(appointment.end_time) && (
+                                    <Button 
+                                        className="w-full gap-2 shadow-lg shadow-blue-500/10" 
+                                        onClick={() => handleAction(confirmAppointment, 'Cita confirmada correctamente')}
+                                        disabled={isPending}
+                                    >
+                                        <ClipboardCheck className="w-4 h-4" />
+                                        Confirmar Cita
+                                    </Button>
+                                )}
                                 <div className="grid grid-cols-2 gap-2">
                                     <Button 
                                         variant="outline" 
@@ -457,7 +459,7 @@ export default function AppointmentDetailSheet({
                         {/* 2. Booked (Confirmed) -> Arrived or Cancel */}
                         {appointment.status === 'booked' && (
                             <>
-                                {isWithinCheckinWindow(appointment.start_time).allowed ? (
+                                {isWithinCheckinWindow(appointment.start_time, appointment.end_time).allowed ? (
                                     <Button 
                                         className="w-full gap-2 bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/10"
                                         onClick={() => handleAction(markArrived, 'Paciente marcado como llegó')}
@@ -466,10 +468,10 @@ export default function AppointmentDetailSheet({
                                         <User className="w-4 h-4" />
                                         Marcar Llegada / En Sala
                                     </Button>
-                                ) : isWithinCheckinWindow(appointment.start_time).reason === 'early' ? (
+                                ) : isWithinCheckinWindow(appointment.start_time, appointment.end_time).reason === 'early' ? (
                                     <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-center">
                                         <p className="text-[11px] font-semibold text-blue-700 uppercase tracking-tight">
-                                            Llegada disponible en {formatDuration(isWithinCheckinWindow(appointment.start_time).minutesUntilOpen ?? 0)}
+                                            Llegada disponible en {formatDuration(isWithinCheckinWindow(appointment.start_time, appointment.end_time).minutesUntilOpen ?? 0)}
                                         </p>
                                     </div>
                                 ) : null}

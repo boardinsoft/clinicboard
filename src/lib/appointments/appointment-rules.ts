@@ -13,13 +13,14 @@ export interface TemporalState {
 
 /**
  * Checks if the patient is within the check-in window (±CHECK_IN_WINDOW_MINUTES).
+ * If endTime is provided, the window closes exactly when the appointment ends.
  */
-export function isWithinCheckinWindow(startTime: string | Date): TemporalState {
+export function isWithinCheckinWindow(startTime: string | Date, endTime?: string | Date): TemporalState {
     const start = new Date(startTime);
     const now = new Date();
     
     const openingTime = subMinutes(start, CHECK_IN_WINDOW_MINUTES);
-    const closingTime = addMinutes(start, CHECK_IN_WINDOW_MINUTES);
+    const closingTime = endTime ? new Date(endTime) : addMinutes(start, CHECK_IN_WINDOW_MINUTES);
 
     if (isBefore(now, openingTime)) {
         return { 
