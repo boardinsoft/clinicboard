@@ -2,21 +2,22 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-    User, 
-    Calendar, 
-    Clock, 
-    FileText, 
-    Stethoscope, 
-    XCircle, 
-    CheckCircle2, 
+import {
+    User,
+    Calendar,
+    Clock,
+    FileText,
+    Stethoscope,
+    XCircle,
+    CheckCircle2,
     AlertCircle,
     ClipboardCheck,
     Phone,
     CreditCard,
     RotateCcw,
     History,
-    Loader2
+    Loader2,
+    AlertTriangle
 } from 'lucide-react';
 import { 
     Sheet, 
@@ -66,10 +67,11 @@ import {
 } from '@/actions/appointments';
 import { AppointmentPicker } from '@/components/ui/appointment-picker';
 import { format, parse } from 'date-fns';
-import { 
-    isWithinCheckinWindow, 
-    isEligibleForNoShow, 
-    getAppointmentTemporalLabel 
+import {
+    isWithinCheckinWindow,
+    isEligibleForNoShow,
+    getAppointmentTemporalLabel,
+    isPastAppointment as checkIsPastAppointment
 } from '@/lib/appointments/appointment-rules';
 import type { Appointment, AppointmentStatus } from '@/lib/fhir/types';
 
@@ -514,14 +516,30 @@ export default function AppointmentDetailSheet({
 
                         {/* 3. Arrived -> Fulfill (Start Consultation) */}
                         {appointment.status === 'arrived' && (
-                            <Button 
-                                className="w-full gap-2 py-6 text-base font-bold shadow-xl shadow-primary/20"
-                                onClick={() => setShowConsultationAlert(true)}
-                                disabled={isPending}
-                            >
-                                <Stethoscope className="w-5 h-5" />
-                                Iniciar Consulta
-                            </Button>
+                            <>
+                                {checkIsPastAppointment(appointment.start_time) ? (
+                                    <div className="rounded-md bg-amber-50 border border-amber-200 p-3">
+                                        <div className="flex gap-2">
+                                            <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+                                            <div className="text-sm">
+                                                <p className="font-medium text-amber-900">Cita con horario pasado</p>
+                                                <p className="text-amber-700 mt-1">
+                                                    Esta cita debe ser reprogramada antes de iniciar la consulta.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Button
+                                        className="w-full gap-2 py-6 text-base font-bold shadow-xl shadow-primary/20"
+                                        onClick={() => setShowConsultationAlert(true)}
+                                        disabled={isPending}
+                                    >
+                                        <Stethoscope className="w-5 h-5" />
+                                        Iniciar Consulta
+                                    </Button>
+                                )}
+                            </>
                         )}
 
                         {/* 4. Terminal States (Fulfilled / Cancelled / NoShow) -> Read Only Actions */}
