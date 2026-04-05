@@ -14,6 +14,7 @@ import RightPanel from './RightPanel';
 import { searchGlobal, SearchResult } from '@/actions/search';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
+import { getTabTitle, generateTabId } from '@/lib/tabs-utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -111,11 +112,15 @@ function IconRail({ user, practitioner }: { user?: User | null; practitioner?: P
                   <button
                     onClick={() => {
                       if (item.href === '/') {
+                        // Home: limpiar pestaña activa
                         useTabStore.setState({ activeTabId: null });
+                        router.push(item.href);
                       } else {
-                        addTab({ id: item.href, title: item.label, url: item.href });
+                        // Otras rutas: crear/activar pestaña y navegar
+                        const title = getTabTitle(item.href);
+                        addTab({ title, url: item.href });
+                        router.push(item.href);
                       }
-                      router.push(item.href);
                     }}
                     aria-label={item.label}
                     className={cn(
@@ -231,6 +236,11 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
+  // Cargar pestañas persistidas al montar
+  useEffect(() => {
+    useTabStore.getState().loadPersistedTabs();
+  }, []);
+
   // Handle Cmd+K / Ctrl+K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -280,37 +290,10 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
     }
   };
 
-  // Sync tab with current pathname
+  // Sincronización simplificada con router usando el store
   React.useEffect(() => {
-    if (pathname === '/') {
-      if (activeTabId !== null) {
-        useTabStore.setState({ activeTabId: null });
-      }
-      return;
-    }
-
-    const { tabs } = useTabStore.getState();
-    const currentNavItem = navMain.find(
-      (item) => item.href !== '/' && pathname.startsWith(item.href)
-    );
-
-    if (currentNavItem) {
-      const existingTab = tabs.find((t) => t.id === currentNavItem.href);
-      if (!existingTab) {
-        useTabStore.getState().addTab({
-          id: currentNavItem.href,
-          title: currentNavItem.label,
-          url: pathname,
-        });
-      } else if (existingTab.url !== pathname) {
-        useTabStore.setState((state) => ({
-          tabs: state.tabs.map((t) =>
-            t.id === existingTab.id ? { ...t, url: pathname } : t
-          ),
-        }));
-      }
-    }
-  }, [pathname, activeTabId]);
+    useTabStore.getState().syncWithRouter(pathname);
+  }, [pathname]);
 
   return (
     <div className="flex w-full h-screen overflow-hidden bg-background text-foreground">

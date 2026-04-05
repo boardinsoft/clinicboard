@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTabStore } from '@/store/useTabStore';
 
@@ -9,18 +9,57 @@ interface TabContentManagerProps {
 }
 
 /**
- * Renders children always (no cache) but only shows the active tab's pane.
- * This avoids all React 19 ref/immutability rules while still preserving
- * scroll position via display:none (the DOM subtree stays mounted).
+ * TabContentManager mejorado con preservación de scroll position.
  *
- * We keep it simple: every route renders once and is hidden/shown via CSS.
- * This is the React-idiomatic approach endorsed by the React team.
+ * Renderiza el contenido de cada pestaña en el DOM pero solo muestra
+ * la pestaña activa usando display:none. Esto permite:
+ * - Preservar el scroll position al cambiar entre pestañas
+ * - Mantener el estado de los componentes montados
+ * - Evitar re-renders innecesarios
+ *
+ * Estrategia:
+ * 1. Cada pestaña tiene su propio contenedor div con ref
+ * 2. Se guarda el scrollTop antes de cambiar de pestaña
+ * 3. Se restaura el scrollTop al volver a la pestaña
  */
 export default function TabContentManager({ children }: TabContentManagerProps) {
     const pathname = usePathname();
     const { tabs, activeTabId } = useTabStore();
 
-    // If there are no tabs, just render children directly.
+    // Map para guardar las posiciones de scroll de cada pestaña
+    const scrollPositions = useRef<Map<string, number>>(new Map());
+
+    // Refs para los contenedores de cada pestaña
+    const containerRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+    // Guardar scroll position cuando cambia la pestaña activa
+    useEffect(() => {
+        // Guardar la posición de scroll de todas las pestañas visibles
+        tabs.forEach(tab => {
+            const container = containerRefs.current.get(tab.id);
+            if (container) {
+                const scrollTop = container.scrollTop;
+                if (scrollTop > 0) {
+                    scrollPositions.current.set(tab.id, scrollTop);
+                }
+            }
+        });
+
+        // Restaurar la posición de scroll de la pestaña activa
+        if (activeTabId) {
+            const container = containerRefs.current.get(activeTabId);
+            const savedPosition = scrollPositions.current.get(activeTabId);
+
+            if (container && savedPosition) {
+                // Usar requestAnimationFrame para asegurar que el DOM está listo
+                requestAnimationFrame(() => {
+                    container.scrollTop = savedPosition;
+                });
+            }
+        }
+    }, [activeTabId, tabs]);
+
+    // Si no hay pestañas, renderizar children directamente
     if (tabs.length === 0) {
         return <>{children}</>;
     }
@@ -34,12 +73,26 @@ export default function TabContentManager({ children }: TabContentManagerProps) 
                 return (
                     <div
                         key={tab.id}
+                        ref={(el) => {
+                            if (el) {
+                                containerRefs.current.set(tab.id, el);
+                            } else {
+                                containerRefs.current.delete(tab.id);
+                            }
+                        }}
                         style={{
                             display: isActiveTab ? 'block' : 'none',
-                            height: '100%'
+                            height: '100%',
+                            overflow: 'auto',
                         }}
+                        data-tab-id={tab.id}
+                        data-tab-active={isActiveTab}
                     >
-                        {/* Only render children when we are on this tab's route */}
+                        {/*
+                            Solo renderizar el contenido si:
+                            1. Es la pestaña activa Y estamos en su ruta
+                            2. O si la pestaña ha sido renderizada antes (para mantener estado)
+                        */}
                         {isCurrentRoute && children}
                     </div>
                 );
