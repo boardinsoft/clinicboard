@@ -51,6 +51,12 @@ skills-lock.json
 zod-test.js
 zod-test.ts
 
+# security - NEVER commit encryption keys or secrets
+ENCRYPTION_KEYS_SETUP.md
+*_KEYS*.md
+*.key
+*.secret
+
 # supabase
 supabase/.temp/
 supabase/.branch
