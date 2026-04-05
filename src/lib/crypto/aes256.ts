@@ -99,3 +99,87 @@ export function isEncrypted(value: string): boolean {
         return false;
     }
 }
+
+/**
+ * Encripta múltiples campos de un objeto
+ * Útil para encriptar datos PHI antes de guardar en la DB
+ *
+ * @param data - Objeto con datos a encriptar
+ * @param fieldsToEncrypt - Array de nombres de campos a encriptar
+ * @returns Nuevo objeto con campos encriptados
+ *
+ * @example
+ * const patient = { name: 'Juan', notes: 'Información sensible' };
+ * const encrypted = await encryptFields(patient, ['notes']);
+ * // { name: 'Juan', notes: 'base64_encrypted_data' }
+ */
+export async function encryptFields<T extends Record<string, unknown>>(
+    data: T,
+    fieldsToEncrypt: (keyof T)[]
+): Promise<T> {
+    const encrypted = { ...data };
+
+    for (const field of fieldsToEncrypt) {
+        const value = data[field];
+
+        if (value && typeof value === 'string' && value.length > 0) {
+            encrypted[field] = (await encrypt(value)) as T[keyof T];
+        }
+    }
+
+    return encrypted;
+}
+
+/**
+ * Desencripta múltiples campos de un objeto
+ *
+ * @param data - Objeto con datos encriptados
+ * @param fieldsToDecrypt - Array de nombres de campos a desencriptar
+ * @returns Nuevo objeto con campos desencriptados
+ */
+export async function decryptFields<T extends Record<string, unknown>>(
+    data: T,
+    fieldsToDecrypt: (keyof T)[]
+): Promise<T> {
+    const decrypted = { ...data };
+
+    for (const field of fieldsToDecrypt) {
+        const value = data[field];
+
+        if (value && typeof value === 'string' && isEncrypted(value)) {
+            try {
+                decrypted[field] = (await decrypt(value)) as T[keyof T];
+            } catch (error) {
+                console.error(`Error decrypting field ${String(field)}:`, error);
+                // Mantener valor original si falla decriptación
+                decrypted[field] = value;
+            }
+        }
+    }
+
+    return decrypted;
+}
+
+/**
+ * Encripta selectivamente campos opcionales (null-safe)
+ * Solo encripta si el campo existe y no está vacío
+ */
+export async function encryptOptionalFields<T extends Record<string, unknown>>(
+    data: T,
+    fieldsToEncrypt: (keyof T)[]
+): Promise<T> {
+    const encrypted = { ...data };
+
+    for (const field of fieldsToEncrypt) {
+        const value = data[field];
+
+        // Solo encriptar si existe, no es null, y no está vacío
+        if (value !== null && value !== undefined && value !== '') {
+            if (typeof value === 'string') {
+                encrypted[field] = (await encrypt(value)) as T[keyof T];
+            }
+        }
+    }
+
+    return encrypted;
+}
