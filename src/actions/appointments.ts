@@ -604,8 +604,10 @@ export async function rescheduleAppointment(id: string, newStartTime: string, ne
 
 /**
  * cleanupExpiredAppointments()
- * Cancela automáticamente citas en estado 'proposed' o 'pending' 
+ * Cancela automáticamente citas en estado 'proposed' o 'pending'
  * cuya hora de inicio sea anterior a la actual.
+ * Marca como 'noshow' citas 'booked' o 'arrived' que tengan más de 24 horas
+ * desde su hora de finalización sin marcar asistencia.
  */
 export async function cleanupExpiredAppointments() {
     const supabase = await createServerSupabaseClient();
@@ -614,6 +616,9 @@ export async function cleanupExpiredAppointments() {
     if (!practitionerId) return { error: 'No autorizado' };
 
     const now = new Date().toISOString();
+
+    // Calcular el umbral de 24 horas en el pasado
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     // 1. Cancelar citas pendientes en el pasado
     const { data: cancelledData, error: cancelError } = await supabase
@@ -633,17 +638,17 @@ export async function cleanupExpiredAppointments() {
         return { error: cancelError.message };
     }
 
-    // 2. Marcar como No-Show citas Booked que ya pasaron su hora de finalización
+    // 2. Marcar como No-Show citas 'booked' o 'arrived' que pasaron más de 24h desde su finalización
     const { data: noShowData, error: noShowError } = await supabase
         .from('appointments')
         .update({
             status: 'noshow'
         })
         .eq('practitioner_id', practitionerId)
-        .eq('status', 'booked')
-        .lt('end_time', now)
+        .in('status', ['booked', 'arrived'])
+        .lt('end_time', twentyFourHoursAgo)
         .select();
-        
+
     if (noShowError) {
         console.error('Error in cleanupExpiredAppointments (noshow):', noShowError);
         return { error: noShowError.message };
@@ -661,9 +666,10 @@ export async function cleanupExpiredAppointments() {
 /**
  * startConsultationFromAppointment(appointmentId)
  * 1. Valida que la cita esté en estado 'arrived' o 'booked'.
- * 2. Cambia el estado de la cita a 'fulfilled'.
- * 3. Crea un Encounter en estado 'in-progress' vinculado.
- * 4. Retorna el ID del encounter para redirección.
+ * 2. Verifica que la cita no tenga horario pasado (obliga a reprogramar).
+ * 3. Cambia el estado de la cita a 'fulfilled'.
+ * 4. Crea un Encounter en estado 'in-progress' vinculado.
+ * 5. Retorna el ID del encounter para redirección.
  */
 export async function startConsultationFromAppointment(appointmentId: string, delayReason?: string) {
     const supabase = await createServerSupabaseClient();
@@ -686,7 +692,15 @@ export async function startConsultationFromAppointment(appointmentId: string, de
         return { error: `No se puede iniciar consulta desde una cita en estado '${currentStatus}'. Solo desde 'Confirmada' o 'En Espera'.` };
     }
 
-    // 2. Verificar idempotencia: si ya existe un encuentro para esta cita, retornarlo
+    // 2. Validar que la cita no tenga horario pasado
+    const { isPastAppointment } = await import('@/lib/appointments/appointment-rules');
+    if (isPastAppointment(appt.start_time)) {
+        return {
+            error: 'No se puede iniciar consulta para una cita con horario pasado. Por favor, reprograme la cita antes de continuar.'
+        };
+    }
+
+    // 3. Verificar idempotencia: si ya existe un encuentro para esta cita, retornarlo
     const { data: existingEncounter } = await supabase
         .from('encounters')
         .select('id, patient_id')
@@ -704,7 +718,7 @@ export async function startConsultationFromAppointment(appointmentId: string, de
         };
     }
 
-    // 3. Marcar cita como cumplida (fulfilled) - y agregar motivo de retraso si es necesario
+    // 4. Marcar cita como cumplida (fulfilled) - y agregar motivo de retraso si es necesario
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updatePayload: any = { status: 'fulfilled' };
     if (delayReason) {
@@ -719,7 +733,7 @@ export async function startConsultationFromAppointment(appointmentId: string, de
 
     if (updateError) return { error: 'Error al actualizar estado de la cita.' };
 
-    // 4. Crear encuentro (Encounter)
+    // 5. Crear encuentro (Encounter)
     const { createEncounter } = await import('@/actions/encounters');
 
     const encounterResult = await createEncounter({

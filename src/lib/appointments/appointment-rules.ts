@@ -69,7 +69,7 @@ export function isExpiredProposal(startTime: string | Date): boolean {
  */
 export function getAppointmentTemporalLabel(appointment: Appointment): string | null {
     if (['fulfilled', 'cancelled', 'noshow'].includes(appointment.status)) return null;
-    
+
     const start = new Date(appointment.start_time);
     const now = new Date();
     const graceTime = addMinutes(start, NO_SHOW_GRACE_PERIOD_MINUTES);
@@ -88,4 +88,28 @@ export function getAppointmentTemporalLabel(appointment: Appointment): string | 
     }
 
     return null;
+}
+
+/**
+ * Checks if an appointment has a start time in the past (with 15 min grace buffer).
+ * Used to prevent starting consultations for expired appointments.
+ */
+export function isPastAppointment(startTime: string | Date): boolean {
+    const start = new Date(startTime);
+    const now = new Date();
+    const graceBuffer = subMinutes(now, 15); // 15-minute grace period
+
+    return isBefore(start, graceBuffer);
+}
+
+/**
+ * Checks if an appointment is eligible for automatic No-Show marking.
+ * Returns true if more than 24 hours have passed since the appointment end time.
+ */
+export function isEligibleForAutoNoShow(endTime: string | Date): boolean {
+    const end = new Date(endTime);
+    const now = new Date();
+    const autoNoShowThreshold = subMinutes(now, 24 * 60); // 24 hours ago
+
+    return isBefore(end, autoNoShowThreshold);
 }
