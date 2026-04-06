@@ -26,7 +26,18 @@ export async function signInWithEmail(formData: FormData) {
             logger.security('Intento de login fallido', {
                 email,
                 errorCode: error.message,
+                errorStatus: error.status,
             });
+
+            // Manejar específicamente el error 429 (rate limiting)
+            if (error.status === 429 || error.message?.toLowerCase().includes('rate limit')) {
+                return {
+                    error: 'Demasiados intentos de inicio de sesión. Por favor, espera unos minutos antes de intentar nuevamente.',
+                    errorType: 'rate_limit'
+                };
+            }
+
+            // Error genérico para otros casos
             return { error: 'Correo o contraseña incorrectos' };
         }
 

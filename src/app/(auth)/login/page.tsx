@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { AlertCircle, LockIcon, MailIcon } from "lucide-react"
+import { AlertCircle, Clock, LockIcon, MailIcon } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
   InputGroup,
@@ -33,6 +33,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const [loading, setLoading] = React.useState(false)
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
+  const [errorType, setErrorType] = React.useState<string | null>(null)
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -45,6 +46,7 @@ export default function LoginPage() {
   async function onSubmit(values: LoginFormValues) {
     setLoading(true)
     setErrorMsg(null)
+    setErrorType(null)
 
     const formData = new FormData()
     formData.append("email", values.email)
@@ -54,6 +56,7 @@ export default function LoginPage() {
 
     if (result?.error) {
       setErrorMsg(result.error)
+      setErrorType((result as any).errorType || null)
       setLoading(false)
     }
   }
@@ -82,9 +85,13 @@ export default function LoginPage() {
                 variant="destructive"
                 className="bg-destructive/5 border-destructive/20 text-destructive animate-in fade-in slide-in-from-top-1"
               >
-                <AlertCircle className="h-4 w-4" />
+                {errorType === 'rate_limit' ? (
+                  <Clock className="h-4 w-4" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )}
                 <AlertTitle className="text-xs font-bold uppercase tracking-wider">
-                  Acceso Denegado
+                  {errorType === 'rate_limit' ? 'Demasiados Intentos' : 'Acceso Denegado'}
                 </AlertTitle>
                 <AlertDescription className="text-sm opacity-90">
                   {errorMsg}
