@@ -30,15 +30,30 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from 'next/navigation';
 import { getEncounters } from '@/actions/encounters';
+import { archivePatient } from '@/actions/patients';
 import { useLayoutStore } from '@/store/useLayoutStore';
+import { useTabStore } from '@/store/useTabStore';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { AddConditionDialog } from '@/components/patients/AddConditionDialog';
+import { AddAllergyDialog } from '@/components/patients/AddAllergyDialog';
 import type { Patient, Condition, AllergyIntolerance, EncounterWithSpecialty } from '@/types/database.types';
 
 // Typed helpers for patient JSONB columns
@@ -56,7 +71,7 @@ import { formatDate, calcAge, getGenderLabel } from '@/lib/clinical';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function WorkspaceHeader({ patient, router, children }: { patient: Patient; router: ReturnType<typeof useRouter>; children?: React.ReactNode }) {
+function WorkspaceHeader({ patient, router, onArchive, children }: { patient: Patient; router: ReturnType<typeof useRouter>; onArchive: () => void; children?: React.ReactNode }) {
     const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value;
     const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value;
     const address = (patient.address as PatientAddress[] | null)?.[0]?.text;
@@ -122,11 +137,15 @@ function WorkspaceHeader({ patient, router, children }: { patient: Patient; rout
                             <DropdownMenuItem onClick={() => window.open(`/api/patients/${patient.id}/fhir`, '_blank')}>
                                 <FileText className="w-4 h-4 mr-2" /> Ver FHIR JSON
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem disabled>
                                 <ExternalLink className="w-4 h-4 mr-2" /> Abrir en Portal
+                                <span className="ml-auto text-[10px] text-muted-foreground">Pronto</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="bg-border/20" />
-                            <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/5">
+                            <DropdownMenuItem
+                                className="text-destructive focus:text-destructive focus:bg-destructive/5"
+                                onClick={onArchive}
+                            >
                                 <Trash className="w-4 h-4 mr-2" /> Archivar Paciente
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -184,11 +203,21 @@ function EmptyState({ icon: Icon, title, message }: { icon: React.ElementType; t
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+const TAB_VALUES = ['overview', 'conditions', 'allergies', 'history', 'vitals'] as const;
+
 export default function PatientDetailView({ patient, conditions: initialConditions, allergies: initialAllergies }: PatientDetailViewProps) {
     const router = useRouter();
     const [encounters, setEncounters] = useState<EncounterWithSpecialty[]>([]);
     const [loadingEncounters, setLoadingEncounters] = useState(false);
+    const [conditions, setConditions] = useState<Condition[]>(initialConditions);
+    const [allergies, setAllergies] = useState<AllergyIntolerance[]>(initialAllergies);
+    const [showAddCondition, setShowAddCondition] = useState(false);
+    const [showAddAllergy, setShowAddAllergy] = useState(false);
+    const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
     const { setRightPanelOpen } = useLayoutStore();
+    const { patientViewState, setPatientTab } = useTabStore();
+    const savedTab = TAB_VALUES[patientViewState[patient.id] ?? 0] ?? 'overview';
+    const [activeTab, setActiveTab] = useState(savedTab);
 
     useEffect(() => {
         const fetchEncounters = async () => {
@@ -210,8 +239,16 @@ export default function PatientDetailView({ patient, conditions: initialConditio
 
     return (
         <div className="h-full flex flex-col bg-background">
-            <Tabs defaultValue="overview" className="flex-1 flex flex-col">
-                <WorkspaceHeader patient={patient} router={router}>
+            <Tabs
+                value={activeTab}
+                onValueChange={(val) => {
+                    setActiveTab(val as typeof TAB_VALUES[number]);
+                    const idx = TAB_VALUES.indexOf(val as typeof TAB_VALUES[number]);
+                    if (idx !== -1) setPatientTab(patient.id, idx);
+                }}
+                className="flex-1 flex flex-col"
+            >
+                <WorkspaceHeader patient={patient} router={router} onArchive={() => setShowArchiveConfirm(true)}>
                     <div className="px-8 mt-2">
                         <TabsList className="mb-4">
                             {[
@@ -293,12 +330,12 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                         <TabsContent value="conditions" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden space-y-6">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-xl font-semibold">Condiciones Clínicas</h3>
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" onClick={() => setShowAddCondition(true)}>
                                     <Plus className="w-4 h-4 mr-2" />
                                     Agregar Condición
                                 </Button>
                             </div>
-                            {initialConditions.length === 0 ? (
+                            {conditions.length === 0 ? (
                                 <EmptyState
                                     icon={Activity}
                                     title="No hay condiciones clínicas"
@@ -306,7 +343,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                 />
                             ) : (
                                 <div className="space-y-3">
-                                    {initialConditions.map((c) => (
+                                    {conditions.map((c) => (
                                         <Card key={c.id}>
                                             <CardContent className="p-4 flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -330,12 +367,12 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                         <TabsContent value="allergies" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden space-y-6">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-xl font-semibold">Alergias e Intolerancias</h3>
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" onClick={() => setShowAddAllergy(true)}>
                                     <Plus className="w-4 h-4 mr-2" />
                                     Agregar Alergia
                                 </Button>
                             </div>
-                            {initialAllergies.length === 0 ? (
+                            {allergies.length === 0 ? (
                                 <EmptyState
                                     icon={FlaskConical}
                                     title="Sin alergias registradas"
@@ -343,7 +380,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                 />
                             ) : (
                                 <div className="space-y-3">
-                                    {initialAllergies.map((a) => (
+                                    {allergies.map((a) => (
                                         <Card key={a.id}>
                                             <CardContent className="p-4 flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
@@ -438,6 +475,48 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                     </div>
                 </div>
             </Tabs>
+
+            <AddConditionDialog
+                patientId={patient.id}
+                open={showAddCondition}
+                onOpenChange={setShowAddCondition}
+                onSuccess={(c) => setConditions(prev => [c, ...prev])}
+            />
+
+            <AddAllergyDialog
+                patientId={patient.id}
+                open={showAddAllergy}
+                onOpenChange={setShowAddAllergy}
+                onSuccess={(a) => setAllergies(prev => [a, ...prev])}
+            />
+
+            <AlertDialog open={showArchiveConfirm} onOpenChange={setShowArchiveConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Archivar paciente?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            El paciente será marcado como inactivo. Podrá reactivarlo editando su perfil.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            className={buttonVariants({ variant: 'destructive' })}
+                            onClick={async () => {
+                                const result = await archivePatient(patient.id);
+                                if (result.error) {
+                                    toast.error('Error al archivar', { description: result.error });
+                                    return;
+                                }
+                                toast.success('Paciente archivado');
+                                router.push('/patients');
+                            }}
+                        >
+                            Archivar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useLayoutStore } from '@/store/useLayoutStore';
+import { useTabStore } from '@/store/useTabStore';
 import { cn } from '@/lib/utils';
 import { getPatientClinicalData } from '@/actions/patients';
 import { getEncounters } from '@/actions/encounters';
@@ -351,13 +352,19 @@ function TabEncuentros({ patientId, router }: { patientId: string | null; router
 // ─── Main Component ────────────────────────────────────────────────────────────
 import PatientsSidebar from './PatientsSidebar';
 
+const LIST_TAB_VALUES = ['resumen', 'condiciones', 'alergias', 'encuentros'] as const;
+const LIST_VIEW_KEY = 'patients-list';
+
 export default function PatientsListView({ patients, totalItems, page, pageSize }: PatientsListViewProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { setSecondaryPanel } = useLayoutStore();
+    const { patientViewState, setPatientTab } = useTabStore();
 
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+    const savedListTab = LIST_TAB_VALUES[patientViewState[LIST_VIEW_KEY] ?? 0] ?? 'resumen';
+    const [activeListTab, setActiveListTab] = useState(savedListTab);
 
     const updateParams = React.useCallback((updates: Record<string, string | number>) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -406,7 +413,15 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
                     </Button>
                 </div>
 
-                <Tabs defaultValue="resumen" className="w-full flex-1 flex flex-col min-h-0">
+                <Tabs
+                    value={activeListTab}
+                    onValueChange={(val) => {
+                        setActiveListTab(val as typeof LIST_TAB_VALUES[number]);
+                        const idx = LIST_TAB_VALUES.indexOf(val as typeof LIST_TAB_VALUES[number]);
+                        if (idx !== -1) setPatientTab(LIST_VIEW_KEY, idx);
+                    }}
+                    className="w-full flex-1 flex flex-col min-h-0"
+                >
                     <TabsList className="mb-4">
                         {[
                             { value: 'resumen', label: 'Resumen', icon: User },
@@ -446,8 +461,8 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
                 <div className="sticky bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border/10 flex items-center justify-between z-20">
                     <p className="text-xs font-medium text-muted-foreground/80">Mostrando página {page}</p>
                     <div className="flex gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handlePagination(page - 1)} disabled={page <= 1} className="h-8 text-xs">Anterior</Button>
-                        <Button variant="ghost" size="sm" onClick={() => handlePagination(page + 1)} disabled={page * pageSize >= totalItems} className="h-8 text-xs">Siguiente</Button>
+                        <Button variant="ghost" size="sm" onClick={() => handlePagination(page - 1)} disabled={page <= 1} className="h-8 text-xs disabled:opacity-40 disabled:cursor-not-allowed">Anterior</Button>
+                        <Button variant="ghost" size="sm" onClick={() => handlePagination(page + 1)} disabled={page * pageSize >= totalItems} className="h-8 text-xs disabled:opacity-40 disabled:cursor-not-allowed">Siguiente</Button>
                     </div>
                 </div>
             )}

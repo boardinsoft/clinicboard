@@ -1,8 +1,9 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { Save, X, ChevronRight, UserIcon, PhoneIcon, MailIcon, MapPinIcon, CalendarIcon, IdCard } from "lucide-react"
 import { useRouter, useParams } from "next/navigation"
+import { useTheme } from "next-themes"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -20,6 +21,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Field, FieldError, FieldLabel, FieldGroup } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupText, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 
 const patientSchema = z.object({
@@ -48,6 +59,8 @@ export default function EditPatientPage() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [patientName, setPatientName] = useState("")
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+    const { resolvedTheme } = useTheme()
 
     const form = useForm<PatientFormValues>({
         resolver: zodResolver(patientSchema),
@@ -63,6 +76,9 @@ export default function EditPatientPage() {
         },
     })
 
+    // Stable ref to avoid adding form object to useEffect deps (would cause infinite loop)
+    const formRef = useRef(form)
+
     useEffect(() => {
         const fetchPatient = async () => {
             try {
@@ -74,20 +90,23 @@ export default function EditPatientPage() {
 
                 if (error) throw error
 
-                if (data) {
-                    const values = {
-                        givenNames: data.name_given?.join(", ") || "",
-                        familyName: data.name_family || "",
-                        gender: (data.gender as PatientFormValues['gender']) || "unknown",
-                        birthDate: data.birth_date || "",
-                        documentId: (data.identifiers as PatientIdentifier[] | null)?.[0]?.value || "",
-                        phone: (data.telecom as PatientTelecom[] | null)?.find(t => t.system === "phone")?.value || "",
-                        email: (data.telecom as PatientTelecom[] | null)?.find(t => t.system === "email")?.value || "",
-                        address: (data.address as PatientAddress[] | null)?.[0]?.text || "",
-                    }
-                    form.reset(values)
-                    setPatientName(data.name_family || "")
+                if (!data) {
+                    router.replace("/patients")
+                    return
                 }
+
+                const values = {
+                    givenNames: data.name_given?.join(", ") || "",
+                    familyName: data.name_family || "",
+                    gender: (data.gender as PatientFormValues['gender']) || "unknown",
+                    birthDate: data.birth_date || "",
+                    documentId: (data.identifiers as PatientIdentifier[] | null)?.[0]?.value || "",
+                    phone: (data.telecom as PatientTelecom[] | null)?.find(t => t.system === "phone")?.value || "",
+                    email: (data.telecom as PatientTelecom[] | null)?.find(t => t.system === "email")?.value || "",
+                    address: (data.address as PatientAddress[] | null)?.[0]?.text || "",
+                }
+                formRef.current.reset(values)
+                setPatientName(data.name_family || "")
             } catch (error: unknown) {
                 console.error("Error fetching patient:", error)
                 const message = error instanceof Error ? error.message : "No se pudo cargar la información del paciente."
@@ -98,7 +117,7 @@ export default function EditPatientPage() {
         }
 
         if (id) fetchPatient()
-    }, [id, supabase, form])
+    }, [id, supabase, router])
 
     const onSubmit = async (values: PatientFormValues) => {
         setSaving(true)
@@ -121,7 +140,7 @@ export default function EditPatientPage() {
                 description: "Los cambios han sido guardados exitosamente."
             })
 
-            setTimeout(() => router.push(`/patients/${id}`), 1000)
+            router.push(`/patients/${id}`)
 
         } catch (error: unknown) {
             console.error("Error updating patient:", error)
@@ -251,7 +270,7 @@ export default function EditPatientPage() {
                                         id="birthDate"
                                         type="date"
                                         max={new Date().toISOString().split("T")[0]}
-                                        className="[color-scheme:dark]"
+                                        className={resolvedTheme === "dark" ? "[color-scheme:dark]" : "[color-scheme:light]"}
                                     />
                                 </InputGroup>
                             </Field>
@@ -338,7 +357,13 @@ export default function EditPatientPage() {
                             <Button
                                 type="button"
                                 variant="ghost"
-                                onClick={() => router.push(`/patients/${id}`)}
+                                onClick={() => {
+                                    if (form.formState.isDirty) {
+                                        setShowCancelConfirm(true)
+                                    } else {
+                                        router.push(`/patients/${id}`)
+                                    }
+                                }}
                                 className="text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors"
                                 disabled={saving}
                             >
@@ -358,6 +383,23 @@ export default function EditPatientPage() {
                     </form>
                 </CardContent>
             </Card>
+
+            <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Descartar cambios?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Tienes cambios sin guardar. Si cancelas, se perderán.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Seguir editando</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => router.push(`/patients/${id}`)}>
+                            Descartar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

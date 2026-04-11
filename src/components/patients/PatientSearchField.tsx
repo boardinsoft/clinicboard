@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getPatients } from '@/actions/patients';
 import { Search, User, Loader2, CheckCircle2 } from 'lucide-react';
@@ -35,6 +35,17 @@ export function PatientSearchField({
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const debouncedQuery = useDebounce(query, 300);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Initial search and debounced search
     useEffect(() => {
@@ -94,7 +105,8 @@ export function PatientSearchField({
     };
 
     return (
-        <FormItem className={cn("relative", className)}>
+        <div ref={containerRef} className={cn("relative", className)}>
+        <FormItem className="relative">
             <FormLabel>{label}</FormLabel>
             <div className="relative">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -175,5 +187,6 @@ export function PatientSearchField({
             )}
             <FormMessage />
         </FormItem>
+        </div>
     );
 }

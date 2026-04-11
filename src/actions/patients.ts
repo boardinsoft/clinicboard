@@ -238,3 +238,27 @@ export async function updatePatientAnamnesis(patientId: string, data: {
     revalidatePath(`/patients/${patientId}`);
     return { success: true };
 }
+
+export async function archivePatient(id: string) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) return { error: 'No autorizado' };
+
+    const { data, error } = await supabase
+        .from('patients')
+        .update({ active: false })
+        .eq('id', id)
+        .eq('practitioner_id', practitionerId)
+        .select('id')
+        .single();
+
+    if (error || !data) {
+        console.error('Error in archivePatient:', error);
+        return { error: error?.message || 'Paciente no encontrado o sin permisos' };
+    }
+
+    revalidatePath('/patients');
+    revalidatePath(`/patients/${id}`);
+    return { data };
+}

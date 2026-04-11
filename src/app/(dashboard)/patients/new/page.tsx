@@ -3,6 +3,7 @@
 import React, { useState } from "react"
 import { Save, X, ChevronRight, UserIcon, PhoneIcon, MailIcon, MapPinIcon, CalendarIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useTheme } from "next-themes"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -18,6 +19,16 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Field, FieldError, FieldLabel, FieldGroup } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupText, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 
 const patientSchema = z.object({
@@ -36,6 +47,8 @@ type PatientFormValues = z.infer<typeof patientSchema>
 export default function NewPatientPage() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+    const { resolvedTheme } = useTheme()
 
     const form = useForm<PatientFormValues>({
         resolver: zodResolver(patientSchema),
@@ -81,9 +94,9 @@ export default function NewPatientPage() {
             })
 
             if (result.data?.id) {
-                setTimeout(() => router.push(`/patients/${result.data.id}`), 1000)
+                router.push(`/patients/${result.data.id}`)
             } else {
-                setTimeout(() => router.push("/patients"), 1000)
+                router.push("/patients")
             }
 
         } catch (error: unknown) {
@@ -170,7 +183,7 @@ export default function NewPatientPage() {
                                 </FieldLabel>
                                 <Select
                                     onValueChange={(val) => form.setValue("gender", val as "female" | "male" | "other" | "unknown")}
-                                    defaultValue={form.getValues("gender")}
+                                    value={form.watch("gender")}
                                 >
                                     <SelectTrigger id="gender" className="h-9 bg-background/20 border-border/20 focus:ring-primary/20 text-sm">
                                         <SelectValue placeholder="Seleccionar género" />
@@ -202,7 +215,7 @@ export default function NewPatientPage() {
                                         id="birthDate"
                                         type="date"
                                         max={new Date().toISOString().split("T")[0]}
-                                        className="[color-scheme:dark]"
+                                        className={resolvedTheme === "dark" ? "[color-scheme:dark]" : "[color-scheme:light]"}
                                     />
                                 </InputGroup>
                             </Field>
@@ -289,7 +302,13 @@ export default function NewPatientPage() {
                             <Button
                                 type="button"
                                 variant="ghost"
-                                onClick={() => router.push("/patients")}
+                                onClick={() => {
+                                    if (form.formState.isDirty) {
+                                        setShowCancelConfirm(true)
+                                    } else {
+                                        router.push("/patients")
+                                    }
+                                }}
                                 className="text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors"
                                 disabled={loading}
                             >
@@ -309,6 +328,23 @@ export default function NewPatientPage() {
                     </form>
                 </CardContent>
             </Card>
+
+            <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Descartar cambios?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Tienes datos ingresados que se perderán si cancelas.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Seguir registrando</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => router.push("/patients")}>
+                            Descartar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }
