@@ -53,6 +53,15 @@
     --tracking-wide: calc(var(--tracking-normal) + 0.025em);
     --tracking-wider: calc(var(--tracking-normal) + 0.05em);
     --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+
+    /* ── Brand Secondary Tokens ──────────────────────────────────────
+       Paleta de marca de ClinicBoard. Usar var(--brand-*) para
+       elementos de identidad visual fuera del sistema shadcn/ui.
+    ────────────────────────────────────────────────────────────────── */
+    --brand-primary:  oklch(0.62 0.19 259.76);   /* Azul marca — acción, CTA, UI */
+    --brand-rose:     oklch(0.8544 0.1338 328.38); /* Rosa suave — highlights, tags especiales */
+    --brand-indigo:   oklch(0.4606 0.1805 274.88); /* Índigo profundo — wordmark, dark surfaces */
+    --brand-danger:   oklch(0.62 0.20 25);          /* Rojo clínico — errores, cancelaciones */
   }
 
   .dark {
