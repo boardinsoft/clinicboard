@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from 'next/navigation';
 import { getEncounters } from '@/actions/encounters';
-import { archivePatient } from '@/actions/patients';
+import { archivePatient, reactivatePatient } from '@/actions/patients';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { useTabStore } from '@/store/useTabStore';
 import { cn } from '@/lib/utils';
@@ -71,7 +71,7 @@ import { formatDate, calcAge, getGenderLabel } from '@/lib/clinical';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function WorkspaceHeader({ patient, router, onArchive, children }: { patient: Patient; router: ReturnType<typeof useRouter>; onArchive: () => void; children?: React.ReactNode }) {
+function WorkspaceHeader({ patient, router, onArchive, onReactivate, children }: { patient: Patient; router: ReturnType<typeof useRouter>; onArchive: () => void; onReactivate: () => void; children?: React.ReactNode }) {
     const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value;
     const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value;
     const address = (patient.address as PatientAddress[] | null)?.[0]?.text;
@@ -114,14 +114,6 @@ function WorkspaceHeader({ patient, router, onArchive, children }: { patient: Pa
                     </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                        onClick={() => router.push(`/history?patientId=${patient.id}`)}
-                        className="shadow-sm"
-                    >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Nueva Evolución
-                    </Button>
-
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="icon" className="border-border/40">
@@ -142,12 +134,18 @@ function WorkspaceHeader({ patient, router, onArchive, children }: { patient: Pa
                                 <span className="ml-auto text-[10px] text-muted-foreground">Pronto</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="bg-border/20" />
-                            <DropdownMenuItem
-                                className="text-destructive focus:text-destructive focus:bg-destructive/5"
-                                onClick={onArchive}
-                            >
-                                <Trash className="w-4 h-4 mr-2" /> Archivar Paciente
-                            </DropdownMenuItem>
+                            {patient.active ? (
+                                <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive focus:bg-destructive/5"
+                                    onClick={onArchive}
+                                >
+                                    <Trash className="w-4 h-4 mr-2" /> Archivar Paciente
+                                </DropdownMenuItem>
+                            ) : (
+                                <DropdownMenuItem onClick={onReactivate}>
+                                    <Activity className="w-4 h-4 mr-2" /> Reactivar Paciente
+                                </DropdownMenuItem>
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -215,10 +213,25 @@ export default function PatientDetailView({ patient, conditions: initialConditio
     const [showAddAllergy, setShowAddAllergy] = useState(false);
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
     const [archiving, setArchiving] = useState(false);
+    const [reactivating, setReactivating] = useState(false);
     const { setRightPanelOpen } = useLayoutStore();
     const { patientViewState, setPatientTab, removeTab, findTabByUrl } = useTabStore();
     const savedTab = TAB_VALUES[patientViewState[patient.id] ?? 0] ?? 'overview';
     const [activeTab, setActiveTab] = useState(savedTab);
+
+    const handleReactivate = async () => {
+        setReactivating(true);
+        const result = await reactivatePatient(patient.id);
+        setReactivating(false);
+        if (result.error) {
+            toast.error('Error al reactivar', { description: result.error });
+            return;
+        }
+        toast.success('Paciente reactivado', {
+            description: `${patient.name_given?.join(' ')} ${patient.name_family} ha sido marcado como activo.`,
+        });
+        router.refresh();
+    };
 
     useEffect(() => {
         const fetchEncounters = async () => {
@@ -249,7 +262,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                 }}
                 className="flex-1 flex flex-col"
             >
-                <WorkspaceHeader patient={patient} router={router} onArchive={() => setShowArchiveConfirm(true)}>
+                <WorkspaceHeader patient={patient} router={router} onArchive={() => setShowArchiveConfirm(true)} onReactivate={handleReactivate}>
                     <div className="px-8 mt-2">
                         <TabsList className="mb-4">
                             {[
@@ -405,9 +418,9 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                         <TabsContent value="history" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden space-y-6">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-xl font-semibold">Historial de Consultas</h3>
-                                <Button variant="outline" size="sm" onClick={() => router.push(`/history?patientId=${patient.id}`)}>
+                                <Button variant="outline" size="sm" onClick={() => router.push('/appointments')}>
                                     <Plus className="w-4 h-4 mr-2" />
-                                    Nueva Consulta
+                                    Nueva Cita
                                 </Button>
                             </div>
                             {loadingEncounters ? (
@@ -496,7 +509,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Archivar paciente?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            El paciente será marcado como inactivo. Podrá reactivarlo editando su perfil.
+                            El paciente será marcado como inactivo. Puede reactivarlo desde la vista del paciente.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

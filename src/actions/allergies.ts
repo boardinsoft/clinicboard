@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { allergySchema } from '@/lib/schemas/allergy.schema';
+import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
 
 /**
  * createAllergy(formData)
@@ -20,10 +21,10 @@ export async function createAllergy(formData: {
     note?: string;
 }) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
-        return { error: 'No autorizado. Sesión no encontrada.' };
+    if (!practitionerId) {
+        return { error: 'No autorizado. Perfil de profesional no encontrado.' };
     }
 
     // 1. Verify patient ownership via practitioner_id
@@ -31,7 +32,7 @@ export async function createAllergy(formData: {
         .from('patients')
         .select('id')
         .eq('id', formData.patient_id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
         .single();
 
     if (patientError || !patient) {
