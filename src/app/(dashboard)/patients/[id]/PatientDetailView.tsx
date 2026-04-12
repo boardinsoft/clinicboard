@@ -214,8 +214,9 @@ export default function PatientDetailView({ patient, conditions: initialConditio
     const [showAddCondition, setShowAddCondition] = useState(false);
     const [showAddAllergy, setShowAddAllergy] = useState(false);
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+    const [archiving, setArchiving] = useState(false);
     const { setRightPanelOpen } = useLayoutStore();
-    const { patientViewState, setPatientTab } = useTabStore();
+    const { patientViewState, setPatientTab, removeTab, findTabByUrl } = useTabStore();
     const savedTab = TAB_VALUES[patientViewState[patient.id] ?? 0] ?? 'overview';
     const [activeTab, setActiveTab] = useState(savedTab);
 
@@ -499,20 +500,28 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogCancel disabled={archiving}>Cancelar</AlertDialogCancel>
                         <AlertDialogAction
                             className={buttonVariants({ variant: 'destructive' })}
-                            onClick={async () => {
+                            disabled={archiving}
+                            onClick={async (e) => {
+                                e.preventDefault();
+                                setArchiving(true);
                                 const result = await archivePatient(patient.id);
+                                setArchiving(false);
                                 if (result.error) {
                                     toast.error('Error al archivar', { description: result.error });
                                     return;
                                 }
-                                toast.success('Paciente archivado');
+                                const patientTab = findTabByUrl(`/patients/${patient.id}`);
+                                if (patientTab) removeTab(patientTab.id);
+                                toast.success('Paciente archivado', {
+                                    description: `${patient.name_given?.join(' ')} ${patient.name_family} ha sido marcado como inactivo.`,
+                                });
                                 router.push('/patients');
                             }}
                         >
-                            Archivar
+                            {archiving ? 'Archivando...' : 'Archivar'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

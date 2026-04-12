@@ -360,7 +360,7 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { setSecondaryPanel } = useLayoutStore();
-    const { patientViewState, setPatientTab } = useTabStore();
+    const { patientViewState, setPatientTab, addTab } = useTabStore();
 
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     const savedListTab = LIST_TAB_VALUES[patientViewState[LIST_VIEW_KEY] ?? 0] ?? 'resumen';
@@ -383,7 +383,11 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
                 selectedId={selectedPatient?.id || null}
                 onSelect={(id) => {
                     const p = patients.find(pat => pat.id === id);
-                    if (p) setSelectedPatient(p);
+                    if (p) {
+                        setSelectedPatient(p);
+                        const name = `${p.name_given?.join(' ')} ${p.name_family}`;
+                        addTab({ title: name, url: `/patients/${id}` });
+                    }
                     router.push(`/patients/${id}`);
                 }}
                 onNew={() => router.push('/patients/new')}
@@ -392,7 +396,7 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
             />,
             'Pacientes'
         );
-    }, [patients, selectedPatient, searchParams, router, setSecondaryPanel, updateParams]);
+    }, [patients, selectedPatient, searchParams, router, setSecondaryPanel, updateParams, addTab]);
 
     const handlePagination = (newPage: number) => {
         updateParams({ page: newPage });

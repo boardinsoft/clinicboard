@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
 import { useTabStore } from '@/store/useTabStore';
 
 interface TabContentManagerProps {
@@ -23,7 +22,6 @@ interface TabContentManagerProps {
  * 3. Se restaura el scrollTop al volver a la pestaña
  */
 export default function TabContentManager({ children }: TabContentManagerProps) {
-    const pathname = usePathname();
     const { tabs, activeTabId } = useTabStore();
 
     // Map para guardar las posiciones de scroll de cada pestaña
@@ -68,7 +66,6 @@ export default function TabContentManager({ children }: TabContentManagerProps) 
         <>
             {tabs.map((tab) => {
                 const isActiveTab = activeTabId === tab.id;
-                const isCurrentRoute = pathname === tab.url;
 
                 return (
                     <div
@@ -88,12 +85,7 @@ export default function TabContentManager({ children }: TabContentManagerProps) 
                         data-tab-id={tab.id}
                         data-tab-active={isActiveTab}
                     >
-                        {/*
-                            Solo renderizar el contenido si:
-                            1. Es la pestaña activa Y estamos en su ruta
-                            2. O si la pestaña ha sido renderizada antes (para mantener estado)
-                        */}
-                        {isCurrentRoute && children}
+                        {isActiveTab && children}
                     </div>
                 );
             })}
