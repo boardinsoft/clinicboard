@@ -404,29 +404,36 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
 
     return (
         <section className="flex flex-col h-full bg-background">
-            <header className="px-8 py-6 pb-0 flex-shrink-0">
-                <div className="flex items-start justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight mb-1">Pacientes</h1>
-                        <p className="text-muted-foreground">
-                            <strong>{totalItems}</strong> paciente{totalItems !== 1 ? 's' : ''} registrado{totalItems !== 1 ? 's' : ''}
-                        </p>
+            {/* ══ Tabs — contexto único que envuelve header + contenido ══ */}
+            <Tabs
+                value={activeListTab}
+                onValueChange={(val) => {
+                    setActiveListTab(val as typeof LIST_TAB_VALUES[number]);
+                    const idx = LIST_TAB_VALUES.indexOf(val as typeof LIST_TAB_VALUES[number]);
+                    if (idx !== -1) setPatientTab(LIST_VIEW_KEY, idx);
+                }}
+                className="flex flex-col flex-1 min-h-0"
+            >
+                {/* ── Bloque 1: Toolbar ── */}
+                <header className="flex items-center justify-between h-12 px-4 border-b border-border shrink-0 bg-background">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-sm font-semibold text-foreground">Pacientes</h1>
+                        <span className="text-[11px] font-mono text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded border border-border/60">
+                            {totalItems}
+                        </span>
                     </div>
-                    <Button onClick={() => router.push('/patients/new')} className="gap-2">
-                        <Plus className="w-4 h-4" /> Nuevo Paciente
+                    <Button
+                        onClick={() => router.push('/patients/new')}
+                        size="sm"
+                        className="h-7 px-3 text-xs gap-1.5"
+                    >
+                        <Plus className="w-3.5 h-3.5" /> Nuevo Paciente
                     </Button>
-                </div>
+                </header>
 
-                <Tabs
-                    value={activeListTab}
-                    onValueChange={(val) => {
-                        setActiveListTab(val as typeof LIST_TAB_VALUES[number]);
-                        const idx = LIST_TAB_VALUES.indexOf(val as typeof LIST_TAB_VALUES[number]);
-                        if (idx !== -1) setPatientTab(LIST_VIEW_KEY, idx);
-                    }}
-                    className="w-full flex-1 flex flex-col min-h-0"
-                >
-                    <TabsList className="mb-4">
+                {/* ── Bloque 2: Tab nav — línea inferior como indicador ── */}
+                <div className="px-4 border-b border-border shrink-0 bg-background">
+                    <TabsList className="h-auto bg-transparent p-0 gap-0 rounded-none">
                         {[
                             { value: 'resumen', label: 'Resumen', icon: User },
                             { value: 'condiciones', label: 'Condiciones', icon: Stethoscope },
@@ -436,14 +443,25 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
                             <TabsTrigger
                                 key={tab.value}
                                 value={tab.value}
-                                className="gap-2"
+                                className={cn(
+                                    'relative h-10 gap-1.5 rounded-none text-xs font-medium px-3',
+                                    'text-muted-foreground data-[state=active]:text-foreground',
+                                    'data-[state=active]:shadow-none data-[state=active]:bg-transparent',
+                                    'data-[state=active]:after:absolute data-[state=active]:after:bottom-0',
+                                    'data-[state=active]:after:left-0 data-[state=active]:after:right-0',
+                                    'data-[state=active]:after:h-px data-[state=active]:after:bg-primary',
+                                    'hover:text-foreground hover:bg-sidebar-accent/30 transition-colors'
+                                )}
                             >
                                 <tab.icon className="w-3.5 h-3.5" /> {tab.label}
                             </TabsTrigger>
                         ))}
                     </TabsList>
+                </div>
 
-                    <div className="flex-1 overflow-y-auto min-h-0 py-4 pb-20">
+                {/* ── Bloque 3: Contenido ── */}
+                <div className="flex-1 overflow-y-auto min-h-0">
+                    <div className="px-6 pb-20">
                         <TabsContent value="resumen" className="mt-0 outline-none">
                             <TabResumen patient={selectedPatient} />
                         </TabsContent>
@@ -457,16 +475,34 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
                             <TabEncuentros patientId={selectedPatient?.id ?? null} router={router} />
                         </TabsContent>
                     </div>
-                </Tabs>
-            </header>
+                </div>
+            </Tabs>
 
-            {/* Pagination */}
+            {/* ── Paginación — bloque fijo inferior ── */}
             {totalItems > pageSize && (
-                <div className="sticky bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border/10 flex items-center justify-between z-20">
-                    <p className="text-xs font-medium text-muted-foreground/80">Mostrando página {page}</p>
-                    <div className="flex gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handlePagination(page - 1)} disabled={page <= 1} className="h-8 text-xs disabled:opacity-40 disabled:cursor-not-allowed">Anterior</Button>
-                        <Button variant="ghost" size="sm" onClick={() => handlePagination(page + 1)} disabled={page * pageSize >= totalItems} className="h-8 text-xs disabled:opacity-40 disabled:cursor-not-allowed">Siguiente</Button>
+                <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-background shrink-0">
+                    <p className="text-[11px] text-muted-foreground/70 font-mono">
+                        Página {page} · {totalItems} registros
+                    </p>
+                    <div className="flex gap-1">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePagination(page - 1)}
+                            disabled={page <= 1}
+                            className="h-7 px-2 text-xs disabled:opacity-30"
+                        >
+                            Anterior
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePagination(page + 1)}
+                            disabled={page * pageSize >= totalItems}
+                            className="h-7 px-2 text-xs disabled:opacity-30"
+                        >
+                            Siguiente
+                        </Button>
                     </div>
                 </div>
             )}

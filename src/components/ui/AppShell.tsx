@@ -88,18 +88,18 @@ function IconRail({ user, practitioner }: { user?: User | null; practitioner?: P
 
   return (
     <aside
-      className="flex flex-col items-center w-14 h-full bg-sidebar shrink-0 py-2 gap-1 z-20"
+      className="flex flex-col items-center w-14 h-full bg-sidebar shrink-0 z-20 border-r border-border"
       aria-label="Navegación principal"
     >
-      {/* Logo */}
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground mb-1 shrink-0">
-        <Stethoscope className="w-5 h-5" />
+      {/* ── Logo mark ── */}
+      <div className="flex h-12 w-full items-center justify-center shrink-0 border-b border-border">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <Stethoscope className="w-4 h-4" />
+        </div>
       </div>
 
-      <div className="w-7 h-px bg-sidebar-border my-1 opacity-50" />
-
-      {/* Nav items */}
-      <nav className="flex flex-col gap-1 flex-1 w-full px-2">
+      {/* ── Nav items ── */}
+      <nav className="flex flex-col flex-1 w-full pt-1">
         {navMain.map((item) => {
           const isActive =
             item.href === '/'
@@ -109,29 +109,33 @@ function IconRail({ user, practitioner }: { user?: User | null; practitioner?: P
             <TooltipProvider key={item.href} delayDuration={200}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button
-                    onClick={() => {
-                      if (item.href === '/') {
-                        // Home: limpiar pestaña activa
-                        useTabStore.setState({ activeTabId: null });
-                        router.push(item.href);
-                      } else {
-                        // Otras rutas: crear/activar pestaña y navegar
-                        const title = getTabTitle(item.href);
-                        addTab({ title, url: item.href });
-                        router.push(item.href);
-                      }
-                    }}
-                    aria-label={item.label}
-                    className={cn(
-                      'flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-150 mx-auto',
-                      isActive
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
-                        : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
+                  {/* Contenedor relativo para la barra indicadora izquierda */}
+                  <div className="relative w-full flex items-center justify-center py-0.5">
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 bg-primary rounded-r-full" />
                     )}
-                  >
-                    <item.icon className="w-[18px] h-[18px]" />
-                  </button>
+                    <button
+                      onClick={() => {
+                        if (item.href === '/') {
+                          useTabStore.setState({ activeTabId: null });
+                          router.push(item.href);
+                        } else {
+                          const title = getTabTitle(item.href);
+                          addTab({ title, url: item.href });
+                          router.push(item.href);
+                        }
+                      }}
+                      aria-label={item.label}
+                      className={cn(
+                        'flex h-9 w-9 items-center justify-center rounded-md transition-all duration-150',
+                        isActive
+                          ? 'bg-sidebar-accent text-primary'
+                          : 'text-sidebar-foreground/50 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                      )}
+                    >
+                      <item.icon className="w-[17px] h-[17px]" />
+                    </button>
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="text-xs">
                   {item.label}
@@ -142,17 +146,17 @@ function IconRail({ user, practitioner }: { user?: User | null; practitioner?: P
         })}
       </nav>
 
-      {/* Footer: settings + user */}
-      <div className="flex flex-col gap-1 w-full px-2 pb-1">
+      {/* ── Footer: settings + user ── */}
+      <div className="flex flex-col w-full border-t border-border">
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={() => router.push('/settings')}
-                className="flex h-10 w-10 items-center justify-center rounded-lg mx-auto text-sidebar-foreground/50 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground transition-all"
+                className="flex h-10 w-full items-center justify-center text-sidebar-foreground/50 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all"
                 aria-label="Configuración"
               >
-                <Settings className="w-[18px] h-[18px]" />
+                <Settings className="w-[17px] h-[17px]" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" className="text-xs">Configuración</TooltipContent>
@@ -162,11 +166,11 @@ function IconRail({ user, practitioner }: { user?: User | null; practitioner?: P
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="flex h-10 w-10 items-center justify-center rounded-full mx-auto border border-sidebar-border hover:border-sidebar-accent-foreground/30 transition-all bg-sidebar-accent/30 hover:bg-sidebar-accent/60"
+              className="flex h-10 w-full items-center justify-center hover:bg-sidebar-accent/50 transition-all"
               aria-label={`Usuario: ${displayName}`}
             >
               <Avatar className="h-7 w-7">
-                <AvatarFallback className="bg-primary/15 text-primary text-[10px] font-semibold">
+                <AvatarFallback className="bg-primary/15 text-primary text-[10px] font-semibold rounded-md">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -215,7 +219,7 @@ function SecondarySidebar() {
 
   return (
     <aside
-      className="flex flex-col h-full w-64 bg-sidebar shrink-0 overflow-hidden"
+      className="flex flex-col h-full w-64 bg-sidebar shrink-0 overflow-hidden border-r border-border"
       data-secondary-sidebar
     >
       {secondaryPanelContent}
@@ -306,7 +310,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
       {/* ── Main content area ── */}
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
         {/* ── Top Header ── */}
-        <header className="flex items-center h-14 border-b border-border/40 px-3 shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 gap-2">
+        <header className="flex items-center h-12 border-b border-border px-3 shrink-0 bg-background gap-2">
           {/* Sidebar Toggle */}
           <TooltipProvider delayDuration={200}>
             <Tooltip>
@@ -436,14 +440,12 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
           <ResizablePanelGroup orientation="horizontal">
             <ResizablePanel defaultSize={rightPanelOpen ? "75%" : "100%"} minSize="50%">
               <main className="flex-1 overflow-y-auto bg-background relative h-full">
-                <div className="h-full p-4 md:p-6 bg-background">
-                  {!activeTabId ? children : <TabContentManager>{children}</TabContentManager>}
-                </div>
+                {!activeTabId ? children : <TabContentManager>{children}</TabContentManager>}
               </main>
             </ResizablePanel>
             {rightPanelOpen && (
               <>
-                <ResizableHandle withHandle className="w-1 bg-border/40 hover:bg-border/80 transition-colors" />
+                <ResizableHandle withHandle className="w-px bg-border hover:bg-primary/40 transition-colors" />
                 <ResizablePanel defaultSize="25%" minSize="20%" maxSize="50%">
                   <RightPanel />
                 </ResizablePanel>

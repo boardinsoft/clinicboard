@@ -2,179 +2,244 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   CLINICBOARD — DESIGN SYSTEM TOKENS
+   Paleta de marca: #3981f6 (blue) · #4045ba (indigo) · #90e2bc (mint) · #e64343 (red)
+   Fuente: coolors.co/3981f6-4045ba-90e2bc-e64343
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 @layer base {
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     MODO CLARO — Base limpia con profundidad índigo sutil
+     Filosofía: quirófano blanco + acento azul vibrante = confianza médica
+     ───────────────────────────────────────────────────────────────────────── */
   :root {
-    --background: oklch(1.00 0 0);
-    --foreground: oklch(0.32 0 0);
-    --card: oklch(1.00 0 0);
-    --card-foreground: oklch(0.32 0 0);
-    --popover: oklch(1.00 0 0);
-    --popover-foreground: oklch(0.32 0 0);
-    --primary: oklch(0.62 0.19 259.76);
-    --primary-foreground: oklch(1.00 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.45 0.03 257.68);
-    --muted: oklch(0.98 0 0);
-    --muted-foreground: oklch(0.55 0.02 264.41);
-    --accent: oklch(0.95 0.03 233.56);
-    --accent-foreground: oklch(0.38 0.14 265.59);
-    --destructive: oklch(0.64 0.21 25.39);
-    --destructive-foreground: oklch(1.0000 0 0);
-    --border: oklch(0.93 0.01 261.82);
-    --input: oklch(0.93 0.01 261.82);
-    --ring: oklch(0.62 0.19 259.76);
-    --chart-1: oklch(0.62 0.19 259.76);
-    --chart-2: oklch(0.55 0.22 262.96);
-    --chart-3: oklch(0.49 0.22 264.43);
-    --chart-4: oklch(0.42 0.18 265.55);
-    --chart-5: oklch(0.38 0.14 265.59);
-    --radius: 0.375rem;
-    --sidebar-background: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.35 0.02 255);
-    --sidebar-primary: oklch(0.62 0.19 259.76);
+    /* ── Superficies ── */
+    --background:              oklch(1.00 0 0);               /* Blanco puro */
+    --foreground:              oklch(0.17 0.018 271);         /* Texto: negro con tinte índigo */
+    --card:                    oklch(1.00 0 0);
+    --card-foreground:         oklch(0.17 0.018 271);
+    --popover:                 oklch(1.00 0 0);
+    --popover-foreground:      oklch(0.17 0.018 271);
+
+    /* ── Primary — #3981f6 Brand Blue ── */
+    --primary:                 oklch(0.597 0.197 262);
+    --primary-foreground:      oklch(1.00 0 0);
+
+    /* ── Secondary — índigo muy suave ── */
+    --secondary:               oklch(0.965 0.010 271);
+    --secondary-foreground:    oklch(0.432 0.215 271);        /* #4045ba */
+
+    /* ── Muted — gris-azul neutro ── */
+    --muted:                   oklch(0.960 0.006 265);
+    --muted-foreground:        oklch(0.52 0.018 265);
+
+    /* ── Accent — menta salud (#90e2bc family) ── */
+    --accent:                  oklch(0.945 0.040 155);
+    --accent-foreground:       oklch(0.30 0.090 155);
+
+    /* ── Destructive — #e64343 Rojo clínico ── */
+    --destructive:             oklch(0.561 0.215 25);
+    --destructive-foreground:  oklch(1.00 0 0);
+
+    /* ── Bordes e inputs ── */
+    --border:                  oklch(0.905 0.009 265);
+    --input:                   oklch(0.905 0.009 265);
+    --ring:                    oklch(0.597 0.197 262);
+
+    /* ── Charts (gradiente azul → menta) ── */
+    --chart-1:                 oklch(0.597 0.197 262);        /* blue */
+    --chart-2:                 oklch(0.843 0.097 155);        /* mint */
+    --chart-3:                 oklch(0.432 0.215 271);        /* indigo */
+    --chart-4:                 oklch(0.65  0.140 75);         /* amber */
+    --chart-5:                 oklch(0.561 0.215 25);         /* red */
+
+    /* ── Sidebar — tinte índigo muy suave ── */
+    --sidebar-background:      oklch(0.975 0.010 271);
+    --sidebar-foreground:      oklch(0.30  0.030 271);
+    --sidebar-primary:         oklch(0.597 0.197 262);
     --sidebar-primary-foreground: oklch(1.00 0 0);
-    --sidebar-accent: oklch(0.94 0.02 240);
-    --sidebar-accent-foreground: oklch(0.32 0.02 255);
-    --sidebar-border: oklch(0.91 0.01 255);
-    --sidebar-ring: oklch(0.62 0.19 259.76);
+    --sidebar-accent:          oklch(0.935 0.018 271);
+    --sidebar-accent-foreground: oklch(0.20 0.040 271);
+    --sidebar-border:          oklch(0.888 0.012 271);
+    --sidebar-ring:            oklch(0.597 0.197 262);
+
+    /* ── Tipografía ── */
     --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-    --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
-    --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
-    --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
-    --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 2px 4px -2px hsl(0 0% 0% / 0.10);
-    --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 4px 6px -2px hsl(0 0% 0% / 0.10);
-    --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 8px 10px -2px hsl(0 0% 0% / 0.10);
-    --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
-    --tracking-normal: 0em;
-    --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
-    --tracking-tight: calc(var(--tracking-normal) - 0.025em);
-    --tracking-wide: calc(var(--tracking-normal) + 0.025em);
-    --tracking-wider: calc(var(--tracking-normal) + 0.05em);
-    --tracking-widest: calc(var(--tracking-normal) + 0.1em);
 
-    /* ── Brand Secondary Tokens ──────────────────────────────────────
-       Paleta de marca de ClinicBoard. Usar var(--brand-*) para
-       elementos de identidad visual fuera del sistema shadcn/ui.
-    ────────────────────────────────────────────────────────────────── */
-    --brand-primary:  oklch(0.62 0.19 259.76);   /* Azul marca — acción, CTA, UI */
-    --brand-rose:     oklch(0.8544 0.1338 328.38); /* Rosa suave — highlights, tags especiales */
-    --brand-indigo:   oklch(0.4606 0.1805 274.88); /* Índigo profundo — wordmark, dark surfaces */
-    --brand-danger:   oklch(0.62 0.20 25);          /* Rojo clínico — errores, cancelaciones */
-  }
-
-  .dark {
-    /* ── Backgrounds & Surfaces — Modern Minimal ── */
-    --background: oklch(0.20 0 0);
-    --foreground: oklch(0.92 0 0);
-    --card: oklch(0.24 0 0);
-    --card-foreground: oklch(0.92 0 0);
-    --popover: oklch(0.24 0 0);
-    --popover-foreground: oklch(0.92 0 0);
-
-    /* ── Brand / Primary ── */
-    --primary: oklch(0.62 0.19 259.76);
-    --primary-foreground: oklch(1.00 0 0);
-
-    /* ── Secondary & Muted ── */
-    --secondary: oklch(0.28 0 0);
-    --secondary-foreground: oklch(0.92 0 0);
-    --muted: oklch(0.28 0 0);
-    --muted-foreground: oklch(0.65 0 0);
-
-    /* ── Accent — Deep blue tint ── */
-    --accent: oklch(0.32 0.05 265.59);
-    --accent-foreground: oklch(0.90 0.02 254.63);
-
-    /* ── Destructive ── */
-    --destructive: oklch(0.55 0.18 25);
-    --destructive-foreground: oklch(1.00 0 0);
-
-    /* ── Borders & Inputs ── */
-    --border: oklch(0.30 0 0);
-    --input: oklch(0.30 0 0);
-    --ring: oklch(0.62 0.19 259.76);
-
-    /* ── Chart Colors ── */
-    --chart-1: oklch(0.71 0.14 254.69);
-    --chart-2: oklch(0.62 0.19 259.76);
-    --chart-3: oklch(0.55 0.22 262.96);
-    --chart-4: oklch(0.49 0.22 264.43);
-    --chart-5: oklch(0.42 0.18 265.55);
-
-    /* ── Sidebar ── */
-    --sidebar-background: oklch(0.18 0 0);
-    --sidebar-foreground: oklch(0.92 0 0);
-    --sidebar-primary: oklch(0.62 0.19 259.76);
-    --sidebar-primary-foreground: oklch(1.00 0 0);
-    --sidebar-accent: oklch(0.24 0 0);
-    --sidebar-accent-foreground: oklch(0.92 0 0);
-    --sidebar-border: oklch(0.25 0 0);
-    --sidebar-ring: oklch(0.62 0.19 259.76);
-
-    /* ── Radius ── */
-    --radius: 0.375rem;
+    /* ── Radio — ligeramente más arquitectónico que el default ── */
+    --radius: 0.3rem;
 
     /* ── Tracking ── */
-    --tracking-normal: 0em;
-    --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
-    --tracking-tight: calc(var(--tracking-normal) - 0.025em);
-    --tracking-wide: calc(var(--tracking-normal) + 0.025em);
-    --tracking-wider: calc(var(--tracking-normal) + 0.05em);
-    --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+    --tracking-normal:   0em;
+    --tracking-tighter:  calc(var(--tracking-normal) - 0.05em);
+    --tracking-tight:    calc(var(--tracking-normal) - 0.025em);
+    --tracking-wide:     calc(var(--tracking-normal) + 0.025em);
+    --tracking-wider:    calc(var(--tracking-normal) + 0.05em);
+    --tracking-widest:   calc(var(--tracking-normal) + 0.1em);
 
-    /* ── Shadow Scale ── */
-    --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.20);
-    --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
-    --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.30), 0px 1px 2px -2px hsl(0 0% 0% / 0.30);
-    --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.35), 0px 1px 2px -2px hsl(0 0% 0% / 0.35);
-    --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.40), 0px 2px 4px -2px hsl(0 0% 0% / 0.40);
-    --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.45), 0px 4px 6px -2px hsl(0 0% 0% / 0.40);
-    --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.50), 0px 8px 10px -2px hsl(0 0% 0% / 0.45);
-    --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.60);
+    /* ── Sombras — sutiles, casi planas ── */
+    --shadow-2xs: 0px 1px 2px hsl(230 40% 20% / 0.04);
+    --shadow-xs:  0px 2px 4px hsl(230 40% 20% / 0.05);
+    --shadow-sm:  0px 2px 6px hsl(230 40% 20% / 0.07), 0px 1px 2px hsl(230 40% 20% / 0.05);
+    --shadow:     0px 4px 8px hsl(230 40% 20% / 0.08), 0px 2px 4px hsl(230 40% 20% / 0.05);
+    --shadow-md:  0px 6px 12px hsl(230 40% 20% / 0.10), 0px 3px 6px hsl(230 40% 20% / 0.06);
+    --shadow-lg:  0px 8px 20px hsl(230 40% 20% / 0.12), 0px 4px 8px hsl(230 40% 20% / 0.07);
+    --shadow-xl:  0px 12px 28px hsl(230 40% 20% / 0.15), 0px 6px 12px hsl(230 40% 20% / 0.08);
+    --shadow-2xl: 0px 20px 40px hsl(230 40% 20% / 0.20);
+
+    /* ══════════════════════════════════════════════════════════════════
+       TOKENS DE MARCA — Clinicboard Brand Palette
+       Referenciar con var(--brand-*) para identidad visual
+       ══════════════════════════════════════════════════════════════════ */
+    --brand-blue:           #3981f6;   /* Azul primario — CTA, acciones, UI interactiva */
+    --brand-indigo:         #4045ba;   /* Índigo profundo — wordmark, superficies dark */
+    --brand-mint:           #90e2bc;   /* Menta salud — éxito, estabilidad clínica */
+    --brand-danger:         #e64343;   /* Rojo clínico — alertas críticas, destructivo */
+
+    /* ══════════════════════════════════════════════════════════════════
+       TOKENS CLÍNICOS — Estados de pacientes
+       ══════════════════════════════════════════════════════════════════ */
+    --clinical-stable:        oklch(0.843 0.097 155);    /* menta — paciente estable */
+    --clinical-stable-fg:     oklch(0.25 0.090 155);
+    --clinical-stable-bg:     oklch(0.955 0.035 155);
+    --clinical-critical:      oklch(0.561 0.215 25);     /* rojo — crítico */
+    --clinical-critical-fg:   oklch(1.00 0 0);
+    --clinical-critical-bg:   oklch(0.960 0.040 25);
+    --clinical-inactive:      oklch(0.560 0.008 265);    /* gris neutro */
+    --clinical-inactive-fg:   oklch(1.00 0 0);
+    --clinical-inactive-bg:   oklch(0.940 0.005 265);
+    --clinical-pending:       oklch(0.650 0.140 75);     /* ámbar — pendiente */
+    --clinical-pending-fg:    oklch(0.25 0.080 75);
+    --clinical-pending-bg:    oklch(0.970 0.040 80);
+
+    /* ══════════════════════════════════════════════════════════════════
+       TOKENS DE CITAS — Máquina de estados FHIR
+       ══════════════════════════════════════════════════════════════════ */
+    --apt-card-padding:     0.75rem;
+    --apt-card-time-size:   0.75rem;
+    --apt-card-title-size:  0.875rem;
+    --apt-card-badge-size:  0.6875rem;
+    --apt-card-radius:      calc(var(--radius) * 1.5);
+
+    /* Estados FHIR — modo claro */
+    --apt-status-proposed:  oklch(0.55 0.010 265);   /* slate neutro */
+    --apt-status-pending:   oklch(0.650 0.140 75);   /* ámbar */
+    --apt-status-booked:    oklch(0.597 0.197 262);  /* brand blue */
+    --apt-status-arrived:   oklch(0.620 0.160 38);   /* naranja */
+    --apt-status-fulfilled: oklch(0.500 0.097 155);  /* mint oscuro */
+    --apt-status-cancelled: oklch(0.561 0.215 25);   /* brand red */
+    --apt-status-noshow:    oklch(0.500 0.100 25);   /* rojo apagado */
+
+    /* Kanban */
+    --kanban-col-bg:     oklch(0.97 0.004 265 / 0.6);
+    --kanban-col-radius: 0.5rem;
+    --kanban-col-gap:    0.5rem;
+    --kanban-fade-size:  2.5rem;
   }
 
-  /* ── Appointment Card Tokens ──────────────────────────────────────
-     Typography scale para cards de citas. Referencia para futuros
-     diseños: usar var(--apt-card-*) en lugar de valores arbitrarios.
-  ────────────────────────────────────────────────────────────────── */
-  :root {
-    --apt-card-padding:      0.75rem;    /* p-3  */
-    --apt-card-time-size:    0.75rem;    /* text-xs — hora de la cita */
-    --apt-card-title-size:   0.875rem;   /* text-sm — nombre del paciente */
-    --apt-card-badge-size:   0.6875rem;  /* 11px   — badges de estado/tipo */
-    --apt-card-radius:       calc(var(--radius) * 1.5);
 
-    /* Colores semánticos de estado — light */
-    --apt-status-proposed:   oklch(0.55 0.01 264);   /* slate neutro */
-    --apt-status-pending:    oklch(0.65 0.14 75);    /* amber */
-    --apt-status-booked:     oklch(0.55 0.18 260);   /* primary blue */
-    --apt-status-arrived:    oklch(0.60 0.17 38);    /* orange */
-    --apt-status-fulfilled:  oklch(0.50 0.14 145);   /* emerald */
-    --apt-status-cancelled:  oklch(0.55 0.18 25);    /* red */
-    --apt-status-noshow:     oklch(0.50 0.10 25);    /* muted red */
-
-    /* Kanban estructural */
-    --kanban-col-bg:         oklch(0.97 0 0 / 0.5);
-    --kanban-col-radius:     0.75rem;
-    --kanban-col-gap:        0.5rem;
-    --kanban-fade-size:      2.5rem;
-  }
-
+  /* ─────────────────────────────────────────────────────────────────────────
+     MODO OSCURO — Profundidad índigo corporativa al estilo Supabase
+     Filosofía: charcoal índigo + azul vibrante + menta clínica = tech médico
+     ───────────────────────────────────────────────────────────────────────── */
   .dark {
-    /* Colores semánticos de estado — dark */
-    --apt-status-proposed:   oklch(0.65 0.01 264);
-    --apt-status-pending:    oklch(0.78 0.14 75);
-    --apt-status-booked:     oklch(0.70 0.18 260);
-    --apt-status-arrived:    oklch(0.73 0.17 38);
-    --apt-status-fulfilled:  oklch(0.65 0.14 145);
-    --apt-status-cancelled:  oklch(0.65 0.18 25);
-    --apt-status-noshow:     oklch(0.60 0.10 25);
+    /* ── Superficies — capas tonales, sin bordes duros ── */
+    /* Level 0 (base canvas):   #0d0f19 — charcoal índigo casi negro */
+    /* Level 1 (sidebar/nav):   #111320 — superficie índigo */
+    /* Level 2 (cards):         #171a28 — tarjetas y paneles */
+    /* Level 3 (popovers):      #1e2133 — elementos flotantes */
+    --background:              oklch(0.132 0.022 271);
+    --foreground:              oklch(0.930 0.006 265);
+    --card:                    oklch(0.168 0.024 271);
+    --card-foreground:         oklch(0.930 0.006 265);
+    --popover:                 oklch(0.195 0.026 271);
+    --popover-foreground:      oklch(0.930 0.006 265);
 
-    --kanban-col-bg:         oklch(0.26 0 0 / 0.6);
+    /* ── Primary — #3981f6 levemente más brillante en dark ── */
+    --primary:                 oklch(0.640 0.190 262);
+    --primary-foreground:      oklch(0.08 0.018 271);
+
+    /* ── Secondary — superficie índigo sutil ── */
+    --secondary:               oklch(0.220 0.022 271);
+    --secondary-foreground:    oklch(0.850 0.010 265);
+
+    /* ── Muted ── */
+    --muted:                   oklch(0.215 0.020 271);
+    --muted-foreground:        oklch(0.600 0.010 265);
+
+    /* ── Accent — tinte índigo ── */
+    --accent:                  oklch(0.270 0.032 271);
+    --accent-foreground:       oklch(0.880 0.008 265);
+
+    /* ── Destructive — rojo clínico en dark ── */
+    --destructive:             oklch(0.590 0.210 25);
+    --destructive-foreground:  oklch(1.00 0 0);
+
+    /* ── Bordes — "barely-there", sutil tinte índigo ── */
+    --border:                  oklch(0.245 0.022 271);
+    --input:                   oklch(0.245 0.022 271);
+    --ring:                    oklch(0.640 0.190 262);
+
+    /* ── Charts ── */
+    --chart-1:                 oklch(0.640 0.190 262);        /* blue */
+    --chart-2:                 oklch(0.843 0.097 155);        /* mint */
+    --chart-3:                 oklch(0.560 0.185 271);        /* indigo medio */
+    --chart-4:                 oklch(0.730 0.140 75);         /* amber */
+    --chart-5:                 oklch(0.590 0.210 25);         /* red */
+
+    /* ── Sidebar — índigo más profundo que el background ── */
+    --sidebar-background:      oklch(0.105 0.025 271);
+    --sidebar-foreground:      oklch(0.860 0.008 265);
+    --sidebar-primary:         oklch(0.640 0.190 262);
+    --sidebar-primary-foreground: oklch(0.08 0.018 271);
+    --sidebar-accent:          oklch(0.195 0.028 271);
+    --sidebar-accent-foreground: oklch(0.920 0.006 265);
+    --sidebar-border:          oklch(0.200 0.020 271);
+    --sidebar-ring:            oklch(0.640 0.190 262);
+
+    /* ── Sombras dark — más profundas ── */
+    --shadow-2xs: 0px 2px 4px  hsl(230 50% 5% / 0.30);
+    --shadow-xs:  0px 2px 6px  hsl(230 50% 5% / 0.35);
+    --shadow-sm:  0px 4px 8px  hsl(230 50% 5% / 0.40), 0px 1px 3px hsl(230 50% 5% / 0.30);
+    --shadow:     0px 6px 12px hsl(230 50% 5% / 0.45), 0px 2px 4px hsl(230 50% 5% / 0.35);
+    --shadow-md:  0px 8px 16px hsl(230 50% 5% / 0.50), 0px 4px 8px hsl(230 50% 5% / 0.40);
+    --shadow-lg:  0px 12px 24px hsl(230 50% 5% / 0.55), 0px 6px 12px hsl(230 50% 5% / 0.45);
+    --shadow-xl:  0px 16px 32px hsl(230 50% 5% / 0.60), 0px 8px 16px hsl(230 50% 5% / 0.50);
+    --shadow-2xl: 0px 24px 48px hsl(230 50% 5% / 0.70),
+                  0 0 0 1px oklch(0.930 0.006 265 / 0.04); /* inner glow sutil */
+
+    /* ── Tokens clínicos dark ── */
+    --clinical-stable-bg:     oklch(0.843 0.097 155 / 0.12);
+    --clinical-stable-fg:     oklch(0.843 0.097 155);
+    --clinical-critical-bg:   oklch(0.590 0.210 25 / 0.15);
+    --clinical-critical-fg:   oklch(0.780 0.150 25);
+    --clinical-inactive-bg:   oklch(0.600 0.008 265 / 0.12);
+    --clinical-inactive-fg:   oklch(0.600 0.008 265);
+    --clinical-pending-bg:    oklch(0.730 0.140 75 / 0.12);
+    --clinical-pending-fg:    oklch(0.730 0.140 75);
+
+    /* ── Estados FHIR dark ── */
+    --apt-status-proposed:    oklch(0.650 0.010 265);
+    --apt-status-pending:     oklch(0.730 0.140 75);
+    --apt-status-booked:      oklch(0.640 0.190 262);
+    --apt-status-arrived:     oklch(0.720 0.160 38);
+    --apt-status-fulfilled:   oklch(0.760 0.097 155);
+    --apt-status-cancelled:   oklch(0.650 0.215 25);
+    --apt-status-noshow:      oklch(0.600 0.100 25);
+
+    --kanban-col-bg:          oklch(0.195 0.026 271 / 0.70);
+
+    /* ── Radius (consistente entre modos) ── */
+    --radius: 0.3rem;
   }
 
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     BASE STYLES
+     ───────────────────────────────────────────────────────────────────────── */
   * {
     @apply border-border;
     box-sizing: border-box;
@@ -194,8 +259,9 @@
   }
 }
 
+
 @layer components {
-  /* Fade inferior para columnas scrollables — indica contenido adicional */
+  /* ── Fade inferior para columnas Kanban scrollables ── */
   .kanban-col-fade {
     mask-image: linear-gradient(
       to bottom,
@@ -207,5 +273,79 @@
       black calc(100% - var(--kanban-fade-size, 2.5rem)),
       transparent 100%
     );
+  }
+
+  /* ── Badge clínico: Estable ── */
+  .badge-stable {
+    background-color: var(--clinical-stable-bg);
+    color: var(--clinical-stable-fg);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: calc(var(--radius) * 0.75);
+    padding: 0.125rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  /* ── Badge clínico: Crítico ── */
+  .badge-critical {
+    background-color: var(--clinical-critical-bg);
+    color: var(--clinical-critical-fg);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: calc(var(--radius) * 0.75);
+    padding: 0.125rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  /* ── Badge clínico: Inactivo ── */
+  .badge-inactive {
+    background-color: var(--clinical-inactive-bg);
+    color: var(--clinical-inactive-fg);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: calc(var(--radius) * 0.75);
+    padding: 0.125rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  /* ── Tabla densa al estilo Supabase ── */
+  .table-dense th {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    height: 2.25rem;
+    padding: 0 0.75rem;
+    position: sticky;
+    top: 0;
+    background-color: var(--background);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .table-dense td {
+    font-size: 0.8125rem;
+    height: 2.5rem;
+    padding: 0 0.75rem;
+    vertical-align: middle;
+    white-space: nowrap;
+    border-bottom: 1px solid oklch(from var(--border) l c h / 0.5);
+  }
+
+  .table-dense tr:hover td {
+    background-color: var(--muted);
   }
 }
