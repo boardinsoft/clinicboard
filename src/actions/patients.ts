@@ -6,6 +6,28 @@ import { z } from 'zod';
 import { patientSchema } from '@/lib/schemas/patient.schema';
 import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
 
+// ─── Internal helpers ─────────────────────────────────────────────────────────
+
+function validateAndParsePatient(formData: Parameters<typeof createPatient>[0]) {
+    return patientSchema.safeParse({
+        name_given: formData.givenNames,
+        name_family: formData.familyName,
+        gender: formData.gender,
+        birth_date: formData.birthDate || '',
+        documentId: formData.documentId,
+        phone: formData.phone,
+        email: formData.email,
+        address: formData.address,
+    });
+}
+
+function buildTelecomArray(phone: string | undefined, email: string) {
+    return [
+        { system: 'phone', value: phone, use: 'mobile' },
+        { system: 'email', value: email, use: 'home' },
+    ];
+}
+
 export async function createPatient(formData: {
     givenNames: string[];
     familyName: string;
@@ -17,16 +39,7 @@ export async function createPatient(formData: {
     address: string;
 }) {
     // 1. Validate data using the schema
-    const validation = patientSchema.safeParse({
-        name_given: formData.givenNames,
-        name_family: formData.familyName,
-        gender: formData.gender,
-        birth_date: formData.birthDate || '',
-        documentId: formData.documentId,
-        phone: formData.phone,
-        email: formData.email,
-        address: formData.address,
-    });
+    const validation = validateAndParsePatient(formData);
 
     if (!validation.success) {
         return { error: z.flattenError(validation.error).fieldErrors };
@@ -47,10 +60,7 @@ export async function createPatient(formData: {
             gender: validation.data.gender,
             birth_date: validation.data.birth_date || null,
             identifiers: validation.data.documentId ? [{ system: 'venezuela-ci', value: validation.data.documentId }] : [],
-            telecom: [
-                { system: 'phone', value: validation.data.phone, use: 'mobile' },
-                { system: 'email', value: validation.data.email, use: 'home' }
-            ],
+            telecom: buildTelecomArray(validation.data.phone, validation.data.email),
             address: validation.data.address ? [{ text: validation.data.address }] : [],
             active: true,
             practitioner_id: practitionerId
@@ -78,16 +88,7 @@ export async function updatePatient(id: string, formData: {
     address: string;
 }) {
     // 1. Validate data using the schema
-    const validation = patientSchema.safeParse({
-        name_given: formData.givenNames,
-        name_family: formData.familyName,
-        gender: formData.gender,
-        birth_date: formData.birthDate || '',
-        documentId: formData.documentId,
-        phone: formData.phone,
-        email: formData.email,
-        address: formData.address,
-    });
+    const validation = validateAndParsePatient(formData);
 
     if (!validation.success) {
         return { error: z.flattenError(validation.error).fieldErrors };
@@ -108,10 +109,7 @@ export async function updatePatient(id: string, formData: {
             gender: validation.data.gender,
             birth_date: validation.data.birth_date || null,
             identifiers: validation.data.documentId ? [{ system: 'venezuela-ci', value: validation.data.documentId }] : [],
-            telecom: [
-                { system: 'phone', value: validation.data.phone, use: 'mobile' },
-                { system: 'email', value: validation.data.email, use: 'home' }
-            ],
+            telecom: buildTelecomArray(validation.data.phone, validation.data.email),
             address: validation.data.address ? [{ text: validation.data.address }] : []
         })
         .eq('id', id)
@@ -284,4 +282,87 @@ export async function archivePatient(id: string) {
     revalidatePath('/patients');
     revalidatePath(`/patients/${id}`);
     return { data };
+}
+
+/**
+ * getPatientFullHistory(patientId)
+ * Aggregates all clinical data for a patient into a single object.
+ * Used by the FHIR export feature.
+ */
+export async function getPatientFullHistory(patientId: string) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) return { error: 'No autorizado' };
+
+    // Verify ownership
+    const { data: patient } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('id', patientId)
+        .eq('practitioner_id', practitionerId)
+        .single();
+
+    if (!patient) return { error: 'Paciente no encontrado o sin permisos' };
+
+    // Fetch all related clinical data in parallel
+    const [encountersResult, conditionsResult, allergiesResult, prescriptionsResult, appointmentsResult, practitionerResult] = await Promise.all([
+        supabase
+            .from('encounters')
+            .select(`
+                *,
+                practitioner:practitioners(name_given, name_family, specialty)
+            `)
+            .eq('patient_id', patientId)
+            .order('start_time', { ascending: false }),
+
+        supabase
+            .from('conditions')
+            .select('*')
+            .eq('patient_id', patientId)
+            .order('onset_date', { ascending: false }),
+
+        supabase
+            .from('allergy_intolerances')
+            .select('*')
+            .eq('patient_id', patientId),
+
+        supabase
+            .from('medication_requests')
+            .select('*')
+            .eq('patient_id', patientId)
+            .eq('prescriber_id', practitionerId)
+            .order('authored_on', { ascending: false }),
+
+        supabase
+            .from('appointments')
+            .select('*')
+            .eq('patient_id', patientId)
+            .eq('practitioner_id', practitionerId)
+            .order('start_time', { ascending: false }),
+
+        supabase
+            .from('practitioners')
+            .select('*')
+            .eq('id', practitionerId)
+            .single(),
+    ]);
+
+    if (encountersResult.error) console.error('Error fetching encounters:', encountersResult.error);
+    if (conditionsResult.error) console.error('Error fetching conditions:', conditionsResult.error);
+    if (allergiesResult.error) console.error('Error fetching allergies:', allergiesResult.error);
+    if (prescriptionsResult.error) console.error('Error fetching prescriptions:', prescriptionsResult.error);
+    if (appointmentsResult.error) console.error('Error fetching appointments:', appointmentsResult.error);
+
+    return {
+        data: {
+            patient,
+            practitioner: practitionerResult.data,
+            encounters: encountersResult.data || [],
+            conditions: conditionsResult.data || [],
+            allergies: allergiesResult.data || [],
+            prescriptions: prescriptionsResult.data || [],
+            appointments: appointmentsResult.data || [],
+        }
+    };
 }

@@ -90,13 +90,13 @@ function SpecialtyGroup({
     defaultOpen?: boolean;
 }) {
     return (
-        <SidebarGroup className="py-3">
-            <SidebarGroupLabel className="justify-between px-4 text-foreground font-semibold h-8">
+        <SidebarGroup className="py-2">
+            <SidebarGroupLabel className="justify-between px-4 py-2 text-foreground font-semibold h-9 text-sm">
                 <div className="flex items-center gap-2">
                     <SpecialtyIcon specialty={specialty} />
                     <span>{specialty}</span>
                 </div>
-                <Badge variant="secondary" className="h-5 px-2 min-w-5 justify-center rounded-full text-[10px] font-bold">
+                <Badge variant="secondary" className="h-5 px-2 min-w-5 justify-center rounded-full text-[11px] font-bold">
                     {encounters.length}
                 </Badge>
             </SidebarGroupLabel>
@@ -105,32 +105,32 @@ function SpecialtyGroup({
                     <Collapsible defaultOpen={defaultOpen} className="group/collapsible">
                         <SidebarMenuItem>
                             <CollapsibleTrigger asChild>
-                                <SidebarMenuButton className="px-4 text-muted-foreground hover:text-foreground">
+                                <SidebarMenuButton className="px-4 text-muted-foreground hover:text-foreground h-9">
                                     <FileText className="w-4 h-4" />
-                                    <span>Historial</span>
+                                    <span className="text-sm">Consultas</span>
                                     <ChevronRight className="ml-auto w-4 h-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
                                 </SidebarMenuButton>
                             </CollapsibleTrigger>
                             <CollapsibleContent>
-                                <div className="pl-6 pr-4 space-y-1 mt-1 border-l ml-6">
+                                <div className="pl-4 pr-3 space-y-1 mt-1 ml-4 border-l border-border/60">
                                     {encounters.map(enc => (
                                         <button
                                             key={enc.id}
                                             onClick={() => onSelectEncounter(enc.id, enc)}
-                                            className={`w-full text-left p-2 rounded-md transition-colors text-xs flex flex-col gap-1 ${activeEncounterId === enc.id
-                                                ? 'bg-accent font-medium text-accent-foreground shadow-sm'
-                                                : 'hover:bg-muted text-muted-foreground'
+                                            className={`w-full text-left px-3 py-2 rounded-md transition-colors text-sm flex flex-col gap-1 ${activeEncounterId === enc.id
+                                                ? 'bg-sidebar-accent font-medium text-foreground'
+                                                : 'hover:bg-sidebar-accent/60 text-muted-foreground'
                                                 }`}
                                         >
                                             <div className="flex justify-between items-center w-full">
-                                                <span className={activeEncounterId === enc.id ? "text-primary-foreground" : ""}>{formatShortDate(enc.start_time)}</span>
+                                                <span className="font-medium text-foreground">{formatShortDate(enc.start_time)}</span>
                                                 {enc.status === 'finished' ? (
-                                                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                                                 ) : (
-                                                    <Clock className="w-3 h-3 text-amber-500" />
+                                                    <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                                                 )}
                                             </div>
-                                            <p className="line-clamp-1 opacity-70">
+                                            <p className="line-clamp-1 text-xs text-muted-foreground">
                                                 {enc.evolution_note || 'Sin nota clínica'}
                                             </p>
                                         </button>
@@ -143,14 +143,14 @@ function SpecialtyGroup({
                     <Collapsible className="group/collapsible">
                         <SidebarMenuItem>
                             <CollapsibleTrigger asChild>
-                                <SidebarMenuButton className="px-4 text-muted-foreground hover:text-foreground">
+                                <SidebarMenuButton className="px-4 text-muted-foreground hover:text-foreground h-9">
                                     <Folder className="w-4 h-4" />
-                                    <span>Documentos</span>
+                                    <span className="text-sm">Documentos</span>
                                     <ChevronRight className="ml-auto w-4 h-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
                                 </SidebarMenuButton>
                             </CollapsibleTrigger>
                             <CollapsibleContent>
-                                <div className="pl-10 pr-4 py-2 text-xs text-muted-foreground/60">
+                                <div className="pl-10 pr-4 py-2 text-sm text-muted-foreground/60">
                                     Sin documentos registrados
                                 </div>
                             </CollapsibleContent>
@@ -188,22 +188,23 @@ export default function SpecialtySidebar({
 
     if (!selectedPatient) {
         return (
-            <div className="flex flex-col items-center justify-center h-40 text-center p-8 text-muted-foreground">
-                <Search className="w-10 h-10 opacity-20 mb-3" />
-                <p className="text-xs">Selecciona un paciente para ver su historial</p>
+            <div className="flex flex-col items-center justify-center h-full text-center px-6 py-12 text-muted-foreground">
+                <Search className="w-10 h-10 opacity-20 mb-4" />
+                <p className="text-sm font-medium text-foreground mb-1">Sin paciente seleccionado</p>
+                <p className="text-xs text-muted-foreground">Selecciona un paciente para ver su historial de consultas</p>
             </div>
         );
     }
 
     if (isLoading) {
         return (
-            <div className="p-6 space-y-8">
+            <div className="px-6 py-5 space-y-6">
                 {[1, 2].map(i => (
-                    <div key={i} className="space-y-4">
+                    <div key={i} className="space-y-3">
                         <Skeleton className="h-5 w-32" />
                         <div className="space-y-2 pl-4 border-l ml-2">
-                            <Skeleton className="h-8 w-full" />
-                            <Skeleton className="h-8 w-full" />
+                            <Skeleton className="h-9 w-full rounded-md" />
+                            <Skeleton className="h-9 w-full rounded-md" />
                         </div>
                     </div>
                 ))}
@@ -213,22 +214,26 @@ export default function SpecialtySidebar({
 
     return (
         <div className="flex flex-col h-full bg-sidebar/50">
-            <div className="px-6 py-3 flex items-center justify-between border-b bg-sidebar">
-                <h3 className="text-xs font-semibold text-muted-foreground">
-                    Atenciones
-                </h3>
+            <div className="px-4 py-3 border-b border-border shrink-0">
+                <h2 className="text-sm font-semibold text-foreground">Historia clínica</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                    {selectedPatient.name_given?.join(' ')} {selectedPatient.name_family}
+                </p>
+            </div>
+
+            {/* Toolbar: nueva consulta */}
+            <div className="flex items-center h-10 px-4 border-b border-border shrink-0">
                 <Button
                     variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 rounded-md hover:bg-primary/10 hover:text-primary transition-colors"
+                    size="sm"
+                    className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground ml-auto"
                     onClick={onNewEncounter}
-                    title="Nueva consulta"
                 >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-3.5 h-3.5" /> Nueva consulta
                 </Button>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar pt-2">
+            <div className="flex-1 overflow-y-auto custom-scrollbar pt-1">
                 {encounters.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-10 text-center text-muted-foreground opacity-60">
                         <MessageSquare className="w-8 h-8 mb-2 opacity-20" />

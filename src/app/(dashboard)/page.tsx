@@ -35,12 +35,14 @@ const statusLabels: Record<string, string> = {
   cancelled: 'Cancelada',
 };
 
-const statusColors: Record<string, string> = {
-  booked: 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/15',
-  pending: 'bg-chart-1/10 text-chart-1 border-chart-1/20 hover:bg-chart-1/15',
-  arrived: 'bg-accent text-accent-foreground border-accent-foreground/10 hover:bg-accent/80',
-  fulfilled: 'bg-muted text-muted-foreground border-border hover:bg-muted/80',
-  cancelled: 'bg-destructive/5 text-destructive border-destructive/20 hover:bg-destructive/10',
+// Mapeamos FHIR status → variante pill del Badge
+const statusBadgeVariant: Record<string, 'pill' | 'pill-success' | 'pill-warning' | 'pill-danger' | 'pill-muted' | 'pill-info'> = {
+  booked:    'pill',
+  pending:   'pill-warning',
+  arrived:   'pill-info',
+  fulfilled: 'pill-success',
+  cancelled: 'pill-danger',
+  noshow:    'pill-muted',
 };
 
 export default function DashboardPage() {
@@ -148,34 +150,34 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-8 pb-16 space-y-8 max-w-[1600px] mx-auto pt-24 lg:pt-8 w-full">
-        <div className="space-y-2">
-          <Skeleton className="h-10 w-[250px]" />
-          <Skeleton className="h-5 w-[350px]" />
+      <div className="px-6 py-5 space-y-6 max-w-[1400px] mx-auto w-full">
+        <div className="space-y-1.5">
+          <Skeleton className="h-7 w-[200px]" />
+          <Skeleton className="h-4 w-[300px]" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Skeleton className="h-28 w-full rounded-lg" />
+          <Skeleton className="h-28 w-full rounded-lg" />
+          <Skeleton className="h-28 w-full rounded-lg" />
+          <Skeleton className="h-28 w-full rounded-lg" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Skeleton className="h-[400px] w-full rounded-xl" />
-          <Skeleton className="h-[400px] w-full rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Skeleton className="h-[360px] w-full rounded-lg" />
+          <Skeleton className="h-[360px] w-full rounded-lg" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 sm:p-8 pb-16 max-w-[1600px] mx-auto space-y-8 pt-20 lg:pt-8 w-full animate-in fade-in duration-500 h-[100vh] overflow-y-auto">
-      {/* Page Header / Welcome */}
-      <div className="flex flex-col space-y-2 mb-8">
-        <h1 className="text-3xl font-light tracking-tight text-foreground">
-          Hola, <span className="font-medium text-primary">{practitioner?.name_given?.[0] || 'Doctor'}</span>
+    <div className="px-6 py-5 max-w-[1400px] mx-auto space-y-6 w-full animate-in fade-in duration-300 overflow-y-auto h-full">
+      {/* Page Header */}
+      <div className="flex flex-col space-y-1">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          Hola, <span className="text-primary">{practitioner?.name_given?.[0] || 'Doctor'}</span>
         </h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
-          Bienvenido a su tablero. Resumen de actividad para hoy, {new Date().toLocaleDateString('es-ES', {
+        <p className="text-muted-foreground text-sm">
+          {new Date().toLocaleDateString('es-ES', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -184,8 +186,8 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Bento Grid layout using Tailwind CSS Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pb-20">
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-8">
 
         {/* Stats Row */}
         {stats.map((stat) => {
@@ -202,14 +204,14 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="pt-2">
                 <div className="flex flex-col space-y-1">
-                  <span className="text-3xl font-bold tracking-tight">{stat.value}</span>
-                  <div className="flex items-center text-xs sm:text-sm mt-1">
+                  <span className="text-2xl font-semibold tracking-tight tabular-nums">{stat.value}</span>
+                  <div className="flex items-center text-xs mt-0.5">
                     {stat.deltaType === 'positive' ? (
-                      <ArrowUpRight className="w-4 h-4 text-chart-1 mr-1" />
+                      <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500 mr-1" />
                     ) : (
-                      <ArrowDownRight className="w-4 h-4 text-destructive mr-1" />
+                      <ArrowDownRight className="w-3.5 h-3.5 text-destructive mr-1" />
                     )}
-                    <span className={stat.deltaType === 'positive' ? 'text-chart-1 font-medium' : 'text-destructive font-medium'}>
+                    <span className={stat.deltaType === 'positive' ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-destructive font-medium'}>
                       {stat.delta}
                     </span>
                     <span className="text-muted-foreground ml-1">vs. semana anterior</span>
@@ -231,7 +233,7 @@ export default function DashboardPage() {
               </Button>
             </CardAction>
           </CardHeader>
-          <CardContent className="flex flex-col flex-1 p-4 sm:p-6 space-y-4">
+          <CardContent className="flex flex-col flex-1 px-6 py-5 space-y-4">
             <div className="flex flex-col gap-3 flex-1">
               {recentEvolutions.length > 0 ? recentEvolutions.map((evo, i) => (
                 <div key={i} className="p-4 rounded-xl bg-card border border-border/50 shadow-sm flex flex-col hover:border-primary/30 transition-colors cursor-pointer group">
@@ -251,7 +253,7 @@ export default function DashboardPage() {
             </div>
 
             {/* AI Summary Section */}
-            <div className="mt-auto pt-4 rounded-xl bg-primary/5 border border-primary/10 p-4 shrink-0 shadow-sm">
+            <div className="mt-auto pt-4 rounded-xl bg-primary/5 border border-primary/10 px-4 py-3 shrink-0 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <div className="bg-primary/10 p-1 rounded-md">
                   <MessageSquare className="w-3.5 h-3.5 text-primary" />
@@ -300,8 +302,7 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="flex-shrink-0 ml-2">
-                      <Badge variant="outline" className={`font-medium rounded-md text-[10px] px-2 py-0.5 border ${statusColors[apt.status ?? ''] || 'bg-muted text-muted-foreground border-border/50'}`}>
-                        <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-current opacity-70" />
+                      <Badge variant={statusBadgeVariant[apt.status ?? ''] ?? 'pill-muted'}>
                         {statusLabels[apt.status ?? ''] || apt.status}
                       </Badge>
                     </div>
@@ -359,7 +360,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Actividad Semanal</CardTitle>
           </CardHeader>
-          <CardContent className="px-2 sm:px-6">
+          <CardContent className="px-6">
             <div className="h-[220px] w-full mt-2">
               <ResponsiveContainer width="99%" height="100%">
                 <AreaChart data={activityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>

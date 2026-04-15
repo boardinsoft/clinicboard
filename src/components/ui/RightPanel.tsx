@@ -83,7 +83,7 @@ function DocumentSectionNode({
 
     return (
         <SidebarGroup className="py-2">
-            <SidebarGroupLabel className="justify-between px-2 text-foreground font-semibold h-8">
+            <SidebarGroupLabel className="justify-between px-3 text-foreground font-semibold h-8">
                 <div className="flex items-center gap-2">
                     <Icon className="w-4 h-4" />
                     <span>{section.title}</span>
@@ -106,7 +106,7 @@ function DocumentSectionNode({
 
             <SidebarGroupContent>
                 {section.files.length === 0 ? (
-                    <div className="px-4 py-2 text-xs text-muted-foreground/60 italic border-l ml-6">
+                    <div className="px-3 py-2 text-xs text-muted-foreground/60 italic border-l ml-6">
                         Sin documentos registrados
                     </div>
                 ) : (
@@ -262,7 +262,7 @@ export default function RightPanel() {
                 </Button>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-2">
                 {isPatientView ? (
                     <>
                         <div className="flex-1 space-y-1">
@@ -279,7 +279,7 @@ export default function RightPanel() {
                         <div
                             ref={dropZoneRef}
                             className={cn(
-                                "m-4 mt-6 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center transition-all duration-300",
+                                "m-4 mt-6 border-2 border-dashed rounded-xl px-6 py-5 flex flex-col items-center justify-center text-center transition-all duration-300",
                                 isDragging
                                     ? "border-primary bg-primary/5 text-primary scale-[0.98] shadow-inner"
                                     : "border-border text-muted-foreground hover:bg-muted/30 hover:border-muted-foreground/40"
@@ -297,7 +297,7 @@ export default function RightPanel() {
                 ) : (
                     <div className="flex flex-col h-full relative">
                         {/* Messages Area */}
-                        <ScrollArea className="flex-1 px-4 py-4" ref={scrollContainerRef}>
+                        <ScrollArea className="flex-1 px-4 py-3" ref={scrollContainerRef}>
                             <div className="flex flex-col gap-4 pb-20">
                                 {messages.map((msg) => (
                                     <div 
@@ -328,10 +328,10 @@ export default function RightPanel() {
                         </ScrollArea>
 
                         {/* Input Area */}
-                        <div className="absolute flex items-end gap-2 bottom-0 left-0 right-0 p-3 bg-sidebar border-t border-sidebar-border shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
-                            <Textarea 
+                        <div className="absolute flex items-end gap-2 bottom-0 left-0 right-0 px-3 py-2 bg-sidebar border-t border-sidebar-border shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
+                            <Textarea
                                 placeholder="Pregunta sobre la historia clínica..."
-                                className="min-h-[40px] h-[40px] max-h-[120px] resize-none px-3 py-2.5 text-[13px] rounded-xl bg-background border-muted-foreground/20 focus-visible:ring-1 focus-visible:ring-primary/50 shadow-sm"
+                                className="min-h-[40px] h-[40px] max-h-[120px] resize-none px-3 py-2 text-[13px] rounded-xl bg-background border-muted-foreground/20 focus-visible:ring-1 focus-visible:ring-primary/50 shadow-sm"
                                 value={chatInput}
                                 onChange={(e) => setChatInput(e.target.value)}
                                 onKeyDown={(e) => {

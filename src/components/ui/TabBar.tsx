@@ -1,9 +1,8 @@
 'use client';
 
 import { useTabStore } from '@/store/useTabStore';
-import { X, Circle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { X, Circle, Users, FileText, Calendar, Pill, File } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -13,9 +12,32 @@ import {
 } from '@/components/ui/context-menu';
 import { cn } from '@/lib/utils';
 
+interface TabData {
+    encounterStatus?: 'in-progress' | 'arrived' | null;
+    appointmentTime?: string | null;
+}
+
+// Helper: icono según módulo
+function ModuleIcon({ modulePrefix }: { modulePrefix: string }) {
+    if (modulePrefix.startsWith('/patients')) return <Users className="w-3.5 h-3.5 shrink-0" />;
+    if (modulePrefix.startsWith('/history')) return <FileText className="w-3.5 h-3.5 shrink-0" />;
+    if (modulePrefix.startsWith('/appointments')) return <Calendar className="w-3.5 h-3.5 shrink-0" />;
+    if (modulePrefix.startsWith('/prescriptions')) return <Pill className="w-3.5 h-3.5 shrink-0" />;
+    return <File className="w-3.5 h-3.5 shrink-0" />;
+}
+
 export default function TabBar() {
     const { tabs, activeTabId, setActiveTab, removeTab, closeAllTabs, closeOtherTabs, closeTabsToRight } = useTabStore();
     const router = useRouter();
+    const pathname = usePathname() || '/';
+
+    // Derive module prefix from pathname
+    const modulePrefix = pathname === '/' ? '' : '/' + pathname.split('/')[1];
+
+    // Filter tabs to only those belonging to the current module
+    const moduleTabs = modulePrefix ? tabs.filter(t => t.url.startsWith(modulePrefix)) : [];
+
+    if (moduleTabs.length === 0) return null;
 
     const handleTabClick = (tabId: string, url: string) => {
         setActiveTab(tabId);
@@ -58,7 +80,7 @@ export default function TabBar() {
 
     const handleCloseOthers = (id: string) => {
         closeOtherTabs(id);
-        const tab = tabs.find(t => t.id === id);
+        const tab = moduleTabs.find(t => t.id === id);
         if (tab) {
             router.push(tab.url);
         }
@@ -68,66 +90,71 @@ export default function TabBar() {
         closeTabsToRight(id);
     };
 
-    if (tabs.length === 0) return null;
-
     return (
-        <Tabs
-            value={activeTabId || undefined}
-            onValueChange={(val) => {
-                const tab = tabs.find(t => t.id === val);
-                if (tab) handleTabClick(tab.id, tab.url);
-            }}
-            className="w-full"
-        >
-            <TabsList className="justify-start overflow-x-auto no-scrollbar max-w-full h-9">
-                {tabs.map((tab, index) => (
+        <div className="flex items-end h-full overflow-x-auto no-scrollbar flex-1">
+            {moduleTabs.map((tab, index) => {
+                const isActive = tab.id === activeTabId;
+                const data = tab.data as TabData | undefined;
+                const encounterStatus = data?.encounterStatus;
+                const appointmentTime = data?.appointmentTime;
+
+                // Dot de estado (reemplaza al isDirty dot solo si hay encounterStatus)
+                const statusDot = encounterStatus === 'in-progress' ? (
+                    <span
+                        className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 ring-1 ring-emerald-500/30"
+                        aria-label="Consulta en progreso"
+                    />
+                ) : encounterStatus === 'arrived' ? (
+                    <span
+                        className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 ring-1 ring-amber-400/30"
+                        aria-label="Paciente en sala de espera"
+                    />
+                ) : tab.isDirty ? (
+                    <Circle className="w-1.5 h-1.5 fill-primary text-primary shrink-0" aria-label="Cambios sin guardar" />
+                ) : null;
+
+                return (
                     <ContextMenu key={tab.id}>
                         <ContextMenuTrigger asChild>
-                            <TabsTrigger
-                                value={tab.id}
+                            <button
+                                onClick={() => handleTabClick(tab.id, tab.url)}
                                 className={cn(
-                                    "group relative flex items-center h-7 px-3 gap-2 min-w-[120px] max-w-[200px]",
-                                    "data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                                    'group flex flex-col items-start gap-0 h-full px-3 text-xs shrink-0 py-0',
+                                    'border-b-2 transition-colors duration-100',
+                                    isActive
+                                        ? 'text-foreground border-foreground'
+                                        : 'text-muted-foreground hover:text-foreground border-transparent'
                                 )}
                             >
-                                {/* Indicador de cambios sin guardar */}
-                                {tab.isDirty && (
-                                    <Circle
-                                        className="w-2 h-2 fill-primary text-primary shrink-0"
-                                        aria-label="Cambios sin guardar"
-                                    />
-                                )}
-
-                                {/* Título de la pestaña */}
-                                <span
-                                    className="truncate flex-1 text-xs"
-                                    title={tab.title}
-                                >
-                                    {tab.title}
-                                </span>
-
-                                {/* Botón de cerrar */}
-                                <div
-                                    role="button"
-                                    tabIndex={0}
-                                    className={cn(
-                                        "h-4 w-4 rounded-sm shrink-0 p-0 flex items-center justify-center",
-                                        "text-muted-foreground hover:text-foreground",
-                                        "opacity-0 group-hover:opacity-60 hover:opacity-100 hover:bg-muted",
-                                        "transition-all duration-150"
-                                    )}
-                                    onClick={(e) => handleCloseTab(e, tab.id)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            e.preventDefault();
-                                            handleCloseTab(e, tab.id);
-                                        }
-                                    }}
-                                    aria-label={`Cerrar ${tab.title}`}
-                                >
-                                    <X className="h-3 w-3" />
+                                <div className="flex items-center gap-1.5 w-full">
+                                    {statusDot ?? <ModuleIcon modulePrefix={modulePrefix} />}
+                                    <span className="truncate max-w-[140px]" title={tab.title}>{tab.title}</span>
+                                    <div
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={(e) => handleCloseTab(e, tab.id)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                handleCloseTab(e, tab.id);
+                                            }
+                                        }}
+                                        aria-label={`Cerrar ${tab.title}`}
+                                        className={cn(
+                                            'h-4 w-4 rounded-sm flex items-center justify-center ml-0.5 shrink-0',
+                                            'text-muted-foreground hover:text-foreground hover:bg-muted',
+                                            'opacity-0 group-hover:opacity-100 transition-all duration-150'
+                                        )}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </div>
                                 </div>
-                            </TabsTrigger>
+                                {appointmentTime && (
+                                    <span className="text-[10px] text-muted-foreground/60 leading-none pl-5 -mt-0.5">
+                                        {appointmentTime}
+                                    </span>
+                                )}
+                            </button>
                         </ContextMenuTrigger>
 
                         {/* Context Menu (click derecho) */}
@@ -142,13 +169,13 @@ export default function TabBar() {
                             </ContextMenuItem>
                             <ContextMenuItem
                                 onClick={() => handleCloseOthers(tab.id)}
-                                disabled={tabs.length === 1}
+                                disabled={moduleTabs.length === 1}
                             >
                                 Cerrar otras
                             </ContextMenuItem>
                             <ContextMenuItem
                                 onClick={() => handleCloseToRight(tab.id)}
-                                disabled={index === tabs.length - 1}
+                                disabled={index === moduleTabs.length - 1}
                             >
                                 Cerrar a la derecha
                             </ContextMenuItem>
@@ -161,8 +188,8 @@ export default function TabBar() {
                             </ContextMenuItem>
                         </ContextMenuContent>
                     </ContextMenu>
-                ))}
-            </TabsList>
-        </Tabs>
+                );
+            })}
+        </div>
     );
 }

@@ -20,7 +20,7 @@ export function DetailCard({ title, subtitle, meta, extra, active, onClick, icon
         <div
             onClick={onClick}
             className={cn(
-                "group relative flex flex-col gap-1.5 p-3.5 rounded-xl border cursor-pointer transition-all duration-300",
+                "group relative flex flex-col gap-1.5 px-4 py-3 rounded-xl border cursor-pointer transition-all duration-300",
                 active
                     ? "bg-accent border-primary/25 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] ring-1 ring-primary/5"
                     : "bg-card border-border/30 hover:bg-accent/30 hover:border-border/60 hover:shadow-sm"

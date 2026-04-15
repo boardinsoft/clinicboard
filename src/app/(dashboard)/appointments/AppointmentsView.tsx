@@ -122,7 +122,7 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
     return (
         <div className="flex flex-col h-full bg-background overflow-hidden">
             {/* Header Content Area */}
-            <header className="px-6 py-4 flex flex-col md:flex-row md:items-center justify-between border-b gap-4 bg-background">
+            <header className="px-6 py-5 flex flex-col md:flex-row md:items-center justify-between border-b gap-4 bg-background">
                 <div className="flex flex-col">
                     <div className="flex items-center gap-3">
                         <h1 className="text-xl font-bold tracking-tight text-foreground">Citas Médicas</h1>

@@ -922,3 +922,65 @@ export async function swapQueuePositions(
     revalidatePath('/appointments');
     return { success: true };
 }
+
+/**
+ * Retorna las citas del día con datos del paciente.
+ * Solo citas del practitioner autenticado, ordenadas por start_time.
+ * Excluye estados terminales: fulfilled, cancelled, noshow.
+ */
+export async function getTodayAppointmentsWithPatients(): Promise<Array<{
+  id: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  patient_id: string;
+  patient_name: string;
+  appointment_type: string | null;
+}>> {
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  // Rango del día en Venezuela (UTC-4)
+  const now = new Date();
+  const offset = -4 * 60;
+  const veDate = new Date(now.getTime() + (offset - now.getTimezoneOffset()) * 60000);
+  const dateStr = veDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+  const dayStart = `${dateStr}T00:00:00-04:00`;
+  const dayEnd   = `${dateStr}T23:59:59-04:00`;
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .select(`
+      id,
+      start_time,
+      end_time,
+      status,
+      patient_id,
+      appointment_type,
+      patients!inner (
+        name_given,
+        name_family
+      )
+    `)
+    .eq('practitioner_id', user.id)
+    .gte('start_time', dayStart)
+    .lte('start_time', dayEnd)
+    .not('status', 'in', '("fulfilled","cancelled","noshow")')
+    .order('start_time', { ascending: true });
+
+  if (error || !data) return [];
+
+  return data.map((row: any) => ({
+    id: row.id,
+    start_time: row.start_time,
+    end_time: row.end_time,
+    status: row.status ?? 'proposed',
+    patient_id: row.patient_id,
+    appointment_type: row.appointment_type ?? null,
+    patient_name: [
+      row.patients?.name_given?.join(' ') ?? '',
+      row.patients?.name_family ?? '',
+    ].join(' ').trim() || 'Paciente',
+  }));
+}

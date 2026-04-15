@@ -15,6 +15,8 @@ export interface WorkspaceTab {
     url: string; // URL normalizada
     data?: unknown; // Datos adicionales de la pestaña
     isDirty?: boolean; // Indica si hay cambios sin guardar
+    encounterStatus?: 'in-progress' | 'arrived' | null;
+    appointmentTime?: string | null; // "HH:MM" si hay cita hoy, null si no
 }
 
 // Estado persistente para formularios clínicos por paciente
@@ -50,16 +52,13 @@ interface TabState {
     // Sincronización con router
     syncWithRouter: (pathname: string) => void;
 
-    // Persistencia clínica (sin cambios, existente)
-    clinicalState: Record<string, ClinicalFormState>;
-    setClinicalState: (patientId: string, state: ClinicalFormState) => void;
-    patientViewState: Record<string, number>;
-    setPatientTab: (patientId: string, tabIndex: number) => void;
-    historyTabIndex: number;
-    setHistoryTab: (tabIndex: number) => void;
-
     // Persistencia de pestañas
     loadPersistedTabs: () => void;
+
+    // Recientemente cerrados
+    recentlyClosed: WorkspaceTab[];
+    addToRecentlyClosed: (tab: WorkspaceTab) => void;
+    clearRecentlyClosed: () => void;
 }
 
 export const useTabStore = create<TabState>((set, get) => ({
@@ -130,6 +129,12 @@ export const useTabStore = create<TabState>((set, get) => ({
      */
     removeTab: (id) => {
         const { tabs, activeTabId } = get();
+
+        // Save to recently closed before filtering
+        const tabToClose = tabs.find(t => t.id === id);
+        if (tabToClose) {
+            get().addToRecentlyClosed(tabToClose);
+        }
 
         // Buscar si la pestaña tiene cambios sin guardar
         const tab = tabs.find(t => t.id === id);
@@ -326,21 +331,20 @@ export const useTabStore = create<TabState>((set, get) => ({
         }
     },
 
-    // ── Persistencia clínica (sin cambios) ─────────────────────────────────
-    clinicalState: {} as Record<string, ClinicalFormState>,
-    setClinicalState: (patientId: string, state: ClinicalFormState) => {
-        set((prev) => ({
-            clinicalState: { ...prev.clinicalState, [patientId]: state },
-        }));
+    // ── Recientemente cerrados ───────────────────────────────────────────────
+    recentlyClosed: [],
+
+    addToRecentlyClosed: (tab) => {
+        // Solo guardar tabs de pacientes
+        if (!tab.url.startsWith('/patients/') || tab.url === '/patients/new') return;
+        set((state) => {
+            // Evitar duplicados por id
+            const filtered = state.recentlyClosed.filter(t => t.id !== tab.id);
+            // Mantener máximo 8
+            const next = [tab, ...filtered].slice(0, 8);
+            return { recentlyClosed: next };
+        });
     },
 
-    patientViewState: {} as Record<string, number>,
-    setPatientTab: (patientId: string, tabIndex: number) => {
-        set((prev) => ({
-            patientViewState: { ...prev.patientViewState, [patientId]: tabIndex },
-        }));
-    },
-
-    historyTabIndex: 0,
-    setHistoryTab: (tabIndex: number) => set({ historyTabIndex: tabIndex }),
+    clearRecentlyClosed: () => set({ recentlyClosed: [] }),
 }));

@@ -55,14 +55,14 @@
     --chart-4:                 oklch(0.65  0.140 75);         /* amber */
     --chart-5:                 oklch(0.561 0.215 25);         /* red */
 
-    /* ── Sidebar — tinte índigo muy suave ── */
-    --sidebar-background:      oklch(0.975 0.010 271);
+    /* ── Sidebar — blanco puro (modo claro) ── */
+    --sidebar-background:      oklch(1.00 0 0);
     --sidebar-foreground:      oklch(0.30  0.030 271);
     --sidebar-primary:         oklch(0.597 0.197 262);
     --sidebar-primary-foreground: oklch(1.00 0 0);
-    --sidebar-accent:          oklch(0.935 0.018 271);
+    --sidebar-accent:          oklch(0.960 0.006 265);
     --sidebar-accent-foreground: oklch(0.20 0.040 271);
-    --sidebar-border:          oklch(0.888 0.012 271);
+    --sidebar-border:          oklch(0.905 0.009 265);
     --sidebar-ring:            oklch(0.597 0.197 262);
 
     /* ── Tipografía ── */
@@ -142,45 +142,45 @@
 
 
   /* ─────────────────────────────────────────────────────────────────────────
-     MODO OSCURO — Profundidad índigo corporativa al estilo Supabase
-     Filosofía: charcoal índigo + azul vibrante + menta clínica = tech médico
+     MODO OSCURO — Verde-gris neutro unicolor al estilo Supabase
+     Filosofía: fondo único oklch(0.13 0.02 160) + azul vibrante = tech médico limpio
      ───────────────────────────────────────────────────────────────────────── */
   .dark {
-    /* ── Superficies — capas tonales, sin bordes duros ── */
-    /* Level 0 (base canvas):   #0d0f19 — charcoal índigo casi negro */
-    /* Level 1 (sidebar/nav):   #111320 — superficie índigo */
-    /* Level 2 (cards):         #171a28 — tarjetas y paneles */
-    /* Level 3 (popovers):      #1e2133 — elementos flotantes */
-    --background:              oklch(0.132 0.022 271);
-    --foreground:              oklch(0.930 0.006 265);
-    --card:                    oklch(0.168 0.024 271);
-    --card-foreground:         oklch(0.930 0.006 265);
-    --popover:                 oklch(0.195 0.026 271);
-    --popover-foreground:      oklch(0.930 0.006 265);
+    /* ── Superficies — una sola familia de color, hue 160 (verde-gris neutro) ── */
+    /* Level 0 (base canvas):   oklch(0.13 0.02 160) — fondo único oscuro */
+    /* Level 1 (sidebar/nav):   oklch(0.10 0.018 160) — más oscuro que canvas */
+    /* Level 2 (cards):         oklch(0.16 0.015 160) — elevación sutil */
+    /* Level 3 (popovers):      oklch(0.19 0.018 160) — elementos flotantes */
+    --background:              oklch(0.13 0.02 160);
+    --foreground:              oklch(0.930 0.006 160);
+    --card:                    oklch(0.16 0.015 160);
+    --card-foreground:         oklch(0.930 0.006 160);
+    --popover:                 oklch(0.19 0.018 160);
+    --popover-foreground:      oklch(0.930 0.006 160);
 
     /* ── Primary — #3981f6 levemente más brillante en dark ── */
     --primary:                 oklch(0.640 0.190 262);
-    --primary-foreground:      oklch(0.08 0.018 271);
+    --primary-foreground:      oklch(0.08 0.015 160);
 
-    /* ── Secondary — superficie índigo sutil ── */
-    --secondary:               oklch(0.220 0.022 271);
-    --secondary-foreground:    oklch(0.850 0.010 265);
+    /* ── Secondary — superficie sutil ── */
+    --secondary:               oklch(0.21 0.018 160);
+    --secondary-foreground:    oklch(0.850 0.008 160);
 
     /* ── Muted ── */
-    --muted:                   oklch(0.215 0.020 271);
-    --muted-foreground:        oklch(0.600 0.010 265);
+    --muted:                   oklch(0.20 0.015 160);
+    --muted-foreground:        oklch(0.580 0.010 160);
 
-    /* ── Accent — tinte índigo ── */
-    --accent:                  oklch(0.270 0.032 271);
-    --accent-foreground:       oklch(0.880 0.008 265);
+    /* ── Accent — tinte suave ── */
+    --accent:                  oklch(0.26 0.025 160);
+    --accent-foreground:       oklch(0.880 0.006 160);
 
     /* ── Destructive — rojo clínico en dark ── */
     --destructive:             oklch(0.590 0.210 25);
     --destructive-foreground:  oklch(1.00 0 0);
 
-    /* ── Bordes — "barely-there", sutil tinte índigo ── */
-    --border:                  oklch(0.245 0.022 271);
-    --input:                   oklch(0.245 0.022 271);
+    /* ── Bordes — "barely-there", tinte neutro ── */
+    --border:                  oklch(0.24 0.015 160);
+    --input:                   oklch(0.24 0.015 160);
     --ring:                    oklch(0.640 0.190 262);
 
     /* ── Charts ── */
@@ -190,14 +190,14 @@
     --chart-4:                 oklch(0.730 0.140 75);         /* amber */
     --chart-5:                 oklch(0.590 0.210 25);         /* red */
 
-    /* ── Sidebar — índigo más profundo que el background ── */
-    --sidebar-background:      oklch(0.105 0.025 271);
-    --sidebar-foreground:      oklch(0.860 0.008 265);
+    /* ── Sidebar — más oscura que el background (como Supabase) ── */
+    --sidebar-background:      oklch(0.10 0.018 160);
+    --sidebar-foreground:      oklch(0.860 0.006 160);
     --sidebar-primary:         oklch(0.640 0.190 262);
-    --sidebar-primary-foreground: oklch(0.08 0.018 271);
-    --sidebar-accent:          oklch(0.195 0.028 271);
-    --sidebar-accent-foreground: oklch(0.920 0.006 265);
-    --sidebar-border:          oklch(0.200 0.020 271);
+    --sidebar-primary-foreground: oklch(0.08 0.015 160);
+    --sidebar-accent:          oklch(0.18 0.020 160);
+    --sidebar-accent-foreground: oklch(0.920 0.006 160);
+    --sidebar-border:          oklch(0.20 0.015 160);
     --sidebar-ring:            oklch(0.640 0.190 262);
 
     /* ── Sombras dark — más profundas ── */
@@ -209,17 +209,7 @@
     --shadow-lg:  0px 12px 24px hsl(230 50% 5% / 0.55), 0px 6px 12px hsl(230 50% 5% / 0.45);
     --shadow-xl:  0px 16px 32px hsl(230 50% 5% / 0.60), 0px 8px 16px hsl(230 50% 5% / 0.50);
     --shadow-2xl: 0px 24px 48px hsl(230 50% 5% / 0.70),
-                  0 0 0 1px oklch(0.930 0.006 265 / 0.04); /* inner glow sutil */
-
-    /* ── Tokens clínicos dark ── */
-    --clinical-stable-bg:     oklch(0.843 0.097 155 / 0.12);
-    --clinical-stable-fg:     oklch(0.843 0.097 155);
-    --clinical-critical-bg:   oklch(0.590 0.210 25 / 0.15);
-    --clinical-critical-fg:   oklch(0.780 0.150 25);
-    --clinical-inactive-bg:   oklch(0.600 0.008 265 / 0.12);
-    --clinical-inactive-fg:   oklch(0.600 0.008 265);
-    --clinical-pending-bg:    oklch(0.730 0.140 75 / 0.12);
-    --clinical-pending-fg:    oklch(0.730 0.140 75);
+                  0 0 0 1px oklch(0.930 0.006 160 / 0.04); /* inner glow sutil */
 
     /* ── Estados FHIR dark ── */
     --apt-status-proposed:    oklch(0.650 0.010 265);
@@ -230,7 +220,25 @@
     --apt-status-cancelled:   oklch(0.650 0.215 25);
     --apt-status-noshow:      oklch(0.600 0.100 25);
 
-    --kanban-col-bg:          oklch(0.195 0.026 271 / 0.70);
+    --kanban-col-bg:          oklch(0.19 0.018 160 / 0.70);
+
+    /* ── Tokens clínicos dark (ajustados al nuevo hue base) ── */
+    --clinical-stable-bg:     oklch(0.843 0.097 155 / 0.12);
+    --clinical-stable-fg:     oklch(0.843 0.097 155);
+    --clinical-critical-bg:   oklch(0.590 0.210 25 / 0.15);
+    --clinical-critical-fg:   oklch(0.780 0.150 25);
+    --clinical-inactive-bg:   oklch(0.580 0.008 160 / 0.12);
+    --clinical-inactive-fg:   oklch(0.580 0.008 160);
+    --clinical-pending-bg:    oklch(0.730 0.140 75 / 0.12);
+    --clinical-pending-fg:    oklch(0.730 0.140 75);
+
+    /* ── Spacing scale — 3-tier padding system ── */
+    --spacing-compact-x:  0.75rem;   /* 12px — px-3 */
+    --spacing-compact-y:  0.5rem;    /* 8px  — py-2 */
+    --spacing-default-x:  1rem;      /* 16px — px-4 */
+    --spacing-default-y:  0.75rem;   /* 12px — py-3 */
+    --spacing-spacious-x: 1.5rem;    /* 24px — px-6 */
+    --spacing-spacious-y: 1.25rem;   /* 20px — py-5 */
 
     /* ── Radius (consistente entre modos) ── */
     --radius: 0.3rem;
@@ -257,6 +265,15 @@
     letter-spacing: var(--tracking-normal);
     line-height: 1.5;
   }
+}
+
+/* Hide scrollbar for horizontal overflow containers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 
@@ -321,31 +338,69 @@
   }
 
   /* ── Tabla densa al estilo Supabase ── */
+  .table-dense {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
   .table-dense th {
-    font-size: 0.6875rem;
+    font-size: 0.6875rem;          /* 11px */
     font-weight: 600;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--muted-foreground);
-    height: 2.25rem;
+    height: 2rem;                  /* 32px — como Supabase */
     padding: 0 0.75rem;
     position: sticky;
     top: 0;
+    z-index: 1;
     background-color: var(--background);
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
+    text-align: left;
+    user-select: none;
   }
 
   .table-dense td {
-    font-size: 0.8125rem;
-    height: 2.5rem;
+    font-size: 0.8125rem;          /* 13px */
+    height: 2.25rem;               /* 36px — como Supabase */
     padding: 0 0.75rem;
     vertical-align: middle;
     white-space: nowrap;
-    border-bottom: 1px solid oklch(from var(--border) l c h / 0.5);
+    border-bottom: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
   }
 
-  .table-dense tr:hover td {
+  .table-dense tbody tr {
+    transition: background-color 80ms ease;
+  }
+
+  .table-dense tbody tr:hover td {
     background-color: var(--muted);
+  }
+
+  .table-dense tbody tr[data-selected="true"] td {
+    background-color: color-mix(in oklch, var(--primary) 8%, var(--background));
+  }
+
+  /* Columna checkbox — ancho fijo, centrado */
+  .table-dense .col-check {
+    width: 2.25rem;
+    padding: 0;
+    text-align: center;
+  }
+
+  /* Columna de acciones — hover reveal */
+  .table-dense .col-actions {
+    width: 3.5rem;
+    text-align: right;
+    padding-right: 0.5rem;
+  }
+
+  .table-dense tbody tr .row-actions {
+    opacity: 0;
+    transition: opacity 100ms ease;
+  }
+  .table-dense tbody tr:hover .row-actions {
+    opacity: 1;
   }
 }

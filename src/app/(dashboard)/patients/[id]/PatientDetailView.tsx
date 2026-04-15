@@ -33,6 +33,7 @@ import { getEncounters } from '@/actions/encounters';
 import { archivePatient, reactivatePatient } from '@/actions/patients';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { useTabStore } from '@/store/useTabStore';
+import { usePatientStore } from '@/store/usePatientStore';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -55,11 +56,7 @@ import {
 import { AddConditionDialog } from '@/components/patients/AddConditionDialog';
 import { AddAllergyDialog } from '@/components/patients/AddAllergyDialog';
 import type { Patient, Condition, AllergyIntolerance, EncounterWithSpecialty } from '@/types/database.types';
-
-// Typed helpers for patient JSONB columns
-interface PatientIdentifier { value?: string }
-interface PatientTelecom { system?: string; value?: string }
-interface PatientAddress { text?: string }
+import type { PatientTelecom, PatientAddress, PatientIdentifier } from '@/types/patient-jsonb';
 
 interface PatientDetailViewProps {
     patient: Patient;
@@ -126,8 +123,15 @@ function WorkspaceHeader({ patient, router, onArchive, onReactivate, children }:
                             <DropdownMenuItem onClick={() => router.push(`/patients/${patient.id}/edit`)}>
                                 <Edit className="w-4 h-4 mr-2" /> Editar Perfil
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => window.open(`/api/patients/${patient.id}/fhir`, '_blank')}>
-                                <FileText className="w-4 h-4 mr-2" /> Ver FHIR JSON
+                            <DropdownMenuItem onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = `/api/patients/${patient.id}/fhir`;
+                                link.download = `patient-${patient.id}-fhir-bundle.json`;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                            }}>
+                                <FileText className="w-4 h-4 mr-2" /> Exportar Historia FHIR
                             </DropdownMenuItem>
                             <DropdownMenuItem disabled>
                                 <ExternalLink className="w-4 h-4 mr-2" /> Abrir en Portal
@@ -177,7 +181,7 @@ function WorkspaceHeader({ patient, router, onArchive, onReactivate, children }:
                     <div>
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">Notas rápidas</span>
                         <div className="text-muted-foreground line-clamp-2">
-                            Paciente requiere atención especial en toma de muestras...
+                            Sin notas registradas
                         </div>
                     </div>
                 </div>
@@ -215,9 +219,25 @@ export default function PatientDetailView({ patient, conditions: initialConditio
     const [archiving, setArchiving] = useState(false);
     const [reactivating, setReactivating] = useState(false);
     const { setRightPanelOpen } = useLayoutStore();
-    const { patientViewState, setPatientTab, removeTab, findTabByUrl } = useTabStore();
-    const savedTab = TAB_VALUES[patientViewState[patient.id] ?? 0] ?? 'overview';
+    const { removeTab, findTabByUrl } = useTabStore();
+    const { 
+        viewStates, 
+        setPatientView, 
+        openPatientTab,
+        setActivePatient 
+    } = usePatientStore();
+
+    const savedTab = (viewStates[patient.id]?.activeSubTab as typeof TAB_VALUES[number]) || 'overview';
     const [activeTab, setActiveTab] = useState(savedTab);
+
+    // Registrar apertura de pestaña y asegurar que este paciente es el activo
+    useEffect(() => {
+        openPatientTab({ 
+            id: patient.id, 
+            name: `${patient.name_given?.join(' ')} ${patient.name_family}` 
+        });
+        setActivePatient(patient.id);
+    }, [patient, openPatientTab, setActivePatient]);
 
     const handleReactivate = async () => {
         setReactivating(true);
@@ -256,9 +276,9 @@ export default function PatientDetailView({ patient, conditions: initialConditio
             <Tabs
                 value={activeTab}
                 onValueChange={(val) => {
-                    setActiveTab(val as typeof TAB_VALUES[number]);
-                    const idx = TAB_VALUES.indexOf(val as typeof TAB_VALUES[number]);
-                    if (idx !== -1) setPatientTab(patient.id, idx);
+                    const tabValue = val as typeof TAB_VALUES[number];
+                    setActiveTab(tabValue);
+                    setPatientView(patient.id, tabValue);
                 }}
                 className="flex-1 flex flex-col"
             >

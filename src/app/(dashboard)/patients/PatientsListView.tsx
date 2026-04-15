@@ -1,511 +1,661 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useLayoutStore } from '@/store/useLayoutStore';
-import { useTabStore } from '@/store/useTabStore';
 import { cn } from '@/lib/utils';
 import { getPatientClinicalData } from '@/actions/patients';
 import { getEncounters } from '@/actions/encounters';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { EncounterWithSpecialty, Condition, AllergyIntolerance, Patient } from '@/types/database.types';
+import { formatDate, calcAge, getGenderLabel } from '@/lib/clinical';
+import TableSearch from '@/components/ui/TableSearch';
 import {
-    Plus,
-    User,
-    AlertTriangle,
-    AlertCircle,
-    Stethoscope,
-    Activity,
-    Calendar,
-    ArrowRight,
-    UserPlus,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  User,
+  AlertTriangle,
+  AlertCircle,
+  Stethoscope,
+  Activity,
+  Calendar,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Maximize2,
 } from 'lucide-react';
 
-// ─── JSONB column typed helpers ────────────────────────────────────────────────
-interface PatientTelecom { system?: string; value?: string }
-interface PatientAddress { text?: string }
-interface PatientIdentifier { value?: string }
+import PatientsSidebar from './PatientsSidebar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import type { PatientTelecom, PatientAddress, PatientIdentifier } from '@/types/patient-jsonb';
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
+interface PatientFilters {
+  status: 'all' | 'active' | 'inactive';
+  gender: 'all' | 'male' | 'female' | 'other';
+  q: string;
+}
+
 interface PatientsListViewProps {
-    patients: Patient[];
-    totalItems: number;
-    page: number;
-    pageSize: number;
+  patients: Patient[];
+  totalItems: number;
+  page: number;
+  pageSize: number;
 }
 
-import { formatDate, calcAge } from '@/lib/clinical';
-
-// ─── Empty state ───────────────────────────────────────────────────────────────
-function NoPatientSelected() {
-    return (
-        <div className="flex flex-col items-center justify-center h-64 text-muted-foreground bg-background rounded-lg border-2 border-dashed border-border/50 p-8 text-center mt-6">
-            <UserPlus className="w-12 h-12 mb-4 opacity-50" />
-            <p className="text-lg font-medium text-foreground mb-1">Ningún paciente seleccionado</p>
-            <p className="text-sm">
-                Selecciona un paciente o usa <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-xs border">⌘K</kbd> to search
-            </p>
-        </div>
-    );
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function getCI(p: Patient): string {
+  return Array.isArray(p.identifiers)
+    ? (p.identifiers as PatientIdentifier[])[0]?.value ?? '—'
+    : '—';
 }
 
-// ... the rest of the file content needs to be rewritten similarly, splitting into subcomponents.
-// Due to length, I will rewrite the essential structure in Tailwind.
-// ... 
+function getPhone(p: Patient): string {
+  return (p.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value ?? '—';
+}
+
+function getInitials(p: Patient): string {
+  const first = p.name_given?.[0]?.[0] ?? '';
+  const last = p.name_family?.[0] ?? '';
+  return `${first}${last}`.toUpperCase();
+}
+
+function getFullName(p: Patient): string {
+  return `${p.name_given?.join(' ') ?? ''} ${p.name_family ?? ''}`.trim();
+}
 
 // ─── Tab: Resumen ──────────────────────────────────────────────────────────────
-function TabResumen({ patient }: { patient: Patient | null }) {
-    if (!patient) return <NoPatientSelected />;
+function TabResumen({ patient }: { patient: Patient }) {
+  const phone = getPhone(patient);
+  const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value ?? '—';
+  const address = (patient.address as PatientAddress[] | null)?.[0]?.text ?? '—';
+  const docId = getCI(patient);
 
-    const fullName = `${patient.name_given?.join(' ')} ${patient.name_family}`;
-    const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value ?? '—';
-    const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value ?? '—';
-    const address = (patient.address as PatientAddress[] | null)?.[0]?.text ?? '—';
-    const docId = Array.isArray(patient.identifiers) ? (patient.identifiers as PatientIdentifier[])[0]?.value ?? '—' : '—';
-
-    return (
-        <div className="pt-6 space-y-6">
-            <Card>
-                <CardContent className="flex items-center gap-6 p-6">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                        <User className="w-8 h-8" />
-                    </div>
-                    <div>
-                        <h2 className="text-2xl font-bold tracking-tight mb-2">{fullName}</h2>
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                            <span>{calcAge(patient.birth_date)}</span>
-                            <span>·</span>
-                            <span>{patient.gender === 'female' ? 'Femenino' : patient.gender === 'male' ? 'Masculino' : '—'}</span>
-                            <span>·</span>
-                            <Badge variant="outline" className="font-mono">CI: {docId}</Badge>
-                            {patient.active ? (
-                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-0">Activo</Badge>
-                            ) : (
-                                <Badge variant="secondary">Inactivo</Badge>
-                            )}
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card className="border-border/10 bg-transparent shadow-none">
-                <CardContent className="p-6">
-                    <dl className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div>
-                            <dt className="text-xs font-medium text-muted-foreground mb-1">Fecha de nacimiento</dt>
-                            <dd className="font-medium">{formatDate(patient.birth_date)}</dd>
-                        </div>
-                        <div>
-                            <dt className="text-xs font-medium text-muted-foreground mb-1">Teléfono</dt>
-                            <dd className="font-medium">{phone}</dd>
-                        </div>
-                        <div>
-                            <dt className="text-xs font-medium text-muted-foreground mb-1">Correo electrónico</dt>
-                            <dd className="font-medium truncate">{email}</dd>
-                        </div>
-                        <div>
-                            <dt className="text-xs font-medium text-muted-foreground mb-1">Dirección</dt>
-                            <dd className="font-medium line-clamp-1">{address}</dd>
-                        </div>
-                    </dl>
-                </CardContent>
-            </Card>
-        </div>
-    );
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 px-4 py-3">
+      <div>
+        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Fecha de nacimiento</dt>
+        <dd className="text-sm font-medium">{formatDate(patient.birth_date)}</dd>
+      </div>
+      <div>
+        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Edad</dt>
+        <dd className="text-sm font-medium">{calcAge(patient.birth_date)}</dd>
+      </div>
+      <div>
+        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Cédula</dt>
+        <dd className="text-sm font-mono">{docId}</dd>
+      </div>
+      <div>
+        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Género</dt>
+        <dd className="text-sm font-medium">{getGenderLabel(patient.gender)}</dd>
+      </div>
+      <div>
+        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Teléfono</dt>
+        <dd className="text-sm font-medium">{phone}</dd>
+      </div>
+      <div>
+        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Correo</dt>
+        <dd className="text-sm font-medium truncate">{email}</dd>
+      </div>
+      <div className="col-span-2">
+        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Dirección</dt>
+        <dd className="text-sm font-medium">{address}</dd>
+      </div>
+    </div>
+  );
 }
 
 // ─── Tab: Condiciones ──────────────────────────────────────────────────────────
-function TabCondiciones({ patientId }: { patientId: string | null }) {
-    const [conditions, setConditions] = useState<Condition[]>([]);
-    const [loading, setLoading] = useState(false);
+function TabCondiciones({ patientId }: { patientId: string }) {
+  const [conditions, setConditions] = useState<Condition[]>([]);
+  const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        if (!patientId) return;
-        let cancelled = false;
-        (async () => {
-            setLoading(true);
-            try {
-                const data = await getPatientClinicalData(patientId);
-                if (!cancelled) setConditions(data.conditions as Condition[]);
-            } finally {
-                if (!cancelled) setLoading(false);
-            }
-        })();
-        return () => { cancelled = true; };
-    }, [patientId]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getPatientClinicalData(patientId)
+      .then(data => { if (!cancelled) setConditions(data.conditions as Condition[]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [patientId]);
 
-    if (!patientId) return <NoPatientSelected />;
+  if (loading) return (
+    <div className="p-4 space-y-2">
+      {[1, 2, 3].map(i => <Skeleton key={i} className="h-9 w-full rounded" />)}
+    </div>
+  );
 
-    return (
-        <div className="pt-6">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b">
-                <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-semibold">Condiciones activas</h3>
-                    <Badge variant="secondary" className="font-mono">{conditions.length}</Badge>
-                </div>
-            </div>
+  if (conditions.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+      <Stethoscope className="w-8 h-8 mb-2 opacity-20" />
+      <p className="text-xs">Sin condiciones registradas</p>
+    </div>
+  );
 
-            {loading ? (
-                <div className="space-y-4">
-                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
-                </div>
-            ) : conditions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground bg-background border border-dashed rounded-xl">
-                    <Stethoscope className="w-10 h-10 mb-3 opacity-20" />
-                    <p className="text-sm">Sin condiciones registradas</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 gap-3">
-                    {conditions.map((c) => (
-                        <Card key={c.id} className="hover:border-primary/30 transition-colors">
-                            <CardContent className="flex items-start justify-between p-4">
-                                <div className="flex gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary shrink-0 border border-primary/10">
-                                        <Stethoscope className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <Badge variant="outline" className="font-mono text-[10px] h-5">{c.code || 'S/C'}</Badge>
-                                            <p className="font-semibold text-sm">{c.code_display || 'Sin descripción'}</p>
-                                        </div>
-                                        {c.onset_date && <p className="text-xs text-muted-foreground">Desde: {formatDate(c.onset_date)}</p>}
-                                    </div>
-                                </div>
-                                {c.clinical_status && (
-                                    <Badge variant={c.clinical_status === 'active' ? 'outline' : 'secondary'} className={cn(
-                                        "font-medium border-0 h-6",
-                                        c.clinical_status === 'active' ? 'bg-emerald-500/10 text-emerald-700' : 'bg-muted text-muted-foreground'
-                                    )}>
-                                        {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
-                                    </Badge>
-                                )}
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
+  return (
+    <table className="w-full table-dense">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descripción</th>
+          <th>Desde</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {conditions.map(c => (
+          <tr key={c.id}>
+            <td><span className="font-mono text-muted-foreground">{c.code || '—'}</span></td>
+            <td className="font-medium">{c.code_display || 'Sin descripción'}</td>
+            <td className="text-muted-foreground">{c.onset_date ? formatDate(c.onset_date) : '—'}</td>
+            <td>
+              <Badge variant={c.clinical_status === 'active' ? 'pill-success' : 'pill-muted'}>
+                {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
+              </Badge>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
 }
 
 // ─── Tab: Alergias ─────────────────────────────────────────────────────────────
-function TabAlergias({ patientId }: { patientId: string | null }) {
-    const [allergies, setAllergies] = useState<AllergyIntolerance[]>([]);
-    const [loading, setLoading] = useState(false);
+function TabAlergias({ patientId }: { patientId: string }) {
+  const [allergies, setAllergies] = useState<AllergyIntolerance[]>([]);
+  const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        if (!patientId) return;
-        let cancelled = false;
-        (async () => {
-            setLoading(true);
-            try {
-                const data = await getPatientClinicalData(patientId);
-                if (!cancelled) setAllergies(data.allergies as AllergyIntolerance[]);
-            } finally {
-                if (!cancelled) setLoading(false);
-            }
-        })();
-        return () => { cancelled = true; };
-    }, [patientId]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getPatientClinicalData(patientId)
+      .then(data => { if (!cancelled) setAllergies(data.allergies as AllergyIntolerance[]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [patientId]);
 
-    if (!patientId) return <NoPatientSelected />;
+  if (loading) return (
+    <div className="p-4 space-y-2">
+      {[1, 2].map(i => <Skeleton key={i} className="h-9 w-full rounded" />)}
+    </div>
+  );
 
-    return (
-        <div className="pt-6">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b text-destructive">
-                <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5" />
-                    <h3 className="text-lg font-semibold text-foreground">Alergias e intolerancias</h3>
-                    <Badge variant="destructive" className="font-mono">{allergies.length}</Badge>
-                </div>
-            </div>
+  if (allergies.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+      <AlertTriangle className="w-8 h-8 mb-2 opacity-20" />
+      <p className="text-xs">Sin alergias registradas</p>
+    </div>
+  );
 
-            {loading ? (
-                <div className="space-y-4">
-                    {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
-                </div>
-            ) : allergies.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground bg-background border border-dashed rounded-xl">
-                    <AlertTriangle className="w-10 h-10 mb-3 opacity-20" />
-                    <p className="text-sm">Sin alergias registradas</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 gap-3">
-                    {allergies.map((a) => (
-                        <Card key={a.id} className="bg-destructive/5 border-destructive/20 hover:bg-destructive/10 transition-colors">
-                            <CardContent className="flex items-start justify-between p-4">
-                                <div className="flex gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
-                                        <AlertCircle className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-sm text-destructive tracking-tight leading-none mb-1">{a.code_display || 'Sin descripción'}</p>
-                                        <p className="text-xs text-destructive/70 font-medium">
-                                            {a.criticality ? `Prioridad ${a.criticality}` : 'Alergía registrada'}
-                                        </p>
-                                    </div>
-                                </div>
-                                {a.category && (
-                                    <Badge variant="outline" className="border-destructive/20 text-destructive text-[10px] uppercase font-mono bg-destructive/5 h-6">
-                                        {a.category}
-                                    </Badge>
-                                )}
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
+  return (
+    <table className="w-full table-dense">
+      <thead>
+        <tr>
+          <th>Alérgeno</th>
+          <th>Categoría</th>
+          <th>Criticidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        {allergies.map(a => (
+          <tr key={a.id}>
+            <td>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-3.5 h-3.5 text-destructive shrink-0" />
+                <span className="font-medium text-destructive">{a.code_display || 'Sin descripción'}</span>
+              </div>
+            </td>
+            <td>{a.category ? <Badge variant="secondary">{a.category}</Badge> : '—'}</td>
+            <td>
+              {a.criticality
+                ? <Badge variant={a.criticality === 'high' ? 'pill-danger' : 'pill-warning'}>{a.criticality}</Badge>
+                : '—'
+              }
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
 }
 
 // ─── Tab: Encuentros ───────────────────────────────────────────────────────────
-function TabEncuentros({ patientId, router }: { patientId: string | null; router: ReturnType<typeof useRouter> }) {
-    const [encounters, setEncounters] = useState<EncounterWithSpecialty[]>([]);
-    const [loading, setLoading] = useState(false);
+function TabEncuentros({ patientId, router }: { patientId: string; router: ReturnType<typeof useRouter> }) {
+  const [encounters, setEncounters] = useState<EncounterWithSpecialty[]>([]);
+  const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        if (!patientId) return;
-        // Avoid cascading setState: start fetch immediately, update state once done
-        let cancelled = false;
-        (async () => {
-            setLoading(true);
-            try {
-                const { data } = await getEncounters(patientId);
-                if (!cancelled) setEncounters((data || []) as EncounterWithSpecialty[]);
-            } finally {
-                if (!cancelled) setLoading(false);
-            }
-        })();
-        return () => { cancelled = true; };
-    }, [patientId]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getEncounters(patientId)
+      .then(({ data }) => { if (!cancelled) setEncounters((data || []) as EncounterWithSpecialty[]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [patientId]);
 
-    if (!patientId) return <NoPatientSelected />;
+  if (loading) return (
+    <div className="p-4 space-y-2">
+      {[1, 2, 3].map(i => <Skeleton key={i} className="h-9 w-full rounded" />)}
+    </div>
+  );
 
-    return (
-        <div className="pt-6">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b">
-                <div className="flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold">Historial de consultas</h3>
-                    <Badge variant="secondary" className="font-mono">{encounters.length}</Badge>
-                </div>
-            </div>
+  if (encounters.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+      <Activity className="w-8 h-8 mb-2 opacity-20" />
+      <p className="text-xs">Sin consultas registradas</p>
+    </div>
+  );
 
-            {loading ? (
-                <div className="space-y-4">
-                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
-                </div>
-            ) : encounters.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground bg-background border border-dashed rounded-xl">
-                    <Activity className="w-10 h-10 mb-3 opacity-20" />
-                    <p className="text-sm">Sin consultas registradas</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 gap-4">
-                    {encounters.map((enc) => (
-                        <Card key={enc.id} className="hover:border-primary/40 transition-all group overflow-hidden">
-                            <CardContent className="p-0">
-                                <div className="flex items-start p-5 gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-primary/5 group-hover:bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/10 transition-colors">
-                                        <Calendar className="w-6 h-6" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <p className="font-semibold text-sm">{formatDate(enc.start_time)}</p>
-                                            <Badge variant={enc.status === 'finished' ? 'outline' : 'default'} className={cn(
-                                                "font-medium border-0 h-5 text-[10px]",
-                                                enc.status === 'finished' ? 'bg-emerald-500/10 text-emerald-700' : 'bg-primary/10 text-primary'
-                                            )}>
-                                                {enc.status === 'finished' ? 'Completada' : 'En curso'}
-                                            </Badge>
-                                        </div>
-                                        <p className="font-medium text-sm mb-1 line-clamp-1">{(Array.isArray(enc.reason_code) ? (enc.reason_code as Array<{ text?: string }>)[0]?.text : undefined) || 'Consulta general'}</p>
-                                        {enc.evolution_note && (
-                                            <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
-                                                {enc.evolution_note}
-                                            </p>
-                                        )}
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 px-0 text-primary hover:bg-transparent hover:text-primary/80 gap-1 text-xs font-semibold"
-                                            onClick={() => router.push(`/history?patientId=${patientId}`)}
-                                        >
-                                            Ver en Historia Clínica <ArrowRight className="w-3.5 h-3.5" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            )}
+  return (
+    <table className="w-full table-dense">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Motivo</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {encounters.map(enc => (
+          <tr key={enc.id}>
+            <td className="font-mono text-muted-foreground">{formatDate(enc.start_time)}</td>
+            <td className="font-medium max-w-[240px]">
+              <span className="truncate block">
+                {(Array.isArray(enc.reason_code)
+                  ? (enc.reason_code as Array<{ text?: string }>)[0]?.text
+                  : undefined) || 'Consulta general'}
+              </span>
+            </td>
+            <td>
+              <Badge variant={enc.status === 'finished' ? 'pill-success' : 'pill-info'}>
+                {enc.status === 'finished' ? 'Completada' : 'En curso'}
+              </Badge>
+            </td>
+            <td>
+              <button
+                className="row-actions flex items-center gap-1 text-[11px] text-primary hover:underline"
+                onClick={() => router.push(`/history?patientId=${patientId}`)}
+              >
+                Ver <ArrowRight className="w-3 h-3" />
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+// ─── Panel de detalle — aparece al seleccionar una fila ───────────────────────
+const DETAIL_TABS = [
+  { value: 'resumen', label: 'Resumen', icon: User },
+  { value: 'condiciones', label: 'Condiciones', icon: Stethoscope },
+  { value: 'alergias', label: 'Alergias', icon: AlertTriangle },
+  { value: 'encuentros', label: 'Encuentros', icon: Activity },
+] as const;
+
+type DetailTabValue = typeof DETAIL_TABS[number]['value'];
+
+function DetailPanel({
+  patient,
+  onClose,
+  router,
+}: {
+  patient: Patient;
+  onClose: () => void;
+  router: ReturnType<typeof useRouter>;
+}) {
+  const [activeTab, setActiveTab] = useState<DetailTabValue>('resumen');
+
+  return (
+    <div className="flex flex-col border-t border-border bg-background" style={{ height: '42%' }}>
+      {/* ── Panel header ── */}
+      <div className="flex items-center h-10 px-3 py-2 border-b border-border shrink-0 gap-3">
+        {/* Avatar + nombre */}
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-semibold shrink-0">
+            {getInitials(patient)}
+          </div>
+          <span className="text-sm font-medium truncate">{getFullName(patient)}</span>
+          <Badge variant={patient.active !== false ? 'pill-success' : 'pill-muted'}>
+            {patient.active !== false ? 'Activo' : 'Inactivo'}
+          </Badge>
         </div>
-    );
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={v => setActiveTab(v as DetailTabValue)} className="flex-1">
+          <TabsList className="h-auto bg-transparent p-0 gap-0 rounded-none">
+            {DETAIL_TABS.map(tab => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className={cn(
+                  'relative h-10 gap-1.5 rounded-none text-[11px] font-medium px-3',
+                  'text-muted-foreground data-[state=active]:text-foreground',
+                  'data-[state=active]:shadow-none data-[state=active]:bg-transparent',
+                  'data-[state=active]:after:absolute data-[state=active]:after:bottom-0',
+                  'data-[state=active]:after:left-0 data-[state=active]:after:right-0',
+                  'data-[state=active]:after:h-px data-[state=active]:after:bg-primary',
+                  'hover:text-foreground transition-colors'
+                )}
+              >
+                <tab.icon className="w-3.5 h-3.5" /> {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
+        {/* Cerrar panel */}
+        <button
+          onClick={onClose}
+          className="ml-auto flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+          aria-label="Cerrar panel"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* ── Contenido del tab seleccionado ── */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {activeTab === 'resumen' && <TabResumen patient={patient} />}
+        {activeTab === 'condiciones' && <TabCondiciones patientId={patient.id} />}
+        {activeTab === 'alergias' && <TabAlergias patientId={patient.id} />}
+        {activeTab === 'encuentros' && <TabEncuentros patientId={patient.id} router={router} />}
+      </div>
+    </div>
+  );
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
-import PatientsSidebar from './PatientsSidebar';
-
-const LIST_TAB_VALUES = ['resumen', 'condiciones', 'alergias', 'encuentros'] as const;
-const LIST_VIEW_KEY = 'patients-list';
-
 export default function PatientsListView({ patients, totalItems, page, pageSize }: PatientsListViewProps) {
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const { setSecondaryPanel } = useLayoutStore();
-    const { patientViewState, setPatientTab, addTab } = useTabStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { setSecondaryPanel } = useLayoutStore();
 
-    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-    const savedListTab = LIST_TAB_VALUES[patientViewState[LIST_VIEW_KEY] ?? 0] ?? 'resumen';
-    const [activeListTab, setActiveListTab] = useState(savedListTab);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [localQ, setLocalQ] = useState(searchParams.get('q') || '');
+  const [filters, setFilters] = useState<PatientFilters>({
+    status: 'all',
+    gender: 'all',
+    q: searchParams.get('q') || '',
+  });
 
-    const updateParams = React.useCallback((updates: Record<string, string | number>) => {
-        const params = new URLSearchParams(searchParams.toString());
-        Object.entries(updates).forEach(([key, value]) => {
-            if (value) params.set(key, String(value));
-            else params.delete(key);
-        });
-        router.push(`${pathname}?${params.toString()}`);
-    }, [pathname, router, searchParams]);
+  // Estado para anchos de columna (Estilo Excel)
+  const [colWidths, setColWidths] = useState({
+    name: 280,
+    ci: 140,
+    gender: 100,
+    age: 80,
+    phone: 140,
+    status: 120
+  });
 
-    useEffect(() => {
-        setSecondaryPanel(
-            <PatientsSidebar
-                patients={patients}
-                loading={false}
-                selectedId={selectedPatient?.id || null}
-                onSelect={(id) => {
-                    const p = patients.find(pat => pat.id === id);
-                    if (p) {
-                        setSelectedPatient(p);
-                        const name = `${p.name_given?.join(' ')} ${p.name_family}`;
-                        addTab({ title: name, url: `/patients/${id}` });
-                    }
-                    router.push(`/patients/${id}`);
-                }}
-                onNew={() => router.push('/patients/new')}
-                searchQuery={searchParams.get('q') || ''}
-                onSearchChange={(q) => updateParams({ q })}
-            />,
-            'Pacientes'
-        );
-    }, [patients, selectedPatient, searchParams, router, setSecondaryPanel, updateParams, addTab]);
+  // Lógica de redimensión horizontal únicamente
+  const startResizing = useCallback((col: keyof typeof colWidths, e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.pageX;
+    const startWidth = colWidths[col];
 
-    const handlePagination = (newPage: number) => {
-        updateParams({ page: newPage });
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.pageX - startX;
+      const newWidth = Math.max(60, startWidth + deltaX);
+      setColWidths(prev => ({ ...prev, [col]: newWidth }));
     };
 
-    return (
-        <section className="flex flex-col h-full bg-background">
-            {/* ══ Tabs — contexto único que envuelve header + contenido ══ */}
-            <Tabs
-                value={activeListTab}
-                onValueChange={(val) => {
-                    setActiveListTab(val as typeof LIST_TAB_VALUES[number]);
-                    const idx = LIST_TAB_VALUES.indexOf(val as typeof LIST_TAB_VALUES[number]);
-                    if (idx !== -1) setPatientTab(LIST_VIEW_KEY, idx);
-                }}
-                className="flex flex-col flex-1 min-h-0"
-            >
-                {/* ── Bloque 1: Toolbar ── */}
-                <header className="flex items-center justify-between h-12 px-4 border-b border-border shrink-0 bg-background">
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-sm font-semibold text-foreground">Pacientes</h1>
-                        <span className="text-[11px] font-mono text-muted-foreground/60 bg-muted px-1.5 py-0.5 rounded border border-border/60">
-                            {totalItems}
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = 'default';
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    document.body.style.cursor = 'col-resize';
+  }, [colWidths]);
+
+  const ResizeHandle = ({ col }: { col: keyof typeof colWidths }) => (
+    <div
+      onMouseDown={(e) => startResizing(col, e)}
+      className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/30 active:bg-primary/60 z-30 transition-colors"
+      title="Arrastrar para redimensionar"
+    />
+  );
+
+  const updateParams = useCallback((updates: Record<string, string | number>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) params.set(key, String(value));
+      else params.delete(key);
+    });
+    router.push(`${pathname}?${params.toString()}`);
+  }, [pathname, router, searchParams]);
+
+  // Filtrado client-side sobre el array recibido
+  const filteredPatients = patients.filter(p => {
+    if (filters.status === 'active' && p.active === false) return false;
+    if (filters.status === 'inactive' && p.active !== false) return false;
+    if (filters.gender !== 'all' && p.gender !== filters.gender) return false;
+    if (localQ) {
+      const q = localQ.toLowerCase();
+      const name = getFullName(p).toLowerCase();
+      const ci = getCI(p).toLowerCase();
+      if (!name.includes(q) && !ci.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const handleSelectPatient = useCallback((p: Patient) => {
+    setSelectedPatient(prev => prev?.id === p.id ? null : p);
+  }, []);
+
+  // Montar el sidebar de contexto
+  useEffect(() => {
+    setSecondaryPanel(<PatientsSidebar />, 'Pacientes');
+  }, [patients, setSecondaryPanel]);
+
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const hasFilters = filters.status !== 'all' || filters.gender !== 'all' || localQ !== '';
+
+  const handleFilterChange = useCallback((key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  return (
+    <section className="flex flex-col h-full bg-background">
+
+      {/* ── Nueva Toolbar Integrada (Estilo Supabase) ── */}
+      <TableSearch 
+        value={localQ}
+        onChange={setLocalQ}
+        hasFilters={hasFilters}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onNewRecord={() => router.push('/patients/new')}
+        placeholder="Buscar por nombre o cédula..."
+      />
+
+      {/* ── Tabla + Panel de detalle ── */}
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+
+        {/* Tabla Estilo Excel/Supabase Grid */}
+        <div className={cn(
+          'overflow-auto min-h-0 transition-all scrollbar-thin border-l border-t border-border/40 relative',
+          selectedPatient ? 'flex-[0_0_58%]' : 'flex-1'
+        )}>
+          <table className="w-full border-separate border-spacing-0 table-fixed">
+            <thead className="sticky top-0 z-30 bg-[#f8f9fa] dark:bg-muted/20">
+              <tr>
+                <th className="w-10 h-10 border-r border-b border-border px-0 text-center sticky left-0 z-40 bg-[#f8f9fa] dark:bg-muted/20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                  <input
+                    type="checkbox"
+                    className="h-3.5 w-3.5 rounded border-border/60 accent-primary"
+                  />
+                </th>
+                <th style={{ width: colWidths.name }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
+                    Paciente <ResizeHandle col="name" />
+                </th>
+                <th style={{ width: colWidths.ci }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
+                    Cédula <ResizeHandle col="ci" />
+                </th>
+                <th style={{ width: colWidths.gender }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
+                    Género <ResizeHandle col="gender" />
+                </th>
+                <th style={{ width: colWidths.age }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
+                    Edad <ResizeHandle col="age" />
+                </th>
+                <th style={{ width: colWidths.phone }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
+                    Teléfono <ResizeHandle col="phone" />
+                </th>
+                <th style={{ width: colWidths.status }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
+                    Estado <ResizeHandle col="status" />
+                </th>
+                <th className="min-w-[100px] h-10 border-b border-border px-3 relative"></th>
+              </tr>
+            </thead>
+            <tbody className="bg-background">
+              {filteredPatients.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-24 text-center text-muted-foreground/60 text-[13px] italic border-b border-r border-border">
+                    No se encontraron registros.
+                  </td>
+                </tr>
+              ) : filteredPatients.map((p, idx) => {
+                const isSelected = selectedPatient?.id === p.id;
+                
+                return (
+                  <tr
+                    key={p.id}
+                    data-selected={isSelected}
+                    className={cn(
+                      "group transition-all duration-75 even:bg-muted/5",
+                      isSelected 
+                          ? "bg-primary/[0.04] z-10 relative" 
+                          : "hover:bg-[#f8f9fa] dark:hover:bg-muted/10"
+                    )}
+                    onClick={() => handleSelectPatient(p)}
+                  >
+                    <td className={cn(
+                      "h-11 border-r border-b border-border text-center px-0 sticky left-0 z-20 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
+                      isSelected ? "bg-[#f0f7ff] dark:bg-primary/10" : "bg-background group-hover:bg-[#f8f9fa] dark:group-hover:bg-muted/10"
+                    )} onClick={e => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        className="h-3.5 w-3.5 rounded border-border/60 accent-primary"
+                      />
+                      {isSelected && <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary z-30" />}
+                    </td>
+                    <td className="h-11 border-r border-b border-border px-3 overflow-hidden">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          'h-7 w-7 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors shadow-sm',
+                          isSelected ? 'bg-primary text-white' : 'bg-muted text-muted-foreground group-hover:bg-muted-foreground/10'
+                        )}>
+                          {getInitials(p)}
+                        </div>
+                        <span className={cn(
+                          "text-[13.5px] truncate",
+                          isSelected ? "text-primary font-bold" : "text-foreground font-medium group-hover:text-primary transition-colors"
+                        )}>
+                          {getFullName(p)}
                         </span>
-                    </div>
-                    <Button
-                        onClick={() => router.push('/patients/new')}
-                        size="sm"
-                        className="h-7 px-3 text-xs gap-1.5"
-                    >
-                        <Plus className="w-3.5 h-3.5" /> Nuevo Paciente
-                    </Button>
-                </header>
+                      </div>
+                    </td>
+                    <td className="h-11 border-r border-b border-border px-3 font-mono text-[12px] text-muted-foreground/80 tabular-nums">
+                      {getCI(p)}
+                    </td>
+                    <td className="h-11 border-r border-b border-border px-3 text-[13px] text-muted-foreground">
+                      {getGenderLabel(p.gender)}
+                    </td>
+                    <td className="h-11 border-r border-b border-border px-3 text-[13px] text-muted-foreground tabular-nums">
+                      {calcAge(p.birth_date)}
+                    </td>
+                    <td className="h-11 border-r border-b border-border px-3 font-mono text-[12px] text-muted-foreground/80 tabular-nums">
+                      {getPhone(p)}
+                    </td>
+                    <td className="h-11 border-r border-b border-border px-3">
+                      <Badge 
+                        variant={p.active !== false ? 'pill-success' : 'pill-muted'}
+                        className="font-semibold"
+                      >
+                        {p.active !== false ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </td>
+                    <td className="h-11 border-b border-border px-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <TooltipProvider>
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(`/patients/${p.id}`);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded text-muted-foreground hover:text-primary transition-all"
+                              >
+                                <Maximize2 className="w-3.5 h-3.5" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="text-[11px] font-medium py-1 px-2">
+                              Expandir registro
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <ChevronRight className={cn(
+                          "w-3.5 h-3.5 transition-all duration-200",
+                          isSelected ? "text-primary opacity-100 translate-x-0" : "text-muted-foreground/40 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+                        )} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
-                {/* ── Bloque 2: Tab nav — línea inferior como indicador ── */}
-                <div className="px-4 border-b border-border shrink-0 bg-background">
-                    <TabsList className="h-auto bg-transparent p-0 gap-0 rounded-none">
-                        {[
-                            { value: 'resumen', label: 'Resumen', icon: User },
-                            { value: 'condiciones', label: 'Condiciones', icon: Stethoscope },
-                            { value: 'alergias', label: 'Alergias', icon: AlertTriangle },
-                            { value: 'encuentros', label: 'Encuentros', icon: Activity },
-                        ].map((tab) => (
-                            <TabsTrigger
-                                key={tab.value}
-                                value={tab.value}
-                                className={cn(
-                                    'relative h-10 gap-1.5 rounded-none text-xs font-medium px-3',
-                                    'text-muted-foreground data-[state=active]:text-foreground',
-                                    'data-[state=active]:shadow-none data-[state=active]:bg-transparent',
-                                    'data-[state=active]:after:absolute data-[state=active]:after:bottom-0',
-                                    'data-[state=active]:after:left-0 data-[state=active]:after:right-0',
-                                    'data-[state=active]:after:h-px data-[state=active]:after:bg-primary',
-                                    'hover:text-foreground hover:bg-sidebar-accent/30 transition-colors'
-                                )}
-                            >
-                                <tab.icon className="w-3.5 h-3.5" /> {tab.label}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </div>
+        {/* Panel de detalle — aparece al seleccionar fila */}
+        {selectedPatient && (
+          <DetailPanel
+            patient={selectedPatient}
+            onClose={() => setSelectedPatient(null)}
+            router={router}
+          />
+        )}
+      </div>
 
-                {/* ── Bloque 3: Contenido ── */}
-                <div className="flex-1 overflow-y-auto min-h-0">
-                    <div className="px-6 pb-20">
-                        <TabsContent value="resumen" className="mt-0 outline-none">
-                            <TabResumen patient={selectedPatient} />
-                        </TabsContent>
-                        <TabsContent value="condiciones" className="mt-0 outline-none">
-                            <TabCondiciones patientId={selectedPatient?.id ?? null} />
-                        </TabsContent>
-                        <TabsContent value="alergias" className="mt-0 outline-none">
-                            <TabAlergias patientId={selectedPatient?.id ?? null} />
-                        </TabsContent>
-                        <TabsContent value="encuentros" className="mt-0 outline-none">
-                            <TabEncuentros patientId={selectedPatient?.id ?? null} router={router} />
-                        </TabsContent>
-                    </div>
-                </div>
-            </Tabs>
-
-            {/* ── Paginación — bloque fijo inferior ── */}
-            {totalItems > pageSize && (
-                <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-background shrink-0">
-                    <p className="text-[11px] text-muted-foreground/70 font-mono">
-                        Página {page} · {totalItems} registros
-                    </p>
-                    <div className="flex gap-1">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handlePagination(page - 1)}
-                            disabled={page <= 1}
-                            className="h-7 px-2 text-xs disabled:opacity-30"
-                        >
-                            Anterior
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handlePagination(page + 1)}
-                            disabled={page * pageSize >= totalItems}
-                            className="h-7 px-2 text-xs disabled:opacity-30"
-                        >
-                            Siguiente
-                        </Button>
-                    </div>
-                </div>
-            )}
-        </section>
-    );
+      {/* ── Barra de paginación — estilo Supabase ── */}
+      <div className="flex items-center justify-between px-3 py-2 h-9 border-t border-border bg-background shrink-0">
+        <span className="text-[11px] font-mono text-muted-foreground/70">
+          {totalItems} registros
+        </span>
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <span>Página {page} de {Math.max(totalPages, 1)}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            disabled={page <= 1}
+            onClick={() => updateParams({ page: page - 1 })}
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            disabled={page * pageSize >= totalItems}
+            onClick={() => updateParams({ page: page + 1 })}
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
 }
