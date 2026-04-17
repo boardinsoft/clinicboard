@@ -79,26 +79,22 @@ function AppointmentCard({
         <Card
             onClick={onClick}
             className={cn(
-                'cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]',
-                'border-border/40 hover:border-primary/30 group',
-                isActive ? 'ring-2 ring-primary/50 shadow-md border-primary' : 'shadow-sm'
+                'cursor-pointer transition-all hover:translate-y-[-2px] active:translate-y-0',
+                'border-border/40 hover:border-primary/30 group bg-card',
+                isActive ? 'ring-2 ring-primary/40 shadow-md border-primary' : 'shadow-sm'
             )}
         >
-            <CardContent style={{ padding: 'var(--apt-card-padding)' }}>
+            <CardContent className="p-3">
                 {/* Fila superior: hora + etiqueta de estado */}
                 <div className="flex items-center justify-between gap-2 mb-2">
-                    <div
-                        className="flex items-center gap-1.5 font-mono text-foreground/70"
-                        style={{ fontSize: 'var(--apt-card-time-size)' }}
-                    >
+                    <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold text-muted-foreground">
                         <Clock className="w-3 h-3 shrink-0" />
                         {formatTime(apt.start_time)}
                     </div>
                     {statusCfg && (
                         <span
-                            className="font-medium shrink-0"
+                            className="font-bold text-[9px] uppercase tracking-widest shrink-0"
                             style={{
-                                fontSize: 'var(--apt-card-badge-size)',
                                 color: statusCfg.colorStyle,
                             }}
                         >
@@ -108,41 +104,35 @@ function AppointmentCard({
                 </div>
 
                 {/* Nombre del paciente */}
-                <div
-                    className="font-semibold leading-tight group-hover:text-primary transition-colors"
-                    style={{ fontSize: 'var(--apt-card-title-size)' }}
-                >
+                <div className="text-sm font-bold leading-tight group-hover:text-primary transition-colors tracking-tight text-foreground">
                     {patientName}
                 </div>
 
                 {/* Badges secundarios */}
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                     <Badge
                         variant="outline"
-                        className="border-none bg-muted/50 text-muted-foreground font-medium uppercase"
-                        style={{ fontSize: 'var(--apt-card-badge-size)' }}
+                        className="border-none bg-muted/60 text-muted-foreground font-bold uppercase text-[9px] px-1.5 h-4.5"
                     >
                         {apt.appointment_type || 'Consulta'}
                     </Badge>
+                    
                     {apt.status === 'arrived' && (
                         <Badge
-                            className="bg-transparent border-none font-medium text-orange-600 dark:text-orange-400 uppercase"
-                            style={{ fontSize: 'var(--apt-card-badge-size)' }}
+                            className="bg-orange-500/10 border-none font-bold text-orange-600 dark:text-orange-400 uppercase text-[9px] px-1.5 h-4.5"
                         >
                             {formatRelativeTime(apt.updated_at)}
                         </Badge>
                     )}
+                    
                     {isPast && (
-                        <Badge
-                            className="bg-amber-500/10 border border-amber-500/20 font-medium text-amber-700 dark:text-amber-400 uppercase gap-1"
-                            style={{ fontSize: 'var(--apt-card-badge-size)' }}
-                        >
-                            <AlertCircle className="w-2.5 h-2.5" />
-                            Horario pasado
-                        </Badge>
+                        <div className="flex items-center text-amber-600 dark:text-amber-500 gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                        </div>
                     )}
+                    
                     {apt.status === 'fulfilled' && (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[var(--apt-status-fulfilled)]" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 ml-auto" />
                     )}
                 </div>
             </CardContent>

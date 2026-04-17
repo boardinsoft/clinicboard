@@ -2,19 +2,21 @@
 
 import { ReactNode, useEffect } from 'react';
 import { useLayoutStore } from '@/store/useLayoutStore';
-import PatientTabBar from '@/components/patients/PatientTabBar';
+import SpecialtySidebar from './SpecialtySidebar';
 
 export default function HistoryLayout({ children }: { children: ReactNode }) {
-    const { setSubHeaderContent } = useLayoutStore();
+    const { setSubHeaderContent, setSecondaryPanel } = useLayoutStore();
 
     useEffect(() => {
-        // En Historia Clínica también usamos el TabBar de pacientes ya que la navegación es por paciente
-        setSubHeaderContent(<PatientTabBar />);
+        // Historia Clínica no usa subheader de tabs — la navegación es via sidebar
+        setSubHeaderContent(null);
+        // Sidebar de navegación del módulo
+        setSecondaryPanel(<SpecialtySidebar />, 'Historia clínica');
 
         return () => {
-            setSubHeaderContent(null);
+            setSubHeaderContent(undefined);
         };
-    }, [setSubHeaderContent]);
+    }, [setSubHeaderContent, setSecondaryPanel]);
 
     return <>{children}</>;
 }

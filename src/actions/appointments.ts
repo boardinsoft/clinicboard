@@ -759,7 +759,7 @@ export async function startConsultationFromAppointment(appointmentId: string, de
 
     return {
         success: true,
-        encounterId: encounterResult.data?.id,
+        encounterId: encounterResult.data?.encounter?.id,
         patientId: appt.patient_id,
     };
 }

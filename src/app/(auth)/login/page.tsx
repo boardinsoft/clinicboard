@@ -28,6 +28,8 @@ type LoginFormValues = z.infer<typeof loginSchema>
 const emailErrorId = "email-error"
 const passwordErrorId = "password-error"
 
+import Link from 'next/link';
+
 export default function LoginPage() {
   const [loading, setLoading] = React.useState(false)
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
@@ -65,7 +67,7 @@ export default function LoginPage() {
       {/* LEFT PANEL — visible solo en desktop */}
       <div
         className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center relative p-12"
-        style={{ background: "linear-gradient(135deg, var(--brand-primary), var(--brand-indigo))" }}
+        style={{ background: "linear-gradient(135deg, var(--brand-blue), var(--brand-indigo))" }}
       >
         {/* TODO: reemplazar con <Image fill className="object-cover"> + overlay bg-black/40 cuando llegue la foto */}
         <Image
@@ -111,8 +113,8 @@ export default function LoginPage() {
                 ) : (
                   <AlertCircle className="h-4 w-4" />
                 )}
-                <AlertTitle className="text-xs font-bold uppercase tracking-wider">
-                  {errorType === "rate_limit" ? "Demasiados Intentos" : "Acceso Denegado"}
+                <AlertTitle className="text-xs font-bold tracking-wider">
+                  {errorType === "rate_limit" ? "Demasiados intentos" : "Acceso denegado"}
                 </AlertTitle>
                 <AlertDescription className="text-sm opacity-90">
                   {errorMsg}
@@ -123,13 +125,13 @@ export default function LoginPage() {
             <Field className="space-y-2">
               <FieldLabel
                 htmlFor="email"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80"
+                className="text-xs font-semibold tracking-wider text-muted-foreground/80"
               >
-                Correo Electrónico
+                Correo electrónico
               </FieldLabel>
               <InputGroup
                 className={cn(
-                  "bg-background/20 border-border/20 focus-within:border-primary/50 transition-colors",
+                  "bg-muted/30 border-border/20 focus-within:border-primary/50 transition-colors",
                   form.formState.errors.email && "border-destructive/50"
                 )}
               >
@@ -158,13 +160,13 @@ export default function LoginPage() {
             <Field className="space-y-2">
               <FieldLabel
                 htmlFor="password"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80"
+                className="text-xs font-semibold tracking-wider text-muted-foreground/80"
               >
                 Contraseña
               </FieldLabel>
               <InputGroup
                 className={cn(
-                  "bg-background/20 border-border/20 focus-within:border-primary/50 transition-colors",
+                  "bg-muted/30 border-border/20 focus-within:border-primary/50 transition-colors",
                   form.formState.errors.password && "border-destructive/50"
                 )}
               >
@@ -218,12 +220,12 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-muted-foreground">
             ¿No estás registrado?{" "}
-            <a
+            <Link
               href="/#contacto"
               className="text-primary underline-offset-4 hover:underline font-medium"
             >
               Contacta con ventas
-            </a>
+            </Link>
           </p>
 
           <p className="text-center text-xs text-muted-foreground/40 pt-4">

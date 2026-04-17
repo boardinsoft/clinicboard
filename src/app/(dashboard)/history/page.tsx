@@ -5,11 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import { useTabStore } from '@/store/useTabStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { getPatients, getPatientClinicalData, updatePatientAnamnesis } from '@/actions/patients';
-import { createEncounter as createEncounterAction, saveEncounterDraft, finalizeEncounter, getEncounters } from '@/actions/encounters';
-import type { Patient, Condition, AllergyIntolerance, EncounterWithSpecialty } from '@/types/database.types';
+import { saveEncounterDraft, finalizeEncounter, getEncounters } from '@/actions/encounters';
+import type { Patient, Condition, AllergyIntolerance, EncounterWithClinicalNote } from '@/types/database.types';
 import type { Json } from '@/types/database.types';
 import type { Path, UseFormRegister } from 'react-hook-form';
-import SpecialtySidebar from './SpecialtySidebar';
+import HistoryPatientPanel from './HistoryPatientPanel';
 import DiagnosisSearch from '@/components/clinical/DiagnosisSearch';
 import { FIELD_SUGGESTION_MAP } from '@/lib/constants/wizard-suggestions';
 import { cn } from '@/lib/utils';
@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -29,6 +28,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Switch } from '@/components/ui/switch';
 import { Stepper, StepperHeader, StepperIcon, StepperItem, StepperSeparator } from '@/components/ui/stepper';
 import { toast } from 'sonner';
+import { PageHeader, PageContainer } from '@/components/ui/PageLayout';
 
 // Form & Validation
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -1260,8 +1260,9 @@ const WIZARD_PROFILES: Record<WizardProfileKey, { title: string; description: st
     },
     telemedicine: {
         title: 'Asistente: Teleconsulta / Remoto',
-        description: 'Triaje rápido de síntomas y gestión de prescripciones.',
+        description: 'Triaje rápido de síntomas y gestión de recetas.',
         steps: [
+
             { icon: <Zap className="w-5 h-5" />, label: 'Triaje Remoto', key: 'telemed_triage' },
         ],
     },
@@ -1414,106 +1415,6 @@ function FieldSuggestions({
 }
 
 // ─── Workspace Header ─────────────────────────────────────────────────────────
-function HistoryWorkspaceHeader({
-    selectedPatient,
-    isSaving,
-    isReadOnly,
-    onSave,
-    onFinalize,
-    onReset,
-    activeEncounterId,
-    children
-}: {
-    selectedPatient: Patient | null;
-    isSaving: boolean;
-    isReadOnly: boolean;
-    onSave: () => void;
-    onFinalize: () => void;
-    onReset: () => void;
-    activeEncounterId: string | null;
-    children?: React.ReactNode;
-}) {
-    return (
-        <header className="bg-background border-b border-border/10 z-10 sticky top-0 px-6 pt-6 pb-0 flex-shrink-0">
-            <div className="flex items-start justify-between mb-4">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight mb-1">Historia Clínica</h1>
-                    {selectedPatient ? (
-                        <div className="flex flex-col gap-1">
-                            <p className="text-sm text-foreground flex items-center gap-2">
-                                <span className="font-semibold text-primary">
-                                    {selectedPatient?.name_family}, {selectedPatient?.name_given?.join(' ')}
-                                </span>
-                                <span className="text-muted-foreground">·</span>
-                                <span className="text-xs bg-muted px-2 py-0.5 rounded-full font-mono">
-                                    {(selectedPatient?.identifiers as Array<Record<string, string>> | null)?.[0]?.value || 'S/D'}
-                                </span>
-                            </p>
-                            {isReadOnly && (
-                                <Badge variant="outline" className="w-fit gap-1.5 border-amber-200 bg-amber-50 text-amber-700 animate-in fade-in slide-in-from-left-2">
-                                    <Shield className="w-3 h-3" /> Encuentro Finalizado (Solo Lectura)
-                                </Badge>
-                            )}
-                        </div>
-                    ) : (
-                        <p className="text-sm text-muted-foreground font-medium flex items-center gap-2">
-                            <Users className="w-4 h-4 opacity-50" /> Seleccione un paciente para comenzar
-                        </p>
-                    )}
-                </div>
-
-                <div className="flex items-center gap-2.5">
-                    {activeEncounterId && !isReadOnly && (
-                        <Button 
-                            variant="destructive"
-                            size="sm"
-                            className="h-9 px-4 font-bold border-2 border-primary/10 shadow-lg shadow-primary/10 transition-all hover:scale-105 active:scale-95 gap-2"
-                            onClick={onFinalize}
-                            disabled={isSaving}
-                        >
-                            <CheckCircle2 className="w-4 h-4" /> Finalizar Acto
-                        </Button>
-                    )}
-                    
-                    <Button 
-                        form="history-form"
-                        variant={isReadOnly ? "outline" : "default"}
-                        size="sm"
-                        className={cn(
-                            "h-9 px-4 font-bold transition-all hover:scale-105 active:scale-95 gap-2",
-                            !isReadOnly && "shadow-lg shadow-primary/10"
-                        )}
-                        onClick={(e) => {
-                            if (isReadOnly) {
-                                e.preventDefault();
-                                toast.info("Este encuentro está finalizado y no puede ser modificado.");
-                                return;
-                            }
-                            onSave();
-                        }}
-                        disabled={isSaving || isReadOnly}
-                    >
-                        {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        {isReadOnly ? "Nota Permanente" : activeEncounterId ? "Actualizar Borrador" : "Guardar Registro"}
-                    </Button>
-
-                    <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="h-9 px-4 font-semibold text-muted-foreground hover:bg-muted/50 rounded-xl"
-                        onClick={onReset}
-                        disabled={isSaving}
-                    >
-                        Limpiar
-                    </Button>
-                </div>
-            </div>
-
-            {children}
-        </header>
-    );
-}
-
 // ─── Main Component ─────────────────────────────────────────────────────────────
 export default function HistoryPage() {
     const searchParams = useSearchParams();
@@ -1532,7 +1433,7 @@ export default function HistoryPage() {
     const [clinicalData, setClinicalData] = useState<{ conditions: Condition[]; allergies: AllergyIntolerance[] }>(
         tabData?.clinicalData || { conditions: [], allergies: [] }
     );
-    const [pastEncounters, setPastEncounters] = useState<EncounterWithSpecialty[]>([]);
+    const [pastEncounters, setPastEncounters] = useState<EncounterWithClinicalNote[]>([]);
     const [activeEncounterId, setActiveEncounterId] = useState<string | null>(null);
     const [isReadOnly, setIsReadOnly] = useState(false);
     const [isLoadingEncounters, setIsLoadingEncounters] = useState(false);
@@ -1545,8 +1446,6 @@ export default function HistoryPage() {
     const [isAddingAddendum, setIsAddingAddendum] = useState(false);
     const [newAddendumContent, setNewAddendumContent] = useState('');
     const [isSavingAddendum, setIsSavingAddendum] = useState(false);
-
-    const appointmentId = searchParams.get('appointmentId');
 
     // Initialize Form
     const form = useForm<EncounterFormValues>({
@@ -1574,24 +1473,25 @@ export default function HistoryPage() {
         }
     }, [form]);
 
-    const handleEncounterSelect = useCallback((id: string | null, enc: EncounterWithSpecialty | null) => {
+    const handleEncounterSelect = useCallback((id: string | null, enc: EncounterWithClinicalNote | null) => {
         setActiveEncounterId(id);
         const readOnly = enc?.status === 'finished';
         setIsReadOnly(readOnly);
         if (enc) {
             // Check if reason_code is an array of objects
-            const chiefComplaint = (Array.isArray(enc.reason_code) 
-                ? (enc.reason_code as Array<Record<string, string>>)[0]?.text 
-                : typeof enc.reason_code === 'string' ? enc.reason_code : '') || '';
+            const rc = enc.clinical_note?.reason_code;
+            const chiefComplaint = (Array.isArray(rc)
+                ? (rc as Array<Record<string, string>>)[0]?.text
+                : typeof rc === 'string' ? rc : '') || '';
 
             form.reset({
                 ...defaultValues,
-                evolutionNote: enc.evolution_note || '',
-                treatmentPlan: enc.plan || '',
+                evolutionNote: enc.clinical_note?.evolution_note || '',
+                treatmentPlan: enc.clinical_note?.plan || '',
                 chiefComplaint,
                 vitals: (enc.vital_signs as Record<string, unknown>) || defaultVitals,
-                physicalExam: (enc.physical_exam as unknown as EncounterFormValues["physicalExam"]) || defaultValues.physicalExam,
-                diagnoses: (enc.diagnosis as unknown as EncounterFormValues["diagnoses"]) || [],
+                physicalExam: (enc.clinical_note?.physical_exam as unknown as EncounterFormValues["physicalExam"]) || defaultValues.physicalExam,
+                diagnoses: (enc.clinical_note?.diagnosis as unknown as EncounterFormValues["diagnoses"]) || [],
                 encounterCategory: enc.encounter_category || '',
                 encounterSubcategory: enc.encounter_subcategory || '',
             });
@@ -1644,43 +1544,25 @@ export default function HistoryPage() {
         const subjective = `MOTIVO: ${values.chiefComplaint} | ENFERMEDAD ACTUAL: ${illnessDesc.replace(/\n/g, ' ')}`;
         const objective = `SIGNOS VITALES: ${JSON.stringify(values.vitals)} | HALLAZGOS FÍSICOS: ${abnormalFindings || 'Normal'} | EVOLUCIÓN: ${values.evolutionNote}`;
         
-        let res;
-        if (activeEncounterId) {
-            // Update draft
-            res = await saveEncounterDraft(activeEncounterId, {
-                subjective,
-                objective,
-                analysis: '',
-                plan: values.treatmentPlan,
-                evolution_note: values.evolutionNote,
-                vital_signs: values.vitals,
-                physical_exam: values.physicalExam as unknown as Json,
-                diagnosis: values.diagnoses.map(d => ({ code: d.code, description: d.description, type: d.type })),
+        // Un encuentro solo puede guardarse si ya existe (fue creado desde una cita)
+        if (!activeEncounterId) {
+            toast.error('Sin encuentro activo', {
+                description: 'Para registrar una consulta, inicia el encuentro desde la agenda de citas.'
             });
-        } else {
-            // Create new encounter
-            res = await createEncounterAction({
-                patient_id: selectedPatient.id,
-                encounter_class: 'AMB',
-                start_time: new Date().toISOString(),
-                appointment_id: appointmentId || undefined,
-            });
-
-            if (res.data) {
-                // Now save data part
-                await saveEncounterDraft(res.data.id, {
-                    subjective,
-                    objective,
-                    analysis: '',
-                    plan: values.treatmentPlan,
-                    evolution_note: values.evolutionNote,
-                    vital_signs: values.vitals,
-                    physical_exam: values.physicalExam as unknown as Json,
-                    diagnosis: values.diagnoses.map(d => ({ code: d.code, description: d.description, type: d.type })),
-                });
-                setActiveEncounterId(res.data.id);
-            }
+            setIsSaving(false);
+            return;
         }
+
+        const res = await saveEncounterDraft(activeEncounterId, {
+            subjective,
+            objective,
+            analysis: '',
+            plan: values.treatmentPlan,
+            evolution_note: values.evolutionNote,
+            vital_signs: values.vitals,
+            physical_exam: values.physicalExam as unknown as Json,
+            diagnosis: values.diagnoses.map(d => ({ code: d.code, description: d.description, type: d.type })),
+        });
 
         await reqAnamnesis;
         setIsSaving(false);
@@ -1695,7 +1577,7 @@ export default function HistoryPage() {
             });
 
             const { data: encs } = await getEncounters(selectedPatient.id);
-            setPastEncounters((encs || []) as EncounterWithSpecialty[]);
+            setPastEncounters((encs || []) as EncounterWithClinicalNote[]);
         }
     };
 
@@ -1712,10 +1594,10 @@ export default function HistoryPage() {
             });
             if (selectedPatient) {
                 const { data: encs } = await getEncounters(selectedPatient.id);
-                setPastEncounters((encs || []) as EncounterWithSpecialty[]);
+                setPastEncounters((encs || []) as EncounterWithClinicalNote[]);
                 const finished = (encs || []).find(e => e.id === activeEncounterId);
                 if (finished) {
-                    handleEncounterSelect(activeEncounterId, finished as EncounterWithSpecialty);
+                    handleEncounterSelect(activeEncounterId, finished as EncounterWithClinicalNote);
                 }
             }
         }
@@ -1724,7 +1606,7 @@ export default function HistoryPage() {
     // Setup Sidebar
     useEffect(() => {
         setSecondaryPanel(
-            <SpecialtySidebar
+            <HistoryPatientPanel
                 selectedPatient={selectedPatient}
                 encounters={pastEncounters}
                 activeEncounterId={activeEncounterId}
@@ -1732,7 +1614,7 @@ export default function HistoryPage() {
                 isLoading={isLoadingEncounters}
                 onNewEncounter={handleReset}
             />,
-            'Especialidades'
+            'Historial'
         );
     }, [selectedPatient, pastEncounters, activeEncounterId, isLoadingEncounters, setSecondaryPanel, handleEncounterSelect, handleReset]);
 
@@ -1775,7 +1657,7 @@ export default function HistoryPage() {
                         ]);
 
                         setClinicalData(cData as { conditions: Condition[]; allergies: AllergyIntolerance[] });
-                        setPastEncounters((encs || []) as EncounterWithSpecialty[]);
+                        setPastEncounters((encs || []) as EncounterWithClinicalNote[]);
 
                         if (encId && encs) {
                             const encounter = encs.find(e => e.id === encId);
@@ -1784,18 +1666,19 @@ export default function HistoryPage() {
                                 const readOnly = encounter.status === 'finished';
                                 setIsReadOnly(readOnly);
                                 
-                                const chiefComplaint = (Array.isArray(encounter.reason_code) 
-                                    ? (encounter.reason_code as Array<Record<string, string>>)[0]?.text 
-                                    : typeof encounter.reason_code === 'string' ? encounter.reason_code : '') || '';
+                                const rcEnc = encounter.clinical_note?.reason_code;
+                                const chiefComplaint = (Array.isArray(rcEnc)
+                                    ? (rcEnc as Array<Record<string, string>>)[0]?.text
+                                    : typeof rcEnc === 'string' ? rcEnc : '') || '';
 
                                 form.reset({
                                     ...form.getValues(),
-                                    evolutionNote: encounter.evolution_note || '',
-                                    treatmentPlan: encounter.plan || '',
+                                    evolutionNote: encounter.clinical_note?.evolution_note || '',
+                                    treatmentPlan: encounter.clinical_note?.plan || '',
                                     chiefComplaint,
                                     vitals: (encounter.vital_signs as Record<string, unknown>) || defaultVitals,
-                                    physicalExam: (encounter.physical_exam as unknown as EncounterFormValues["physicalExam"]) || defaultValues.physicalExam,
-                                    diagnoses: (encounter.diagnosis as unknown as EncounterFormValues["diagnoses"]) || [],
+                                    physicalExam: (encounter.clinical_note?.physical_exam as unknown as EncounterFormValues["physicalExam"]) || defaultValues.physicalExam,
+                                    diagnoses: (encounter.clinical_note?.diagnosis as unknown as EncounterFormValues["diagnoses"]) || [],
                                     encounterCategory: encounter.encounter_category || '',
                                     encounterSubcategory: encounter.encounter_subcategory || '',
                                 });
@@ -1839,133 +1722,172 @@ export default function HistoryPage() {
         }
     };
 
+    const patientName = selectedPatient 
+        ? `${selectedPatient.name_family}, ${selectedPatient.name_given?.join(' ')}`
+        : 'Historia Clínica';
+
     return (
         <div className="flex flex-col h-full bg-background overflow-hidden">
             <form id="history-form" onSubmit={form.handleSubmit(onSave as SubmitHandler<EncounterFormValues>)} className="flex flex-col h-full w-full">
-                <Tabs defaultValue="subjective" className="flex flex-col h-full w-full">
-
-                    {/* ── Workspace Header ───────────────────────────────────────────── */}
-                    <HistoryWorkspaceHeader
-                        selectedPatient={selectedPatient}
-                        isSaving={isSaving}
-                        isReadOnly={isReadOnly}
-                        activeEncounterId={activeEncounterId}
-                        onSave={form.handleSubmit(onSave as SubmitHandler<EncounterFormValues>)}
-                        onFinalize={() => {
-                            if (confirm('¿Desea finalizar este encuentro? Una vez finalizado, la nota clínica será permanente y no podrá editarse directamente.')) {
-                                handleFinalize();
-                            }
-                        }}
-                        onReset={handleReset}
-                    >
-                        <TabsList className="mb-4 bg-muted/10 border-border/10">
-                            <TabsTrigger value="subjective" className="gap-2 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary transition-all">
-                                <User className="w-4 h-4" /> Subjetivo
-                            </TabsTrigger>
-                            <TabsTrigger value="objective" className="gap-2 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary transition-all">
-                                <Activity className="w-4 h-4" /> Objetivo
-                            </TabsTrigger>
-                            <TabsTrigger value="plan" className="gap-2 px-6 data-[state=active]:bg-primary/10 data-[state=active]:text-primary transition-all">
-                                <Stethoscope className="w-4 h-4" /> Evaluación y Plan
-                            </TabsTrigger>
+                {/* ── Page Header ───────────────────────────────────────────── */}
+                <PageHeader
+                    title={patientName}
+                    description={selectedPatient ? `Expediente: ${(selectedPatient?.identifiers as Array<Record<string, string>> | null)?.[0]?.value || 'S/D'}` : 'Seleccione un paciente para comenzar el registro clínico.'}
+                    breadcrumbs={[
+                        { label: 'Historia Clínica', href: '/history' },
+                        ...(selectedPatient ? [{ label: patientName }] : [])
+                    ]}
+                    actions={
+                        <div className="flex items-center gap-2.5">
                             {isReadOnly && (
-                                <TabsTrigger value="addenda" className="gap-2 px-6 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800 transition-all">
-                                    <ClipboardList className="w-4 h-4" /> Historial y Addenda
-                                </TabsTrigger>
+                                <Badge variant="outline" className="h-8 gap-1.5 border-amber-200 bg-amber-50 text-amber-700 font-bold px-3">
+                                    <Shield className="w-3 h-3" /> Finalizado
+                                </Badge>
                             )}
-                        </TabsList>
-                    </HistoryWorkspaceHeader>
+                            
+                            {activeEncounterId && !isReadOnly && (
+                                <Button 
+                                    variant="destructive"
+                                    size="sm"
+                                    className="h-8 px-3 font-bold gap-2 shadow-sm"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (confirm('¿Desea finalizar este encuentro? Una vez finalizado, la nota clínica será permanente y no podrá editarse directamente.')) {
+                                            handleFinalize();
+                                        }
+                                    }}
+                                    disabled={isSaving}
+                                >
+                                    <CheckCircle2 className="w-3.5 h-3.5" /> Finalizar Acto
+                                </Button>
+                            )}
+                            
+                            <Button 
+                                type="submit"
+                                variant={isReadOnly ? "outline" : "default"}
+                                size="sm"
+                                className={cn(
+                                    "h-8 px-4 font-bold gap-2",
+                                    !isReadOnly && "shadow-sm"
+                                )}
+                                disabled={isSaving || isReadOnly || !selectedPatient}
+                            >
+                                {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                                {isReadOnly ? "Lectura Permanente" : activeEncounterId ? "Actualizar" : "Guardar"}
+                            </Button>
 
-                    {/* ── Body ────────────────────────────────────────────── */}
-                    <fieldset disabled={isReadOnly} className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto px-6 py-6 pb-24 border-none p-0 m-0">
+                            <Button 
+                                variant="ghost" 
+                                size="sm"
+                                className="h-8 px-3 font-semibold text-muted-foreground"
+                                onClick={handleReset}
+                                disabled={isSaving || isReadOnly}
+                            >
+                                Limpiar
+                            </Button>
+                        </div>
+                    }
+                    className="py-6"
+                />
 
-                        {/* Panels */}
-                        <TabsContent value="subjective" className="m-0 space-y-8 outline-none focus:outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <Card className="border-border/10 bg-card/20 backdrop-blur-sm overflow-hidden shadow-none">
-                                <CardHeader className="border-b border-border/5 bg-muted/5">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-primary/10 rounded-lg">
-                                            <User className="w-5 h-5 text-primary" />
+                <div className="flex-1 overflow-y-auto w-full">
+                    <PageContainer size="full" className="pb-24">
+                        <fieldset disabled={isReadOnly} className="border-none p-0 m-0 space-y-8">
+                            {/* ── NOTA CLÍNICA — Secciones verticales continuas ── */}
+
+                            {/* ── Separador de sección ───────────────────────── */}
+                            <div className="flex items-center gap-3">
+                                <span className="text-[11px] font-bold text-muted-foreground/60">SUBJETIVO</span>
+                                <div className="flex-1 h-px bg-border/40" />
+                            </div>
+
+                            {/* Sección: Subjetivo */}
+                            <div className="space-y-8">
+                                <Card className="border-border/10 bg-card/20 backdrop-blur-sm overflow-hidden shadow-none">
+                                    <CardHeader className="border-b border-border/5 bg-muted/5">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-primary/10 rounded-lg">
+                                                <User className="w-5 h-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <CardTitle className="text-lg font-bold tracking-tight">Motivo de Consulta y Antecedentes</CardTitle>
+                                                <CardDescription className="text-xs">Registre la información subjetiva proporcionada por el paciente.</CardDescription>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <CardTitle className="text-lg font-bold tracking-tight">Motivo de Consulta y Antecedentes</CardTitle>
-                                            <CardDescription className="text-xs">Registre la información subjetiva proporcionada por el paciente.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="p-8 space-y-10">
+                                        <div className="mb-8">
+                                            <Field>
+                                                <FieldLabel className="text-xs font-medium text-muted-foreground mb-2.5">
+                                                    Tipo de Consulta <span className="text-primary">*</span>
+                                                </FieldLabel>
+                                                <Controller
+                                                    control={form.control}
+                                                    name="encounterSubcategory"
+                                                    render={({ field }) => (
+                                                        <Select onValueChange={(val) => {
+                                                            field.onChange(val);
+                                                            form.setValue('encounterCategory', getCategoryForSubcategory(val));
+                                                        }} value={field.value} disabled={!selectedPatient}>
+                                                            <SelectTrigger className="w-full bg-background/50 border-border/10 focus:ring-1 focus:ring-primary/20 transition-all rounded-xl h-11 text-sm font-medium">
+                                                                <SelectValue placeholder="Clasificación de la visita..." />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="max-h-[300px]">
+                                                                {ENCOUNTER_CATEGORIES.map(group => (
+                                                                    <SelectGroup key={group.label}>
+                                                                        <SelectLabel className="bg-muted/5 font-semibold text-xs tracking-tight text-primary/70">{group.label}</SelectLabel>
+                                                                        {group.options.map(opt => (
+                                                                            <SelectItem key={opt} value={opt} className="text-sm cursor-pointer">{opt}</SelectItem>
+                                                                        ))}
+                                                                    </SelectGroup>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    )}
+                                                />
+                                            </Field>
                                         </div>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="p-8 space-y-10">
-                                    <div className="mb-8">
+
                                         <Field>
                                             <FieldLabel className="text-xs font-medium text-muted-foreground mb-2.5">
-                                                Tipo de Consulta <span className="text-primary">*</span>
+                                                Motivo de consulta <span className="text-primary">*</span>
                                             </FieldLabel>
-                                            <Controller
-                                                control={form.control}
-                                                name="encounterSubcategory"
-                                                render={({ field }) => (
-                                                    <Select onValueChange={(val) => {
-                                                        field.onChange(val);
-                                                        form.setValue('encounterCategory', getCategoryForSubcategory(val));
-                                                    }} value={field.value} disabled={!selectedPatient}>
-                                                        <SelectTrigger className="w-full bg-background/50 border-border/10 focus:ring-1 focus:ring-primary/20 transition-all rounded-xl h-11 text-sm font-medium">
-                                                            <SelectValue placeholder="Clasificación de la visita..." />
+                                            {selectedPatient && (
+                                                <div className="mb-2">
+                                                    <Select
+                                                        key={chiefComplaintSelectKey}
+                                                        onValueChange={(val) => {
+                                                            const current = form.getValues("chiefComplaint");
+                                                            const cleanCurrent = current ? current.trim() : "";
+                                                            const separator = cleanCurrent
+                                                                ? (cleanCurrent.endsWith(".") || cleanCurrent.endsWith(",") ? " " : ", ")
+                                                                : "";
+                                                            form.setValue("chiefComplaint", cleanCurrent + separator + val, { shouldDirty: true });
+                                                            setChiefComplaintSelectKey(k => k + 1);
+                                                        }}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Sugerencias según tipo de consulta..." />
                                                         </SelectTrigger>
-                                                        <SelectContent className="max-h-[300px]">
-                                                            {ENCOUNTER_CATEGORIES.map(group => (
-                                                                <SelectGroup key={group.label}>
-                                                                    <SelectLabel className="bg-muted/5 font-semibold text-xs tracking-tight text-primary/70">{group.label}</SelectLabel>
-                                                                    {group.options.map(opt => (
-                                                                        <SelectItem key={opt} value={opt} className="text-sm cursor-pointer">{opt}</SelectItem>
-                                                                    ))}
-                                                                </SelectGroup>
+                                                        <SelectContent>
+                                                            {(SUGGESTION_MAP[form.watch('encounterSubcategory') || ''] || SUGGESTION_MAP[form.watch('encounterCategory') || 'default'] || SUGGESTION_MAP['default']).map(symptom => (
+                                                                <SelectItem key={symptom} value={symptom}>{symptom}</SelectItem>
                                                             ))}
                                                         </SelectContent>
                                                     </Select>
-                                                )}
+                                                </div>
+                                            )}
+                                            <Textarea
+                                                {...form.register("chiefComplaint")}
+                                                placeholder="¿Por qué acude el paciente hoy?"
+                                                rows={2}
+                                                disabled={!selectedPatient}
+                                                className="resize-none min-h-[80px]"
                                             />
+                                            {form.formState.errors.chiefComplaint && (
+                                                <FieldError className="text-[10px] mt-1.5">{form.formState.errors.chiefComplaint.message}</FieldError>
+                                            )}
                                         </Field>
-                                    </div>
-
-                                    <Field>
-                                        <FieldLabel className="text-xs font-medium text-muted-foreground mb-2.5">
-                                            Motivo de consulta <span className="text-primary">*</span>
-                                        </FieldLabel>
-                                        {selectedPatient && (
-                                            <div className="mb-2">
-                                                <Select
-                                                    key={chiefComplaintSelectKey}
-                                                    onValueChange={(val) => {
-                                                        const current = form.getValues("chiefComplaint");
-                                                        const cleanCurrent = current ? current.trim() : "";
-                                                        const separator = cleanCurrent
-                                                            ? (cleanCurrent.endsWith(".") || cleanCurrent.endsWith(",") ? " " : ", ")
-                                                            : "";
-                                                        form.setValue("chiefComplaint", cleanCurrent + separator + val, { shouldDirty: true });
-                                                        setChiefComplaintSelectKey(k => k + 1);
-                                                    }}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Sugerencias según tipo de consulta..." />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {(SUGGESTION_MAP[form.watch('encounterSubcategory') || ''] || SUGGESTION_MAP[form.watch('encounterCategory') || 'default'] || SUGGESTION_MAP['default']).map(symptom => (
-                                                            <SelectItem key={symptom} value={symptom}>{symptom}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        )}
-                                        <Textarea
-                                            {...form.register("chiefComplaint")}
-                                            placeholder="¿Por qué acude el paciente hoy?"
-                                            rows={2}
-                                            disabled={!selectedPatient}
-                                            className="resize-none min-h-[80px]"
-                                        />
-                                        {form.formState.errors.chiefComplaint && (
-                                            <FieldError className="text-[10px] mt-1.5">{form.formState.errors.chiefComplaint.message}</FieldError>
-                                        )}
-                                    </Field>
 
                                     <div className="mt-8 mb-4">
                                         <Dialog open={isWizardOpen} onOpenChange={(open) => { setIsWizardOpen(open); if (open) setWizardStep(0); }}>
@@ -4527,9 +4449,16 @@ export default function HistoryPage() {
                                     </CardContent>
                                 </Card>
                             </div>
-                        </TabsContent>
+                        </div>
 
-                        <TabsContent value="objective" className="m-0 space-y-8 outline-none focus:outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        {/* ── Separador de sección ───────────────────────── */}
+                        <div className="flex items-center gap-3 mt-10 mb-6">
+                            <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/50">Objetivo</span>
+                            <div className="flex-1 h-px bg-border/40" />
+                        </div>
+
+                        {/* Sección: Objetivo */}
+                        <div className="space-y-8">
                             <Card className="border-border/10 bg-card/20 backdrop-blur-sm overflow-hidden shadow-none">
                                 <CardHeader className="border-b border-border/5 bg-muted/5">
                                     <div className="flex items-center gap-3">
@@ -4599,9 +4528,16 @@ export default function HistoryPage() {
                                     </div>
                                 </CardContent>
                             </Card>
-                        </TabsContent>
+                        </div>
 
-                        <TabsContent value="plan" className="m-0 space-y-8 outline-none focus:outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        {/* ── Separador de sección ───────────────────────── */}
+                        <div className="flex items-center gap-3 mt-10 mb-6">
+                            <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/50">Evaluación y Plan</span>
+                            <div className="flex-1 h-px bg-border/40" />
+                        </div>
+
+                        {/* Sección: Evaluación y Plan */}
+                        <div className="space-y-8">
 
                             {/* AI Scribe Promo */}
                             <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 flex items-center justify-between shadow-sm backdrop-blur-md">
@@ -4769,11 +4705,15 @@ export default function HistoryPage() {
                                     </div>
                                 </CardContent>
                             </Card>
-                        </TabsContent>
+                        </div>
                     </fieldset>
 
                     {isReadOnly && activeEncounterId && (
-                        <TabsContent value="addenda" className="m-0 space-y-8 outline-none focus:outline-none animate-in fade-in slide-in-from-bottom-2 duration-300 flex-1 overflow-y-auto w-full max-w-5xl mx-auto px-6 py-6 pb-24">
+                        <div className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto px-6 py-6 pb-24">
+                        <div className="flex items-center gap-3 mb-6">
+                            <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/50">Notas Evolutivas</span>
+                            <div className="flex-1 h-px bg-border/40" />
+                        </div>
                             <div className="space-y-6">
                                 <Alert className="bg-amber-50 border-amber-200 text-amber-800">
                                     <Shield className="w-4 h-4 text-amber-600" />
@@ -4851,9 +4791,10 @@ export default function HistoryPage() {
                                     </div>
                                 </div>
                             </div>
-                        </TabsContent>
+                        </div>
                     )}
-                </Tabs>
+                    </PageContainer>
+                </div>
             </form>
         </div>
     );

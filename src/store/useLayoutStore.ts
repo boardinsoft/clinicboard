@@ -5,7 +5,10 @@ interface LayoutState {
     secondaryPanelOpen: boolean;
     secondaryPanelContent: ReactNode | null;
     secondaryPanelTitle: string;
-    subHeaderContent: ReactNode | null;
+    // undefined = default (show TabBar if tabs exist)
+    // null      = explicitly suppressed (hide SubHeader entirely)
+    // ReactNode = show custom content
+    subHeaderContent: ReactNode | null | undefined;
     rightPanelOpen: boolean;
 
     setSecondaryPanelOpen: (open: boolean) => void;
@@ -21,7 +24,7 @@ export const useLayoutStore = create<LayoutState>((set) => ({
     secondaryPanelOpen: false,
     secondaryPanelContent: null,
     secondaryPanelTitle: '',
-    subHeaderContent: null,
+    subHeaderContent: undefined,
     rightPanelOpen: false,
 
     setSecondaryPanelOpen: (open) => set({ secondaryPanelOpen: open }),

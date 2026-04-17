@@ -10,7 +10,7 @@ import TabBar from './TabBar';
 import { useTabStore } from '@/store/useTabStore';
 import TabContentManager from './TabContentManager';
 import { useLayoutStore } from '@/store/useLayoutStore';
-import RightPanel from './RightPanel';
+import AIAssistant from './AIAssistant';
 import { searchGlobal, SearchResult } from '@/actions/search';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -111,11 +111,11 @@ function IconBtn({
         <Button
           variant="ghost"
           size="icon"
-          className={cn('h-8 w-8 text-muted-foreground hover:text-foreground', className)}
+          className={cn('h-8 w-8 text-muted-foreground hover:text-foreground transition-colors duration-100', className)}
           onClick={onClick}
           aria-label={label}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-3.5 w-3.5" />
         </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom" className="text-xs">{label}</TooltipContent>
@@ -125,9 +125,9 @@ function IconBtn({
 
 // ─── Sub-Header — TabBar filtrado + toggle panel secundario ──────────────────
 function SubHeader() {
-  const { 
-    secondaryPanelContent, 
-    secondaryPanelOpen, 
+  const {
+    secondaryPanelContent,
+    secondaryPanelOpen,
     toggleSecondaryPanel,
     subHeaderContent
   } = useLayoutStore();
@@ -136,13 +136,15 @@ function SubHeader() {
   const modulePrefix = pathname === '/' ? '' : '/' + pathname.split('/')[1];
   const moduleTabs = modulePrefix ? tabs.filter(t => t.url.startsWith(modulePrefix)) : [];
 
-  // Don't render if there's no custom content AND no generic tabs
-  if (!subHeaderContent && moduleTabs.length === 0) return null;
+  // null = explicitly suppressed by the current module layout
+  if (subHeaderContent === null) return null;
+  // undefined (default) with no tabs = nothing to show
+  if (subHeaderContent === undefined && moduleTabs.length === 0) return null;
 
   const hasSidebarContent = !!secondaryPanelContent;
 
   return (
-    <div className="flex items-center h-12 border-b border-border bg-[#f8f9fa] dark:bg-muted/20 shrink-0 px-2 gap-0">
+    <div className="flex items-center h-12 border-b border-border bg-muted shrink-0 px-2 gap-0">
       {hasSidebarContent && (
         <>
           <Tooltip>
@@ -152,20 +154,20 @@ function SubHeader() {
                 aria-label={secondaryPanelOpen ? 'Colapsar panel' : 'Expandir panel'}
                 className={cn(
                   'flex h-7 w-7 items-center justify-center rounded-md',
-                  'text-muted-foreground hover:bg-muted hover:text-foreground transition-colors'
+                  'text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors duration-100'
                 )}
               >
-                <PanelLeft className={cn('w-4 h-4 transition-transform duration-200', !secondaryPanelOpen && 'rotate-180')} />
+                <PanelLeft className={cn('w-3.5 h-3.5 transition-transform duration-200', !secondaryPanelOpen && 'rotate-180')} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs">
               {secondaryPanelOpen ? 'Colapsar panel' : 'Expandir panel'}
             </TooltipContent>
           </Tooltip>
-          <div className="w-px h-4 bg-border mx-2" />
+          <div className="w-px h-4 bg-border/40 mx-2" />
         </>
       )}
-      {subHeaderContent || <TabBar />}
+      {subHeaderContent !== undefined ? subHeaderContent : <TabBar />}
     </div>
   );
 }
@@ -178,10 +180,10 @@ function IconRail() {
 
   return (
     <aside
-      className="flex flex-col items-center w-14 h-full bg-sidebar shrink-0 z-20 border-r border-border"
+      className="flex flex-col items-center w-14 h-full bg-sidebar shrink-0 z-20 border-r border-border/40"
       aria-label="Navegación principal"
     >
-      {/* ── Nav items — hover-only, estilo Supabase ── */}
+      {/* ── Nav items — estilo Supabase ── */}
       <nav className="flex flex-col flex-1 w-full pt-2">
         {navMain.map((item) => {
           const isActive =
@@ -206,13 +208,12 @@ function IconRail() {
                     aria-label={item.label}
                     className={cn(
                       'flex h-9 w-9 items-center justify-center rounded-md transition-colors duration-100',
-                      // Solo hover — sin barra ni fondo activo
                       isActive
-                        ? 'text-foreground'
-                        : 'text-sidebar-foreground/40 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                        ? 'text-foreground bg-muted/60'
+                        : 'text-muted-foreground/60 hover:bg-muted/40 hover:text-foreground'
                     )}
                   >
-                    <item.icon className="w-[17px] h-[17px]" />
+                    <item.icon className="w-[18px] h-[18px]" />
                   </button>
                 </div>
               </TooltipTrigger>
@@ -225,16 +226,16 @@ function IconRail() {
       </nav>
 
       {/* ── Footer: Settings ── */}
-      <div className="flex flex-col w-full border-t border-border pb-2 pt-1">
+      <div className="flex flex-col w-full border-t border-border/40 pb-2 pt-1">
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="flex items-center justify-center py-0.5">
               <button
                 onClick={() => router.push('/settings')}
-                className="flex h-9 w-9 items-center justify-center rounded-md text-sidebar-foreground/50 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all"
+                className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground/60 hover:bg-muted/40 hover:text-foreground transition-colors duration-100"
                 aria-label="Configuración"
               >
-                <Settings className="w-[17px] h-[17px]" />
+                <Settings className="w-[18px] h-[18px]" />
               </button>
             </div>
           </TooltipTrigger>
@@ -257,7 +258,7 @@ function SecondarySidebar() {
 
   return (
     <aside
-      className="flex flex-col h-full w-64 bg-sidebar shrink-0 overflow-hidden border-r border-border"
+      className="flex flex-col h-full w-64 bg-sidebar shrink-0 overflow-hidden border-r border-border/40"
       data-secondary-sidebar
     >
       {/* ── Contenido inyectado por cada página ── */}
@@ -273,7 +274,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { addTab, activeTabId } = useTabStore();
-  const { rightPanelOpen, secondaryPanelOpen, setSecondaryPanelOpen } = useLayoutStore();
+  const { rightPanelOpen, secondaryPanelOpen, setSecondaryPanelOpen, toggleRightPanel } = useLayoutStore();
   const { theme, setTheme } = useTheme();
 
   const [mounted, setMounted] = useState(false);
@@ -295,8 +296,11 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
     .slice(0, 2);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
     useTabStore.getState().loadPersistedTabs();
+    return () => clearTimeout(timer);
   }, []);
 
   // Cmd+K
@@ -357,7 +361,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
     <div className="flex flex-col w-full h-screen overflow-hidden bg-background text-foreground">
 
       {/* ══ HEADER FULL-WIDTH ══════════════════════════════════════════════════ */}
-      <header className="flex items-center h-12 border-b border-border px-3 shrink-0 bg-background z-30 gap-2">
+      <header className="flex items-center h-12 border-b border-border/40 px-3 shrink-0 bg-sidebar z-30 gap-2">
 
         {/* ── Logo Clinicboard — sin fondo ── */}
         <div className="flex items-center gap-2 shrink-0 mr-2">
@@ -381,7 +385,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
         >
           <SearchIcon className="h-3.5 w-3.5 shrink-0" />
           <span className="flex-1 text-left">Buscar o ir a...</span>
-          <kbd className="pointer-events-none font-mono text-[10px] bg-muted px-1 py-0.5 rounded border border-border/50 text-muted-foreground/70">
+          <kbd className="pointer-events-none font-mono text-[11px] bg-muted px-1.5 py-0.5 rounded border border-border/50 text-muted-foreground/70">
             ⌘K
           </kbd>
         </button>
@@ -391,7 +395,12 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
 
         {/* ── Acciones derecha ── */}
         <div className="flex items-center gap-0.5 shrink-0">
-          <IconBtn icon={Sparkles} label="Asistente IA" className="text-muted-foreground/70" />
+          <IconBtn
+            icon={Sparkles}
+            label="Asistente IA"
+            onClick={toggleRightPanel}
+            className={cn("text-muted-foreground/70 transition-colors", rightPanelOpen && "text-primary")}
+          />
           <IconBtn icon={HelpCircle} label="Ayuda" />
           <IconBtn icon={Bell} label="Notificaciones" />
 
@@ -402,11 +411,11 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
             <DropdownMenuTrigger asChild>
               <button
                 id="user-menu-trigger"
-                className="flex h-7 w-7 items-center justify-center rounded-full hover:ring-2 hover:ring-primary/30 transition-all outline-none"
+                className="flex h-7 w-7 items-center justify-center rounded-full hover:ring-1 hover:ring-primary/20 transition-all outline-none"
                 aria-label={`Usuario: ${displayName}`}
               >
                 <Avatar className="h-7 w-7">
-                  <AvatarFallback className="bg-primary/15 text-primary text-[10px] font-semibold rounded-full">
+                  <AvatarFallback className="bg-primary/10 text-primary text-[11px] font-semibold rounded-full">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -466,14 +475,11 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
         {/* ── Contenido principal ── */}
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
 
-          {/* Sub-header — TabBar filtrado + toggle panel (dentro del área de contenido) */}
-          <SubHeader />
-
           {/* Global Search Dialog */}
           <Dialog open={isSearchModalOpen} onOpenChange={setIsSearchModalOpen}>
             <DialogContent className="sm:max-w-xl top-[18%] w-full rounded-xl shadow-xl p-0 overflow-hidden border-border bg-popover">
               <div className="flex items-center border-b px-3 py-2">
-                <SearchIcon className="mr-2 h-4 w-4 shrink-0 opacity-40" />
+                <SearchIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
                 <Input
                   className="flex h-11 w-full bg-transparent py-3 text-sm outline-none border-0 focus-visible:ring-0 placeholder:text-muted-foreground"
                   placeholder="Pacientes, citas, historias, acciones..."
@@ -481,7 +487,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
                 />
-                <kbd className="hidden sm:inline-flex items-center gap-1 rounded border border-border/60 bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground mr-1">
+                <kbd className="hidden sm:inline-flex items-center gap-1 rounded border border-border/60 bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground mr-1">
                   ESC
                 </kbd>
               </div>
@@ -496,7 +502,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                 )}
                 {!isSearching && searchQuery.length === 0 && (
                   <div className="p-2">
-                    <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                    <p className="px-2 py-1 text-[11px] font-semibold text-muted-foreground/70 mb-1">
                       Acciones rápidas
                     </p>
                     {QUICK_ACTIONS.map(action => (
@@ -505,7 +511,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                         onClick={() => { setIsSearchModalOpen(false); router.push(action.href); }}
                         className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-accent rounded-md transition-colors"
                       >
-                        <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-muted shrink-0">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-muted/50 shrink-0">
                           <action.icon className="w-3.5 h-3.5 text-muted-foreground" />
                         </div>
                         <div className="flex flex-col min-w-0">
@@ -556,7 +562,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                 <>
                   <ResizableHandle withHandle className="w-px bg-border hover:bg-primary/40 transition-colors" />
                   <ResizablePanel id="right-panel" defaultSize="25%" minSize="20%" maxSize="50%">
-                    <RightPanel />
+                    <AIAssistant />
                   </ResizablePanel>
                 </>
               )}

@@ -35,7 +35,7 @@ export function normalizeTabUrl(url: string): string {
         const urlObj = new URL(url, 'http://localhost');
 
         // Eliminar trailing slash del pathname
-        let pathname = urlObj.pathname.replace(/\/$/, '') || '/';
+        const pathname = urlObj.pathname.replace(/\/$/, '') || '/';
 
         // Query params importantes que deben preservarse en el ID
         const importantParams = ['patientId', 'encounterId', 'appointmentId', 'id'];

@@ -306,66 +306,128 @@ export type Database = {
           },
         ]
       }
-      encounters: {
+      clinical_notes: {
         Row: {
           analysis: string | null
-          appointment_id: string | null
           created_at: string | null
           diagnosis: Json | null
-          encounter_class: string | null
-          end_time: string | null
+          encounter_id: string
           evolution_note: string | null
-          fhir_id: string
           id: string
+          is_finalized: boolean | null
           objective: string | null
           patient_id: string
           physical_exam: Json | null
           plan: string | null
           practitioner_id: string
           reason_code: Json | null
+          subjective: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          analysis?: string | null
+          created_at?: string | null
+          diagnosis?: Json | null
+          encounter_id: string
+          evolution_note?: string | null
+          id?: string
+          is_finalized?: boolean | null
+          objective?: string | null
+          patient_id: string
+          physical_exam?: Json | null
+          plan?: string | null
+          practitioner_id: string
+          reason_code?: Json | null
+          subjective?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          analysis?: string | null
+          created_at?: string | null
+          diagnosis?: Json | null
+          encounter_id?: string
+          evolution_note?: string | null
+          id?: string
+          is_finalized?: boolean | null
+          objective?: string | null
+          patient_id?: string
+          physical_exam?: Json | null
+          plan?: string | null
+          practitioner_id?: string
+          reason_code?: Json | null
+          subjective?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_notes_encounter_id_fkey"
+            columns: ["encounter_id"]
+            isOneToOne: true
+            referencedRelation: "encounters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_notes_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_notes_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      encounters: {
+        Row: {
+          appointment_id: string
+          created_at: string | null
+          encounter_class: string | null
+          encounter_category: string | null
+          encounter_subcategory: string | null
+          end_time: string | null
+          fhir_id: string
+          id: string
+          patient_id: string
+          practitioner_id: string
           start_time: string
           status: Database["public"]["Enums"]["encounter_status"] | null
-          subjective: string | null
           updated_at: string | null
           vital_signs: Json | null
         }
         Insert: {
-          analysis?: string | null
-          appointment_id?: string | null
+          appointment_id: string
           created_at?: string | null
-          diagnosis?: Json | null
           encounter_class?: string | null
+          encounter_category?: string | null
+          encounter_subcategory?: string | null
           end_time?: string | null
-          evolution_note?: string | null
           fhir_id?: string
           id?: string
-          objective?: string | null
           patient_id: string
           practitioner_id: string
-          reason_code?: Json | null
           start_time?: string
           status?: Database["public"]["Enums"]["encounter_status"] | null
-          subjective?: string | null
           updated_at?: string | null
           vital_signs?: Json | null
         }
         Update: {
-          analysis?: string | null
-          appointment_id?: string | null
+          appointment_id?: string
           created_at?: string | null
-          diagnosis?: Json | null
           encounter_class?: string | null
+          encounter_category?: string | null
+          encounter_subcategory?: string | null
           end_time?: string | null
-          evolution_note?: string | null
           fhir_id?: string
           id?: string
-          objective?: string | null
           patient_id?: string
           practitioner_id?: string
-          reason_code?: Json | null
           start_time?: string
           status?: Database["public"]["Enums"]["encounter_status"] | null
-          subjective?: string | null
           updated_at?: string | null
           vital_signs?: Json | null
         }
@@ -761,13 +823,21 @@ export type Patient = Tables<'patients'> & {
 export type Condition = Tables<'conditions'>;
 export type AllergyIntolerance = Tables<'allergy_intolerances'>;
 export type Appointment = Tables<'appointments'>;
-export type Encounter = Tables<'encounters'> & {
-  encounter_category?: string | null;
-  encounter_subcategory?: string | null;
+export type ClinicalNote = Tables<'clinical_notes'>;
+export type Encounter = Tables<'encounters'>;
+export type EncounterWithClinicalNote = Tables<'encounters'> & {
+  clinical_note?: ClinicalNote | null;
+  practitioner?: { name_given: string[], name_family: string, specialty: string | null };
 };
-export type EncounterWithSpecialty = Tables<'encounters'> & {
-  encounter_category?: string | null;
-  encounter_subcategory?: string | null;
-  practitioner?: { name_given: string[], name_family: string, specialty: string | null }
-};
+// Alias de compatibilidad — prefiere EncounterWithClinicalNote para código nuevo
+export type EncounterWithSpecialty = EncounterWithClinicalNote;
 export type Practitioner = Tables<'practitioners'>;
+// Tipo para la vista tabla /history/all — incluye joins de patient y practitioner
+export type EncounterForPreview = EncounterWithClinicalNote & {
+  patient?: {
+    id: string;
+    name_given: string[];
+    name_family: string;
+    birth_date: string | null;
+  };
+};

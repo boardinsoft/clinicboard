@@ -1,18 +1,20 @@
 'use client';
 
-import React from 'react';
-import { Plus, User, Clock, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Clock, ChevronRight, Calendar as CalendarIcon, Filter, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-    SidebarGroup,
-    SidebarGroupContent,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import type { Appointment, AppointmentStatus } from '@/lib/fhir/types';
 import { formatTime } from '@/lib/date-utils';
 
@@ -49,7 +51,12 @@ export default function AppointmentsSidebar({
     onStatusFilterChange,
     onNew,
 }: AppointmentsSidebarProps) {
-    // Generate week days for the mini calendar
+    // Collapsible states
+    const [openCalendar, setOpenCalendar] = useState(true);
+    const [openFilters, setOpenFilters] = useState(true);
+    const [openStats, setOpenStats] = useState(false);
+    const [openList, setOpenList] = useState(true);
+
     const getWeekDays = () => {
         const start = new Date(selectedDate);
         start.setDate(start.getDate() - start.getDay());
@@ -77,12 +84,12 @@ export default function AppointmentsSidebar({
     };
 
     return (
-        <div className="flex flex-col h-full bg-sidebar/50">
+        <div className="flex flex-col h-full bg-sidebar border-r border-border/40 font-sans">
             {/* Header */}
-            <div className="px-4 py-3 flex items-center justify-between border-b bg-sidebar">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="px-4 py-3 flex items-center justify-between border-b border-border/40 shrink-0">
+                <span className="text-base font-semibold text-foreground tracking-tight">
                     Citas
-                </h3>
+                </span>
                 <Button
                     variant="ghost"
                     size="icon"
@@ -94,98 +101,152 @@ export default function AppointmentsSidebar({
                 </Button>
             </div>
 
-            {/* Mini Calendar / Week Strip */}
-            <div className="p-4 bg-sidebar/30">
-                <div className="flex justify-between items-center mb-4">
-                    <span className="text-xs font-medium capitalize">
-                        {selectedDate.toLocaleDateString('es-VE', { month: 'long', year: 'numeric' })}
-                    </span>
-                </div>
-                <div className="flex justify-between">
-                    {weekDays.map((day, i) => {
-                        const isToday = day.toDateString() === new Date().toDateString();
-                        const isSelected = day.toDateString() === selectedDate.toDateString();
-                        return (
-                            <button
-                                key={i}
-                                onClick={() => onDateChange(day)}
-                                className={cn(
-                                    "flex flex-col items-center justify-center w-8 h-12 rounded-full transition-all",
-                                    isSelected
-                                        ? "bg-primary text-primary-foreground shadow-sm scale-110"
-                                        : isToday
-                                            ? "bg-primary/10 text-primary font-medium"
-                                            : "hover:bg-accent text-muted-foreground"
-                                )}
-                            >
-                                <span className={cn("text-[9px] mb-0.5 uppercase", isSelected ? "opacity-80" : "opacity-60")}>
-                                    {daysOfWeek[day.getDay()][0]}
-                                </span>
-                                <span className={cn("text-xs", isSelected ? "font-bold" : "font-medium")}>
-                                    {day.getDate()}
-                                </span>
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
+            <div className="flex-1 overflow-y-auto no-scrollbar py-2">
+                
+                {/* ── SECCIÓN: CALENDARIO SEMANAL ── */}
+                <Collapsible open={openCalendar} onOpenChange={setOpenCalendar} className="group/collapsible">
+                    <CollapsibleTrigger asChild>
+                        <button className="flex items-center gap-2 w-full px-4 py-2 text-xs tracking-wider uppercase font-bold text-muted-foreground/60 hover:text-foreground transition-colors group">
+                            <ChevronRight className={cn(
+                                "w-3 h-3 transition-transform duration-200",
+                                openCalendar && "rotate-90"
+                            )} />
+                            <CalendarIcon className="w-4 h-4" />
+                            <span>Calendario</span>
+                        </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 py-2">
+                        <div className="flex justify-between items-center mb-3">
+                            <span className="text-xs font-medium text-muted-foreground capitalize">
+                                {selectedDate.toLocaleDateString('es-VE', { month: 'long', year: 'numeric' })}
+                            </span>
+                        </div>
+                        <div className="flex justify-between gap-1">
+                            {weekDays.map((day, i) => {
+                                const isToday = day.toDateString() === new Date().toDateString();
+                                const isSelected = day.toDateString() === selectedDate.toDateString();
+                                return (
+                                    <button
+                                        key={i}
+                                        onClick={() => onDateChange(day)}
+                                        className={cn(
+                                            "flex flex-col items-center justify-center flex-1 h-12 rounded-lg transition-all",
+                                            isSelected
+                                                ? "bg-primary text-primary-foreground shadow-sm"
+                                                : isToday
+                                                    ? "bg-primary/10 text-primary font-medium"
+                                                    : "hover:bg-muted text-muted-foreground"
+                                        )}
+                                    >
+                                        <span className={cn("text-[10px] mb-0.5", isSelected ? "opacity-80" : "opacity-60")}>
+                                            {daysOfWeek[day.getDay()][0]}
+                                        </span>
+                                        <span className={cn("text-sm", isSelected ? "font-bold" : "font-medium")}>
+                                            {day.getDate()}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </CollapsibleContent>
+                </Collapsible>
 
-            {/* Status Filters */}
-            <div className="px-4 py-3 border-t border-border/40">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2.5">Filtros</p>
-                <div className="flex flex-wrap gap-1.5">
-                    {(Object.keys(FHIR_STATUS_CONFIG) as AppointmentStatus[]).map((status) => {
-                        const config = FHIR_STATUS_CONFIG[status];
-                        const isActive = statusFilter.length === 0 || statusFilter.includes(status);
-                        return (
-                            <Badge
-                                key={status}
-                                variant={isActive ? "secondary" : "outline"}
-                                className={cn(
-                                    "cursor-pointer text-[10px] px-2 py-0 h-5 transition-all",
-                                    isActive 
-                                        ? "bg-accent text-accent-foreground border-transparent" 
-                                        : "opacity-40 hover:opacity-100 grayscale-[0.5]"
-                                )}
-                                onClick={() => toggleStatus(status)}
-                            >
-                                <div className={cn("w-1.5 h-1.5 rounded-full mr-1.5", config.colorClass)} />
-                                {config.label}
+                <div className="h-2" />
+
+                {/* ── SECCIÓN: FILTROS DE ESTADO ── */}
+                <Collapsible open={openFilters} onOpenChange={setOpenFilters} className="group/collapsible">
+                    <CollapsibleTrigger asChild>
+                        <button className="flex items-center gap-2 w-full px-4 py-2 text-xs tracking-wider uppercase font-bold text-muted-foreground/60 hover:text-foreground transition-colors group">
+                            <ChevronRight className={cn(
+                                "w-3 h-3 transition-transform duration-200",
+                                openFilters && "rotate-90"
+                            )} />
+                            <Filter className="w-4 h-4" />
+                            <span>Filtros</span>
+                        </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 py-2">
+                        <div className="flex flex-wrap gap-1.5">
+                            {(Object.keys(FHIR_STATUS_CONFIG) as AppointmentStatus[]).map((status) => {
+                                const config = FHIR_STATUS_CONFIG[status];
+                                const isActive = statusFilter.length === 0 || statusFilter.includes(status);
+                                return (
+                                    <Badge
+                                        key={status}
+                                        variant={isActive ? "secondary" : "outline"}
+                                        className={cn(
+                                            "cursor-pointer text-[11px] px-2 py-0.5 h-6 transition-all border-none",
+                                            isActive 
+                                                ? "bg-muted text-foreground font-medium" 
+                                                : "opacity-40 hover:opacity-100 bg-transparent"
+                                        )}
+                                        onClick={() => toggleStatus(status)}
+                                    >
+                                        <div className={cn("w-1 h-1 rounded-full mr-1.5", config.colorClass)} />
+                                        {config.label}
+                                    </Badge>
+                                );
+                            })}
+                        </div>
+                    </CollapsibleContent>
+                </Collapsible>
+
+                <div className="h-2" />
+
+                {/* ── SECCIÓN: RESUMEN (ESTADÍSTICAS) ── */}
+                <Collapsible open={openStats} onOpenChange={setOpenStats} className="group/collapsible">
+                    <CollapsibleTrigger asChild>
+                        <button className="flex items-center gap-2 w-full px-4 py-2 text-xs tracking-wider uppercase font-bold text-muted-foreground/60 hover:text-foreground transition-colors group">
+                            <ChevronRight className={cn(
+                                "w-3 h-3 transition-transform duration-200",
+                                openStats && "rotate-90"
+                            )} />
+                            <BarChart3 className="w-4 h-4" />
+                            <span>Resumen</span>
+                        </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 py-2">
+                        <div className="grid grid-cols-3 gap-2">
+                            <div className="bg-muted/30 p-2 rounded-md flex flex-col items-center">
+                                <span className="text-[11px] text-muted-foreground">Total</span>
+                                <span className="text-sm font-bold">{stats.total}</span>
+                            </div>
+                            <div className="bg-muted/30 p-2 rounded-md flex flex-col items-center">
+                                <span className="text-[11px] text-muted-foreground">Conf.</span>
+                                <span className="text-sm font-bold text-primary">{stats.confirmed}</span>
+                            </div>
+                            <div className="bg-muted/30 p-2 rounded-md flex flex-col items-center">
+                                <span className="text-[11px] text-muted-foreground">Comp.</span>
+                                <span className="text-sm font-bold text-clinical-stable-fg">{stats.completed}</span>
+                            </div>
+                        </div>
+                    </CollapsibleContent>
+                </Collapsible>
+
+                <div className="h-2" />
+
+                {/* ── SECCIÓN: LISTA DE CITAS ── */}
+                <Collapsible open={openList} onOpenChange={setOpenList} className="group/collapsible">
+                    <CollapsibleTrigger asChild>
+                        <button className="flex items-center justify-between w-full px-4 py-2 text-xs tracking-wider uppercase font-bold text-muted-foreground/60 hover:text-foreground transition-colors group">
+                            <div className="flex items-center gap-2">
+                                <ChevronRight className={cn(
+                                    "w-3 h-3 transition-transform duration-200",
+                                    openList && "rotate-90"
+                                )} />
+                                <span>Lista de citas</span>
+                            </div>
+                            <Badge variant="secondary" className="h-4 px-1 rounded-sm text-[10px] font-bold bg-muted/50 text-muted-foreground/60 border-none">
+                                {appointments.length}
                             </Badge>
-                        );
-                    })}
-                </div>
-            </div>
-
-            <Separator className="opacity-40" />
-
-            {/* Stats Summary */}
-            <div className="grid grid-cols-3 gap-1 px-4 py-3 bg-sidebar/20">
-                <div className="flex flex-col">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-tighter">Total</span>
-                    <span className="text-sm font-semibold">{stats.total}</span>
-                </div>
-                <div className="flex flex-col border-x border-border/40 px-3">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-tighter">Confirm.</span>
-                    <span className="text-sm font-semibold text-primary">{stats.confirmed}</span>
-                </div>
-                <div className="flex flex-col pl-2">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-tighter">Complet.</span>
-                    <span className="text-sm font-semibold text-emerald-500">{stats.completed}</span>
-                </div>
-            </div>
-
-            <Separator className="opacity-40" />
-
-            {/* Appointments List */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-                <SidebarGroup className="p-2 pt-0">
-                    <SidebarGroupContent>
-                        <SidebarMenu>
+                        </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <SidebarMenu className="px-2">
                             {appointments.length === 0 ? (
-                                <div className="p-8 text-center text-muted-foreground opacity-60">
-                                    <Clock className="w-8 h-8 mx-auto mb-2 opacity-20" />
-                                    <p className="text-xs">Sin citas para este día</p>
+                                <div className="px-8 py-8 text-center text-muted-foreground/40 italic">
+                                    <Clock className="w-8 h-8 mx-auto mb-2 opacity-10" />
+                                    <p className="text-xs">Sin citas para hoy</p>
                                 </div>
                             ) : (
                                 appointments.map((apt) => {
@@ -201,39 +262,29 @@ export default function AppointmentsSidebar({
                                                 onClick={() => onSelect(apt.id)}
                                                 isActive={isActive}
                                                 className={cn(
-                                                    "h-auto p-2.5 items-start gap-3 transition-all",
-                                                    isActive
-                                                        ? "bg-accent shadow-sm border border-border/50"
-                                                        : "hover:bg-accent/40"
+                                                    "h-auto py-2.5 px-3 items-start gap-3 transition-colors duration-100",
+                                                    isActive ? "bg-muted" : "hover:bg-muted/40"
                                                 )}
                                             >
-                                                <div className={cn(
-                                                    "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border shadow-sm",
-                                                    isActive 
-                                                        ? "bg-primary text-primary-foreground border-primary" 
-                                                        : "bg-background text-muted-foreground border-border/50"
-                                                )}>
-                                                    {apt.status === 'fulfilled' ? <CheckCircle2 className="w-4 h-4" /> : <User className="w-4 h-4" />}
-                                                </div>
                                                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                                                     <div className="flex items-center justify-between gap-2">
                                                         <span className={cn(
-                                                            "text-xs font-semibold truncate",
-                                                            isActive ? "text-foreground" : "text-foreground/80"
+                                                            "text-sm font-medium truncate",
+                                                            isActive ? "text-foreground" : "text-foreground/90"
                                                         )}>
                                                             {patientName}
                                                         </span>
-                                                        <span className="text-[10px] text-muted-foreground font-mono shrink-0">
+                                                        <span className="text-[11px] text-muted-foreground/50 tabular-nums">
                                                             {formatTime(apt.start_time)}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-2 mt-0.5">
-                                                        <Badge variant="outline" className="h-3.5 px-1 py-0 text-[8px] bg-muted/30 border-none text-muted-foreground/80">
+                                                        <span className="text-[11px] text-muted-foreground/40 truncate">
                                                             {apt.appointment_type || 'Consulta'}
-                                                        </Badge>
-                                                        <div className="flex items-center gap-1">
-                                                            <div className={cn("w-1.5 h-1.5 rounded-full", statusConfig.colorClass)} />
-                                                            <span className="text-[9px] text-muted-foreground/70 uppercase font-medium">
+                                                        </span>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <div className={cn("w-1 h-1 rounded-full", statusConfig.colorClass)} />
+                                                            <span className="text-[10px] text-muted-foreground/60 font-medium">
                                                                 {statusConfig.label}
                                                             </span>
                                                         </div>
@@ -245,8 +296,8 @@ export default function AppointmentsSidebar({
                                 })
                             )}
                         </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
+                    </CollapsibleContent>
+                </Collapsible>
             </div>
         </div>
     );

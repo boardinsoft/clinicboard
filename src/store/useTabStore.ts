@@ -70,57 +70,9 @@ export const useTabStore = create<TabState>((set, get) => ({
      * Usa generateTabId() para crear IDs únicos basados en la URL.
      */
     addTab: (tab) => {
-        const { tabs } = get();
-
-        // Normalizar la URL
-        const normalizedUrl = normalizeTabUrl(tab.url);
-
-        // Generar ID único basado en la URL
-        const tabId = tab.id || generateTabId(normalizedUrl);
-
-        // Validar que sea una ruta válida
-        if (!isValidAppRoute(normalizedUrl)) {
-            console.warn(`[TabStore] Intento de agregar ruta inválida: ${normalizedUrl}`);
-            return;
-        }
-
-        // Buscar si ya existe una pestaña con este ID
-        const existingTab = tabs.find((t) => t.id === tabId);
-
-        if (existingTab) {
-            // Si ya existe, solo activarla
-            set({ activeTabId: tabId });
-            return;
-        }
-
-        // Verificar límite máximo de pestañas
-        if (tabs.length >= TAB_CONFIG.MAX_TABS) {
-            console.warn(`[TabStore] Límite máximo de pestañas alcanzado (${TAB_CONFIG.MAX_TABS})`);
-
-            // Cerrar la pestaña más antigua que no esté activa
-            const oldestInactive = tabs.find(t => t.id !== get().activeTabId);
-            if (oldestInactive) {
-                get().removeTab(oldestInactive.id);
-            } else {
-                // Si todas están activas, no agregar
-                return;
-            }
-        }
-
-        // Crear nueva pestaña
-        const newTab: WorkspaceTab = {
-            id: tabId,
-            title: tab.title,
-            url: normalizedUrl,
-            data: tab.data,
-            isDirty: false,
-        };
-
-        const newTabs = [...tabs, newTab];
-        set({ tabs: newTabs, activeTabId: tabId });
-
-        // Persistir en localStorage
-        saveTabsToStorage(newTabs, tabId);
+        // Sistema de pestañas desactivado app-wide a petición del usuario para reducir redundancia de UI.
+        // La navegación ahora es puramente basada en rutas.
+        return;
     },
 
     /**

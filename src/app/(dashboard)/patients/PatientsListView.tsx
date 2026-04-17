@@ -3,36 +3,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useLayoutStore } from '@/store/useLayoutStore';
+import { usePatientStore } from '@/store/usePatientStore';
 import { cn } from '@/lib/utils';
-import { getPatientClinicalData } from '@/actions/patients';
-import { getEncounters } from '@/actions/encounters';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { EncounterWithSpecialty, Condition, AllergyIntolerance, Patient } from '@/types/database.types';
-import { formatDate, calcAge, getGenderLabel } from '@/lib/clinical';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import type { Patient } from '@/types/database.types';
+import { calcAge, getGenderLabel } from '@/lib/clinical';
 import TableSearch from '@/components/ui/TableSearch';
 import {
-  Plus,
-  Search,
-  SlidersHorizontal,
-  User,
-  AlertTriangle,
-  AlertCircle,
-  Stethoscope,
-  Activity,
-  Calendar,
-  ArrowRight,
   ChevronLeft,
   ChevronRight,
-  X,
   Maximize2,
+  ArrowUpDown,
+  Search,
+  Plus,
 } from 'lucide-react';
 
 import PatientsSidebar from './PatientsSidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { PatientTelecom, PatientAddress, PatientIdentifier } from '@/types/patient-jsonb';
+import type { PatientTelecom, PatientIdentifier } from '@/types/patient-jsonb';
+import { PageHeader, PageContainer } from '@/components/ui/PageLayout';
 
 interface PatientFilters {
   status: 'all' | 'active' | 'inactive';
@@ -68,317 +59,14 @@ function getFullName(p: Patient): string {
   return `${p.name_given?.join(' ') ?? ''} ${p.name_family ?? ''}`.trim();
 }
 
-// ─── Tab: Resumen ──────────────────────────────────────────────────────────────
-function TabResumen({ patient }: { patient: Patient }) {
-  const phone = getPhone(patient);
-  const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value ?? '—';
-  const address = (patient.address as PatientAddress[] | null)?.[0]?.text ?? '—';
-  const docId = getCI(patient);
-
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 px-4 py-3">
-      <div>
-        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Fecha de nacimiento</dt>
-        <dd className="text-sm font-medium">{formatDate(patient.birth_date)}</dd>
-      </div>
-      <div>
-        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Edad</dt>
-        <dd className="text-sm font-medium">{calcAge(patient.birth_date)}</dd>
-      </div>
-      <div>
-        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Cédula</dt>
-        <dd className="text-sm font-mono">{docId}</dd>
-      </div>
-      <div>
-        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Género</dt>
-        <dd className="text-sm font-medium">{getGenderLabel(patient.gender)}</dd>
-      </div>
-      <div>
-        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Teléfono</dt>
-        <dd className="text-sm font-medium">{phone}</dd>
-      </div>
-      <div>
-        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Correo</dt>
-        <dd className="text-sm font-medium truncate">{email}</dd>
-      </div>
-      <div className="col-span-2">
-        <dt className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Dirección</dt>
-        <dd className="text-sm font-medium">{address}</dd>
-      </div>
-    </div>
-  );
-}
-
-// ─── Tab: Condiciones ──────────────────────────────────────────────────────────
-function TabCondiciones({ patientId }: { patientId: string }) {
-  const [conditions, setConditions] = useState<Condition[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    getPatientClinicalData(patientId)
-      .then(data => { if (!cancelled) setConditions(data.conditions as Condition[]); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [patientId]);
-
-  if (loading) return (
-    <div className="p-4 space-y-2">
-      {[1, 2, 3].map(i => <Skeleton key={i} className="h-9 w-full rounded" />)}
-    </div>
-  );
-
-  if (conditions.length === 0) return (
-    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-      <Stethoscope className="w-8 h-8 mb-2 opacity-20" />
-      <p className="text-xs">Sin condiciones registradas</p>
-    </div>
-  );
-
-  return (
-    <table className="w-full table-dense">
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Descripción</th>
-          <th>Desde</th>
-          <th>Estado</th>
-        </tr>
-      </thead>
-      <tbody>
-        {conditions.map(c => (
-          <tr key={c.id}>
-            <td><span className="font-mono text-muted-foreground">{c.code || '—'}</span></td>
-            <td className="font-medium">{c.code_display || 'Sin descripción'}</td>
-            <td className="text-muted-foreground">{c.onset_date ? formatDate(c.onset_date) : '—'}</td>
-            <td>
-              <Badge variant={c.clinical_status === 'active' ? 'pill-success' : 'pill-muted'}>
-                {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
-              </Badge>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-// ─── Tab: Alergias ─────────────────────────────────────────────────────────────
-function TabAlergias({ patientId }: { patientId: string }) {
-  const [allergies, setAllergies] = useState<AllergyIntolerance[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    getPatientClinicalData(patientId)
-      .then(data => { if (!cancelled) setAllergies(data.allergies as AllergyIntolerance[]); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [patientId]);
-
-  if (loading) return (
-    <div className="p-4 space-y-2">
-      {[1, 2].map(i => <Skeleton key={i} className="h-9 w-full rounded" />)}
-    </div>
-  );
-
-  if (allergies.length === 0) return (
-    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-      <AlertTriangle className="w-8 h-8 mb-2 opacity-20" />
-      <p className="text-xs">Sin alergias registradas</p>
-    </div>
-  );
-
-  return (
-    <table className="w-full table-dense">
-      <thead>
-        <tr>
-          <th>Alérgeno</th>
-          <th>Categoría</th>
-          <th>Criticidad</th>
-        </tr>
-      </thead>
-      <tbody>
-        {allergies.map(a => (
-          <tr key={a.id}>
-            <td>
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-3.5 h-3.5 text-destructive shrink-0" />
-                <span className="font-medium text-destructive">{a.code_display || 'Sin descripción'}</span>
-              </div>
-            </td>
-            <td>{a.category ? <Badge variant="secondary">{a.category}</Badge> : '—'}</td>
-            <td>
-              {a.criticality
-                ? <Badge variant={a.criticality === 'high' ? 'pill-danger' : 'pill-warning'}>{a.criticality}</Badge>
-                : '—'
-              }
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-// ─── Tab: Encuentros ───────────────────────────────────────────────────────────
-function TabEncuentros({ patientId, router }: { patientId: string; router: ReturnType<typeof useRouter> }) {
-  const [encounters, setEncounters] = useState<EncounterWithSpecialty[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    getEncounters(patientId)
-      .then(({ data }) => { if (!cancelled) setEncounters((data || []) as EncounterWithSpecialty[]); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [patientId]);
-
-  if (loading) return (
-    <div className="p-4 space-y-2">
-      {[1, 2, 3].map(i => <Skeleton key={i} className="h-9 w-full rounded" />)}
-    </div>
-  );
-
-  if (encounters.length === 0) return (
-    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-      <Activity className="w-8 h-8 mb-2 opacity-20" />
-      <p className="text-xs">Sin consultas registradas</p>
-    </div>
-  );
-
-  return (
-    <table className="w-full table-dense">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Motivo</th>
-          <th>Estado</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {encounters.map(enc => (
-          <tr key={enc.id}>
-            <td className="font-mono text-muted-foreground">{formatDate(enc.start_time)}</td>
-            <td className="font-medium max-w-[240px]">
-              <span className="truncate block">
-                {(Array.isArray(enc.reason_code)
-                  ? (enc.reason_code as Array<{ text?: string }>)[0]?.text
-                  : undefined) || 'Consulta general'}
-              </span>
-            </td>
-            <td>
-              <Badge variant={enc.status === 'finished' ? 'pill-success' : 'pill-info'}>
-                {enc.status === 'finished' ? 'Completada' : 'En curso'}
-              </Badge>
-            </td>
-            <td>
-              <button
-                className="row-actions flex items-center gap-1 text-[11px] text-primary hover:underline"
-                onClick={() => router.push(`/history?patientId=${patientId}`)}
-              >
-                Ver <ArrowRight className="w-3 h-3" />
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-// ─── Panel de detalle — aparece al seleccionar una fila ───────────────────────
-const DETAIL_TABS = [
-  { value: 'resumen', label: 'Resumen', icon: User },
-  { value: 'condiciones', label: 'Condiciones', icon: Stethoscope },
-  { value: 'alergias', label: 'Alergias', icon: AlertTriangle },
-  { value: 'encuentros', label: 'Encuentros', icon: Activity },
-] as const;
-
-type DetailTabValue = typeof DETAIL_TABS[number]['value'];
-
-function DetailPanel({
-  patient,
-  onClose,
-  router,
-}: {
-  patient: Patient;
-  onClose: () => void;
-  router: ReturnType<typeof useRouter>;
-}) {
-  const [activeTab, setActiveTab] = useState<DetailTabValue>('resumen');
-
-  return (
-    <div className="flex flex-col border-t border-border bg-background" style={{ height: '42%' }}>
-      {/* ── Panel header ── */}
-      <div className="flex items-center h-10 px-3 py-2 border-b border-border shrink-0 gap-3">
-        {/* Avatar + nombre */}
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-semibold shrink-0">
-            {getInitials(patient)}
-          </div>
-          <span className="text-sm font-medium truncate">{getFullName(patient)}</span>
-          <Badge variant={patient.active !== false ? 'pill-success' : 'pill-muted'}>
-            {patient.active !== false ? 'Activo' : 'Inactivo'}
-          </Badge>
-        </div>
-
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={v => setActiveTab(v as DetailTabValue)} className="flex-1">
-          <TabsList className="h-auto bg-transparent p-0 gap-0 rounded-none">
-            {DETAIL_TABS.map(tab => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className={cn(
-                  'relative h-10 gap-1.5 rounded-none text-[11px] font-medium px-3',
-                  'text-muted-foreground data-[state=active]:text-foreground',
-                  'data-[state=active]:shadow-none data-[state=active]:bg-transparent',
-                  'data-[state=active]:after:absolute data-[state=active]:after:bottom-0',
-                  'data-[state=active]:after:left-0 data-[state=active]:after:right-0',
-                  'data-[state=active]:after:h-px data-[state=active]:after:bg-primary',
-                  'hover:text-foreground transition-colors'
-                )}
-              >
-                <tab.icon className="w-3.5 h-3.5" /> {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-
-        {/* Cerrar panel */}
-        <button
-          onClick={onClose}
-          className="ml-auto flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
-          aria-label="Cerrar panel"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      {/* ── Contenido del tab seleccionado ── */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        {activeTab === 'resumen' && <TabResumen patient={patient} />}
-        {activeTab === 'condiciones' && <TabCondiciones patientId={patient.id} />}
-        {activeTab === 'alergias' && <TabAlergias patientId={patient.id} />}
-        {activeTab === 'encuentros' && <TabEncuentros patientId={patient.id} router={router} />}
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function PatientsListView({ patients, totalItems, page, pageSize }: PatientsListViewProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { setSecondaryPanel } = useLayoutStore();
+  const { setSecondaryPanel, setRightPanelOpen } = useLayoutStore();
+  const { selectedPatientForPreview, setSelectedPatientForPreview } = usePatientStore();
 
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [localQ, setLocalQ] = useState(searchParams.get('q') || '');
   const [filters, setFilters] = useState<PatientFilters>({
     status: 'all',
@@ -386,7 +74,7 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
     q: searchParams.get('q') || '',
   });
 
-  // Estado para anchos de columna (Estilo Excel)
+  // Estado para anchos de columna
   const [colWidths, setColWidths] = useState({
     name: 280,
     ci: 140,
@@ -396,7 +84,6 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
     status: 120
   });
 
-  // Lógica de redimensión horizontal únicamente
   const startResizing = useCallback((col: keyof typeof colWidths, e: React.MouseEvent) => {
     e.preventDefault();
     const startX = e.pageX;
@@ -419,14 +106,6 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
     document.body.style.cursor = 'col-resize';
   }, [colWidths]);
 
-  const ResizeHandle = ({ col }: { col: keyof typeof colWidths }) => (
-    <div
-      onMouseDown={(e) => startResizing(col, e)}
-      className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/30 active:bg-primary/60 z-30 transition-colors"
-      title="Arrastrar para redimensionar"
-    />
-  );
-
   const updateParams = useCallback((updates: Record<string, string | number>) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(updates).forEach(([key, value]) => {
@@ -436,7 +115,6 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
     router.push(`${pathname}?${params.toString()}`);
   }, [pathname, router, searchParams]);
 
-  // Filtrado client-side sobre el array recibido
   const filteredPatients = patients.filter(p => {
     if (filters.status === 'active' && p.active === false) return false;
     if (filters.status === 'inactive' && p.active !== false) return false;
@@ -451,13 +129,18 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
   });
 
   const handleSelectPatient = useCallback((p: Patient) => {
-    setSelectedPatient(prev => prev?.id === p.id ? null : p);
-  }, []);
+    if (selectedPatientForPreview?.id === p.id) {
+        setSelectedPatientForPreview(null);
+        setRightPanelOpen(false);
+    } else {
+        setSelectedPatientForPreview(p);
+        setRightPanelOpen(true);
+    }
+  }, [selectedPatientForPreview, setSelectedPatientForPreview, setRightPanelOpen]);
 
-  // Montar el sidebar de contexto
   useEffect(() => {
     setSecondaryPanel(<PatientsSidebar />, 'Pacientes');
-  }, [patients, setSecondaryPanel]);
+  }, [setSecondaryPanel]);
 
   const totalPages = Math.ceil(totalItems / pageSize);
   const hasFilters = filters.status !== 'all' || filters.gender !== 'all' || localQ !== '';
@@ -467,9 +150,24 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
   }, []);
 
   return (
-    <section className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background font-sans overflow-hidden">
+      
+      {/* ── SubHeader plano estilo Supabase (Blanco) ── */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 shrink-0 bg-background">
+        <div className="flex flex-col gap-0.5">
+          <h1 className="text-xl font-bold text-foreground tracking-tight">
+            Pacientes
+          </h1>
+          <p className="text-xs text-muted-foreground/70 font-medium">
+            Gestión integral de expedientes clínicos y datos demográficos.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+           {/* El botón de acción principal ahora está en la toolbar */}
+        </div>
+      </div>
 
-      {/* ── Nueva Toolbar Integrada (Estilo Supabase) ── */}
+      {/* ── Barra de herramientas (Search/Filters - Gris) ── */}
       <TableSearch 
         value={localQ}
         onChange={setLocalQ}
@@ -478,132 +176,161 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
         onFilterChange={handleFilterChange}
         onNewRecord={() => router.push('/patients/new')}
         placeholder="Buscar por nombre o cédula..."
+        className="px-2"
       />
 
-      {/* ── Tabla + Panel de detalle ── */}
-      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-
-        {/* Tabla Estilo Excel/Supabase Grid */}
-        <div className={cn(
-          'overflow-auto min-h-0 transition-all scrollbar-thin border-l border-t border-border/40 relative',
-          selectedPatient ? 'flex-[0_0_58%]' : 'flex-1'
-        )}>
-          <table className="w-full border-separate border-spacing-0 table-fixed">
-            <thead className="sticky top-0 z-30 bg-[#f8f9fa] dark:bg-muted/20">
+      <div className="flex-1 overflow-hidden flex flex-col bg-muted/10">
+        <div className="flex-1 overflow-auto min-h-0 scrollbar-thin transition-all relative bg-transparent">
+          <table className="w-full border-separate border-spacing-0 table-fixed bg-transparent">
+            <thead className="sticky top-0 z-30 bg-muted/40 backdrop-blur-md">
               <tr>
-                <th className="w-10 h-10 border-r border-b border-border px-0 text-center sticky left-0 z-40 bg-[#f8f9fa] dark:bg-muted/20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                  <input
-                    type="checkbox"
-                    className="h-3.5 w-3.5 rounded border-border/60 accent-primary"
-                  />
+                <th className="w-12 h-10 border-r border-b border-border px-0 text-center sticky left-0 z-40 bg-muted shadow-[1px_0_0_0_inset_rgba(0,0,0,0.1)]">
+                  <input type="checkbox" className="h-3.5 w-3.5 rounded border-border/60 accent-primary" />
                 </th>
-                <th style={{ width: colWidths.name }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
-                    Paciente <ResizeHandle col="name" />
+                <th style={{ width: colWidths.name }} className="h-10 border-r border-b border-border px-4 text-left text-[10px] uppercase tracking-wider font-bold text-muted-foreground/60 relative group/header font-sans bg-muted/50 cursor-pointer hover:text-foreground transition-colors">
+                    <div className="flex items-center gap-2">
+                      Paciente 
+                      <ArrowUpDown className="w-3 h-3 opacity-0 group-hover/header:opacity-100 transition-opacity" />
+                    </div>
+                    <div
+                      onMouseDown={(e) => startResizing('name', e)}
+                      className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 z-30 transition-colors duration-100"
+                    />
                 </th>
-                <th style={{ width: colWidths.ci }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
-                    Cédula <ResizeHandle col="ci" />
+                <th style={{ width: colWidths.ci }} className="h-10 border-r border-b border-border px-4 text-left text-[10px] uppercase tracking-wider font-bold text-muted-foreground/60 relative group/header font-sans bg-muted/50 cursor-pointer hover:text-foreground transition-colors">
+                    <div className="flex items-center gap-2">
+                      Cédula 
+                      <ArrowUpDown className="w-3 h-3 opacity-0 group-hover/header:opacity-100 transition-opacity" />
+                    </div>
+                    <div
+                      onMouseDown={(e) => startResizing('ci', e)}
+                      className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 z-30 transition-colors duration-100"
+                    />
                 </th>
-                <th style={{ width: colWidths.gender }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
-                    Género <ResizeHandle col="gender" />
+                <th style={{ width: colWidths.gender }} className="h-10 border-r border-b border-border px-4 text-left text-[10px] uppercase tracking-wider font-bold text-muted-foreground/60 relative group/header font-sans bg-muted/50 cursor-pointer hover:text-foreground transition-colors">
+                    <div className="flex items-center gap-2">
+                      Género 
+                      <ArrowUpDown className="w-3 h-3 opacity-0 group-hover/header:opacity-100 transition-opacity" />
+                    </div>
+                    <div
+                      onMouseDown={(e) => startResizing('gender', e)}
+                      className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 z-30 transition-colors duration-100"
+                    />
                 </th>
-                <th style={{ width: colWidths.age }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
-                    Edad <ResizeHandle col="age" />
+                <th style={{ width: colWidths.age }} className="h-10 border-r border-b border-border px-4 text-left text-[10px] uppercase tracking-wider font-bold text-muted-foreground/60 relative group/header font-sans bg-muted/50 cursor-pointer hover:text-foreground transition-colors">
+                    <div className="flex items-center gap-2">
+                      Edad 
+                      <ArrowUpDown className="w-3 h-3 opacity-0 group-hover/header:opacity-100 transition-opacity" />
+                    </div>
+                    <div
+                      onMouseDown={(e) => startResizing('age', e)}
+                      className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 z-30 transition-colors duration-100"
+                    />
                 </th>
-                <th style={{ width: colWidths.phone }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
-                    Teléfono <ResizeHandle col="phone" />
+                <th style={{ width: colWidths.phone }} className="h-10 border-r border-b border-border px-4 text-left text-[10px] uppercase tracking-wider font-bold text-muted-foreground/60 relative group/header font-sans bg-muted/50 cursor-pointer hover:text-foreground transition-colors">
+                    <div className="flex items-center gap-2">
+                      Teléfono 
+                      <ArrowUpDown className="w-3 h-3 opacity-0 group-hover/header:opacity-100 transition-opacity" />
+                    </div>
+                    <div
+                      onMouseDown={(e) => startResizing('phone', e)}
+                      className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 z-30 transition-colors duration-100"
+                    />
                 </th>
-                <th style={{ width: colWidths.status }} className="h-10 border-r border-b border-border px-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 relative group/header">
-                    Estado <ResizeHandle col="status" />
+                <th style={{ width: colWidths.status }} className="h-10 border-r border-b border-border px-4 text-left text-[10px] uppercase tracking-wider font-bold text-muted-foreground/60 relative group/header font-sans bg-muted/50 cursor-pointer hover:text-foreground transition-colors">
+                    <div className="flex items-center gap-2">
+                      Estado 
+                      <ArrowUpDown className="w-3 h-3 opacity-0 group-hover/header:opacity-100 transition-opacity" />
+                    </div>
+                    <div
+                      onMouseDown={(e) => startResizing('status', e)}
+                      className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 z-30 transition-colors duration-100"
+                    />
                 </th>
-                <th className="min-w-[100px] h-10 border-b border-border px-3 relative"></th>
+                <th className="min-w-[100px] h-10 border-b border-border px-4 relative bg-muted/50"></th>
               </tr>
             </thead>
-            <tbody className="bg-background">
+            <tbody className="bg-background font-sans">
               {filteredPatients.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-24 text-center text-muted-foreground/60 text-[13px] italic border-b border-r border-border">
-                    No se encontraron registros.
+                  <td colSpan={8} className="py-32 text-center border-b border-r border-border font-sans bg-background">
+                    <div className="flex flex-col items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                      <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center border border-dashed border-border">
+                        <Search className="w-6 h-6 text-muted-foreground/30" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-bold text-foreground">No se encontraron pacientes</h3>
+                        <p className="text-[12px] text-muted-foreground max-w-[280px] mx-auto">
+                          No hay resultados que coincidan con tu búsqueda actual. Prueba con otros términos o registra un nuevo paciente.
+                        </p>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8 gap-2 font-bold text-[11px] mt-2 shadow-sm"
+                        onClick={() => router.push('/patients/new')}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Nuevo Paciente
+                      </Button>
+                    </div>
                   </td>
                 </tr>
-              ) : filteredPatients.map((p, idx) => {
-                const isSelected = selectedPatient?.id === p.id;
-                
+              ) : filteredPatients.map((p) => {
+                const isSelected = selectedPatientForPreview?.id === p.id;
                 return (
                   <tr
                     key={p.id}
-                    data-selected={isSelected}
                     className={cn(
-                      "group transition-all duration-75 even:bg-muted/5",
-                      isSelected 
-                          ? "bg-primary/[0.04] z-10 relative" 
-                          : "hover:bg-[#f8f9fa] dark:hover:bg-muted/10"
+                      "group transition-all duration-75 even:bg-muted/[0.01] cursor-pointer border-b border-border/40",
+                      isSelected ? "bg-primary/[0.04] z-10 relative" : "hover:bg-muted/30 dark:hover:bg-muted/20"
                     )}
                     onClick={() => handleSelectPatient(p)}
                   >
                     <td className={cn(
-                      "h-11 border-r border-b border-border text-center px-0 sticky left-0 z-20 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
-                      isSelected ? "bg-[#f0f7ff] dark:bg-primary/10" : "bg-background group-hover:bg-[#f8f9fa] dark:group-hover:bg-muted/10"
+                      "h-12 border-r border-border text-center px-0 sticky left-0 z-20 transition-colors",
+                      isSelected ? "bg-primary/[0.08]" : "bg-background group-hover:bg-muted/30 dark:group-hover:bg-muted/20"
                     )} onClick={e => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        className="h-3.5 w-3.5 rounded border-border/60 accent-primary"
-                      />
-                      {isSelected && <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary z-30" />}
+                      <input type="checkbox" className="h-3.5 w-3.5 rounded border-border/60 accent-primary" />
+                      {isSelected && <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary z-30" />}
                     </td>
-                    <td className="h-11 border-r border-b border-border px-3 overflow-hidden">
+                    <td className="h-12 border-r border-border px-4 overflow-hidden">
                       <div className="flex items-center gap-3">
-                        <div className={cn(
-                          'h-7 w-7 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 transition-colors shadow-sm',
-                          isSelected ? 'bg-primary text-white' : 'bg-muted text-muted-foreground group-hover:bg-muted-foreground/10'
-                        )}>
-                          {getInitials(p)}
-                        </div>
+                        <Avatar className="h-8 w-8 rounded-md border border-border/50 shadow-sm">
+                          <AvatarFallback className="bg-muted text-[10px] font-bold text-muted-foreground">
+                            {getInitials(p)}
+                          </AvatarFallback>
+                        </Avatar>
                         <span className={cn(
-                          "text-[13.5px] truncate",
-                          isSelected ? "text-primary font-bold" : "text-foreground font-medium group-hover:text-primary transition-colors"
+                          "text-sm truncate font-sans",
+                          isSelected ? "text-primary font-bold" : "text-foreground font-medium group-hover:text-primary transition-colors duration-100"
                         )}>
                           {getFullName(p)}
                         </span>
                       </div>
                     </td>
-                    <td className="h-11 border-r border-b border-border px-3 font-mono text-[12px] text-muted-foreground/80 tabular-nums">
-                      {getCI(p)}
-                    </td>
-                    <td className="h-11 border-r border-b border-border px-3 text-[13px] text-muted-foreground">
-                      {getGenderLabel(p.gender)}
-                    </td>
-                    <td className="h-11 border-r border-b border-border px-3 text-[13px] text-muted-foreground tabular-nums">
-                      {calcAge(p.birth_date)}
-                    </td>
-                    <td className="h-11 border-r border-b border-border px-3 font-mono text-[12px] text-muted-foreground/80 tabular-nums">
-                      {getPhone(p)}
-                    </td>
-                    <td className="h-11 border-r border-b border-border px-3">
-                      <Badge 
-                        variant={p.active !== false ? 'pill-success' : 'pill-muted'}
-                        className="font-semibold"
-                      >
+                    <td className="h-12 border-r border-border px-4 text-[12px] text-muted-foreground/80 font-mono font-medium">{getCI(p)}</td>
+                    <td className="h-12 border-r border-border px-4 text-[13px] text-muted-foreground font-sans font-medium">{getGenderLabel(p.gender)}</td>
+                    <td className="h-12 border-r border-border px-4 text-[13px] text-muted-foreground tabular-nums font-sans font-medium">{calcAge(p.birth_date)}</td>
+                    <td className="h-12 border-r border-border px-4 text-[12px] text-muted-foreground/80 tabular-nums font-sans font-medium">{getPhone(p)}</td>
+                    <td className="h-12 border-r border-border px-4">
+                      <Badge variant={p.active !== false ? 'pill-success' : 'pill-muted'} className="text-[10px] font-bold font-sans px-1.5 h-5 uppercase tracking-wider">
                         {p.active !== false ? 'Activo' : 'Inactivo'}
                       </Badge>
                     </td>
-                    <td className="h-11 border-b border-border px-3 text-right">
+                    <td className="h-12 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <TooltipProvider>
                           <Tooltip delayDuration={300}>
                             <TooltipTrigger asChild>
                               <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  router.push(`/patients/${p.id}`);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded text-muted-foreground hover:text-primary transition-all"
+                                onClick={(e) => { e.stopPropagation(); router.push(`/patients/${p.id}`); }}
+                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-muted/50 rounded text-muted-foreground hover:text-primary transition-all duration-100"
                               >
                                 <Maximize2 className="w-3.5 h-3.5" />
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="left" className="text-[11px] font-medium py-1 px-2">
-                              Expandir registro
-                            </TooltipContent>
+                            <TooltipContent side="left" className="text-[11px] font-medium py-1 px-2 font-sans">Expandir registro</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                         <ChevronRight className={cn(
@@ -619,43 +346,39 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
           </table>
         </div>
 
-        {/* Panel de detalle — aparece al seleccionar fila */}
-        {selectedPatient && (
-          <DetailPanel
-            patient={selectedPatient}
-            onClose={() => setSelectedPatient(null)}
-            router={router}
-          />
-        )}
-      </div>
-
-      {/* ── Barra de paginación — estilo Supabase ── */}
-      <div className="flex items-center justify-between px-3 py-2 h-9 border-t border-border bg-background shrink-0">
-        <span className="text-[11px] font-mono text-muted-foreground/70">
-          {totalItems} registros
-        </span>
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-          <span>Página {page} de {Math.max(totalPages, 1)}</span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            disabled={page <= 1}
-            onClick={() => updateParams({ page: page - 1 })}
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            disabled={page * pageSize >= totalItems}
-            onClick={() => updateParams({ page: page + 1 })}
-          >
-            <ChevronRight className="h-3.5 w-3.5" />
-          </Button>
+        <div className="flex items-center justify-between px-6 py-2 h-12 border-t border-border bg-background shrink-0 font-sans">
+          <div className="flex items-center gap-4">
+            <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest">
+              Total: <span className="text-foreground">{totalItems}</span> registros
+            </span>
+          </div>
+          <div className="flex items-center gap-4 text-[11px] font-bold text-muted-foreground font-sans">
+            <div className="flex items-center gap-1 bg-muted/30 border border-border rounded-md px-2 py-1 shadow-sm">
+              <span>Página <span className="text-foreground">{page}</span> de <span className="text-foreground">{Math.max(totalPages, 1)}</span></span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8 w-8 bg-background shadow-sm hover:bg-muted transition-all border-border/60" 
+                disabled={page <= 1} 
+                onClick={() => updateParams({ page: page - 1 })}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8 w-8 bg-background shadow-sm hover:bg-muted transition-all border-border/60" 
+                disabled={page * pageSize >= totalItems} 
+                onClick={() => updateParams({ page: page + 1 })}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

@@ -197,7 +197,7 @@ export default function AppointmentDetailSheet({
                 setCancelReason('');
                 onOpenChange(false);
             }
-        } catch (error) {
+        } catch {
             toast.error('Error al cancelar la cita');
         } finally {
             setIsPending(false);

@@ -7,32 +7,38 @@
 
 ## 1. 🎨 Sistema de Color
 
-### Color Primario (Brand)
+### Paleta de Marca (Core Brand)
 
-| Token        | Valor                       | Descripción                         |
-|--------------|-----------------------------|-------------------------------------|
-| `--primary`  | `oklch(0.62 0.19 259.76)`   | Azul marca — acción, confianza, UI  |
+La identidad de Clinicboard se define por un azul tecnológico y profesional, complementado con tonos clínicos de alta precisión.
 
-### Colores Secundarios Sugeridos
+| Nombre | Token | Valor HEX | Valor OKLCH | Rol |
+| :--- | :--- | :--- | :--- | :--- |
+| **Azul Primario** | `--primary` | `#3981f6` | `oklch(0.597 0.197 262)` | Acción principal, confianza, UI activa. |
+| **Índigo Profundo** | `--secondary` | `#4045ba` | `oklch(0.432 0.215 271)` | Detalles de marca, acento de identidad. |
+| **Menta Salud** | `--brand-mint` | `#90e2bc` | `oklch(0.843 0.097 155)` | Estado estable, éxito clínico, balance. |
+| **Rojo Clínico** | `--destructive` | `#e64343` | `oklch(0.561 0.215 25)` | Alertas críticas, errores, riesgo. |
 
-La paleta parte del azul primario (~260°) y se complementa con temas clínicos: calma, precisión, salud.
+### Arquitectura de Superficies (Neutral Dark Mode)
 
-| Nombre              | Token              | Valor oklch                | Rol                                      |
-|---------------------|--------------------|----------------------------|------------------------------------------|
-| **Azul Primario**   | `--brand-primary`  | `oklch(0.62 0.19 259.76)`   | Acción principal, confianza (Base)       |
-| **Rosa Salud**      | `--brand-rose`     | `oklch(0.8544 0.1338 328.38)`| Toque humano, bienestar                  |
-| **Índigo profundo** | `--brand-indigo`   | `oklch(0.4606 0.18 274.88)` | Jerarquía, Board wordmark, dark surfaces |
-| **Rojo Clínico**    | `--brand-danger`   | `oklch(0.62 0.20 25)`       | Alertas críticas, errores                |
+Clinicboard utiliza un sistema de capas basado en **grises neutros absolutos** (Chroma 0) para evitar tintes azulejos o verdosos, siguiendo la jerarquía visual de Supabase.
 
-### Paleta Semántica (en uso)
+| Nivel | Rol | Valor HEX | Valor OKLCH | Componentes |
+| :--- | :--- | :--- | :--- | :--- |
+| **L1 (Base)** | `--sidebar-background` | `#171717` | `oklch(0.21 0 0)` | Rail, Sidebars, Header, fondo de Tablas. |
+| **L2 (Canvas)** | `--background` | `#1c1c1c` | `oklch(0.24 0 0)` | Fondo principal de la App, Paneles de detalle. |
+| **L3 (Surface)** | `--muted` / `--card` | `#262626` | `oklch(0.31 0 0)` | Tabs, Sub-headers, Cards de información. |
+| **L4 (Elevated)** | `--popover` | `#313131` | `oklch(0.38 0 0)` | Modales, Menús, Popovers, Hover states. |
 
-| Estado de cita | Color                    | Emoción              |
-|----------------|--------------------------|----------------------|
-| Booked         | `oklch(0.55 0.18 260)`   | Programado (azul)    |
-| Arrived        | `oklch(0.60 0.17 38)`    | Presencia (naranja)  |
-| Fulfilled      | `oklch(0.50 0.14 145)`   | Completado (verde)   |
-| Pending        | `oklch(0.65 0.14 75)`    | En espera (ámbar)    |
-| Cancelled      | `oklch(0.55 0.18 25)`    | Inactivo (rojo)      |
+> ⚠️ **Nota de diseño:** Los bordes se aplican con `--border: oklch(0.28 0 0)` y se suavizan habitualmente con una opacidad del 40% (`border-border/40`) para lograr líneas finas y sutiles.
+
+### Paleta Semántica (Estados)
+
+| Estado | Token | Valor OKLCH | Aplicación |
+| :--- | :--- | :--- | :--- |
+| **Estable** | `--clinical-stable` | `oklch(0.843 0.097 155)` | Paciente sano, cita completada. |
+| **Pendiente** | `--clinical-pending` | `oklch(0.650 0.140 75)` | En espera, resultados pendientes. |
+| **Crítico** | `--clinical-critical` | `oklch(0.561 0.215 25)` | Alerta médica, cita cancelada. |
+| **Inactivo** | `--clinical-inactive` | `oklch(0.58 0 0)` | Registro archivado, sin actividad. |
 
 ---
 

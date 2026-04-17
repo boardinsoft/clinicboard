@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import type { Patient, EncounterForPreview } from '@/types/database.types';
 
 export interface PatientTab {
     id: string; // patientId o "new"
@@ -38,6 +39,14 @@ interface PatientStore {
     // UI State por paciente (ej: qué sub-tab está abierta en su ficha)
     viewStates: Record<string, { activeSubTab: string }>;
     setPatientView: (patientId: string, subTab: string) => void;
+
+    // Vista previa (Side Panel)
+    selectedPatientForPreview: Patient | null;
+    setSelectedPatientForPreview: (patient: Patient | null) => void;
+
+    // Vista previa de encuentro (panel derecho /history)
+    selectedEncounterForPreview: EncounterForPreview | null;
+    setSelectedEncounterForPreview: (enc: EncounterForPreview | null) => void;
 }
 
 export const usePatientStore = create<PatientStore>()(
@@ -47,28 +56,15 @@ export const usePatientStore = create<PatientStore>()(
             activePatientId: null,
             clinicalStates: {},
             viewStates: {},
+            selectedPatientForPreview: null,
+            selectedEncounterForPreview: null,
+
+            setSelectedPatientForPreview: (patient) => set({ selectedPatientForPreview: patient }),
+            setSelectedEncounterForPreview: (enc) => set({ selectedEncounterForPreview: enc }),
 
             openPatientTab: (patient) => {
-                const { tabs } = get();
-                const exists = tabs.find(t => t.id === patient.id);
-                
-                if (!exists) {
-                    const newTab: PatientTab = {
-                        id: patient.id,
-                        name: patient.name,
-                        url: `/patients/${patient.id}`,
-                        lastActive: Date.now()
-                    };
-                    set({ 
-                        tabs: [...tabs, newTab].slice(-8), // Limitar a 8 pacientes concurrentes
-                        activePatientId: patient.id 
-                    });
-                } else {
-                    set({ 
-                        activePatientId: patient.id,
-                        tabs: tabs.map(t => t.id === patient.id ? { ...t, lastActive: Date.now() } : t)
-                    });
-                }
+                // Sistema de pestañas desactivado app-wide.
+                set({ activePatientId: patient.id });
             },
 
             closePatientTab: (id) => {

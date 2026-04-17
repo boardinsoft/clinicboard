@@ -57,8 +57,7 @@ export async function searchGlobal(queryText: string, context?: string): Promise
     // 4. Search Clinical Notes (Encounters)
     const encountersQuery = supabase
         .from('encounters')
-        .select('id, evolution_note, plan, patient_id, patients(name_family, name_given)')
-        .or(`evolution_note.ilike.%${queryText}%,plan.ilike.%${queryText}%`)
+        .select('id, patient_id, patients(name_family, name_given), clinical_notes(evolution_note, plan)')
         .eq('practitioner_id', practitionerId)
         .limit(8);
 
@@ -142,7 +141,8 @@ export async function searchGlobal(queryText: string, context?: string): Promise
     if (encountersRes.data) {
         encountersRes.data.forEach((e) => {
             const patientName = e.patients ? `${e.patients.name_given.join(' ')} ${e.patients.name_family}` : 'Paciente desconocido';
-            const noteText = e.evolution_note || e.plan || 'Empezar evaluación clínica...';
+            const cn = Array.isArray(e.clinical_notes) ? e.clinical_notes[0] : e.clinical_notes;
+            const noteText = cn?.evolution_note || cn?.plan || 'Empezar evaluación clínica...';
             results.push({
                 id: e.id,
                 type: 'encounter',

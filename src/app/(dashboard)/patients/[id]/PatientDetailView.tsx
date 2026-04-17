@@ -6,19 +6,15 @@ import {
     User,
     Stethoscope,
     Plus,
-    Phone,
-    Mail,
-    MapPin,
-    CreditCard,
     Activity,
     FlaskConical,
     MoreVertical,
     FileText,
-    ExternalLink,
     Trash,
     Calendar,
     AlertTriangle,
     ChevronRight,
+    AlertCircle
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -39,9 +35,7 @@ import { toast } from 'sonner';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     AlertDialog,
@@ -57,6 +51,9 @@ import { AddConditionDialog } from '@/components/patients/AddConditionDialog';
 import { AddAllergyDialog } from '@/components/patients/AddAllergyDialog';
 import type { Patient, Condition, AllergyIntolerance, EncounterWithSpecialty } from '@/types/database.types';
 import type { PatientTelecom, PatientAddress, PatientIdentifier } from '@/types/patient-jsonb';
+import { formatDate, calcAge, getGenderLabel } from '@/lib/clinical';
+
+import { PageHeader, PageContainer, PageSection, PageSectionSeparator } from '@/components/ui/PageLayout';
 
 interface PatientDetailViewProps {
     patient: Patient;
@@ -64,148 +61,36 @@ interface PatientDetailViewProps {
     allergies: AllergyIntolerance[];
 }
 
-import { formatDate, calcAge, getGenderLabel } from '@/lib/clinical';
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function WorkspaceHeader({ patient, router, onArchive, onReactivate, children }: { patient: Patient; router: ReturnType<typeof useRouter>; onArchive: () => void; onReactivate: () => void; children?: React.ReactNode }) {
-    const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value;
-    const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value;
-    const address = (patient.address as PatientAddress[] | null)?.[0]?.text;
-
+function PropertyItem({ label, value, className }: { label: string; value: string; className?: string }) {
     return (
-        <header className="bg-background border-b border-border/10 shadow-none">
-            <div className="px-8 py-8 flex items-center justify-between">
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                        <User className="w-8 h-8" />
-                    </div>
-                    <div>
-                        <h1 className="text-3xl font-semibold tracking-tight text-foreground flex items-center gap-3">
-                            {patient.name_given?.join(' ')} {patient.name_family}
-                            <Badge variant={patient.active ? "outline" : "secondary"} className={cn(
-                                "font-medium border-0",
-                                patient.active ? "bg-emerald-500/10 text-emerald-700" : "bg-muted text-muted-foreground"
-                            )}>
-                                {patient.active ? 'Activo' : 'Inactivo'}
-                            </Badge>
-                        </h1>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground mt-2">
-                            <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-foreground">Edad:</span> {calcAge(patient.birth_date)}
-                            </div>
-                            <span className="text-border">•</span>
-                            <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-foreground">Género:</span> {getGenderLabel(patient.gender)}
-                            </div>
-                            {Array.isArray(patient.identifiers) && (patient.identifiers as PatientIdentifier[])[0]?.value && (
-                                <>
-                                    <span className="text-border">|</span>
-                                    <div className="flex items-center gap-1.5 font-mono text-xs bg-muted px-2 py-0.5 rounded-md text-foreground">
-                                        <CreditCard className="w-3.5 h-3.5 text-muted-foreground" />
-                                        {(patient.identifiers as PatientIdentifier[])[0].value}
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="border-border/40">
-                                <MoreVertical className="w-4 h-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 border-border/30">
-                            <DropdownMenuLabel>Acciones del Paciente</DropdownMenuLabel>
-                            <DropdownMenuSeparator className="bg-border/20" />
-                            <DropdownMenuItem onClick={() => router.push(`/patients/${patient.id}/edit`)}>
-                                <Edit className="w-4 h-4 mr-2" /> Editar Perfil
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {
-                                const link = document.createElement('a');
-                                link.href = `/api/patients/${patient.id}/fhir`;
-                                link.download = `patient-${patient.id}-fhir-bundle.json`;
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                            }}>
-                                <FileText className="w-4 h-4 mr-2" /> Exportar Historia FHIR
-                            </DropdownMenuItem>
-                            <DropdownMenuItem disabled>
-                                <ExternalLink className="w-4 h-4 mr-2" /> Abrir en Portal
-                                <span className="ml-auto text-[10px] text-muted-foreground">Pronto</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-border/20" />
-                            {patient.active ? (
-                                <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive focus:bg-destructive/5"
-                                    onClick={onArchive}
-                                >
-                                    <Trash className="w-4 h-4 mr-2" /> Archivar Paciente
-                                </DropdownMenuItem>
-                            ) : (
-                                <DropdownMenuItem onClick={onReactivate}>
-                                    <Activity className="w-4 h-4 mr-2" /> Reactivar Paciente
-                                </DropdownMenuItem>
-                            )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-
-            <div className="px-8 pb-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                    <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">Contacto</span>
-                        <div className="space-y-1">
-                            {phone && <div className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 text-muted-foreground" /> {phone}</div>}
-                            {email && <div className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-muted-foreground" /> {email}</div>}
-                            {!phone && !email && <span className="text-muted-foreground">No registrado</span>}
-                        </div>
-                    </div>
-                    <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">Residencia</span>
-                        <div>
-                            {address ? (
-                                <div className="flex items-start gap-2">
-                                    <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                                    <span className="line-clamp-2">{address}</span>
-                                </div>
-                            ) : (
-                                <span className="text-muted-foreground">Sin dirección registrada</span>
-                            )}
-                        </div>
-                    </div>
-                    <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">Notas rápidas</span>
-                        <div className="text-muted-foreground line-clamp-2">
-                            Sin notas registradas
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {children}
-        </header>
+        <div className={cn("flex flex-col gap-1 py-1.5", className)}>
+            <span className="text-[11px] font-bold text-muted-foreground/70 font-sans">
+                {label}
+            </span>
+            <span className="text-[13px] font-medium text-foreground/90 font-sans tracking-tight">
+                {value || '—'}
+            </span>
+        </div>
     );
 }
 
 function EmptyState({ icon: Icon, title, message }: { icon: React.ElementType; title: string; message: string }) {
     return (
-        <div className="flex flex-col items-center justify-center p-12 text-center border rounded-xl border-dashed border-border/60 bg-muted/20">
-            <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                <Icon className="w-6 h-6 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center p-12 text-center border rounded-xl border-dashed border-border bg-muted/5">
+            <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center mb-3">
+                <Icon className="w-4 h-4 text-muted-foreground/60" />
             </div>
-            <h4 className="text-lg font-medium text-foreground mb-1">{title}</h4>
-            <p className="text-sm text-muted-foreground max-w-sm">{message}</p>
+            <h4 className="text-sm font-bold text-foreground mb-1 font-sans">{title}</h4>
+            <p className="text-[11px] text-muted-foreground max-w-xs font-sans leading-relaxed">{message}</p>
         </div>
     );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-const TAB_VALUES = ['overview', 'conditions', 'allergies', 'history', 'vitals'] as const;
+export type TabValue = 'overview' | 'conditions' | 'allergies' | 'history' | 'vitals';
 
 export default function PatientDetailView({ patient, conditions: initialConditions, allergies: initialAllergies }: PatientDetailViewProps) {
     const router = useRouter();
@@ -217,7 +102,6 @@ export default function PatientDetailView({ patient, conditions: initialConditio
     const [showAddAllergy, setShowAddAllergy] = useState(false);
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
     const [archiving, setArchiving] = useState(false);
-    const [reactivating, setReactivating] = useState(false);
     const { setRightPanelOpen } = useLayoutStore();
     const { removeTab, findTabByUrl } = useTabStore();
     const { 
@@ -227,31 +111,13 @@ export default function PatientDetailView({ patient, conditions: initialConditio
         setActivePatient 
     } = usePatientStore();
 
-    const savedTab = (viewStates[patient.id]?.activeSubTab as typeof TAB_VALUES[number]) || 'overview';
-    const [activeTab, setActiveTab] = useState(savedTab);
+    const savedTab = (viewStates[patient.id]?.activeSubTab as TabValue) || 'overview';
+    const [activeTab, setActiveTab] = useState<TabValue>(savedTab);
 
-    // Registrar apertura de pestaña y asegurar que este paciente es el activo
     useEffect(() => {
-        openPatientTab({ 
-            id: patient.id, 
-            name: `${patient.name_given?.join(' ')} ${patient.name_family}` 
-        });
         setActivePatient(patient.id);
-    }, [patient, openPatientTab, setActivePatient]);
-
-    const handleReactivate = async () => {
-        setReactivating(true);
-        const result = await reactivatePatient(patient.id);
-        setReactivating(false);
-        if (result.error) {
-            toast.error('Error al reactivar', { description: result.error });
-            return;
-        }
-        toast.success('Paciente reactivado', {
-            description: `${patient.name_given?.join(' ')} ${patient.name_family} ha sido marcado como activo.`,
-        });
-        router.refresh();
-    };
+        setRightPanelOpen(false);
+    }, [patient.id, setActivePatient, setRightPanelOpen]);
 
     useEffect(() => {
         const fetchEncounters = async () => {
@@ -263,279 +129,269 @@ export default function PatientDetailView({ patient, conditions: initialConditio
         fetchEncounters();
     }, [patient.id]);
 
-    useEffect(() => {
-        setRightPanelOpen(true);
-    }, [patient, setRightPanelOpen]);
+    const handleReactivate = async () => {
+        const result = await reactivatePatient(patient.id);
+        if (result.error) {
+            toast.error('Error al reactivar', { description: result.error });
+            return;
+        }
+        toast.success('Paciente reactivado');
+        router.refresh();
+    };
 
+    const docId = (patient.identifiers as PatientIdentifier[] | null)?.[0]?.value;
     const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value;
     const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value;
     const address = (patient.address as PatientAddress[] | null)?.[0]?.text;
 
+    const fullName = `${patient.name_family}, ${patient.name_given?.join(' ')}`;
+
     return (
-        <div className="h-full flex flex-col bg-background">
-            <Tabs
-                value={activeTab}
-                onValueChange={(val) => {
-                    const tabValue = val as typeof TAB_VALUES[number];
-                    setActiveTab(tabValue);
-                    setPatientView(patient.id, tabValue);
-                }}
-                className="flex-1 flex flex-col"
-            >
-                <WorkspaceHeader patient={patient} router={router} onArchive={() => setShowArchiveConfirm(true)} onReactivate={handleReactivate}>
-                    <div className="px-8 mt-2">
-                        <TabsList className="mb-4">
-                            {[
-                                { value: 'overview', label: 'Resumen', icon: User },
-                                { value: 'conditions', label: 'Condiciones', icon: Stethoscope },
-                                { value: 'allergies', label: 'Alergias', icon: AlertTriangle },
-                                { value: 'history', label: 'Consultas', icon: Calendar },
-                                { value: 'vitals', label: 'Signos Vitales', icon: Activity },
-                            ].map((tab) => (
-                                <TabsTrigger
-                                    key={tab.value}
-                                    value={tab.value}
-                                    className="gap-2"
-                                >
-                                    <tab.icon className="w-4 h-4" />
-                                    {tab.label}
-                                </TabsTrigger>
-                            ))}
-                        </TabsList>
+        <div className="h-full flex flex-col bg-background font-sans">
+            {/* ── HEADER ── */}
+            <PageHeader
+                title={fullName}
+                breadcrumbs={[
+                    { label: 'Pacientes', href: '/patients' },
+                    { label: fullName }
+                ]}
+                actions={
+                    <div className="flex items-center gap-2">
+                        <Badge variant={patient.active ? "pill-success" : "pill-muted"} className="text-[11px] mr-2">
+                            {patient.active ? 'Activo' : 'Inactivo'}
+                        </Badge>
+                        <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold border-border gap-2 px-3 font-sans transition-colors duration-100" onClick={() => router.push(`/patients/${patient.id}/edit`)}>
+                            <Edit className="w-3.5 h-3.5" /> Editar
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md">
+                                    <MoreVertical className="w-4 h-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 border-border/30 rounded-lg">
+                                <DropdownMenuLabel className="text-[11px] font-bold text-muted-foreground/70 px-3 py-2 font-sans">Opciones</DropdownMenuLabel>
+                                <DropdownMenuSeparator className="bg-border/20" />
+                                <DropdownMenuItem className="text-xs font-sans" onClick={() => {/* FHIR export */}}>
+                                    <FileText className="w-4 h-4 mr-2 opacity-60" /> Exportar Historia FHIR
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-border/20" />
+                                {patient.active ? (
+                                    <DropdownMenuItem className="text-xs font-sans text-destructive focus:text-destructive focus:bg-destructive/5" onClick={() => setShowArchiveConfirm(true)}>
+                                        <Trash className="w-4 h-4 mr-2 opacity-60" /> Archivar Paciente
+                                    </DropdownMenuItem>
+                                ) : (
+                                    <DropdownMenuItem className="text-xs font-sans" onClick={handleReactivate}>
+                                        <Activity className="w-4 h-4 mr-2 opacity-60" /> Reactivar Paciente
+                                    </DropdownMenuItem>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
-                </WorkspaceHeader>
+                }
+                className="py-6"
+            >
+                <Tabs
+                    value={activeTab}
+                    onValueChange={(val) => {
+                        const tabValue = val as TabValue;
+                        setActiveTab(tabValue);
+                        setPatientView(patient.id, tabValue);
+                    }}
+                    className="mt-2"
+                >
+                    <TabsList className="h-10 w-full justify-start bg-transparent p-0 gap-8 overflow-x-auto no-scrollbar">
+                        {[
+                            { value: 'overview', label: 'Resumen', icon: User },
+                            { value: 'conditions', label: 'Condiciones', icon: Stethoscope },
+                            { value: 'allergies', label: 'Alergias', icon: AlertTriangle },
+                            { value: 'history', label: 'Consultas', icon: Calendar },
+                            { value: 'vitals', label: 'Signos Vitales', icon: Activity },
+                        ].map((tab) => (
+                            <TabsTrigger
+                                key={tab.value}
+                                value={tab.value}
+                                className="h-10 px-0 bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[11px] font-bold text-muted-foreground/60 data-[state=active]:text-foreground transition-all duration-100 gap-1.5 font-sans"
+                            >
+                                <tab.icon className="w-3.5 h-3.5" />
+                                {tab.label}
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+                </Tabs>
+            </PageHeader>
 
-                <div className="flex-1 overflow-y-auto p-8">
-                    <div className="max-w-5xl">
-                        {/* ── PANEL: RESUMEN ────────────────────────────────── */}
-                        <TabsContent value="overview" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden">
-                            <div className="space-y-6">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Información General</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground">Nombre Completo</Label>
-                                                <div className="font-medium">{`${patient.name_given?.join(' ')} ${patient.name_family}`}</div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground">Cédula / ID</Label>
-                                                <div className="font-medium">{Array.isArray(patient.identifiers) ? (patient.identifiers as PatientIdentifier[])[0]?.value || '—' : '—'}</div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground">Fecha de Nacimiento</Label>
-                                                <div className="font-medium">{`${formatDate(patient.birth_date)} (${calcAge(patient.birth_date)})`}</div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground">Género</Label>
-                                                <div className="font-medium">{getGenderLabel(patient.gender)}</div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+            <div className="flex-1 overflow-y-auto bg-background">
+                <PageContainer size="large">
+                    {/* ── PANEL: RESUMEN ── */}
+                    {activeTab === 'overview' && (
+                        <div className="space-y-0">
+                            <PageSection
+                                title="Identidad y datos maestros"
+                                description="Información personal básica y documentos de identificación oficial."
+                                orientation="horizontal"
+                            >
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 rounded-xl border border-border bg-card/30">
+                                    <PropertyItem label="Nombre completo" value={`${patient.name_given?.join(' ')} ${patient.name_family}`} />
+                                    <PropertyItem label="Cédula / ID" value={docId || '—'} />
+                                    <PropertyItem label="Fecha de nacimiento" value={formatDate(patient.birth_date)} />
+                                    <PropertyItem label="Edad actual" value={`${calcAge(patient.birth_date)} años`} />
+                                    <PropertyItem label="Género" value={getGenderLabel(patient.gender)} />
+                                </div>
+                            </PageSection>
 
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Contacto y Ubicación</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground">Teléfono</Label>
-                                                <div className="font-medium">{phone || '—'}</div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground">Correo Electrónico</Label>
-                                                <div className="font-medium">{email || '—'}</div>
-                                            </div>
-                                            <div className="space-y-2 md:col-span-2">
-                                                <Label className="text-muted-foreground">Dirección Completa</Label>
-                                                <div className="font-medium">{address || '—'}</div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </TabsContent>
+                            <PageSectionSeparator />
 
-                        {/* ── PANEL: CONDICIONES ───────────────────────────── */}
-                        <TabsContent value="conditions" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden space-y-6">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-xl font-semibold">Condiciones Clínicas</h3>
-                                <Button variant="outline" size="sm" onClick={() => setShowAddCondition(true)}>
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Agregar Condición
+                            <PageSection
+                                title="Contacto y ubicación"
+                                description="Medios de comunicación directa y dirección física de residencia."
+                                orientation="horizontal"
+                            >
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 rounded-xl border border-border bg-card/30">
+                                    <PropertyItem label="Teléfono" value={phone || '—'} />
+                                    <PropertyItem label="Correo electrónico" value={email || '—'} />
+                                    <div className="sm:col-span-2">
+                                        <PropertyItem label="Dirección de residencia" value={address || 'Sin dirección registrada'} />
+                                    </div>
+                                </div>
+                            </PageSection>
+                        </div>
+                    )}
+
+                    {/* ── PANEL: CONDICIONES ── */}
+                    {activeTab === 'conditions' && (
+                        <PageSection
+                            title="Condiciones clínicas"
+                            description="Lista de diagnósticos activos e históricos del paciente."
+                            actions={
+                                <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-primary hover:bg-primary/10 font-sans transition-colors duration-100" onClick={() => setShowAddCondition(true)}>
+                                    <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
                                 </Button>
-                            </div>
+                            }
+                        >
                             {conditions.length === 0 ? (
-                                <EmptyState
-                                    icon={Activity}
-                                    title="No hay condiciones clínicas"
-                                    message="El paciente no tiene diagnósticos o condiciones registradas."
-                                />
+                                <EmptyState icon={Activity} title="No hay condiciones clínicas" message="El paciente no tiene diagnósticos registrados actualmente." />
                             ) : (
-                                <div className="space-y-3">
+                                <div className="border border-border rounded-xl overflow-hidden divide-y divide-border/20">
                                     {conditions.map((c) => (
-                                        <Card key={c.id}>
-                                            <CardContent className="p-4 flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                                    <Activity className="w-5 h-5" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="text-base font-semibold truncate">{c.code_display}</h4>
-                                                    <p className="text-sm text-muted-foreground">Registrado: {formatDate(c.onset_date)}</p>
-                                                </div>
-                                                <Badge variant={c.clinical_status === 'active' ? 'destructive' : 'secondary'} className="shrink-0 border-0">
-                                                    {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
-                                                </Badge>
-                                            </CardContent>
-                                        </Card>
+                                        <div key={c.id} className="flex items-center justify-between p-4 bg-card hover:bg-muted/30 transition-colors duration-100">
+                                            <div className="flex flex-col gap-0.5">
+                                                <h4 className="text-sm font-bold text-foreground/90 font-sans">{c.code_display}</h4>
+                                                <p className="text-[11px] text-muted-foreground font-sans tracking-tight tabular-nums">
+                                                    {c.code} · Iniciado el {formatDate(c.onset_date)}
+                                                </p>
+                                            </div>
+                                            <Badge variant={c.clinical_status === 'active' ? 'pill-success' : 'pill-muted'} className="text-[11px]">
+                                                {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
+                                            </Badge>
+                                        </div>
                                     ))}
                                 </div>
                             )}
-                        </TabsContent>
+                        </PageSection>
+                    )}
 
-                        {/* ── PANEL: ALERGIAS ──────────────────────────────── */}
-                        <TabsContent value="allergies" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden space-y-6">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-xl font-semibold">Alergias e Intolerancias</h3>
-                                <Button variant="outline" size="sm" onClick={() => setShowAddAllergy(true)}>
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Agregar Alergia
+                    {/* ── PANEL: ALERGIAS ── */}
+                    {activeTab === 'allergies' && (
+                        <PageSection
+                            title="Alergias e intolerancias"
+                            description="Registro de sustancias o agentes que provocan reacciones adversas."
+                            actions={
+                                <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-primary hover:bg-primary/10 font-sans transition-colors duration-100" onClick={() => setShowAddAllergy(true)}>
+                                    <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
                                 </Button>
-                            </div>
+                            }
+                        >
                             {allergies.length === 0 ? (
-                                <EmptyState
-                                    icon={FlaskConical}
-                                    title="Sin alergias registradas"
-                                    message="No se han reportado alergias o intolerancias para este paciente."
-                                />
+                                <EmptyState icon={FlaskConical} title="Sin alergias registradas" message="No se han reportado alergias o intolerancias para este paciente." />
                             ) : (
-                                <div className="space-y-3">
+                                <div className="border border-border rounded-xl overflow-hidden divide-y divide-border/20">
                                     {allergies.map((a) => (
-                                        <Card key={a.id}>
-                                            <CardContent className="p-4 flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
-                                                    <FlaskConical className="w-5 h-5" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="text-base font-semibold truncate">{a.code_display}</h4>
-                                                    <p className="text-sm text-muted-foreground truncate">{(Array.isArray(a.reactions) && (a.reactions as Array<{ text?: string }>)[0]?.text) || 'Reacción no especificada'}</p>
-                                                </div>
-                                                <Badge variant={a.criticality === 'high' ? 'destructive' : 'outline'} className="shrink-0 bg-background">
-                                                    {a.criticality === 'high' ? 'Alta' : 'Normal'}
-                                                </Badge>
-                                            </CardContent>
-                                        </Card>
+                                        <div key={a.id} className="flex items-center gap-4 p-4 bg-card hover:bg-muted/30 transition-colors duration-100">
+                                            <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
+                                                <AlertCircle className="w-4 h-4 text-destructive" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-sm font-bold text-foreground/90 truncate font-sans">{a.code_display}</h4>
+                                                <p className="text-[11px] text-muted-foreground font-sans">
+                                                    {(Array.isArray(a.reactions) && (a.reactions as Array<{ text: string }>)[0]?.text) || 'Sin reacción especificada'}
+                                                </p>
+                                            </div>
+                                            <Badge variant={a.criticality === 'high' ? 'pill-danger' : 'pill-warning'} className="text-[11px]">
+                                                {a.criticality === 'high' ? 'Alta' : 'Normal'}
+                                            </Badge>
+                                        </div>
                                     ))}
                                 </div>
                             )}
-                        </TabsContent>
+                        </PageSection>
+                    )}
 
-                        {/* ── PANEL: CONSULTAS ────────────────────────────── */}
-                        <TabsContent value="history" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden space-y-6">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-xl font-semibold">Historial de Consultas</h3>
-                                <Button variant="outline" size="sm" onClick={() => router.push('/appointments')}>
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Nueva Cita
-                                </Button>
-                            </div>
+                    {/* ── PANEL: CONSULTAS ── */}
+                    {activeTab === 'history' && (
+                        <PageSection
+                            title="Historial evolutivo"
+                            description="Cronología de encuentros clínicos y notas de seguimiento."
+                        >
                             {loadingEncounters ? (
-                                <div className="space-y-4">
-                                    <Skeleton className="h-24 w-full" />
-                                    <Skeleton className="h-24 w-full" />
-                                    <Skeleton className="h-24 w-full" />
+                                <div className="space-y-3">
+                                    <Skeleton className="h-20 w-full rounded-xl" />
                                 </div>
                             ) : encounters.length === 0 ? (
-                                <EmptyState
-                                    icon={Calendar}
-                                    title="Sin consultas previas"
-                                    message="Este paciente aún no registra visitas o evoluciones clínicas."
-                                />
+                                <EmptyState icon={Calendar} title="Sin consultas previas" message="Este paciente aún no registra visitas clínicas." />
                             ) : (
-                                <div className="grid grid-cols-1 gap-4">
+                                <div className="space-y-3">
                                     {encounters.map((e) => (
-                                        <Card
+                                        <button
                                             key={e.id}
-                                            className="cursor-pointer hover:border-primary/40 hover:bg-accent/5 transition-all group overflow-hidden"
+                                            className="w-full text-left flex items-start p-5 gap-5 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-muted/30 transition-all duration-150 group"
                                             onClick={() => router.push(`/history?patientId=${patient.id}&encounterId=${e.id}`)}
                                         >
-                                            <CardContent className="p-0">
-                                                <div className="flex items-start p-5 gap-4">
-                                                    <div className="w-12 h-12 rounded-xl bg-primary/5 group-hover:bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/10 transition-colors">
-                                                        <Calendar className="w-6 h-6" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center justify-between mb-1">
-                                                            <p className="font-semibold text-sm">{formatDate(e.start_time)}</p>
-                                                            <Badge variant={e.status === 'finished' ? 'outline' : 'default'} className={cn(
-                                                                "font-medium border-0 h-5 text-[10px]",
-                                                                e.status === 'finished' ? 'bg-emerald-500/10 text-emerald-700' : 'bg-primary/10 text-primary'
-                                                            )}>
-                                                                {e.status === 'finished' ? 'Completada' : 'En curso'}
-                                                            </Badge>
-                                                        </div>
-                                                        <div className="text-sm font-medium text-muted-foreground flex items-center gap-1.5 mb-2">
-                                                            <User className="w-3.5 h-3.5" />
-                                                            Dr. {e.practitioner?.name_family || 'No asignado'}
-                                                        </div>
-                                                        <p className="text-sm text-foreground/80 leading-relaxed line-clamp-2">
-                                                            {e.evolution_note || <span className="text-muted-foreground">Sin notas evolutivas registradas en esta consulta.</span>}
-                                                        </p>
-                                                    </div>
-                                                    <ChevronRight className="w-5 h-5 text-muted-foreground self-center group-hover:text-primary transition-colors" />
+                                            <div className="flex flex-col items-center gap-2 shrink-0 pt-0.5">
+                                                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-150">
+                                                    <Calendar className="w-5 h-5" />
                                                 </div>
-                                            </CardContent>
-                                        </Card>
+                                                <div className="w-px h-full bg-border/40 group-last:hidden" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <p className="font-sans text-sm font-bold tracking-tight text-foreground/90 tabular-nums">{formatDate(e.start_time)}</p>
+                                                    <Badge variant={e.status === 'finished' ? 'pill-success' : 'pill-info'} className="text-[11px]">
+                                                        {e.status === 'finished' ? 'Cerrada' : 'Abierta'}
+                                                    </Badge>
+                                                </div>
+                                                <p className="text-[11px] font-bold text-muted-foreground/70 mb-2 font-sans">
+                                                    Dr. {e.practitioner?.name_family || 'No asignado'}
+                                                </p>
+                                                <p className="text-[13px] text-muted-foreground leading-relaxed line-clamp-3 italic font-sans">
+                                                    {e.clinical_note?.evolution_note || 'Sin nota evolutiva registrada en esta consulta.'}
+                                                </p>
+                                            </div>
+                                            <ChevronRight className="w-4 h-4 text-muted-foreground/40 self-center group-hover:translate-x-1 group-hover:text-primary transition-all duration-150" />
+                                        </button>
                                     ))}
                                 </div>
                             )}
-                        </TabsContent>
+                        </PageSection>
+                    )}
+                </PageContainer>
+            </div>
 
-                        {/* ── PANEL: SIGNOS VITALES ───────────────────────── */}
-                        <TabsContent value="vitals" className="m-0 focus-visible:outline-none data-[state=inactive]:hidden space-y-6">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-xl font-semibold">Signos Vitales</h3>
-                            </div>
-                            <EmptyState
-                                icon={Activity}
-                                title="Próximamente"
-                                message="Gráficas de evolución y tendencias de signos vitales estarán disponibles aquí en futuras versiones."
-                            />
-                        </TabsContent>
-                    </div>
-                </div>
-            </Tabs>
-
-            <AddConditionDialog
-                patientId={patient.id}
-                open={showAddCondition}
-                onOpenChange={setShowAddCondition}
-                onSuccess={(c) => setConditions(prev => [c, ...prev])}
-            />
-
-            <AddAllergyDialog
-                patientId={patient.id}
-                open={showAddAllergy}
-                onOpenChange={setShowAddAllergy}
-                onSuccess={(a) => setAllergies(prev => [a, ...prev])}
-            />
+            <AddConditionDialog patientId={patient.id} open={showAddCondition} onOpenChange={setShowAddCondition} onSuccess={(c) => setConditions(prev => [c, ...prev])} />
+            <AddAllergyDialog patientId={patient.id} open={showAddAllergy} onOpenChange={setShowAddAllergy} onSuccess={(a) => setAllergies(prev => [a, ...prev])} />
 
             <AlertDialog open={showArchiveConfirm} onOpenChange={setShowArchiveConfirm}>
-                <AlertDialogContent>
+                <AlertDialogContent className="rounded-xl border-border/40">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>¿Archivar paciente?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            El paciente será marcado como inactivo. Puede reactivarlo desde la vista del paciente.
+                        <AlertDialogTitle className="font-bold font-sans">¿Archivar paciente?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-xs font-sans">
+                            El paciente será marcado como inactivo. Podrá reactivarlo desde esta misma vista en el futuro.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={archiving}>Cancelar</AlertDialogCancel>
+                    <AlertDialogFooter className="gap-2">
+                        <AlertDialogCancel className="h-9 text-xs font-bold rounded-md border-border/40 font-sans">Cancelar</AlertDialogCancel>
                         <AlertDialogAction
-                            className={buttonVariants({ variant: 'destructive' })}
+                            className={cn(buttonVariants({ variant: 'destructive' }), "h-9 text-xs font-bold rounded-md font-sans")}
                             disabled={archiving}
                             onClick={async (e) => {
                                 e.preventDefault();
@@ -548,9 +404,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                 }
                                 const patientTab = findTabByUrl(`/patients/${patient.id}`);
                                 if (patientTab) removeTab(patientTab.id);
-                                toast.success('Paciente archivado', {
-                                    description: `${patient.name_given?.join(' ')} ${patient.name_family} ha sido marcado como inactivo.`,
-                                });
+                                toast.success('Paciente archivado');
                                 router.push('/patients');
                             }}
                         >
