@@ -304,7 +304,12 @@ export default function AppointmentDetailSheet({
                                 {patient?.identifiers && (
                                     <div className="flex items-center gap-1.5 mt-1.5 text-[10px] font-mono bg-background/50 px-2 py-0.5 rounded border border-border/40 self-start">
                                         <CreditCard className="w-3 h-3 text-muted-foreground" />
-                                        <span>{(patient.identifiers as any)?.[0]?.value || 'S/D'} {/* eslint-disable-line @typescript-eslint/no-explicit-any */}</span>
+                                        <span>{(() => {
+                                          const identifiers = typeof patient.identifiers === 'string'
+                                            ? JSON.parse(patient.identifiers as string)
+                                            : patient.identifiers;
+                                          return Array.isArray(identifiers) ? identifiers[0]?.value || 'S/D' : 'S/D';
+                                        })()}</span>
                                     </div>
                                 )}
                             </div>
@@ -413,7 +418,12 @@ export default function AppointmentDetailSheet({
                                         <Phone className="w-3 h-3" />
                                         Contacto
                                     </div>
-                                    <p className="text-sm font-medium">{(patient.telecom as any)?.[0]?.value || 'No especificado'} {/* eslint-disable-line @typescript-eslint/no-explicit-any */}</p>
+                                    <p className="text-sm font-medium">{(() => {
+                                      const telecom = typeof patient.telecom === 'string'
+                                        ? JSON.parse(patient.telecom as string)
+                                        : patient.telecom;
+                                      return Array.isArray(telecom) ? telecom[0]?.value || 'No especificado' : 'No especificado';
+                                    })()}</p>
                                 </div>
                             )}
                         </div>

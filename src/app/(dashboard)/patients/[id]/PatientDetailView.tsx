@@ -14,7 +14,8 @@ import {
     Calendar,
     AlertTriangle,
     ChevronRight,
-    AlertCircle
+    AlertCircle,
+    Bot
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -102,13 +103,14 @@ export default function PatientDetailView({ patient, conditions: initialConditio
     const [showAddAllergy, setShowAddAllergy] = useState(false);
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
     const [archiving, setArchiving] = useState(false);
-    const { setRightPanelOpen } = useLayoutStore();
+    const { setRightPanelOpen, openRightPanelOnTab, rightPanelOpen, rightPanelTab } = useLayoutStore();
     const { removeTab, findTabByUrl } = useTabStore();
-    const { 
-        viewStates, 
-        setPatientView, 
+    const {
+        viewStates,
+        setPatientView,
         openPatientTab,
-        setActivePatient 
+        setActivePatient,
+        setSelectedPatientForPreview
     } = usePatientStore();
 
     const savedTab = (viewStates[patient.id]?.activeSubTab as TabValue) || 'overview';
@@ -116,8 +118,13 @@ export default function PatientDetailView({ patient, conditions: initialConditio
 
     useEffect(() => {
         setActivePatient(patient.id);
-        setRightPanelOpen(false);
-    }, [patient.id, setActivePatient, setRightPanelOpen]);
+    }, [patient.id, setActivePatient]);
+
+    useEffect(() => {
+        return () => {
+            setSelectedPatientForPreview(null);
+        };
+    }, [patient.id, setSelectedPatientForPreview]);
 
     useEffect(() => {
         const fetchEncounters = async () => {
@@ -139,10 +146,21 @@ export default function PatientDetailView({ patient, conditions: initialConditio
         router.refresh();
     };
 
-    const docId = (patient.identifiers as PatientIdentifier[] | null)?.[0]?.value;
-    const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value;
-    const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value;
-    const address = (patient.address as PatientAddress[] | null)?.[0]?.text;
+    // Parse JSON fields if they're strings
+    const identifiers = typeof patient.identifiers === 'string'
+      ? JSON.parse(patient.identifiers as string)
+      : patient.identifiers;
+    const telecom = typeof patient.telecom === 'string'
+      ? JSON.parse(patient.telecom as string)
+      : patient.telecom;
+    const address = typeof patient.address === 'string'
+      ? JSON.parse(patient.address as string)
+      : patient.address;
+
+    const docId = Array.isArray(identifiers) ? identifiers[0]?.value : undefined;
+    const phone = Array.isArray(telecom) ? telecom.find(t => t.system === 'phone')?.value : undefined;
+    const email = Array.isArray(telecom) ? telecom.find(t => t.system === 'email')?.value : undefined;
+    const addressText = Array.isArray(address) ? address[0]?.text : undefined;
 
     const fullName = `${patient.name_family}, ${patient.name_given?.join(' ')}`;
 
@@ -162,6 +180,26 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                         </Badge>
                         <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold border-border gap-2 px-3 font-sans transition-colors duration-100" onClick={() => router.push(`/patients/${patient.id}/edit`)}>
                             <Edit className="w-3.5 h-3.5" /> Editar
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className={cn(
+                                "h-8 text-[11px] font-bold gap-2 px-3 font-sans transition-colors",
+                                rightPanelOpen && rightPanelTab === 'ai' && "bg-primary/10 border-primary/40 text-primary"
+                            )}
+                            onClick={() => {
+                                if (rightPanelOpen && rightPanelTab === 'ai') {
+                                    setRightPanelOpen(false);
+                                    setSelectedPatientForPreview(null);
+                                } else {
+                                    setSelectedPatientForPreview(patient);
+                                    openRightPanelOnTab('ai');
+                                }
+                            }}
+                        >
+                            <Bot className="w-3.5 h-3.5" />
+                            Dra. Clínica
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -251,7 +289,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                     <PropertyItem label="Teléfono" value={phone || '—'} />
                                     <PropertyItem label="Correo electrónico" value={email || '—'} />
                                     <div className="sm:col-span-2">
-                                        <PropertyItem label="Dirección de residencia" value={address || 'Sin dirección registrada'} />
+                                        <PropertyItem label="Dirección de residencia" value={addressText || 'Sin dirección registrada'} />
                                     </div>
                                 </div>
                             </PageSection>

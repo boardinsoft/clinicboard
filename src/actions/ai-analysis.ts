@@ -8,7 +8,10 @@ interface AnalysisResponse {
   error?: string
 }
 
-export async function analyzeWithDrClinica(userMessage: string): Promise<AnalysisResponse> {
+export async function analyzeWithDrClinica(
+  userMessage: string,
+  patientContext?: string
+): Promise<AnalysisResponse> {
   try {
     // 1. Validar mensaje
     if (!userMessage.trim()) {
@@ -21,10 +24,15 @@ export async function analyzeWithDrClinica(userMessage: string): Promise<Analysi
       return { text: '', error: 'API key de Groq no configurada' }
     }
 
-    // 3. Llamar a modelo Llama via Groq con Vercel AI SDK
+    // 3. Construir system prompt con contexto del paciente si está disponible
+    const systemPrompt = patientContext
+      ? `${buildSystemPrompt()}\n\n## Contexto del paciente actual:\n${patientContext}\n\nUsa este contexto para personalizar tus respuestas clínicas.`
+      : buildSystemPrompt()
+
+    // 4. Llamar a modelo Llama via Groq con Vercel AI SDK
     const result = await generateText({
       model: groq('llama-3.3-70b-versatile'),
-      system: buildSystemPrompt(),
+      system: systemPrompt,
       messages: [
         {
           role: 'user',

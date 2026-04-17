@@ -111,10 +111,21 @@ export default function PatientDetailSidebar({ patient, onClose }: PatientDetail
         return () => { isMounted = false; };
     }, [patient.id]);
 
-    const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value;
-    const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value;
-    const address = (patient.address as PatientAddress[] | null)?.[0]?.text;
-    const docId = (patient.identifiers as PatientIdentifier[] | null)?.[0]?.value;
+    // Parse JSON fields if they're strings
+    const telecom = typeof patient.telecom === 'string'
+      ? JSON.parse(patient.telecom as string)
+      : patient.telecom;
+    const address = typeof patient.address === 'string'
+      ? JSON.parse(patient.address as string)
+      : patient.address;
+    const identifiers = typeof patient.identifiers === 'string'
+      ? JSON.parse(patient.identifiers as string)
+      : patient.identifiers;
+
+    const phone = Array.isArray(telecom) ? telecom.find(t => t.system === 'phone')?.value : undefined;
+    const email = Array.isArray(telecom) ? telecom.find(t => t.system === 'email')?.value : undefined;
+    const addressText = Array.isArray(address) ? address[0]?.text : undefined;
+    const docId = Array.isArray(identifiers) ? identifiers[0]?.value : undefined;
     const patientFullName = `${patient.name_family}, ${patient.name_given?.join(' ')}`;
 
     // Máximo 3 consultas recientes
@@ -161,7 +172,7 @@ export default function PatientDetailSidebar({ patient, onClose }: PatientDetail
                         <PropertyGridItem label="Edad" value={`${calcAge(patient.birth_date)} años`} />
                         {phone && <PropertyGridItem label="Teléfono" value={phone} />}
                         {email && <PropertyGridItem label="Correo" value={email} fullWidth />}
-                        {address && <PropertyGridItem label="Dirección" value={address} fullWidth />}
+                        {addressText && <PropertyGridItem label="Dirección" value={addressText} fullWidth />}
                     </div>
                     <div className="flex flex-col gap-2 mt-4">
                         <Button variant="outline" className="w-full justify-start gap-2 h-8 text-xs border-border/60 hover:bg-primary/5 hover:text-primary transition-colors duration-100">

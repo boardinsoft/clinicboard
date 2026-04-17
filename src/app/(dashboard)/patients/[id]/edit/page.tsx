@@ -95,15 +95,26 @@ export default function EditPatientPage() {
                     return
                 }
 
+                // Parse JSON fields if they're strings
+                const identifiers = typeof data.identifiers === 'string'
+                  ? JSON.parse(data.identifiers as string)
+                  : data.identifiers;
+                const telecom = typeof data.telecom === 'string'
+                  ? JSON.parse(data.telecom as string)
+                  : data.telecom;
+                const address = typeof data.address === 'string'
+                  ? JSON.parse(data.address as string)
+                  : data.address;
+
                 const values = {
                     givenNames: data.name_given?.join(", ") || "",
                     familyName: data.name_family || "",
                     gender: (data.gender as PatientFormValues['gender']) || "unknown",
                     birthDate: data.birth_date || "",
-                    documentId: (data.identifiers as PatientIdentifier[] | null)?.[0]?.value || "",
-                    phone: (data.telecom as PatientTelecom[] | null)?.find(t => t.system === "phone")?.value || "",
-                    email: (data.telecom as PatientTelecom[] | null)?.find(t => t.system === "email")?.value || "",
-                    address: (data.address as PatientAddress[] | null)?.[0]?.text || "",
+                    documentId: Array.isArray(identifiers) ? identifiers[0]?.value || "" : "",
+                    phone: Array.isArray(telecom) ? (telecom.find(t => t.system === "phone")?.value || "") : "",
+                    email: Array.isArray(telecom) ? (telecom.find(t => t.system === "email")?.value || "") : "",
+                    address: Array.isArray(address) ? (address[0]?.text || "") : "",
                 }
                 formRef.current.reset(values)
                 setPatientName(data.name_family || "")

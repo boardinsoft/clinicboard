@@ -10,6 +10,7 @@ interface LayoutState {
     // ReactNode = show custom content
     subHeaderContent: ReactNode | null | undefined;
     rightPanelOpen: boolean;
+    rightPanelTab: 'patient' | 'ai';
 
     setSecondaryPanelOpen: (open: boolean) => void;
     toggleSecondaryPanel: () => void;
@@ -18,6 +19,8 @@ interface LayoutState {
     setSubHeaderContent: (content: ReactNode | null) => void;
     toggleRightPanel: () => void;
     setRightPanelOpen: (open: boolean) => void;
+    setRightPanelTab: (tab: 'patient' | 'ai') => void;
+    openRightPanelOnTab: (tab: 'patient' | 'ai') => void;
 }
 
 export const useLayoutStore = create<LayoutState>((set) => ({
@@ -26,6 +29,7 @@ export const useLayoutStore = create<LayoutState>((set) => ({
     secondaryPanelTitle: '',
     subHeaderContent: undefined,
     rightPanelOpen: false,
+    rightPanelTab: 'patient',
 
     setSecondaryPanelOpen: (open) => set({ secondaryPanelOpen: open }),
     toggleSecondaryPanel: () => set((state) => ({ secondaryPanelOpen: !state.secondaryPanelOpen })),
@@ -46,4 +50,6 @@ export const useLayoutStore = create<LayoutState>((set) => ({
     setSubHeaderContent: (content) => set({ subHeaderContent: content }),
     toggleRightPanel: () => set((state) => ({ rightPanelOpen: !state.rightPanelOpen })),
     setRightPanelOpen: (open) => set({ rightPanelOpen: open }),
+    setRightPanelTab: (tab) => set({ rightPanelTab: tab }),
+    openRightPanelOnTab: (tab) => set({ rightPanelOpen: true, rightPanelTab: tab }),
 }));

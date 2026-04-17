@@ -23,7 +23,6 @@ import {
 import PatientsSidebar from './PatientsSidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { PatientTelecom, PatientIdentifier } from '@/types/patient-jsonb';
-import { PageHeader, PageContainer } from '@/components/ui/PageLayout';
 
 interface PatientFilters {
   status: 'all' | 'active' | 'inactive';
@@ -40,13 +39,29 @@ interface PatientsListViewProps {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getCI(p: Patient): string {
-  return Array.isArray(p.identifiers)
-    ? (p.identifiers as PatientIdentifier[])[0]?.value ?? '—'
-    : '—';
+  try {
+    const identifiers = typeof p.identifiers === 'string'
+      ? JSON.parse(p.identifiers)
+      : p.identifiers;
+    return Array.isArray(identifiers)
+      ? (identifiers as PatientIdentifier[])[0]?.value ?? '—'
+      : '—';
+  } catch {
+    return '—';
+  }
 }
 
 function getPhone(p: Patient): string {
-  return (p.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value ?? '—';
+  try {
+    const telecom = typeof p.telecom === 'string'
+      ? JSON.parse(p.telecom)
+      : p.telecom;
+    return Array.isArray(telecom)
+      ? telecom.find(t => t.system === 'phone')?.value ?? '—'
+      : '—';
+  } catch {
+    return '—';
+  }
 }
 
 function getInitials(p: Patient): string {
