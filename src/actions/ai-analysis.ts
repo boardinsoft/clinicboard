@@ -23,7 +23,7 @@ export async function analyzeWithDrClinica(userMessage: string): Promise<Analysi
 
     // 3. Llamar a modelo Llama via Groq con Vercel AI SDK
     const result = await generateText({
-      model: groq('llama-3.1-70b-versatile'),
+      model: groq('llama-3.3-70b-versatile'),
       system: buildSystemPrompt(),
       messages: [
         {
