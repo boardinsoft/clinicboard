@@ -11,40 +11,62 @@ This skill ensures all UI development aligns with the ClinicBoard "Supabase-clin
 
 - **Colors**: Clinical Teal (Brand) + Slate Frío (Neutral).
 - **Typography**: Outfit (Sans-serif, 1:1.2 scale) + IBM Plex Mono (Monospace).
-- **Radius**: Consistent `rounded-md` (6px).
+- **Radius**: Consistent `rounded-md` (6px) for cards, `rounded-full` for status.
 - **Shaders**: Border-first approach, minimal shadows.
 
 ## Tailwind Integration
 
-Always prefer Tailwind classes over arbitrary CSS variables or inline styles.
+Always prefer Tailwind classes over arbitrary CSS variables.
 
 ### 1. Color Scales
 - **Brand (Teal)**: `brand-1` to `brand-12`. `brand-8` is the primary action color.
 - **Neutral (Slate)**: `neutral-1` to `neutral-12`. `neutral-1` is page bg, `neutral-12` is ink.
-- **Semantic Roles**:
-  - Success: `bg-success` (mapped to Teal/Brand).
-  - Warning: `bg-warning` (Amber).
-  - Danger: `bg-destructive` (Red).
-  - Info: `bg-info` (Blue).
 
-### 2. Typography
-Use these standard classes which are pre-mapped in `globals.css`:
-- `text-xs`: 12px / Leading 16px
-- `text-sm`: 13px / Leading 18px
-- `text-base`: 15px / Leading 22px (Default)
-- `text-lg`: 16px / Leading 24px
-- `text-5xl`: 32px / Leading 40px (Hero)
+### 2. Badges / Pills (Status)
+The "Pill" system is the standard for clinical and workflow statuses.
 
-### 3. Components
-- **Buttons**: Use the refactored `Button` component with `size="xs"|"sm"|"md"|"lg"`.
-- **Containers**: Use `border border-border` for card definitions.
-- **Dark Mode**: Use `dark:` prefix with `neutral` scales (e.g., `dark:bg-neutral-2`).
+**Visual Rules**:
+- **Background**: 10% opacity of the semantic color.
+- **Border**: 30% opacity of the semantic color.
+- **Indicator**: A 6px solid dot (`::before`) of the semantic color at the start.
+- **Text**: Small (`11px`), medium weight, semantic color (darker for readability).
+
+**Implementation**:
+Use the `Badge` component with these variants:
+- `pill-success`: Active, Fulfilled, Stable (Teal).
+- `pill-warning`: Pending, Arrived, Low Risk (Amber).
+- `pill-danger`: Critical, Canceled, No-show (Red).
+- `pill-info`: In Progress, Booked (Blue).
+- `pill-neutral`: Resolved, Inactive, Proposed (Gray).
+
+*Note: Avoid adding manual Tailwind padding or font classes; the `.pill` class in globals.css handles the layout.*
+
+### 3. Inputs & Forms
+Standardize all data entry points to minimize visual noise.
+
+**Visual Rules**:
+- **Focus State**: Always use Teal (`brand-8`) for border and a 10% opacity ring (`ring-brand-8/10`).
+- **Placeholder**: Use `text-neutral-8` (Slate Muted).
+- **Radius**: Consistent `rounded-md`.
+- **Affixes**: 
+    - ❌ No decorative icons (e.g., mail icon in email field).
+    - ✓ Use functional text affixes (e.g., "+58" for phone, "ID" for identification).
+
+**Implementation**:
+Use the `Input` or `InputGroup` components. For groups, use `InputGroupAddon` with text instead of icons.
+
+### 4. Typography
+Standard classes:
+- `text-xs`: 12px (Secondary info).
+- `text-sm`: 13px (Default text/labels).
+- `text-base`: 15px (Body copy).
+
+### 5. Components
+- **Buttons**: Use `Button` with `size="xs"|"sm"|"md"|"lg"`. Avoid elevation shadows.
+- **Cards**: `border border-border bg-card`.
 
 ## Workflow for New UI
 
-1. **Verify Config**: Check `tailwind.config.ts` for established color mappings.
-2. **Use Semantic Classes**: Use `text-foreground`, `bg-background`, `border-border` first.
-3. **Escalate to Scales**: If specific depth is needed, use `neutral-X` or `brand-X`.
-4. **Validation**: Ensure contrast accessibility (OKLCH based) and responsive density.
-
-Refer to `references/tokens.md` for exact HEX/OKLCH mappings if building complex SVG or custom CSS components.
+1. **Verify Config**: Use semantic roles (`success`, `warning`, `info`) mapped in `tailwind.config.ts`.
+2. **Pill Usage**: For any status indicator, use `Badge variant="pill-*"` without extra classes.
+3. **Accessibility**: Ensure `DialogTitle` (can be `sr-only`) is present in all Dialogs.

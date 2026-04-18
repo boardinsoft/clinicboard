@@ -60,12 +60,11 @@ export default function EncounterFiltersBar() {
             {/* ── Lado Izquierdo: Búsqueda e Indicador de Filtros ── */}
             <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="relative w-full max-w-xs group">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40 group-focus-within:text-foreground transition-colors" />
                     <Input
                         placeholder="Buscar paciente o motivo..."
                         defaultValue={currentSearch}
                         onChange={(e) => updateFilter('q', e.target.value)}
-                        className="h-8 pl-8 pr-8 bg-muted/20 border-border/10 focus-visible:bg-background transition-all text-xs"
+                        className="h-8 pr-8 bg-background border-border transition-all text-xs"
                     />
                     {currentSearch && (
                         <button 

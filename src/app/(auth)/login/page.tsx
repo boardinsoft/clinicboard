@@ -124,29 +124,20 @@ export default function LoginPage() {
             <Field className="space-y-2">
               <FieldLabel
                 htmlFor="email"
-                className="text-xs font-semibold tracking-wider text-muted-foreground/80"
+                className="text-xs font-semibold tracking-wider text-neutral-8 uppercase"
               >
                 Correo electrónico
               </FieldLabel>
-              <InputGroup
-                className={cn(
-                  "bg-muted/30 border-border/20 focus-within:border-primary/50 transition-colors",
-                  form.formState.errors.email && "border-destructive/50"
-                )}
-              >
-                <InputGroupAddon>
-                  <InputGroupText>
-                    <MailIcon className="size-4 text-muted-foreground/50" />
-                  </InputGroupText>
-                </InputGroupAddon>
+              <InputGroup>
                 <Input
                   {...form.register("email")}
                   id="email"
                   type="email"
                   placeholder="tu@correo.com"
                   autoComplete="email"
+                  data-slot="input-group-control"
                   aria-describedby={form.formState.errors.email ? emailErrorId : undefined}
-                  className="flex-1 rounded-none border-0 bg-transparent shadow-none"
+                  className="flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0"
                 />
               </InputGroup>
               {form.formState.errors.email && (
@@ -159,35 +150,26 @@ export default function LoginPage() {
             <Field className="space-y-2">
               <FieldLabel
                 htmlFor="password"
-                className="text-xs font-semibold tracking-wider text-muted-foreground/80"
+                className="text-xs font-semibold tracking-wider text-neutral-8 uppercase"
               >
                 Contraseña
               </FieldLabel>
-              <InputGroup
-                className={cn(
-                  "bg-muted/30 border-border/20 focus-within:border-primary/50 transition-colors",
-                  form.formState.errors.password && "border-destructive/50"
-                )}
-              >
-                <InputGroupAddon>
-                  <InputGroupText>
-                    <LockIcon className="size-4 text-muted-foreground/50" />
-                  </InputGroupText>
-                </InputGroupAddon>
+              <InputGroup>
                 <Input
                   {...form.register("password")}
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   autoComplete="current-password"
+                  data-slot="input-group-control"
                   aria-describedby={form.formState.errors.password ? passwordErrorId : undefined}
-                  className="flex-1 rounded-none border-0 bg-transparent shadow-none"
+                  className="flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0"
                 />
-                <InputGroupAddon>
+                <InputGroupAddon align="inline-end">
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="px-3 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                    className="px-3 text-neutral-8 hover:text-foreground transition-colors"
                     aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   >
                     {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

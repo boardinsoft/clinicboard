@@ -136,15 +136,10 @@ export default function NewPatientPage() {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
                         <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
                             <Field>
-                                <FieldLabel htmlFor="givenNames" className="text-xs font-medium text-muted-foreground mb-2">
+                                <FieldLabel htmlFor="givenNames" className="text-xs font-semibold uppercase tracking-wider text-neutral-8 mb-2">
                                     Nombres <span className="text-primary">*</span>
                                 </FieldLabel>
                                 <InputGroup>
-                                    <InputGroupAddon>
-                                        <InputGroupText>
-                                            <UserIcon className="size-4" />
-                                        </InputGroupText>
-                                    </InputGroupAddon>
                                     <InputGroupInput
                                         {...form.register("givenNames")}
                                         id="givenNames"
@@ -157,15 +152,10 @@ export default function NewPatientPage() {
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="familyName" className="text-xs font-medium text-muted-foreground mb-2">
+                                <FieldLabel htmlFor="familyName" className="text-xs font-semibold uppercase tracking-wider text-neutral-8 mb-2">
                                     Apellidos <span className="text-primary">*</span>
                                 </FieldLabel>
                                 <InputGroup>
-                                    <InputGroupAddon>
-                                        <InputGroupText>
-                                            <UserIcon className="size-4" />
-                                        </InputGroupText>
-                                    </InputGroupAddon>
                                     <InputGroupInput
                                         {...form.register("familyName")}
                                         id="familyName"
@@ -178,17 +168,17 @@ export default function NewPatientPage() {
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="gender" className="text-xs font-medium text-muted-foreground mb-2">
+                                <FieldLabel htmlFor="gender" className="text-xs font-semibold uppercase tracking-wider text-neutral-8 mb-2">
                                     Género <span className="text-primary">*</span>
                                 </FieldLabel>
                                 <Select
                                     onValueChange={(val) => form.setValue("gender", val as "female" | "male" | "other" | "unknown")}
                                     value={form.watch("gender")}
                                 >
-                                    <SelectTrigger id="gender" className="h-9 bg-background/20 border-border/20 focus:ring-primary/20 text-sm">
+                                    <SelectTrigger id="gender" className="h-9">
                                         <SelectValue placeholder="Seleccionar género" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-popover/90 backdrop-blur-xl border-border/10">
+                                    <SelectContent>
                                         <SelectItem value="unknown">Desconocido</SelectItem>
                                         <SelectItem value="female">Femenino</SelectItem>
                                         <SelectItem value="male">Masculino</SelectItem>
@@ -201,15 +191,10 @@ export default function NewPatientPage() {
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="birthDate" className="text-xs font-medium text-muted-foreground mb-2">
+                                <FieldLabel htmlFor="birthDate" className="text-xs font-semibold uppercase tracking-wider text-neutral-8 mb-2">
                                     Fecha de nacimiento
                                 </FieldLabel>
                                 <InputGroup>
-                                    <InputGroupAddon>
-                                        <InputGroupText>
-                                            <CalendarIcon className="size-4" />
-                                        </InputGroupText>
-                                    </InputGroupAddon>
                                     <InputGroupInput
                                         {...form.register("birthDate")}
                                         id="birthDate"
@@ -221,13 +206,13 @@ export default function NewPatientPage() {
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="documentId" className="text-xs font-medium text-muted-foreground mb-2">
+                                <FieldLabel htmlFor="documentId" className="text-xs font-semibold uppercase tracking-wider text-neutral-8 mb-2">
                                     Cédula / Identificación
                                 </FieldLabel>
                                 <InputGroup>
                                     <InputGroupAddon>
                                         <InputGroupText>
-                                            <span className="text-xs font-medium">ID</span>
+                                            <span className="text-xs font-bold">ID</span>
                                         </InputGroupText>
                                     </InputGroupAddon>
                                     <InputGroupInput
@@ -239,34 +224,29 @@ export default function NewPatientPage() {
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="phone" className="text-xs font-medium text-muted-foreground mb-2">
+                                <FieldLabel htmlFor="phone" className="text-xs font-semibold uppercase tracking-wider text-neutral-8 mb-2">
                                     Teléfono
                                 </FieldLabel>
                                 <InputGroup>
                                     <InputGroupAddon>
                                         <InputGroupText>
-                                            <PhoneIcon className="size-4" />
+                                            <span className="text-xs font-bold">+58</span>
                                         </InputGroupText>
                                     </InputGroupAddon>
                                     <InputGroupInput
                                         {...form.register("phone")}
                                         id="phone"
-                                        placeholder="+58 412-0000000"
+                                        placeholder="412-0000000"
                                     />
                                 </InputGroup>
                             </Field>
                         </FieldGroup>
 
                         <Field className="space-y-2">
-                            <FieldLabel htmlFor="email" className="text-xs font-medium text-muted-foreground mb-2">
+                            <FieldLabel htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-neutral-8 mb-2">
                                 Correo electrónico
                             </FieldLabel>
                             <InputGroup>
-                                <InputGroupAddon>
-                                    <InputGroupText>
-                                        <MailIcon className="size-4" />
-                                    </InputGroupText>
-                                </InputGroupAddon>
                                 <InputGroupInput
                                     {...form.register("email")}
                                     id="email"
@@ -280,15 +260,10 @@ export default function NewPatientPage() {
                         </Field>
 
                         <Field className="space-y-2">
-                            <FieldLabel htmlFor="address" className="text-xs font-medium text-muted-foreground mb-2">
+                            <FieldLabel htmlFor="address" className="text-xs font-semibold uppercase tracking-wider text-neutral-8 mb-2">
                                 Dirección completa
                             </FieldLabel>
                             <InputGroup>
-                                <InputGroupAddon className="pt-3">
-                                    <InputGroupText>
-                                        <MapPinIcon className="size-4" />
-                                    </InputGroupText>
-                                </InputGroupAddon>
                                 <InputGroupTextarea
                                     {...form.register("address")}
                                     id="address"
@@ -298,7 +273,7 @@ export default function NewPatientPage() {
                             </InputGroup>
                         </Field>
 
-                        <div className="flex justify-between items-center pt-8 border-t border-border/10">
+                        <div className="flex justify-between items-center pt-8 border-t border-border/40">
                             <Button
                                 type="button"
                                 variant="ghost"
@@ -309,7 +284,6 @@ export default function NewPatientPage() {
                                         router.push("/patients")
                                     }
                                 }}
-                                className="text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors"
                                 disabled={loading}
                             >
                                 <X className="size-4 mr-2" />
@@ -319,9 +293,8 @@ export default function NewPatientPage() {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground min-w-[200px] h-11"
+                                className="min-w-[200px]"
                             >
-                                <Save className="size-4 mr-2" />
                                 {loading ? "Registrando..." : "Registrar Paciente"}
                             </Button>
                         </div>

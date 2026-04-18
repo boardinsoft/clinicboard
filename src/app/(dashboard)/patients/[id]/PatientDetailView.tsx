@@ -139,10 +139,10 @@ export default function PatientDetailView({ patient, conditions: initialConditio
         router.refresh();
     };
 
-    const docId = (patient.identifiers as PatientIdentifier[] | null)?.[0]?.value;
-    const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value;
-    const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value;
-    const address = (patient.address as PatientAddress[] | null)?.[0]?.text;
+    const docId = Array.isArray(patient.identifiers) ? (patient.identifiers as PatientIdentifier[])[0]?.value : undefined;
+    const phone = Array.isArray(patient.telecom) ? (patient.telecom as PatientTelecom[]).find(t => t.system === 'phone')?.value : undefined;
+    const email = Array.isArray(patient.telecom) ? (patient.telecom as PatientTelecom[]).find(t => t.system === 'email')?.value : undefined;
+    const address = Array.isArray(patient.address) ? (patient.address as PatientAddress[])[0]?.text : undefined;
 
     const fullName = `${patient.name_family}, ${patient.name_given?.join(' ')}`;
 
@@ -416,6 +416,4 @@ export default function PatientDetailView({ patient, conditions: initialConditio
             </AlertDialog>
         </div>
     );
-}
-  );
 }

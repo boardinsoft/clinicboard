@@ -361,7 +361,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
     <div className="flex flex-col w-full h-screen overflow-hidden bg-background text-foreground">
 
       {/* ══ HEADER FULL-WIDTH ══════════════════════════════════════════════════ */}
-      <header className="flex items-center h-12 border-b border-border/40 px-3 shrink-0 bg-sidebar z-30 gap-2">
+      <header className="flex items-center h-12 border-b border-border/40 px-3 shrink-0 bg-neutral-1 z-30 gap-2">
 
         {/* ── Logo Clinicboard — sin fondo ── */}
         <div className="flex items-center gap-2 shrink-0 mr-2">
