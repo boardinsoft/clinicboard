@@ -73,14 +73,22 @@
     --input:                   var(--n-5);
     --ring:                    var(--b-8);
 
-    --radius: 0.375rem;
+    /* ── Tipografía (Variables de Layout) ── */
+    --font-outfit: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+    /* ── Radio y Tracking ── */
+    --radius: 0.5rem; /* 8px base */
+    --tracking-normal:   0em;
+    --tracking-wider:    0.05em;
+    --tracking-widest:   0.08em;
 
     /* Sidebar */
     --sidebar-background:      var(--n-1);
     --sidebar-foreground:      var(--n-10);
     --sidebar-primary:         var(--b-8);
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent:          var(--n-3);
+    --sidebar-accent:          var(--n-2);
     --sidebar-accent-foreground: var(--n-11);
     --sidebar-border:          var(--n-5);
     --sidebar-ring:            var(--b-8);
@@ -102,7 +110,7 @@
     --n-12: #eef1f5;   /* ink */
 
     /* ── Brand Dark ── */
-    --b-8:  #1fd4a8;   /* más luminoso en dark */
+    --b-8:  #1fd4a8;
 
     /* ── Alias de Aplicación Dark ── */
     --background:              var(--n-1);
@@ -146,9 +154,29 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
-    font-size: var(--text-base);
-    line-height: var(--leading-base);
+    font-size: 15px;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Headings ── */
+  h1, h2, h3, h4, h5, h6, p { margin: 0; }
+  h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+  h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.015em; }
+  h3 { font-size: 24px; font-weight: 600; letter-spacing: -0.015em; }
+  h4 { font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
+  h5 { font-size: 18px; font-weight: 500; letter-spacing: -0.005em; }
+  h6 { font-size: 16px; font-weight: 500; letter-spacing: -0.005em; }
+
+  .mono {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-variant-ligatures: none;
+    letter-spacing: -0.02em;
+    font-size: 0.95em;
+  }
+
+  .text-muted {
+    color: var(--n-8);
   }
 }
 
@@ -156,8 +184,8 @@
   /* ── Pill: Estilo clínico con indicador de punto ── */
   .pill {
     @apply inline-flex items-center gap-1.5 font-medium whitespace-nowrap border transition-colors;
-    font-size: 0.6875rem; /* 11px */
-    padding: 0.125rem 0.625rem; /* 2px 10px */
+    font-size: 12px;
+    padding: 2px 10px;
     border-radius: 9999px;
   }
 
@@ -205,7 +233,7 @@
   /* ── Card Estilo Clínico ── */
   .card-clinic {
     @apply border border-border bg-card overflow-hidden;
-    border-radius: 0.5rem; /* 8px */
+    border-radius: 8px;
   }
 
   .card-header-clinic {
@@ -230,14 +258,14 @@
   .table-clinic th {
     @apply text-left font-semibold uppercase tracking-wider text-neutral-8 bg-neutral-2;
     border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 40%);
-    font-size: 0.6875rem; /* 11px */
-    padding: 0.75rem 1rem;
+    font-size: 11px;
+    padding: 12px 16px;
   }
 
   .table-clinic td {
     @apply text-foreground align-middle;
     border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 60%);
-    padding: 0.75rem 1rem;
+    padding: 12px 16px;
   }
 
   .table-clinic .table-name { @apply font-semibold text-foreground; }
@@ -249,9 +277,9 @@
 }
 
 @layer utilities {
-  .text-xs { font-size: var(--text-xs); line-height: var(--leading-xs); }
-  .text-sm { font-size: var(--text-sm); line-height: var(--leading-sm); }
-  .text-lg { font-size: var(--text-lg); line-height: var(--leading-lg); }
+  .text-xs { font-size: 12px; line-height: 16px; }
+  .text-sm { font-size: 13px; line-height: 18px; }
+  .text-lg { font-size: 16px; line-height: 24px; }
   
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

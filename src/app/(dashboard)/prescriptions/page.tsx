@@ -244,45 +244,45 @@ export default function PrescriptionsPage() {
                         </span>
 
                         {/* Prescription Preview */}
-                        <Card className="bg-white text-black min-h-[700px] border border-border/60 shadow-xl rounded-sm overflow-hidden transform-gpu">
+                        <Card className="bg-white text-black min-h-[700px] border border-border/40 rounded-sm overflow-hidden transform-gpu shadow-xs">
                             <CardContent className="p-10 font-sans">
                                 {/* Header */}
                                 <div className="text-center mb-8 pb-6 border-b-2 border-primary/20">
-                                    <div className="font-bold text-xl text-primary tracking-tight">Dr. Juan Pérez</div>
-                                    <div className="text-[11px] font-bold text-black/60 mt-1 uppercase tracking-wider">Médico Internista</div>
-                                    <div className="text-[10px] text-black/50 mt-1">Colegio Médico #12345 · Tel: +1 809-555-0000</div>
+                                    <div className="font-bold text-xl text-brand-8 tracking-tight">Dr. Juan Pérez</div>
+                                    <div className="text-[11px] font-bold text-neutral-8 mt-1 uppercase tracking-wider">Médico Internista</div>
+                                    <div className="text-[10px] text-neutral-8 mt-1 mono">Colegio Médico #12345 · Tel: +1 809-555-0000</div>
                                 </div>
 
                                 {/* Patient & Date */}
                                 <div className="flex justify-between items-start mb-8 text-[12px]">
                                     <div>
-                                        <div className="text-[10px] text-black/40 font-bold uppercase mb-1 tracking-tight">Paciente</div>
-                                        <div className="font-bold text-sm">María García López</div>
-                                        <div className="text-black/60">Cédula: 001-1234567-8 · 41 años</div>
+                                        <div className="text-[10px] text-neutral-8 font-bold uppercase mb-1 tracking-wider">Paciente</div>
+                                        <div className="font-bold text-sm text-foreground">María García López</div>
+                                        <div className="text-neutral-9 mono">Cédula: 001-1234567-8 · 41 años</div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-[10px] text-black/40 font-bold uppercase mb-1 tracking-tight">Fecha</div>
-                                        <div className="font-bold">{new Date().toLocaleDateString('es-VE')}</div>
+                                        <div className="text-[10px] text-neutral-8 font-bold uppercase mb-1 tracking-wider">Fecha</div>
+                                        <div className="font-bold text-foreground mono">{new Date().toLocaleDateString('es-VE')}</div>
                                     </div>
                                 </div>
 
                                 {/* Rx Symbol */}
-                                <div className="text-4xl font-serif italic text-primary/80 mb-8 border-b border-primary/10 pb-2">Rx</div>
+                                <div className="text-4xl font-serif italic text-brand-8/80 mb-8 border-b border-brand-8/10 pb-2">Rx</div>
 
                                 {/* Items */}
                                 <div className="space-y-8 min-h-[300px]">
                                     {items.some(i => i.medication) ? items.filter(i => i.medication).map((item, index) => (
                                         <div key={item.id} className="pb-4 border-b border-black/5 last:border-0">
                                             <div className="font-bold text-[14px] mb-1.5 flex items-baseline gap-2">
-                                                <span className="text-primary/60 text-[11px] font-mono">{index + 1}.</span>
-                                                {item.medication} <span className="text-black/60 font-medium ml-1">{item.dose}</span>
+                                                <span className="text-brand-8/60 text-[11px] mono">{index + 1}.</span>
+                                                {item.medication} <span className="text-neutral-8 font-medium ml-1 mono">{item.dose}</span>
                                             </div>
-                                            <div className="text-[12px] text-black/80 leading-relaxed pl-5 flex flex-wrap gap-x-2 gap-y-1">
-                                                <Badge variant="outline" className="h-5 px-1.5 text-[10px] border-black/10 text-black/70 bg-black/5">{item.route}</Badge>
-                                                {item.frequency && <span className="text-black/40">·</span>}
-                                                <span className="font-medium">{item.frequency}</span>
-                                                {item.duration && <span className="text-black/40">·</span>}
-                                                <span className="font-medium italic">{item.duration}</span>
+                                            <div className="text-[12px] text-neutral-11 leading-relaxed pl-5 flex flex-wrap gap-x-2 gap-y-1">
+                                                <Badge variant="outline" className="h-5 px-1.5 text-[10px] border-border text-neutral-8 bg-neutral-2">{item.route}</Badge>
+                                                {item.frequency && <span className="text-neutral-5">·</span>}
+                                                <span className="font-medium mono">{item.frequency}</span>
+                                                {item.duration && <span className="text-neutral-5">·</span>}
+                                                <span className="font-medium italic mono">{item.duration}</span>
                                             </div>
                                             {item.instructions && (
                                                 <div className="mt-2 text-[11px] font-medium text-black/70 bg-amber-50/50 p-1.5 rounded border border-amber-200/30 ml-5">

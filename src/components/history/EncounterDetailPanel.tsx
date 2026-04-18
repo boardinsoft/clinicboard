@@ -81,11 +81,16 @@ function CollapsibleSection({ title, children, defaultOpen = true }: {
     );
 }
 
-function PropRow({ label, value }: { label: string; value: string | React.ReactNode }) {
+function PropRow({ label, value, mono }: { label: string; value: string | React.ReactNode; mono?: boolean }) {
     return (
         <div className="flex flex-col gap-0.5">
-            <span className="text-[11px] font-bold text-muted-foreground/60">{label}</span>
-            <span className="text-[13px] font-medium text-foreground/90">{value || '—'}</span>
+            <span className="text-[10px] font-bold text-neutral-8 uppercase tracking-wider">{label}</span>
+            <span className={cn(
+                "text-[13px] font-medium text-foreground",
+                mono ? "mono" : "font-sans"
+            )}>
+                {value || '—'}
+            </span>
         </div>
     );
 }
@@ -94,8 +99,8 @@ function SoapBlock({ label, content }: { label: string; content?: string | null 
     if (!content?.trim()) return null;
     return (
         <div className="space-y-1">
-            <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/50">{label}</span>
-            <p className="text-[13px] text-foreground/85 leading-relaxed whitespace-pre-wrap">{content}</p>
+            <span className="text-[10px] uppercase tracking-wider font-bold text-neutral-8">{label}</span>
+            <p className="text-[13px] text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
         </div>
     );
 }
@@ -242,9 +247,9 @@ export default function EncounterDetailPanel({ encounter, onClose }: EncounterDe
                 <TabsContent value="resumen" className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5 mt-0">
                     <CollapsibleSection title="Encuentro">
                         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                            <PropRow label="Fecha" value={formatDate(encounter.start_time)} />
-                            <PropRow label="Hora" value={formatTime(encounter.start_time)} />
-                            <PropRow label="Duración" value={calcDuration(encounter.start_time, encounter.end_time)} />
+                            <PropRow label="Fecha" value={formatDate(encounter.start_time)} mono />
+                            <PropRow label="Hora" value={formatTime(encounter.start_time)} mono />
+                            <PropRow label="Duración" value={calcDuration(encounter.start_time, encounter.end_time)} mono />
                             <PropRow label="Tipo" value={category} />
                         </div>
                     </CollapsibleSection>
@@ -252,9 +257,9 @@ export default function EncounterDetailPanel({ encounter, onClose }: EncounterDe
                     <CollapsibleSection title="Paciente">
                         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                             <PropRow label="Nombre" value={patientName} />
-                            <PropRow label="Edad" value={age || '—'} />
+                            <PropRow label="Edad" value={age || '—'} mono />
                             {encounter.patient?.birth_date && (
-                                <PropRow label="Fecha de nac." value={formatDate(encounter.patient.birth_date)} />
+                                <PropRow label="Fecha de nac." value={formatDate(encounter.patient.birth_date)} mono />
                             )}
                         </div>
                     </CollapsibleSection>

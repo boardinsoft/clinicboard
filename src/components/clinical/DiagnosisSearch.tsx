@@ -107,7 +107,8 @@ export default function DiagnosisSearch({
                                 onClick={() => handleSelect(item)}
                                 className="px-3 py-2 cursor-pointer hover:bg-muted/50 hover:text-foreground transition-colors border-b border-border/50 last:border-0 truncate"
                             >
-                                <strong className="text-primary font-medium">{item.code}</strong>: <span className="text-muted-foreground">{item.description}</span>
+                                <span className="mono text-brand-8 font-bold mr-2">{item.code}</span>
+                                <span className="text-muted-foreground">{item.description}</span>
                             </li>
                         ))}
                     </ul>
