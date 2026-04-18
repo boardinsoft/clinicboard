@@ -246,7 +246,7 @@
   }
 
   .card-footer-clinic {
-    @apply p-4 bg-neutral-2;
+    @apply p-4 bg-n-2;
     border-top: 1px solid color-mix(in oklch, var(--border), transparent 60%);
   }
 
@@ -256,7 +256,7 @@
   }
 
   .table-clinic th {
-    @apply text-left font-semibold uppercase tracking-wider text-neutral-8 bg-neutral-2;
+    @apply text-left font-semibold uppercase tracking-wider text-n-8 bg-n-2;
     border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 40%);
     font-size: 11px;
     padding: 12px 16px;
@@ -269,7 +269,7 @@
   }
 
   .table-clinic .table-name { @apply font-semibold text-foreground; }
-  .table-clinic .mono { @apply font-mono text-[12px] text-neutral-9 tracking-tight; }
+  .table-clinic .mono { @apply font-mono text-[12px] text-n-9 tracking-tight; }
   .table-clinic tr:hover td {
     background-color: color-mix(in oklch, var(--n-2), transparent 50%);
     @apply transition-colors;
