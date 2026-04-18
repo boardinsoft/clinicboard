@@ -273,6 +273,63 @@
 
 
 @layer components {
+  /* ── Pill: Estilo clínico con indicador de punto ── */
+  .pill {
+    @apply inline-flex items-center gap-1.5 font-medium whitespace-nowrap border transition-colors;
+    font-size: 0.6875rem; /* 11px */
+    padding: 0.125rem 0.625rem; /* 2px 10px */
+    border-radius: 9999px;
+  }
+
+  .pill::before {
+    content: '';
+    @apply w-1.5 h-1.5 rounded-full shrink-0;
+  }
+
+  /* Success: Teal/Brand */
+  .pill-success {
+    background-color: var(--s-success-bg);
+    border-color: var(--s-success-br);
+    color: var(--b-9);
+  }
+  .dark .pill-success {
+    color: var(--b-7);
+  }
+  .pill-success::before { background-color: var(--s-success); }
+
+  /* Warning: Amber */
+  .pill-warning {
+    background-color: var(--s-warning-bg);
+    border-color: var(--s-warning-br);
+    color: var(--s-warning);
+  }
+  .pill-warning::before { background-color: var(--s-warning); }
+
+  /* Danger: Red */
+  .pill-danger {
+    background-color: var(--s-danger-bg);
+    border-color: var(--s-danger-br);
+    color: var(--destructive);
+  }
+  .pill-danger::before { background-color: var(--destructive); }
+
+  /* Info: Blue */
+  .pill-info {
+    background-color: var(--s-info-bg);
+    border-color: var(--s-info-br);
+    color: var(--s-info);
+  }
+  .pill-info::before { background-color: var(--s-info); }
+
+  /* Neutral: Gray */
+  .pill-neutral {
+    background-color: var(--muted);
+    border-color: var(--border);
+    color: var(--muted-foreground);
+    @apply bg-opacity-50;
+  }
+  .pill-neutral::before { background-color: color-mix(in oklch, var(--muted-foreground), transparent 60%); }
+
   /* ── Fade inferior para columnas Kanban scrollables ── */
   .kanban-col-fade {
     mask-image: linear-gradient(

@@ -200,9 +200,10 @@ export default function PatientDetailSidebar({ patient, onClose }: PatientDetail
                                             <span className="text-[12px] font-bold text-foreground/90 leading-tight truncate">{c.code_display}</span>
                                             <span className="text-[10px] text-muted-foreground tabular-nums">{c.code} · {formatDate(c.onset_date)}</span>
                                         </div>
-                                        <Badge variant={c.clinical_status === 'active' ? 'pill-success' : 'pill-muted'} className="text-[10px] shrink-0 ml-2">
-                                            {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
+                                        <Badge variant={c.clinical_status === 'active' ? 'pill-success' : 'pill-neutral'}>
+                                            {c.clinical_status === 'active' ? 'Activo' : 'Inactivo'}
                                         </Badge>
+
                                     </div>
                                 ))}
                             </div>

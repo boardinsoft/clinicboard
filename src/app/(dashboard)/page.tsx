@@ -34,16 +34,17 @@ const statusLabels: Record<string, string> = {
   arrived: 'En Consulta',
   fulfilled: 'Completada',
   cancelled: 'Cancelada',
+  noshow: 'No asistió',
 };
 
 // Mapeamos FHIR status → variante pill del Badge
-const statusBadgeVariant: Record<string, 'pill' | 'pill-success' | 'pill-warning' | 'pill-danger' | 'pill-muted' | 'pill-info'> = {
-  booked:    'pill',
+const statusBadgeVariant: Record<string, string> = {
+  booked:    'pill-info',
   pending:   'pill-warning',
   arrived:   'pill-info',
   fulfilled: 'pill-success',
   cancelled: 'pill-danger',
-  noshow:    'pill-muted',
+  noshow:    'pill-neutral',
 };
 
 export default function DashboardPage() {
@@ -305,9 +306,10 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="flex-shrink-0 ml-2">
-                        <Badge variant={statusBadgeVariant[apt.status ?? ''] ?? 'pill-muted'}>
-                          {statusLabels[apt.status ?? ''] || apt.status}
+                        <Badge variant={statusBadgeVariant[apt.status ?? ''] ?? 'pill-neutral'}>
+                            {statusLabels[apt.status ?? ''] ?? 'Desconocido'}
                         </Badge>
+
                       </div>
                     </div>
                   </div>

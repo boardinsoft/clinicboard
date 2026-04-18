@@ -157,9 +157,10 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                 ]}
                 actions={
                     <div className="flex items-center gap-2">
-                        <Badge variant={patient.active ? "pill-success" : "pill-muted"} className="text-[11px] mr-2">
-                            {patient.active ? 'Activo' : 'Inactivo'}
+                        <Badge variant={patient.active ? "pill-success" : "pill-neutral"}>
+                            {patient.active ? "Activo" : "Inactivo"}
                         </Badge>
+
                         <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold border-border gap-2 px-3 font-sans transition-colors duration-100" onClick={() => router.push(`/patients/${patient.id}/edit`)}>
                             <Edit className="w-3.5 h-3.5" /> Editar
                         </Button>
@@ -415,4 +416,6 @@ export default function PatientDetailView({ patient, conditions: initialConditio
             </AlertDialog>
         </div>
     );
+}
+  );
 }

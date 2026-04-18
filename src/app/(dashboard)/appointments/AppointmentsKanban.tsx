@@ -1,12 +1,8 @@
-'use client';
-
 import React from 'react';
-import { Clock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatTime, nowInVE, formatRelativeTime } from '@/lib/date-utils';
-import type { Appointment, AppointmentStatus } from '@/lib/fhir/types';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Appointment, AppointmentStatus } from '@/types/database.types';
 import {
     Kanban,
     KanbanBoard,
@@ -14,21 +10,17 @@ import {
     KanbanColumnContent,
     KanbanItem,
 } from '@/components/reui/kanban';
+import { Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { formatTime, formatRelativeTime, nowInVE } from '@/lib/date-utils';
 
 interface AppointmentsKanbanProps {
     appointments: Appointment[];
     onSelect: (id: string) => void;
-    selectedId: string | null;
+    selectedId?: string;
 }
 
-interface ColumnConfig {
-    id: string;
-    title: string;
-    statuses: AppointmentStatus[];
-}
-
-const COLUMNS: ColumnConfig[] = [
-    { id: 'proposed',  title: 'Propuestas',                statuses: ['proposed', 'pending'] },
+const COLUMNS: { id: string; title: string; statuses: AppointmentStatus[] }[] = [
+    { id: 'pending',   title: 'Por Confirmar / Pendientes', statuses: ['proposed', 'pending'] },
     { id: 'confirmed', title: 'Confirmadas',               statuses: ['booked'] },
     { id: 'arrived',   title: 'En Espera',                 statuses: ['arrived'] },
     { id: 'completed', title: 'En Consulta / Finalizadas', statuses: ['fulfilled'] },
@@ -92,10 +84,10 @@ function AppointmentCard({
                     </div>
                     {statusCfg && (
                         <span
-                            className="font-bold text-[9px] uppercase tracking-widest shrink-0"
-                            style={{
-                                color: statusCfg.colorStyle,
-                            }}
+                            className={cn(
+                                "font-bold text-[9px] uppercase tracking-widest shrink-0",
+                                statusCfg.colorClass
+                            )}
                         >
                             {statusCfg.label}
                         </span>
@@ -198,14 +190,6 @@ export default function AppointmentsKanban({
                                     ))
                                 )}
                             </KanbanColumnContent>
-                        </KanbanColumn>
-                    );
-                })}
-            </KanbanBoard>
-        </Kanban>
-    );
-}
-Content>
                         </KanbanColumn>
                     );
                 })}
