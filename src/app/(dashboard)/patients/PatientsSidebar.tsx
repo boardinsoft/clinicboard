@@ -167,7 +167,8 @@ export default function PatientsSidebar() {
                                             <div className={cn(
                                                 "w-1.5 h-1.5 rounded-full shrink-0",
                                                 item.status === 'arrived' 
-                                                    ? "bg-[var(--clinical-stable)] shadow-[0_0_6px_var(--clinical-stable)/0.4]" 
+                                                    ? "bg-[var(--s-success)] shadow-[0_0_6px_var(--s-success)/0.4]"
+ 
                                                     : "bg-muted-foreground/20"
                                             )} />
                                             <span className="truncate flex-1 text-sm font-medium">{item.patient_name}</span>

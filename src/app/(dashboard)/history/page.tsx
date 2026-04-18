@@ -1898,6 +1898,7 @@ export default function HistoryPage() {
                                                 </Button>
                                             </DialogTrigger>
                                             <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 border-border/10 overflow-hidden bg-background">
+                                                <DialogTitle className="sr-only">Asistente de Historia Clínica</DialogTitle>
                                                 {!form.getValues('encounterSubcategory') ? (
                                                     <div className="flex flex-col items-center justify-center gap-4 p-16 text-center">
                                                         <div className="p-4 rounded-full bg-muted/20 mb-2">

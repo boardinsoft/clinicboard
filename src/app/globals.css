@@ -3,399 +3,191 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CLINICBOARD — DESIGN SYSTEM TOKENS
-   Paleta de marca: #3981f6 (blue) · #4045ba (indigo) · #90e2bc (mint) · #e64343 (red)
-   Fuente: coolors.co/3981f6-4045ba-90e2bc-e64343
+   CLINICBOARD — DESIGN SYSTEM: CLINICAL TEAL + SLATE FRÍO
+   Estética basada en el lenguaje visual de Supabase adaptado a contexto clínico.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @layer base {
-
-  /* ─────────────────────────────────────────────────────────────────────────
-     MODO CLARO — Base limpia con profundidad índigo sutil
-     Filosofía: quirófano blanco + acento azul vibrante = confianza médica
-     ───────────────────────────────────────────────────────────────────────── */
   :root {
-    /* ── Superficies ── */
-    --background:              oklch(1.00 0 0);               /* Blanco puro */
-    --foreground:              oklch(0.17 0.018 271);         /* Texto: negro con tinte índigo */
-    --card:                    oklch(1.00 0 0);
-    --card-foreground:         oklch(0.17 0.018 271);
-    --popover:                 oklch(1.00 0 0);
-    --popover-foreground:      oklch(0.17 0.018 271);
+    /* ── Escala Neutra (Slate Frío) ── */
+    --n-1:  #fbfcfd;   /* page bg */
+    --n-2:  #f5f7fa;   /* surface-75 */
+    --n-3:  #eef1f5;   /* surface-100 */
+    --n-4:  #e4e8ee;   /* surface-200 */
+    --n-5:  #d7dde5;   /* border-muted */
+    --n-6:  #c4cbd5;   /* border-default */
+    --n-7:  #a5adbb;   /* border-strong */
+    --n-8:  #7f8a9b;   /* muted text */
+    --n-9:  #5a6478;   /* secondary text */
+    --n-10: #3d4555;   /* strong text */
+    --n-11: #222938;   /* heading */
+    --n-12: #0f141e;   /* ink */
 
-    /* ── Primary — #3981f6 Brand Blue ── */
-    --primary:                 oklch(0.597 0.197 262);
-    --primary-foreground:      oklch(1.00 0 0);
+    /* ── Escala Brand (Clinical Teal) ── */
+    --b-1:  #f0fbf8;   /* lightest */
+    --b-2:  #dbf6ef;
+    --b-3:  #bfefe2;
+    --b-4:  #99e4d1;
+    --b-5:  #6dd6ba;
+    --b-6:  #3fc49e;
+    --b-7:  #0fb088;
+    --b-8:  #0ca488;   /* ★ BRAND-500 (primario) */
+    --b-9:  #0a8c74;
+    --b-10: #086f5c;
+    --b-11: #064e42;
+    --b-12: #03271f;
 
-    /* ── Secondary — índigo muy suave ── */
-    --secondary:               oklch(0.965 0.010 271);
-    --secondary-foreground:    oklch(0.432 0.215 271);        /* #4045ba */
+    /* ── Roles Semánticos ── */
+    --s-success:     #0ca488;  --s-success-bg:  #e5f6f0;  --s-success-br:  #b6e4d5;
+    --s-warning:     #c98618;  --s-warning-bg:  #fbf2e0;  --s-warning-br:  #ead8a9;
+    --s-danger:      #d24848;  --s-danger-bg:   #fbe9e9;  --s-danger-br:   #ecbfbf;
+    --s-info:        #2f7cf6;  --s-info-bg:     #eaf2fe;  --s-info-br:     #c4d8f8;
+    --s-neutral:     #5a6478;  --s-neutral-bg:  #eef1f5;  --s-neutral-br:  #d7dde5;
 
-    /* ── Muted — gris-azul neutro ── */
-    --muted:                   oklch(0.960 0.006 265);
-    --muted-foreground:        oklch(0.52 0.018 265);
-
-    /* ── Accent — menta salud (#90e2bc family) ── */
-    --accent:                  oklch(0.945 0.040 155);
-    --accent-foreground:       oklch(0.30 0.090 155);
-
-    /* ── Destructive — #e64343 Rojo clínico ── */
-    --destructive:             oklch(0.561 0.215 25);
-    --destructive-foreground:  oklch(1.00 0 0);
-
-    /* ── Bordes e inputs ── */
-    --border:                  oklch(0.905 0.009 265);
-    --input:                   oklch(0.905 0.009 265);
-    --ring:                    oklch(0.597 0.197 262);
-
-    /* ── Charts (gradiente azul → menta) ── */
-    --chart-1:                 oklch(0.597 0.197 262);        /* blue */
-    --chart-2:                 oklch(0.843 0.097 155);        /* mint */
-    --chart-3:                 oklch(0.432 0.215 271);        /* indigo */
-    --chart-4:                 oklch(0.65  0.140 75);         /* amber */
-    --chart-5:                 oklch(0.561 0.215 25);         /* red */
-
-    /* ── Sidebar — blanco puro (modo claro) ── */
-    --sidebar-background:      oklch(1.00 0 0);
-    --sidebar-foreground:      oklch(0.30  0.030 271);
-    --sidebar-primary:         oklch(0.597 0.197 262);
-    --sidebar-primary-foreground: oklch(1.00 0 0);
-    --sidebar-accent:          oklch(0.960 0.006 265);
-    --sidebar-accent-foreground: oklch(0.20 0.040 271);
-    --sidebar-border:          oklch(0.905 0.009 265);
-    --sidebar-ring:            oklch(0.597 0.197 262);
-
-    /* ── Tipografía ── */
-    --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-
-    /* ── Radio — sutil y profesional estilo Supabase (6px base) ── */
-    --radius: 0.375rem;
-
-    /* ── Tracking ── */
-    --tracking-normal:   0em;
-    --tracking-tighter:  calc(var(--tracking-normal) - 0.05em);
-    --tracking-tight:    calc(var(--tracking-normal) - 0.025em);
-    --tracking-wide:     calc(var(--tracking-normal) + 0.025em);
-    --tracking-wider:    calc(var(--tracking-normal) + 0.05em);
-    --tracking-widest:   calc(var(--tracking-normal) + 0.1em);
-
-    /* ── Sombras — sutiles, casi planas ── */
-    --shadow-2xs: 0px 1px 2px hsl(230 40% 20% / 0.04);
-    --shadow-xs:  0px 2px 4px hsl(230 40% 20% / 0.05);
-    --shadow-sm:  0px 2px 6px hsl(230 40% 20% / 0.07), 0px 1px 2px hsl(230 40% 20% / 0.05);
-    --shadow:     0px 4px 8px hsl(230 40% 20% / 0.08), 0px 2px 4px hsl(230 40% 20% / 0.05);
-    --shadow-md:  0px 6px 12px hsl(230 40% 20% / 0.10), 0px 3px 6px hsl(230 40% 20% / 0.06);
-    --shadow-lg:  0px 8px 20px hsl(230 40% 20% / 0.12), 0px 4px 8px hsl(230 40% 20% / 0.07);
-    --shadow-xl:  0px 12px 28px hsl(230 40% 20% / 0.15), 0px 6px 12px hsl(230 40% 20% / 0.08);
-    --shadow-2xl: 0px 20px 40px hsl(230 40% 20% / 0.20);
-
-    /* ══════════════════════════════════════════════════════════════════
-       TOKENS DE MARCA — Clinicboard Brand Palette
-       Referenciar con var(--brand-*) para identidad visual
-       ══════════════════════════════════════════════════════════════════ */
-    --brand-blue:           #3981f6;   /* Azul primario — CTA, acciones, UI interactiva */
-    --brand-indigo:         #4045ba;   /* Índigo profundo — wordmark, superficies dark */
-    --brand-mint:           #90e2bc;   /* Menta salud — éxito, estabilidad clínica */
-    --brand-danger:         #e64343;   /* Rojo clínico — alertas críticas, destructivo */
-
-    /* ══════════════════════════════════════════════════════════════════
-       TOKENS CLÍNICOS — Estados de pacientes
-       ══════════════════════════════════════════════════════════════════ */
-    --clinical-stable:        oklch(0.843 0.097 155);    /* menta — paciente estable */
-    --clinical-stable-fg:     oklch(0.25 0.090 155);
-    --clinical-stable-bg:     oklch(0.955 0.035 155);
-    --clinical-critical:      oklch(0.561 0.215 25);     /* rojo — crítico */
-    --clinical-critical-fg:   oklch(1.00 0 0);
-    --clinical-critical-bg:   oklch(0.960 0.040 25);
-    --clinical-inactive:      oklch(0.560 0.008 265);    /* gris neutro */
-    --clinical-inactive-fg:   oklch(1.00 0 0);
-    --clinical-inactive-bg:   oklch(0.940 0.005 265);
-    --clinical-pending:       oklch(0.650 0.140 75);     /* ámbar — pendiente */
-    --clinical-pending-fg:    oklch(0.25 0.080 75);
-    --clinical-pending-bg:    oklch(0.970 0.040 80);
-
-    /* ══════════════════════════════════════════════════════════════════
-       TOKENS DE CITAS — Máquina de estados FHIR
-       ══════════════════════════════════════════════════════════════════ */
-    --apt-card-padding:     0.75rem;
-    --apt-card-time-size:   0.75rem;
-    --apt-card-title-size:  0.875rem;
-    --apt-card-badge-size:  0.6875rem;
-    --apt-card-radius:      calc(var(--radius) * 1.5);
-
-    /* Estados FHIR — modo claro */
-    --apt-status-proposed:  oklch(0.55 0.010 265);   /* slate neutro */
-    --apt-status-pending:   oklch(0.650 0.140 75);   /* ámbar */
-    --apt-status-booked:    oklch(0.597 0.197 262);  /* brand blue */
-    --apt-status-arrived:   oklch(0.620 0.160 38);   /* naranja */
-    --apt-status-fulfilled: oklch(0.500 0.097 155);  /* mint oscuro */
-    --apt-status-cancelled: oklch(0.561 0.215 25);   /* brand red */
-    --apt-status-noshow:    oklch(0.500 0.100 25);   /* rojo apagado */
-
-    /* Kanban */
-    --kanban-col-bg:     oklch(0.97 0.004 265 / 0.6);
-    --kanban-col-radius: 0.5rem;
-    --kanban-col-gap:    0.5rem;
-    --kanban-fade-size:  2.5rem;
-  }
-
-
-  /* ─────────────────────────────────────────────────────────────────────────
-     MODO OSCURO — Gris neutro absoluto al estilo Supabase
-     Filosofía: capas de profundidad (Darkest → Elevated) + azul vibrante
-     Chroma 0 para neutralidad absoluta (sin tintes azulejos o verdosos).
-     ───────────────────────────────────────────────────────────────────────── */
-  .dark {
-    /* Superficies escalonadas (Neutrales Supabase - Jerarquía corregida) */
-    /* OKLCH Lightness: 0.21 (~#171717), 0.24 (~#1c1c1c), 0.31 (~#262626) */
-    --surface-100:             oklch(0.21 0 0);          /* #171717 - Base: Header/Sidebars/Rail */
-    --surface-200:             oklch(0.24 0 0);          /* #1c1c1c - Canvas principal */
-    --surface-300:             oklch(0.31 0 0);          /* #262626 - Cards/Elevated */
-    --surface-400:             oklch(0.38 0 0);          /* #313131 - Popovers/Hover */
+    /* ── Alias de Aplicación (Shadcn Mapping) ── */
+    --background:              oklch(0.99 0.003 241); /* #fbfcfd */
+    --foreground:              oklch(0.12 0.015 241); /* #0f141e */
     
-    --background:              var(--surface-200);       /* L1: Canvas principal */
-    --foreground:              oklch(0.93 0 0);
-    --card:                    var(--surface-300);       /* L2: Tarjetas/Superficies */
-    --card-foreground:         oklch(0.93 0 0);
-    --popover:                 var(--surface-400);       /* L3: Elevación máxima */
-    --popover-foreground:      oklch(0.93 0 0);
+    --card:                    #ffffff;
+    --card-foreground:         oklch(0.12 0.015 241);
+    
+    --popover:                 #ffffff;
+    --popover-foreground:      oklch(0.12 0.015 241);
 
-    /* ── Primary — #3981f6 Brand Blue ── */
-    --primary:                 oklch(0.597 0.197 262);
-    --primary-foreground:      oklch(0.15 0 0);
+    --primary:                 oklch(0.612 0.147 175); /* #0ca488 */
+    --primary-foreground:      #ffffff;
 
-    /* ── Secondary — índigo profundo (#4045ba) ── */
-    --secondary:               oklch(0.432 0.215 271);
-    --secondary-foreground:    oklch(0.95 0 0);
+    --secondary:               oklch(0.95 0.005 241);  /* #eef1f5 */
+    --secondary-foreground:    oklch(0.25 0.020 241);  /* #222938 */
 
-    /* ── Muted ── */
-    --muted:                   var(--surface-300);
-    --muted-foreground:        oklch(0.58 0 0);
+    --muted:                   oklch(0.97 0.004 241);  /* #f5f7fa */
+    --muted-foreground:        oklch(0.58 0.015 241);  /* #7f8a9b */
 
-    /* ── Accent ── */
-    --accent:                  var(--surface-300);
-    --accent-foreground:       oklch(0.92 0 0);
+    --accent:                  oklch(0.95 0.020 175);  /* #dbf6ef */
+    --accent-foreground:       oklch(0.55 0.140 175);  /* #0fb088 */
 
-    /* ── Destructive — #e64343 Rojo clínico ── */
-    --destructive:             oklch(0.561 0.215 25);
-    --destructive-foreground:  oklch(1.00 0 0);
+    --destructive:             oklch(0.55 0.180 25);   /* #d24848 */
+    --destructive-foreground:  #ffffff;
 
-    /* ── Bordes e Inputs — Sutiles y finos estilo Supabase ── */
-    --border:                  oklch(0.28 0 0);          /* Gris neutro sutil para bordes */
-    --input:                   oklch(0.28 0 0);
-    --ring:                    oklch(0.597 0.197 262);
+    --border:                  oklch(0.88 0.010 241);  /* #d7dde5 */
+    --input:                   oklch(0.88 0.010 241);
+    --ring:                    oklch(0.612 0.147 175);
 
-    /* ── Sidebar & Header — #171717 (Misma capa base) ── */
-    --sidebar-background:      var(--surface-100);
-    --sidebar-foreground:      oklch(0.86 0 0);
-    --sidebar-primary:         oklch(0.597 0.197 262);
-    --sidebar-primary-foreground: oklch(0.15 0 0);
-    --sidebar-accent:          var(--surface-200);
-    --sidebar-accent-foreground: oklch(0.92 0 0);
-    --sidebar-border:          oklch(0.25 0 0 / 0.5);   /* Borde muy sutil */
-    --sidebar-ring:            oklch(0.597 0.197 262);
+    /* ── Tipografía Modular ── */
+    --text-xs:   12px;   --leading-xs:   16px;   --weight-xs:   400;
+    --text-sm:   13px;   --leading-sm:   18px;   --weight-sm:   400;
+    --text-base: 15px;   --leading-base: 22px;   --weight-base: 400;
+    --text-lg:   16px;   --leading-lg:   24px;   --weight-lg:   400;
+    --text-xl:   18px;   --leading-xl:   26px;   --weight-xl:   500;
+    --text-2xl:  20px;   --leading-2xl:  28px;   --weight-2xl:  500;
+    --text-3xl:  24px;   --leading-3xl:  32px;   --weight-3xl:  600;
+    --text-4xl:  28px;   --leading-4xl:  36px;   --weight-4xl:  600;
+    --text-5xl:  32px;   --leading-5xl:  40px;   --weight-5xl:  700;
 
-    /* ── Sombras dark — neutrales ── */
-    --shadow-2xs: 0px 2px 4px  hsl(0 0% 2% / 0.40);
-    --shadow-xs:  0px 2px 6px  hsl(0 0% 2% / 0.45);
-    --shadow-sm:  0px 4px 8px  hsl(0 0% 2% / 0.50), 0px 1px 3px hsl(0 0% 2% / 0.40);
-    --shadow:     0px 6px 12px hsl(0 0% 2% / 0.55), 0px 2px 4px hsl(0 0% 2% / 0.45);
-    --shadow-md:  0px 8px 16px hsl(0 0% 2% / 0.60), 0px 4px 8px hsl(0 0% 2% / 0.50);
-    --shadow-lg:  0px 12px 24px hsl(0 0% 2% / 0.65), 0px 6px 12px hsl(0 0% 2% / 0.55);
-    --shadow-xl:  0px 16px 32px hsl(0 0% 2% / 0.70), 0px 8px 16px hsl(0 0% 2% / 0.60);
-    --shadow-2xl: 0px 24px 48px hsl(0 0% 2% / 0.80);
-
-    /* ── Estados FHIR dark ── */
-    --apt-status-proposed:    oklch(0.65 0 0);
-    --apt-status-pending:     oklch(0.650 0.140 75);
-    --apt-status-booked:      oklch(0.597 0.197 262);
-    --apt-status-arrived:     oklch(0.620 0.160 38);
-    --apt-status-fulfilled:   oklch(0.500 0.097 155);
-    --apt-status-cancelled:   oklch(0.561 0.215 25);
-    --apt-status-noshow:      oklch(0.500 0.100 25);
-
-    --kanban-col-bg:          oklch(0.15 0 0 / 0.70);
-
-    /* ── Tokens clínicos dark ── */
-    --clinical-stable-bg:     oklch(0.843 0.097 155 / 0.12);
-    --clinical-stable-fg:     oklch(0.843 0.097 155);
-    --clinical-critical-bg:   oklch(0.561 0.215 25 / 0.15);
-    --clinical-critical-fg:   oklch(0.780 0.150 25);
-    --clinical-inactive-bg:   oklch(0.58 0 0 / 0.12);
-    --clinical-inactive-fg:   oklch(0.58 0 0);
-    --clinical-pending-bg:    oklch(0.650 0.140 75 / 0.12);
-    --clinical-pending-fg:    oklch(0.650 0.140 75);
-
-    /* ── Spacing scale — 3-tier padding system ── */
-    --spacing-compact-x:  0.75rem;   /* 12px — px-3 */
-    --spacing-compact-y:  0.5rem;    /* 8px  — py-2 */
-    --spacing-default-x:  1rem;      /* 16px — px-4 */
-    --spacing-default-y:  0.75rem;   /* 12px — py-3 */
-    --spacing-spacious-x: 1.5rem;    /* 24px — px-6 */
-    --spacing-spacious-y: 1.25rem;   /* 20px — py-5 */
-
-    /* ── Radius (consistente entre modos) ── */
     --radius: 0.375rem;
+
+    /* Sidebar - Adaptado a Clinical Slate */
+    --sidebar-background:      var(--n-1);
+    --sidebar-foreground:      var(--n-10);
+    --sidebar-primary:         var(--b-8);
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent:          var(--n-3);
+    --sidebar-accent-foreground: var(--n-11);
+    --sidebar-border:          var(--n-5);
+    --sidebar-ring:            var(--b-8);
   }
 
+  .dark {
+    /* ── Escala Neutra Dark (Slate Frío) ── */
+    --dn-1:  #0b0f15;
+    --dn-2:  #11161f;
+    --dn-3:  #161c27;
+    --dn-4:  #1c2330;
+    --dn-5:  #232b3a;
+    --dn-6:  #2c3648;
+    --dn-7:  #3a4558;
+    --dn-8:  #596376;
+    --dn-9:  #7a8496;
+    --dn-10: #a0aabb;
+    --dn-11: #cbd2de;
+    --dn-12: #eef1f5;
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     BASE STYLES
-     ───────────────────────────────────────────────────────────────────────── */
+    /* ── Brand Dark ── */
+    --db-5:  #0fb088;
+    --db-8:  #1fd4a8;  /* más luminoso en dark */
+    --db-9:  #3fe6bd;
+
+    /* ── Alias de Aplicación Dark ── */
+    --background:              oklch(0.10 0.015 241); /* #0b0f15 */
+    --foreground:              oklch(0.95 0.005 241); /* #eef1f5 */
+
+    --card:                    oklch(0.14 0.015 241); /* #11161f */
+    --card-foreground:         oklch(0.95 0.005 241);
+
+    --popover:                 oklch(0.18 0.018 241); /* #161c27 */
+    --popover-foreground:      oklch(0.95 0.005 241);
+
+    --primary:                 oklch(0.78 0.160 175); /* #1fd4a8 */
+    --primary-foreground:      #03271f;
+
+    --secondary:               oklch(0.22 0.020 241); /* #1c2330 */
+    --secondary-foreground:    oklch(0.88 0.010 241); /* #cbd2de */
+
+    --muted:                   oklch(0.18 0.018 241); /* #161c27 */
+    --muted-foreground:        oklch(0.65 0.015 241); /* #7a8496 */
+
+    --accent:                  oklch(0.25 0.025 241); /* #232b3a */
+    --accent-foreground:       oklch(0.85 0.080 175); /* #3fe6bd */
+
+    --destructive:             oklch(0.55 0.180 25);
+    --destructive-foreground:  #ffffff;
+
+    --border:                  oklch(0.25 0.025 241); /* #232b3a */
+    --input:                   oklch(0.25 0.025 241);
+    --ring:                    oklch(0.78 0.160 175);
+
+    --sidebar-background:      var(--dn-2);
+    --sidebar-foreground:      var(--dn-10);
+    --sidebar-primary:         var(--db-8);
+    --sidebar-primary-foreground: #03271f;
+    --sidebar-accent:          var(--dn-4);
+    --sidebar-accent-foreground: var(--dn-12);
+    --sidebar-border:          var(--dn-5);
+    --sidebar-ring:            var(--db-8);
+  }
+
   * {
     @apply border-border;
-    box-sizing: border-box;
-  }
-
-  html {
-    @apply bg-background;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans);
-    letter-spacing: var(--tracking-normal);
-    line-height: 1.5;
+    font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--text-base);
+    line-height: var(--leading-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  .mono {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-variant-ligatures: none;
+    letter-spacing: -0.02em;
+  }
+
+  h1 { font-size: var(--text-5xl); font-weight: var(--weight-5xl); letter-spacing: -0.02em; }
+  h2 { font-size: var(--text-4xl); font-weight: var(--weight-4xl); letter-spacing: -0.015em; }
+  h3 { font-size: var(--text-3xl); font-weight: var(--weight-3xl); letter-spacing: -0.015em; }
+  h4 { font-size: var(--text-2xl); font-weight: var(--weight-2xl); letter-spacing: -0.01em; }
+  h5 { font-size: var(--text-xl); font-weight: var(--weight-xl); letter-spacing: -0.005em; }
+  h6 { font-size: var(--text-lg); font-weight: 500; letter-spacing: -0.005em; }
 }
 
-/* Hide scrollbar for horizontal overflow containers */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-
-@layer components {
-  /* ── Fade inferior para columnas Kanban scrollables ── */
-  .kanban-col-fade {
-    mask-image: linear-gradient(
-      to bottom,
-      black calc(100% - var(--kanban-fade-size, 2.5rem)),
-      transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      black calc(100% - var(--kanban-fade-size, 2.5rem)),
-      transparent 100%
-    );
-  }
-
-  /* ── Badge clínico: Estable ── */
-  .badge-stable {
-    background-color: var(--clinical-stable-bg);
-    color: var(--clinical-stable-fg);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    border-radius: calc(var(--radius) * 0.75);
-    padding: 0.125rem 0.5rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  /* ── Badge clínico: Crítico ── */
-  .badge-critical {
-    background-color: var(--clinical-critical-bg);
-    color: var(--clinical-critical-fg);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    border-radius: calc(var(--radius) * 0.75);
-    padding: 0.125rem 0.5rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  /* ── Badge clínico: Inactivo ── */
-  .badge-inactive {
-    background-color: var(--clinical-inactive-bg);
-    color: var(--clinical-inactive-fg);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    border-radius: calc(var(--radius) * 0.75);
-    padding: 0.125rem 0.5rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  /* ── Tabla densa al estilo Supabase ── */
-  .table-dense {
-    border-collapse: collapse;
-    width: 100%;
-  }
-
-  .table-dense th {
-    font-size: 0.6875rem;          /* 11px */
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--muted-foreground);
-    height: 2rem;                  /* 32px — como Supabase */
-    padding: 0 0.75rem;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background-color: var(--background);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    text-align: left;
-    user-select: none;
-  }
-
-  .table-dense td {
-    font-size: 0.8125rem;          /* 13px */
-    height: 2.25rem;               /* 36px — como Supabase */
-    padding: 0 0.75rem;
-    vertical-align: middle;
-    white-space: nowrap;
-    border-bottom: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
-  }
-
-  .table-dense tbody tr {
-    transition: background-color 80ms ease;
-  }
-
-  .table-dense tbody tr:hover td {
-    background-color: var(--muted);
-  }
-
-  .table-dense tbody tr[data-selected="true"] td {
-    background-color: color-mix(in oklch, var(--primary) 8%, var(--background));
-  }
-
-  /* Columna checkbox — ancho fijo, centrado */
-  .table-dense .col-check {
-    width: 2.25rem;
-    padding: 0;
-    text-align: center;
-  }
-
-  /* Columna de acciones — hover reveal */
-  .table-dense .col-actions {
-    width: 3.5rem;
-    text-align: right;
-    padding-right: 0.5rem;
-  }
-
-  .table-dense tbody tr .row-actions {
-    opacity: 0;
-    transition: opacity 100ms ease;
-  }
-  .table-dense tbody tr:hover .row-actions {
-    opacity: 1;
-  }
+@layer utilities {
+  .text-xs { font-size: var(--text-xs); line-height: var(--leading-xs); }
+  .text-sm { font-size: var(--text-sm); line-height: var(--leading-sm); }
+  .text-lg { font-size: var(--text-lg); line-height: var(--leading-lg); }
+  
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }

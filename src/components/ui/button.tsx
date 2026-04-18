@@ -20,7 +20,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         menta:
-          "bg-[var(--brand-mint)] text-[var(--clinical-stable-fg)] shadow-sm hover:bg-[var(--brand-mint)]/90 border border-[var(--brand-mint)]/30 font-bold",
+          "bg-[var(--s-success-bg)] text-[var(--s-success)] shadow-sm hover:bg-[var(--s-success-bg)]/90 border border-[var(--s-success-br)] font-bold",
       },
       size: {
         default: "h-9 px-4 py-2",

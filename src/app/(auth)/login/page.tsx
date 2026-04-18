@@ -67,7 +67,8 @@ export default function LoginPage() {
       {/* LEFT PANEL — visible solo en desktop */}
       <div
         className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center relative p-12"
-        style={{ background: "linear-gradient(135deg, var(--brand-blue), var(--brand-indigo))" }}
+        style={{ background: "linear-gradient(135deg, var(--b-7), var(--b-10))" }}
+
       >
         {/* TODO: reemplazar con <Image fill className="object-cover"> + overlay bg-black/40 cuando llegue la foto */}
         <Image

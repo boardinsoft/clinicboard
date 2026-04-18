@@ -18,7 +18,7 @@ import { getTabTitle } from '@/lib/tabs-utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -478,6 +478,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
           {/* Global Search Dialog */}
           <Dialog open={isSearchModalOpen} onOpenChange={setIsSearchModalOpen}>
             <DialogContent className="sm:max-w-xl top-[18%] w-full rounded-xl shadow-xl p-0 overflow-hidden border-border bg-popover">
+              <DialogTitle className="sr-only">Búsqueda Global</DialogTitle>
               <div className="flex items-center border-b px-3 py-2">
                 <SearchIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
                 <Input

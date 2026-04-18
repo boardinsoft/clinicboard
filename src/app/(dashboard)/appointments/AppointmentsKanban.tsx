@@ -37,13 +37,13 @@ const COLUMNS: ColumnConfig[] = [
 // Mapa de estado → etiqueta + color de texto semántico
 // Los colores usan var(--apt-status-*) definidos en globals.css
 const STATUS_CONFIG: Record<AppointmentStatus, { label: string; colorStyle: string }> = {
-    proposed:  { label: 'Propuesta',  colorStyle: 'var(--apt-status-proposed)' },
-    pending:   { label: 'Pendiente',  colorStyle: 'var(--apt-status-pending)' },
-    booked:    { label: 'Confirmada', colorStyle: 'var(--apt-status-booked)' },
-    arrived:   { label: 'En espera',  colorStyle: 'var(--apt-status-arrived)' },
-    fulfilled: { label: 'Completada', colorStyle: 'var(--apt-status-fulfilled)' },
-    cancelled: { label: 'Cancelada',  colorStyle: 'var(--apt-status-cancelled)' },
-    noshow:    { label: 'No asistió', colorStyle: 'var(--apt-status-noshow)' },
+    proposed:  { label: 'Propuesta',  colorStyle: 'var(--n-8)' },
+    pending:   { label: 'Pendiente',  colorStyle: 'var(--s-warning)' },
+    booked:    { label: 'Confirmada', colorStyle: 'var(--b-8)' },
+    arrived:   { label: 'En espera',  colorStyle: 'var(--s-info)' },
+    fulfilled: { label: 'Completada', colorStyle: 'var(--s-success)' },
+    cancelled: { label: 'Cancelada',  colorStyle: 'var(--s-danger)' },
+    noshow:    { label: 'No asistió', colorStyle: 'var(--s-danger)' },
 };
 
 const COLUMN_STATUSES: Record<string, AppointmentStatus[]> = Object.fromEntries(
