@@ -68,6 +68,10 @@ import {
   Network,
   ChevronsUpDown,
   Plus,
+  Globe,
+  ShieldCheck,
+  BookOpen,
+  Keyboard,
 } from 'lucide-react';
 
 interface AppShellProps {
@@ -134,7 +138,7 @@ function IconBtn({
         >
           <Icon size={16} strokeWidth={1.8} />
           {showDot && (
-            <span className="absolute top-2 right-2 w-[7px] h-[7px] bg-amber-500 rounded-full border border-n-1" />
+            <span className="absolute top-[5px] right-[5px] w-[7px] h-[7px] bg-warning rounded-full border-[1.5px] border-n-1 animate-pulse-dot" />
           )}
         </Button>
       </TooltipTrigger>
@@ -390,48 +394,85 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
           <div className="w-px h-4 bg-n-5" />
 
           {/* Cargo/Especialidad */}
-          <span className="text-[12px] font-bold text-n-10 whitespace-nowrap">
-            {prefix} {specialty}
-          </span>
+          <div className="inline-flex items-center gap-1 px-0.5">
+            <span className="text-sm font-medium text-n-10 whitespace-nowrap">
+              {prefix} {specialty}
+            </span>
+          </div>
 
-          {/* Connect Resources Pill (Meso-gap: 2) */}
+          {/* Connect Resources Pill */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 h-6 px-2.5 rounded-full bg-b-2/50 border border-b-4/30 hover:bg-b-2 transition-colors outline-none">
-                <div className="w-1.5 h-1.5 rounded-full bg-b-8" />
-                <span className="text-[10px] font-bold text-b-9 uppercase tracking-wider">
+              <button className="flex items-center gap-1.5 h-8 px-3 rounded-[5px] bg-success-bg border border-success-border text-b-9 hover:bg-b-1 transition-all outline-none group">
+                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                <span className="text-[12.5px] font-medium whitespace-nowrap">
                   3 recursos conectados
                 </span>
+                <ChevronDown size={12} className="text-b-7 ml-0.5" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-64 rounded-xl p-1">
-              <DropdownMenuLabel className="px-3 py-2 text-[10px] uppercase tracking-widest text-n-8">
-                Recursos del Sistema
-              </DropdownMenuLabel>
-              <DropdownMenuItem className="gap-3 px-3 py-2.5 rounded-lg">
-                <Database className="w-4 h-4 text-b-8" strokeWidth={1.8} />
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold">FHIR Server</span>
-                  <span className="text-[10px] text-n-8 font-mono">https://fhir.clinicboard.com</span>
+            <DropdownMenuContent align="center" className="w-[320px] rounded-lg shadow-2xl border-n-5 p-0 bg-popover overflow-hidden mt-2">
+              <div className="flex items-center justify-between px-3.5 py-3 border-b border-n-4">
+                <h3 className="text-[11px] font-bold text-n-12 uppercase tracking-[0.08em]">Recursos conectados</h3>
+                <button className="text-[11px] font-bold text-b-8 hover:text-b-7 transition-colors">+ Agregar recurso</button>
+              </div>
+
+              <div className="max-h-[300px] overflow-y-auto no-scrollbar">
+                {/* FHIR */}
+                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-2 transition-colors">
+                  <div className="w-9 h-9 rounded-md bg-info-bg flex items-center justify-center text-info shrink-0">
+                    <Globe size={16} strokeWidth={1.8} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[12px] font-medium text-n-12 leading-tight mb-0.5">FHIR R4 Server</div>
+                    <div className="text-[11px] text-n-8 truncate mono">api.fhir.example.com</div>
+                  </div>
+                  <span className="text-[11px] font-medium text-success whitespace-nowrap px-1">● Conectado</span>
                 </div>
-                <Badge variant="pill-success" className="ml-auto" />
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-3 px-3 py-2.5 rounded-lg">
-                <Server className="w-4 h-4 text-b-8" strokeWidth={1.8} />
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold">PACS / DICOM</span>
-                  <span className="text-[10px] text-n-8 font-mono">DCM4CHEE local</span>
+
+                {/* HL7 */}
+                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-2 transition-colors">
+                  <div className="w-9 h-9 rounded-md bg-b-1 flex items-center justify-center text-b-8 shrink-0 border border-b-2">
+                    <ShieldCheck size={16} strokeWidth={1.8} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[12px] font-medium text-n-12 leading-tight mb-0.5">HL7v2 Interface</div>
+                    <div className="text-[11px] text-n-8 truncate mono">hl7.hospital.local:2575</div>
+                  </div>
+                  <span className="text-[11px] font-medium text-success whitespace-nowrap px-1">● Conectado</span>
                 </div>
-                <Badge variant="pill-success" className="ml-auto" />
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-3 px-3 py-2.5 rounded-lg">
-                <Network className="w-4 h-4 text-b-8" strokeWidth={1.8} />
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold">HL7 LIS Gateway</span>
-                  <span className="text-[10px] text-n-8 font-mono">Mirth Connect v3.12</span>
+
+                {/* DICOM */}
+                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-2 transition-colors">
+                  <div className="w-9 h-9 rounded-md bg-warning-bg flex items-center justify-center text-warning shrink-0 border border-warning-border/30">
+                    <Pill size={16} strokeWidth={1.8} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[12px] font-medium text-n-12 leading-tight mb-0.5">PACS / DICOM</div>
+                    <div className="text-[11px] text-n-8 truncate mono">pacs.hospital.local:104</div>
+                  </div>
+                  <span className="text-[11px] font-medium text-success whitespace-nowrap px-1">● Conectado</span>
                 </div>
-                <Badge variant="pill-success" className="ml-auto" />
-              </DropdownMenuItem>
+
+                {/* LIS (Offline) */}
+                <div className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-n-2 transition-colors">
+                  <div className="w-9 h-9 rounded-md bg-n-3 flex items-center justify-center text-n-8 shrink-0 border border-n-4">
+                    <Database size={16} strokeWidth={1.8} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[12px] font-medium text-n-12 leading-tight mb-0.5 opacity-60">Laboratorio (LIS)</div>
+                    <div className="text-[11px] text-n-8 truncate mono opacity-60">lab.system.local</div>
+                  </div>
+                  <span className="text-[11px] font-medium text-warning whitespace-nowrap px-1">● Offline</span>
+                </div>
+              </div>
+
+              <div className="bg-n-2/50 border-t border-n-4">
+                <a href="#integrations" className="flex items-center gap-2.5 px-3.5 py-3 text-[12.5px] font-medium text-b-8 hover:bg-b-1 transition-colors">
+                  <Settings size={14} className="text-n-8" strokeWidth={1.8} />
+                  <span>Gestionar integraciones</span>
+                </a>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -439,106 +480,134 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
         {/* ── CENTRO: Espacio Flexible ── */}
         <div className="flex-1" />
 
-        {/* ── SECCIÓN DERECHA: Acciones (Micro-gap: 1) ── */}
+        {/* ── SECCIÓN DERECHA: Acciones ── */}
         <div className="flex items-center gap-1 shrink-0">
-          
+
           {/* Feedback */}
-          <button className="px-3 py-1.5 text-xs font-bold text-n-10 hover:bg-n-3 rounded-md transition-colors mr-1">
+          <button className="px-2.5 py-1.5 text-[13px] font-medium text-n-10 hover:bg-n-3 hover:text-n-12 rounded-[5px] transition-colors">
             Feedback
           </button>
 
-          <IconBtn icon={HelpCircle} label="Ayuda" />
+          {/* Ayuda */}
+          <IconBtn icon={HelpCircle} label="Ayuda" className="text-n-8" />
+
 
           {/* Search Pill */}
           <button
             onClick={() => setIsSearchModalOpen(true)}
-            className="flex items-center gap-2 h-7 px-3 rounded-full bg-n-2 border border-n-5 hover:bg-n-3 transition-colors min-w-[140px] ml-1"
+            className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 border border-n-5 rounded-[5px] text-[13px] text-n-8 hover:bg-n-3 hover:border-n-6 hover:text-n-10 focus:bg-background focus:border-brand-8 focus:ring-2 focus:ring-brand-8/10 outline-none transition-all ml-1"
           >
-            <SearchIcon size={14} className="text-n-8" strokeWidth={1.8} />
-            <span className="flex-1 text-left text-[11px] text-n-8 font-medium">Buscar…</span>
-            <kbd className="font-mono text-[9px] text-n-8 opacity-60">⌘K</kbd>
+            <SearchIcon size={14} strokeWidth={1.8} />
+            <span className="flex-1 text-left font-medium">Buscar…</span>
+            <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium mono bg-background border border-n-5 rounded-[3px] text-n-8/70">
+              ⌘K
+            </span>
           </button>
 
           <IconBtn icon={Bell} label="Notificaciones" showDot />
           
-          <IconBtn 
-            icon={Sparkles} 
-            label="Asistente IA" 
-            onClick={toggleRightPanel}
-            className={cn(rightPanelOpen && "text-b-8 bg-b-2/40")}
-          />
-
+          {/* Asistente IA */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleRightPanel}
+                className={cn(
+                  'h-8 w-8 transition-all duration-200 relative group/ia',
+                  rightPanelOpen 
+                    ? "bg-b-1 text-b-8 shadow-sm" 
+                    : "text-n-8 hover:bg-b-8/10 hover:text-b-8"
+                )}
+                aria-label="Asistente IA"
+              >
+                <Sparkles 
+                  size={16} 
+                  strokeWidth={1.8} 
+                  className={cn("transition-transform", rightPanelOpen ? "animate-float" : "group-hover/ia:animate-float")} 
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-[11px] font-medium bg-n-12 text-n-1 border-none shadow-md">
+              Asistente IA
+            </TooltipContent>
+          </Tooltip>
           <div className="w-px h-5 bg-n-5 mx-2" />
 
           {/* Upgrade Plan CTA */}
-          <Button 
-            variant="default" 
-            size="sm" 
-            className="h-7 px-3 bg-b-8 hover:bg-b-7 text-white border border-b-9 font-bold text-[10px] uppercase tracking-widest rounded-md"
+          <button 
+            className="inline-flex items-center justify-center px-3.5 h-8 text-[12.5px] font-semibold text-white bg-b-8 border border-b-9 rounded-[5px] hover:bg-b-7 active:bg-b-9 transition-all tracking-tight whitespace-nowrap"
           >
-            Actualizar plan <Zap size={12} className="ml-1 fill-current" />
-          </Button>
+            Actualizar plan
+          </button>
 
           <div className="w-px h-5 bg-n-5 mx-2" />
 
           {/* Avatar Menu Trigger */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 h-8 rounded-full pl-0.5 pr-2 hover:bg-n-2 transition-colors outline-none">
-                <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-b-9 to-b-5 p-[1px]">
-                  <Avatar className="h-full w-full border-none rounded-full">
-                    <AvatarFallback className="bg-n-1 text-b-8 text-[11px] font-bold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 text-n-8" strokeWidth={1.8} />
+              <button className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-tr from-b-3 to-b-8 border-[1.5px] border-white shadow-[0_0_0_1px_var(--n-5)] hover:shadow-[0_0_0_1px_var(--n-6),0_2px_8px_rgba(0,0,0,0.1)] transition-all outline-none">
+                <span className="text-[10px] font-bold text-white leading-none">
+                  {initials}
+                </span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-60 rounded-xl p-1 mt-1 shadow-xl">
-              <DropdownMenuLabel className="px-3 py-2.5 font-normal">
-                <div className="flex flex-col space-y-0.5">
-                  <p className="text-xs font-bold text-n-12 truncate">{displayName}</p>
-                  <p className="text-[10px] text-n-8 truncate font-mono">{user?.email}</p>
+            <DropdownMenuContent align="end" className="w-64 rounded-lg shadow-2xl border-n-5 p-0 bg-popover overflow-hidden mt-2">
+              {/* Profile Header */}
+              <div className="flex gap-3 p-3.5 border-b border-n-4 items-start">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-b-3 to-b-8 flex items-center justify-center shrink-0 shadow-sm border border-white">
+                  <span className="text-sm font-bold text-white">{initials}</span>
                 </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => router.push('/settings')} className="gap-2.5 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer">
-                  <UserIcon size={16} className="text-n-9" strokeWidth={1.8} />
-                  Ajustes de Cuenta
+                <div className="flex flex-col min-w-0">
+                  <div className="text-[13px] font-bold text-n-12 truncate leading-tight mb-0.5">{displayName}</div>
+                  <div className="text-[12px] text-n-8 truncate mb-1.5">{user?.email}</div>
+                  <div className="text-[11px] text-n-8 mono uppercase tracking-tight">{specialty}</div>
+                </div>
+              </div>
+
+              <div className="p-1">
+                <DropdownMenuItem onClick={() => router.push('/settings')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                  <UserIcon size={16} className="text-n-8" strokeWidth={1.8} />
+                  <span>Mi perfil</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings?tab=organization')} className="gap-2.5 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer">
-                  <Building2 size={16} className="text-n-9" strokeWidth={1.8} />
-                  Mi Organización
+                <DropdownMenuItem onClick={() => router.push('/settings?tab=preferences')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                  <Settings size={16} className="text-n-8" strokeWidth={1.8} />
+                  <span>Preferencias</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2.5 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer">
-                  <CreditCard size={16} className="text-n-9" strokeWidth={1.8} />
-                  Facturación
+                <DropdownMenuItem onClick={() => router.push('/settings?tab=billing')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                  <CreditCard size={16} className="text-n-8" strokeWidth={1.8} />
+                  <span>Facturación</span>
                 </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem 
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="gap-2.5 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer"
+                <DropdownMenuItem onClick={() => router.push('/settings?tab=organization')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                  <Building2 size={16} className="text-n-8" strokeWidth={1.8} />
+                  <span>Gestionar organización</span>
+                </DropdownMenuItem>
+              </div>
+
+              <div className="h-px bg-n-4 mx-1.5 my-1" />
+
+              <div className="p-1">
+                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                  <Keyboard size={16} className="text-n-8" strokeWidth={1.8} />
+                  <span>Atajos de teclado</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                  <BookOpen size={16} className="text-n-8" strokeWidth={1.8} />
+                  <span>Documentación</span>
+                </DropdownMenuItem>
+              </div>
+
+              <div className="h-px bg-n-4 mx-1.5 my-1" />
+
+              <div className="p-1">
+                <DropdownMenuItem
+                  onClick={async () => await signOut()}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] font-semibold text-destructive hover:bg-s-danger-bg focus:text-destructive focus:bg-s-danger-bg cursor-pointer transition-colors"
                 >
-                  {mounted && theme === 'dark' ? (
-                    <Sun size={16} className="text-n-9" strokeWidth={1.8} />
-                  ) : (
-                    <Moon size={16} className="text-n-9" strokeWidth={1.8} />
-                  )}
-                  {mounted && theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
+                  <LogOut size={16} strokeWidth={1.8} />
+                  <span>Cerrar Sesión</span>
                 </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={async () => await signOut()}
-                className="gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-              >
-                <LogOut size={16} strokeWidth={1.8} />
-                Cerrar Sesión
-              </DropdownMenuItem>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
