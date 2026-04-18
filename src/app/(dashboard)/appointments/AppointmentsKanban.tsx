@@ -34,16 +34,15 @@ const COLUMNS: ColumnConfig[] = [
     { id: 'completed', title: 'En Consulta / Finalizadas', statuses: ['fulfilled'] },
 ];
 
-// Mapa de estado → etiqueta + color de texto semántico
-// Los colores usan var(--apt-status-*) definidos en globals.css
-const STATUS_CONFIG: Record<AppointmentStatus, { label: string; colorStyle: string }> = {
-    proposed:  { label: 'Propuesta',  colorStyle: 'var(--apt-status-proposed)' },
-    pending:   { label: 'Pendiente',  colorStyle: 'var(--apt-status-pending)' },
-    booked:    { label: 'Confirmada', colorStyle: 'var(--apt-status-booked)' },
-    arrived:   { label: 'En espera',  colorStyle: 'var(--apt-status-arrived)' },
-    fulfilled: { label: 'Completada', colorStyle: 'var(--apt-status-fulfilled)' },
-    cancelled: { label: 'Cancelada',  colorStyle: 'var(--apt-status-cancelled)' },
-    noshow:    { label: 'No asistió', colorStyle: 'var(--apt-status-noshow)' },
+// Mapa de estado → etiqueta + clase de color de Tailwind
+const STATUS_CONFIG: Record<AppointmentStatus, { label: string; colorClass: string }> = {
+    proposed:  { label: 'Propuesta',  colorClass: 'text-neutral-8' },
+    pending:   { label: 'Pendiente',  colorClass: 'text-warning' },
+    booked:    { label: 'Confirmada', colorClass: 'text-brand' },
+    arrived:   { label: 'En espera',  colorClass: 'text-info' },
+    fulfilled: { label: 'Completada', colorClass: 'text-success' },
+    cancelled: { label: 'Cancelada',  colorClass: 'text-destructive' },
+    noshow:    { label: 'No asistió', colorClass: 'text-destructive' },
 };
 
 const COLUMN_STATUSES: Record<string, AppointmentStatus[]> = Object.fromEntries(
@@ -199,6 +198,14 @@ export default function AppointmentsKanban({
                                     ))
                                 )}
                             </KanbanColumnContent>
+                        </KanbanColumn>
+                    );
+                })}
+            </KanbanBoard>
+        </Kanban>
+    );
+}
+Content>
                         </KanbanColumn>
                     );
                 })}
