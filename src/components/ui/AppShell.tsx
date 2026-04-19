@@ -363,7 +363,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                 className="flex items-center gap-2 px-3 py-1.5 rounded-[5px] hover:bg-n-3 dark:hover:bg-n-2 transition-all outline-none group"
               >
                 <Building2 size={13} className="text-n-9 group-hover:text-n-11 transition-colors" strokeWidth={1.8} />
-                <span className="text-[13px] font-medium text-n-11 dark:text-n-12 truncate max-w-[160px]">
+                <span className="text-[13px] font-medium text-n-11 dark:text-n-11 truncate max-w-[160px]">
                   Clínica San Rafael
                 </span>
                 <ChevronsUpDown size={12} className="text-n-8 dark:text-n-9 ml-0.5" strokeWidth={2} />
@@ -374,7 +374,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                 <h4 className="text-[10px] uppercase tracking-wider text-n-9 dark:text-n-10 font-bold">Mis Organizaciones</h4>
               </div>
               <div className="p-1">
-                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] bg-n-2 dark:bg-n-3 text-n-12 dark:text-n-12 font-medium cursor-pointer hover:bg-n-3 dark:hover:bg-n-4 transition-colors">
+                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] bg-n-2 dark:bg-n-3 text-n-12 dark:text-n-11 font-medium cursor-pointer hover:bg-n-3 dark:hover:bg-n-4 transition-colors">
                   <Building2 size={14} strokeWidth={1.8} />
                   <span className="flex-1">Clínica San Rafael</span>
                   <Activity size={12} className="text-b-8" />
@@ -431,11 +431,11 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
               <div className="max-h-[300px] overflow-y-auto no-scrollbar">
                 {/* FHIR */}
                 <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 dark:hover:bg-n-2 transition-all group/item">
-                  <div className="w-9 h-9 rounded-md bg-info-bg flex items-center justify-center text-info shrink-0">
+                  <div className="w-9 h-9 rounded-md bg-info-bg dark:bg-info/10 flex items-center justify-center text-info dark:text-info/60 shrink-0">
                     <Globe size={16} strokeWidth={1.8} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-semibold text-n-12 leading-tight mb-0.5">FHIR R4 Server</div>
+                    <div className="text-[12px] font-semibold text-n-12 dark:text-n-11 leading-tight mb-0.5">FHIR R4 Server</div>
                     <div className="text-[11px] text-n-9 truncate mono">api.fhir.example.com</div>
                   </div>
                   <span className="text-[11px] font-medium text-n-9 dark:text-n-10 whitespace-nowrap px-1">● Conectado</span>
@@ -443,11 +443,11 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
 
                 {/* HL7 */}
                 <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 dark:hover:bg-n-2 transition-all group/item">
-                  <div className="w-9 h-9 rounded-md bg-b-1 flex items-center justify-center text-b-8 shrink-0 border border-b-2">
+                  <div className="w-9 h-9 rounded-md bg-b-1 dark:bg-b-8/10 flex items-center justify-center text-b-8 dark:text-b-8/60 shrink-0 border border-b-2 dark:border-b-2/30">
                     <ShieldCheck size={16} strokeWidth={1.8} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-semibold text-n-12 leading-tight mb-0.5">HL7v2 Interface</div>
+                    <div className="text-[12px] font-semibold text-n-12 dark:text-n-11 leading-tight mb-0.5">HL7v2 Interface</div>
                     <div className="text-[11px] text-n-9 truncate mono">hl7.hospital.local:2575</div>
                   </div>
                   <span className="text-[11px] font-medium text-n-9 dark:text-n-10 whitespace-nowrap px-1">● Conectado</span>
@@ -455,11 +455,11 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
 
                 {/* DICOM */}
                 <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 dark:hover:bg-n-2 transition-all group/item">
-                  <div className="w-9 h-9 rounded-md bg-warning-bg flex items-center justify-center text-warning shrink-0 border border-warning-border/30">
+                  <div className="w-9 h-9 rounded-md bg-warning-bg dark:bg-warning/10 flex items-center justify-center text-warning dark:text-warning/60 shrink-0 border border-warning-border/30 dark:border-warning-border/15">
                     <Pill size={16} strokeWidth={1.8} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-semibold text-n-12 leading-tight mb-0.5">PACS / DICOM</div>
+                    <div className="text-[12px] font-semibold text-n-12 dark:text-n-11 leading-tight mb-0.5">PACS / DICOM</div>
                     <div className="text-[11px] text-n-9 truncate mono">pacs.hospital.local:104</div>
                   </div>
                   <span className="text-[11px] font-medium text-n-9 dark:text-n-10 whitespace-nowrap px-1">● Conectado</span>
@@ -495,7 +495,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
         <div className="flex items-center gap-1.5 shrink-0">
           
           {/* Feedback (px-3) */}
-          <button className="px-3 py-1.5 text-[13px] font-medium text-n-11 dark:text-n-12 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 dark:hover:text-n-12 rounded-[5px] transition-all">
+          <button className="px-3 py-1.5 text-[13px] font-medium text-n-11 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 dark:hover:text-n-12 rounded-[5px] transition-all">
             Feedback
           </button>
 
