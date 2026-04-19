@@ -130,7 +130,7 @@ function IconBtn({
         <Button
           variant="ghost"
           size="icon"
-          className={cn('h-8 w-8 text-n-8 hover:text-n-12 hover:bg-n-3 transition-colors duration-100 relative', className)}
+          className={cn('h-8 w-8 text-n-8 hover:text-n-12 hover:bg-n-3 dark:hover:bg-n-2 transition-all duration-100 relative', className)}
           onClick={onClick}
           aria-label={label}
         >
@@ -353,14 +353,14 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
             </span>
           </div>
 
-          <div className="w-px h-4 bg-n-5 mx-1" />
+          <div className="w-px h-4 bg-n-5 mx-2" />
 
           {/* Clínica Selector (Meso: px-3, gap-2) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
                 aria-label="Seleccionar organización activa"
-                className="flex items-center gap-2 px-3 py-1.5 rounded-[5px] hover:bg-n-3 transition-colors outline-none group"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-[5px] hover:bg-n-3 dark:hover:bg-n-2 transition-all outline-none group"
               >
                 <Building2 size={13} className="text-n-8 group-hover:text-n-10 transition-colors" strokeWidth={1.8} />
                 <span className="text-[13px] font-medium text-n-12 truncate max-w-[160px]">
@@ -374,7 +374,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                 <h4 className="text-[10px] uppercase tracking-wider text-n-8 font-bold">Mis Organizaciones</h4>
               </div>
               <div className="p-1">
-                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] bg-b-1 text-b-8 font-semibold cursor-pointer">
+                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] bg-n-2 dark:bg-n-3 text-n-12 dark:text-n-12 font-medium cursor-pointer hover:bg-n-3 dark:hover:bg-n-4 transition-colors">
                   <Building2 size={14} strokeWidth={1.8} />
                   <span className="flex-1">Clínica San Rafael</span>
                   <Activity size={12} className="text-b-8" />
@@ -394,12 +394,12 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Plan Badge (px-2) */}
-          <span className="inline-flex items-center px-2 py-[3px] text-[11px] font-semibold tracking-[0.06em] uppercase rounded-[3px] bg-b-2 text-b-8 dark:bg-b-8/20 dark:text-b-7 leading-none flex-shrink-0">
-            Plan Pro
+          {/* Plan Badge (neutral pill) */}
+          <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-medium text-n-9 dark:text-n-9 bg-n-3 dark:bg-n-3 border border-n-4 dark:border-n-4 rounded-full leading-none flex-shrink-0">
+            Pro
           </span>
 
-          <div className="w-px h-4 bg-n-5 mx-1" />
+          <div className="w-px h-4 bg-n-5 mx-2" />
 
           {/* Cargo/Especialidad */}
           <div className="inline-flex items-center gap-1">
@@ -411,26 +411,26 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
           {/* Connect Resources Pill (px-3, gap-2) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button 
+              <button
                 aria-label="Ver estado de servicios y recursos conectados"
-                className="flex items-center gap-2 h-8 px-3 rounded-[5px] bg-success-bg border border-success-border text-b-9 dark:text-b-8 hover:bg-b-1 dark:hover:bg-b-8/10 transition-all outline-none group"
+                className="flex items-center gap-2 h-8 px-3 rounded-[5px] bg-n-3 dark:bg-n-3 border border-n-4 dark:border-n-4 text-n-10 dark:text-n-11 hover:bg-n-4 dark:hover:bg-n-4 transition-all outline-none group"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                 <span className="text-[12.5px] font-medium whitespace-nowrap">
-                  3 recursos conectados
+                  3 recursos
                 </span>
-                <ChevronDown size={12} className="text-b-7 ml-0.5" strokeWidth={2} />
+                <ChevronDown size={12} className="text-n-8 ml-0.5" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-[320px] rounded-lg shadow-2xl border-n-5 p-0 bg-popover overflow-hidden mt-2">
               <div className="flex items-center justify-between px-3.5 py-3 border-b border-n-4">
-                <h3 className="text-[11px] font-bold text-n-12 uppercase tracking-wider">Recursos conectados</h3>
-                <button className="text-[11px] font-bold text-b-8 hover:text-b-7 transition-colors">+ Agregar recurso</button>
+                <h3 className="text-[11px] font-semibold text-n-11 uppercase tracking-wider">Recursos conectados</h3>
+                <button className="text-[11px] font-medium text-n-10 dark:text-n-11 hover:text-n-12 dark:hover:text-n-12 transition-colors">+ Agregar</button>
               </div>
 
               <div className="max-h-[300px] overflow-y-auto no-scrollbar">
                 {/* FHIR */}
-                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 transition-colors group/item">
+                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 dark:hover:bg-n-2 transition-all group/item">
                   <div className="w-9 h-9 rounded-md bg-info-bg flex items-center justify-center text-info shrink-0">
                     <Globe size={16} strokeWidth={1.8} />
                   </div>
@@ -438,11 +438,11 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                     <div className="text-[12px] font-semibold text-n-12 leading-tight mb-0.5">FHIR R4 Server</div>
                     <div className="text-[11px] text-n-9 truncate mono">api.fhir.example.com</div>
                   </div>
-                  <span className="text-[11px] font-semibold text-success whitespace-nowrap px-1">● Conectado</span>
+                  <span className="text-[11px] font-medium text-n-8 dark:text-n-9 whitespace-nowrap px-1">● Conectado</span>
                 </div>
 
                 {/* HL7 */}
-                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 transition-colors group/item">
+                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 dark:hover:bg-n-2 transition-all group/item">
                   <div className="w-9 h-9 rounded-md bg-b-1 flex items-center justify-center text-b-8 shrink-0 border border-b-2">
                     <ShieldCheck size={16} strokeWidth={1.8} />
                   </div>
@@ -450,11 +450,11 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                     <div className="text-[12px] font-semibold text-n-12 leading-tight mb-0.5">HL7v2 Interface</div>
                     <div className="text-[11px] text-n-9 truncate mono">hl7.hospital.local:2575</div>
                   </div>
-                  <span className="text-[11px] font-semibold text-success whitespace-nowrap px-1">● Conectado</span>
+                  <span className="text-[11px] font-medium text-n-8 dark:text-n-9 whitespace-nowrap px-1">● Conectado</span>
                 </div>
 
                 {/* DICOM */}
-                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 transition-colors group/item">
+                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 dark:hover:bg-n-2 transition-all group/item">
                   <div className="w-9 h-9 rounded-md bg-warning-bg flex items-center justify-center text-warning shrink-0 border border-warning-border/30">
                     <Pill size={16} strokeWidth={1.8} />
                   </div>
@@ -462,11 +462,11 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                     <div className="text-[12px] font-semibold text-n-12 leading-tight mb-0.5">PACS / DICOM</div>
                     <div className="text-[11px] text-n-9 truncate mono">pacs.hospital.local:104</div>
                   </div>
-                  <span className="text-[11px] font-semibold text-success whitespace-nowrap px-1">● Conectado</span>
+                  <span className="text-[11px] font-medium text-n-8 dark:text-n-9 whitespace-nowrap px-1">● Conectado</span>
                 </div>
 
                 {/* LIS (Offline) */}
-                <div className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-n-3 transition-colors group/item">
+                <div className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-n-3 dark:hover:bg-n-2 transition-all group/item">
                   <div className="w-9 h-9 rounded-md bg-n-3 flex items-center justify-center text-n-8 shrink-0 border border-n-4">
                     <Database size={16} strokeWidth={1.8} />
                   </div>
@@ -474,12 +474,12 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                     <div className="text-[12px] font-semibold text-n-12 leading-tight mb-0.5 opacity-60">Laboratorio (LIS)</div>
                     <div className="text-[11px] text-n-9 truncate mono opacity-60">lab.system.local</div>
                   </div>
-                  <span className="text-[11px] font-semibold text-warning whitespace-nowrap px-1">● Offline</span>
+                  <span className="text-[11px] font-medium text-n-8 dark:text-n-9 whitespace-nowrap px-1">● Offline</span>
                 </div>
               </div>
 
-              <div className="bg-n-2/50 border-t border-n-4">
-                <a href="#integrations" className="flex items-center gap-2.5 px-3.5 py-3 text-[12.5px] font-medium text-b-8 hover:bg-b-1 transition-colors">
+              <div className="bg-n-2 dark:bg-n-2 border-t border-n-4">
+                <a href="#integrations" className="flex items-center gap-2.5 px-3.5 py-3 text-[12.5px] font-medium text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-3 transition-all">
                   <Settings size={14} className="text-n-8" strokeWidth={1.8} />
                   <span>Gestionar integraciones</span>
                 </a>
@@ -495,7 +495,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
         <div className="flex items-center gap-1.5 shrink-0">
           
           {/* Feedback (px-3) */}
-          <button className="px-3 py-1.5 text-[13px] font-medium text-n-10 hover:bg-n-3 hover:text-n-12 rounded-[5px] transition-colors">
+          <button className="px-3 py-1.5 text-[13px] font-medium text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 dark:hover:text-n-12 rounded-[5px] transition-all">
             Feedback
           </button>
 
@@ -506,7 +506,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
           <button
             onClick={() => setIsSearchModalOpen(true)}
             aria-label="Abrir búsqueda global (⌘K)"
-            className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 dark:bg-n-3 border border-n-5 dark:border-n-5 rounded-[5px] text-[13px] text-n-8 hover:bg-n-3 dark:hover:bg-n-4 hover:border-n-6 hover:text-n-10 focus:bg-background focus:border-brand-8 focus:ring-2 focus:ring-brand-8/10 outline-none transition-all ml-1 shadow-sm"
+            className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 dark:bg-n-3 border border-n-5 dark:border-n-5 rounded-[5px] text-[13px] text-n-8 hover:bg-n-3 dark:hover:bg-n-4 hover:border-n-6 hover:text-n-10 focus:bg-background focus:border-b-8 focus:ring-2 focus:ring-b-8/10 outline-none transition-all shadow-sm"
           >
             <SearchIcon size={14} strokeWidth={1.8} />
             <span className="flex-1 text-left font-medium">Buscar…</span>
@@ -543,22 +543,22 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
               Asistente IA
             </TooltipContent>
           </Tooltip>
-          <div className="w-px h-5 bg-n-5 mx-3" />
+          <div className="w-px h-5 bg-n-5 mx-2" />
 
-          {/* Upgrade Plan CTA (Prominencia: px-3.5) */}
-          <button 
-            className="inline-flex items-center justify-center px-3.5 h-8 text-[12.5px] font-semibold text-white bg-b-8 border border-b-9 rounded-[5px] hover:bg-b-7 active:bg-b-9 transition-all tracking-tight whitespace-nowrap"
+          {/* Upgrade Plan CTA */}
+          <button
+            className="inline-flex items-center justify-center px-3 h-8 text-[12px] font-semibold text-n-1 dark:text-n-1 bg-b-8 border border-b-9 rounded-[5px] hover:bg-b-7 dark:hover:bg-b-6 active:scale-95 transition-all tracking-tight whitespace-nowrap shadow-sm hover:shadow-md"
           >
-            Actualizar plan
+            Actualizar
           </button>
 
-          <div className="w-px h-5 bg-n-5 mx-3" />
+          <div className="w-px h-5 bg-n-5 mx-2" />
 
           {/* Avatar Menu Trigger */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-tr from-b-3 to-b-8 border-[1.5px] border-white shadow-[0_0_0_1px_var(--n-5)] hover:shadow-[0_0_0_1px_var(--n-6),0_2px_8px_rgba(0,0,0,0.1)] transition-all outline-none">
-                <span className="text-[10px] font-bold text-white leading-none">
+              <button className="flex items-center justify-center w-7 h-7 rounded-full bg-n-3 border-[1.5px] border-n-4 dark:bg-n-5 dark:border-n-6 shadow-[0_0_0_1px_var(--n-5)] dark:shadow-[0_0_0_1px_var(--n-6)] hover:shadow-[0_0_0_1px_var(--n-6),0_2px_8px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_0_1px_var(--n-7),0_2px_8px_rgba(0,0,0,0.2)] transition-all outline-none">
+                <span className="text-[10px] font-bold text-n-11 dark:text-n-12 leading-none">
                   {initials}
                 </span>
               </button>
@@ -566,8 +566,8 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
             <DropdownMenuContent align="end" className="w-64 rounded-lg shadow-2xl border-n-5 p-0 bg-popover overflow-hidden mt-2">
               {/* Profile Header */}
               <div className="flex gap-3 p-3.5 border-b border-n-4 items-start">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-b-3 to-b-8 flex items-center justify-center shrink-0 shadow-sm border border-white">
-                  <span className="text-sm font-bold text-white">{initials}</span>
+                <div className="w-10 h-10 rounded-full bg-n-2 dark:bg-n-4 flex items-center justify-center shrink-0 shadow-sm border border-n-3 dark:border-n-5">
+                  <span className="text-sm font-bold text-n-10 dark:text-n-11">{initials}</span>
                 </div>
                 <div className="flex flex-col min-w-0">
                   <div className="text-[13px] font-bold text-n-12 truncate leading-tight mb-0.5">{displayName}</div>
@@ -577,19 +577,19 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
               </div>
 
               <div className="p-1">
-                <DropdownMenuItem onClick={() => router.push('/settings')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem onClick={() => router.push('/settings')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
                   <UserIcon size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Mi perfil</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings?tab=preferences')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem onClick={() => router.push('/settings?tab=preferences')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
                   <Settings size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Preferencias</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings?tab=billing')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem onClick={() => router.push('/settings?tab=billing')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
                   <CreditCard size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Facturación</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings?tab=organization')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem onClick={() => router.push('/settings?tab=organization')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
                   <Building2 size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Gestionar organización</span>
                 </DropdownMenuItem>
@@ -600,7 +600,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
               <div className="p-1">
                 <DropdownMenuItem
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors"
                 >
                   {mounted && theme === 'dark' ? (
                     <Sun size={16} className="text-n-8" strokeWidth={1.8} />
@@ -609,11 +609,11 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
                   )}
                   <span>{mounted && theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
                   <Keyboard size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Atajos de teclado</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
                   <BookOpen size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Documentación</span>
                 </DropdownMenuItem>
@@ -624,9 +624,9 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
               <div className="p-1">
                 <DropdownMenuItem
                   onClick={async () => await signOut()}
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] font-semibold text-destructive hover:bg-s-danger-bg focus:text-destructive focus:bg-s-danger-bg cursor-pointer transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] font-semibold text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors"
                 >
-                  <LogOut size={16} strokeWidth={1.8} />
+                  <LogOut size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Cerrar Sesión</span>
                 </DropdownMenuItem>
               </div>

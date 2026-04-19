@@ -10,17 +10,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground border border-brand-9 hover:bg-brand-7",
+          "bg-primary text-primary-foreground border border-brand-9 hover:bg-brand-7 dark:hover:bg-b-7",
         destructive:
-          "bg-destructive text-destructive-foreground border border-success-border hover:bg-red-700",
+          "bg-destructive text-destructive-foreground border border-success-border hover:bg-destructive/90 dark:hover:bg-red-600",
         outline:
-          "bg-background text-foreground border border-border hover:bg-neutral-2 dark:hover:bg-neutral-4",
+          "bg-background text-foreground border border-border hover:bg-neutral-2 dark:hover:bg-n-4",
         secondary:
-          "bg-neutral-3 dark:bg-neutral-5 text-foreground border border-neutral-5 dark:border-neutral-7 hover:bg-neutral-4 dark:hover:bg-neutral-6",
-        ghost: 
-          "bg-transparent text-foreground border border-transparent hover:bg-neutral-2 dark:hover:bg-neutral-4",
-        link: 
-          "bg-transparent text-primary border border-transparent hover:underline px-1",
+          "bg-neutral-3 dark:bg-neutral-5 text-foreground border border-neutral-5 dark:border-neutral-7 hover:bg-neutral-4 dark:hover:bg-n-5",
+        ghost:
+          "bg-transparent text-foreground border border-transparent hover:bg-neutral-2 dark:hover:bg-n-3",
+        link:
+          "bg-transparent text-primary border border-transparent hover:underline dark:hover:text-b-7 px-1",
       },
       size: {
         xs: "h-7 px-2 text-xs gap-1.5",

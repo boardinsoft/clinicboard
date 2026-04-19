@@ -112,6 +112,13 @@
     /* ── Brand Dark ── */
     --b-8:  #1fd4a8;
 
+    /* ── Semantic Colors Dark ── */
+    --s-success:     #1fd4a8;  --s-success-bg:  rgba(31, 212, 168, 0.15);  --s-success-br:  rgba(31, 212, 168, 0.4);
+    --s-warning:     #f59e0b;  --s-warning-bg:  rgba(245, 158, 11, 0.15);  --s-warning-br:  rgba(245, 158, 11, 0.4);
+    --s-danger:      #ef4444;  --s-danger-bg:   rgba(239, 68, 68, 0.15);   --s-danger-br:   rgba(239, 68, 68, 0.4);
+    --s-info:        #60a5fa;  --s-info-bg:     rgba(96, 165, 250, 0.15);  --s-info-br:     rgba(96, 165, 250, 0.4);
+    --s-neutral:     #9ca3af;  --s-neutral-bg:  rgba(156, 163, 175, 0.15); --s-neutral-br:  rgba(156, 163, 175, 0.4);
+
     /* ── Alias de Aplicación Dark ── */
     --background:              var(--n-1);
     --foreground:              var(--n-12);
@@ -211,11 +218,20 @@
     background-color: var(--s-success-bg);
     border-color: var(--s-success-br);
     color: var(--b-9);
+    transition: all 0.2s ease;
+  }
+  .pill-success:hover {
+    background-color: color-mix(in oklch, var(--s-success-bg), #000000 10%);
+    border-color: color-mix(in oklch, var(--s-success-br), #000000 20%);
   }
   .dark .pill-success {
     background-color: var(--s-success);
     border-color: var(--s-success);
     color: #ffffff;
+  }
+  .dark .pill-success:hover {
+    background-color: #2dddb2;
+    border-color: #2dddb2;
   }
   .pill-success::before { background-color: var(--s-success); }
 
@@ -223,11 +239,20 @@
     background-color: var(--s-warning-bg);
     border-color: var(--s-warning-br);
     color: var(--s-warning);
+    transition: all 0.2s ease;
+  }
+  .pill-warning:hover {
+    background-color: color-mix(in oklch, var(--s-warning-bg), #000000 12%);
+    border-color: color-mix(in oklch, var(--s-warning-br), #000000 25%);
   }
   .dark .pill-warning {
     background-color: var(--s-warning);
     border-color: var(--s-warning);
     color: #ffffff;
+  }
+  .dark .pill-warning:hover {
+    background-color: #fbbf24;
+    border-color: #fbbf24;
   }
   .pill-warning::before { background-color: var(--s-warning); }
 
@@ -235,23 +260,41 @@
     background-color: var(--s-danger-bg);
     border-color: var(--s-danger-br);
     color: var(--destructive);
+    transition: all 0.2s ease;
+  }
+  .pill-danger:hover {
+    background-color: color-mix(in oklch, var(--s-danger-bg), #000000 12%);
+    border-color: color-mix(in oklch, var(--s-danger-br), #000000 25%);
   }
   .dark .pill-danger {
-    background-color: var(--destructive);
-    border-color: var(--destructive);
+    background-color: var(--s-danger);
+    border-color: var(--s-danger);
     color: #ffffff;
   }
-  .pill-danger::before { background-color: var(--destructive); }
+  .dark .pill-danger:hover {
+    background-color: #f87171;
+    border-color: #f87171;
+  }
+  .pill-danger::before { background-color: var(--s-danger); }
 
   .pill-info {
     background-color: var(--s-info-bg);
     border-color: var(--s-info-br);
     color: var(--s-info);
+    transition: all 0.2s ease;
+  }
+  .pill-info:hover {
+    background-color: color-mix(in oklch, var(--s-info-bg), #000000 12%);
+    border-color: color-mix(in oklch, var(--s-info-br), #000000 25%);
   }
   .dark .pill-info {
     background-color: var(--s-info);
     border-color: var(--s-info);
     color: #ffffff;
+  }
+  .dark .pill-info:hover {
+    background-color: #93c5fd;
+    border-color: #93c5fd;
   }
   .pill-info::before { background-color: var(--s-info); }
 
@@ -259,11 +302,20 @@
     background-color: var(--muted);
     border-color: var(--border);
     color: var(--muted-foreground);
+    transition: all 0.2s ease;
+  }
+  .pill-neutral:hover {
+    background-color: color-mix(in oklch, var(--muted), #000000 8%);
+    border-color: color-mix(in oklch, var(--border), #000000 15%);
   }
   .dark .pill-neutral {
-    background-color: var(--n-7);
-    border-color: var(--n-7);
+    background-color: var(--s-neutral);
+    border-color: var(--s-neutral);
     color: #ffffff;
+  }
+  .dark .pill-neutral:hover {
+    background-color: #d1d5db;
+    border-color: #d1d5db;
   }
   .pill-neutral::before { background-color: color-mix(in oklch, var(--muted-foreground), transparent 60%); }
 
