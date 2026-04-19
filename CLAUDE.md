@@ -284,6 +284,17 @@ Auditoría más reciente: **2026-04-18** (Continuación)
 - Objetivo: Reducir fatiga visual eliminando altos contrastes de colores de marca en interactivos
 - Cumplimiento: ✓ WCAG AA (4.5:1 mantenido en todos los elementos)
 
+**Contraste Reduction Phase 3** (Text & Icon Calibration):
+- Icons en dropdowns: `text-n-8` → `text-n-9 dark:text-n-10`
+- Dropdown headers: `text-n-8` → `text-n-9 dark:text-n-10`
+- Status indicators (● Conectado/Offline): `text-n-8 dark:text-n-9` → `text-n-9 dark:text-n-10`
+- Secondary buttons (Agregar clínica): `text-b-8 hover:bg-b-1` → `text-n-10 dark:text-n-11 hover:bg-n-3`
+- Primary text (Feedback): `text-n-10 dark:text-n-11` → `text-n-11 dark:text-n-12`
+- Search pill: `text-n-8` → `text-n-9 dark:text-n-10` + icon y badge badge same
+- All dropdown items: agregado dark mode variants para consistencia
+- Objetivo: Jerarquía de contraste más sutil, reducción de fatiga visual
+- Cumplimiento: ✓ WCAG AA (4.5:1+ en todos los elementos de texto)
+
 ---
 
 ## Comandos de desarrollo
