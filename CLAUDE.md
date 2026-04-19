@@ -236,11 +236,14 @@ className="focus:ring-2 focus:ring-b-8 focus:outline-none"
 
 **Workspace Header (AppShell):**
 - Header border visible en dark mode (no opacity < 100%)
-- Plan Badge: Contraste mínimo 4.5:1 en ambos modos
+- Plan Badge: Contraste mínimo 4.5:1 en ambos modos, usando bg-n-3 (neutral) en lugar de colores semánticos
 - Search pill: Keyboard shortcut (⌘K) debe tener contraste 4.5:1+
 - Dropdown items: text-n-10 en light, `dark:text-n-11` en dark
 - Separadores: `bg-n-4 dark:bg-n-5` (visible en ambos)
 - Icons en dropdowns: mínimo 3:1 contra fondo
+- Avatar button: Usa bg-n-3/n-5 (neutral) en lugar de gradiente de brand, text-n-11/n-12
+- Avatar profile header: bg-n-2/n-4 (neutral), initials en text-n-10/n-11
+- Logout button: Usa colores neutros (text-n-10/n-11, hover:bg-n-3/n-2) en lugar de colores semánticos destructive
 
 **Formularios:**
 - Labels siempre visibles (no confiar en placeholder solo)
@@ -271,10 +274,15 @@ className="focus:ring-2 focus:ring-b-8 focus:outline-none"
 
 ### Documentación de Auditoría
 
-Auditoría más reciente: **2026-04-18**
-- Reporte: `.claude/plans/audit_report.md`
-- Fixes implementados: `.claude/plans/audit_fixes.md`
-- Cumplimiento: ~95% WCAG AA post-correcciones
+Auditoría más reciente: **2026-04-18** (Continuación)
+
+**Contraste Reduction Phase 2** (Avatar & Logout):
+- Cambio de avatar trigger: `bg-gradient-to-tr from-b-3 to-b-8` → `bg-n-3 dark:bg-n-5`
+- Cambio de avatar text: `text-white` → `text-n-11 dark:text-n-12`
+- Cambio de profile avatar: `bg-gradient-to-tr from-b-3 to-b-8` → `bg-n-2 dark:bg-n-4`
+- Cambio de logout button: `text-destructive hover:bg-s-danger-bg` → `text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2`
+- Objetivo: Reducir fatiga visual eliminando altos contrastes de colores de marca en interactivos
+- Cumplimiento: ✓ WCAG AA (4.5:1 mantenido en todos los elementos)
 
 ---
 
