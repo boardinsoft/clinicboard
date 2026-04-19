@@ -212,13 +212,22 @@
     border-color: var(--s-success-br);
     color: var(--b-9);
   }
-  .dark .pill-success { color: var(--b-8); }
+  .dark .pill-success {
+    background-color: var(--s-success);
+    border-color: var(--s-success);
+    color: #ffffff;
+  }
   .pill-success::before { background-color: var(--s-success); }
 
   .pill-warning {
     background-color: var(--s-warning-bg);
     border-color: var(--s-warning-br);
     color: var(--s-warning);
+  }
+  .dark .pill-warning {
+    background-color: var(--s-warning);
+    border-color: var(--s-warning);
+    color: #ffffff;
   }
   .pill-warning::before { background-color: var(--s-warning); }
 
@@ -227,6 +236,11 @@
     border-color: var(--s-danger-br);
     color: var(--destructive);
   }
+  .dark .pill-danger {
+    background-color: var(--destructive);
+    border-color: var(--destructive);
+    color: #ffffff;
+  }
   .pill-danger::before { background-color: var(--destructive); }
 
   .pill-info {
@@ -234,12 +248,22 @@
     border-color: var(--s-info-br);
     color: var(--s-info);
   }
+  .dark .pill-info {
+    background-color: var(--s-info);
+    border-color: var(--s-info);
+    color: #ffffff;
+  }
   .pill-info::before { background-color: var(--s-info); }
 
   .pill-neutral {
     background-color: var(--muted);
     border-color: var(--border);
     color: var(--muted-foreground);
+  }
+  .dark .pill-neutral {
+    background-color: var(--n-7);
+    border-color: var(--n-7);
+    color: #ffffff;
   }
   .pill-neutral::before { background-color: color-mix(in oklch, var(--muted-foreground), transparent 60%); }
 
