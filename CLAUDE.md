@@ -124,6 +124,160 @@ Las transiciones de `appointments` y `encounters` están controladas por máquin
 
 ---
 
+## Design System (Clinicboard)
+
+### Paleta de Colores
+
+**Neutral Scale (Slate Frío):**
+- Light: `n-1` (#fbfcfd) a `n-12` (#0f141e) — grises neutros
+- Dark: `n-1` (#0b0f15) a `n-12` (#eef1f5) — grises invertidos
+- Uso: Backgrounds, borders, text hierarchy
+
+**Brand Scale (Clinical Teal):**
+- Light: `b-1` (#f0fbf8) a `b-12` (#03271f) — teal claro a oscuro
+- Dark: `b-8` brightness aumentado a #1fd4a8 para better contrast
+- Uso: Botones primarios, acciones, estados activos
+- Primario: `b-8` = #0ca488 (light) / #1fd4a8 (dark)
+
+**Colores Semánticos:**
+- Success: #0ca488 (teal, mismo que primario)
+- Warning: #c98618 (naranja)
+- Danger: #d24848 (rojo)
+- Info: #2f7cf6 (azul)
+- Neutral: #5a6478 (gris)
+- Cada uno tiene: `--s-{color}` (text), `--s-{color}-bg` (background), `--s-{color}-br` (border)
+
+### Tipografía
+
+**Familias:**
+- Sans (Outfit): Body text, headers, UI
+- Mono (IBM Plex Mono): Code, medical identifiers, timestamps
+
+**Escala de Tamaños:**
+- Body: 15px / 1.55 line-height (base)
+- h1: 32px / 700 weight
+- h2: 28px / 600 weight
+- h3: 24px / 600 weight
+- h4: 20px / 500 weight
+- h5-h6: 18px-16px / 500 weight
+
+### Espaciado
+
+**Sistema de espaciado:**
+- Tokens: 1-12 (4px, 8px, 12px, 16px, 20px, 24px, 32px, 40px, 48px...)
+- Usado en Tailwind: `gap-1`, `p-2`, `mx-3`, etc.
+
+**Border Radius:**
+- Base: 8px (`--radius`)
+- Variantes: md (6px), sm (4px)
+- Usualmente `rounded-[5px]` (custom) en header/componentes
+
+### Modo Dark
+
+- CSS class-based: `.dark` en `<html>`
+- Implementado con `next-themes`
+- Toggle en user dropdown menu
+- **CRÍTICO**: Verificar contraste en ambos modos (WCAG AA mínimo 4.5:1)
+- Override dark: usar `dark:class-name` en Tailwind
+
+### Ubicaciones Clave
+
+- `src/app/globals.css` — Variables CSS, paleta, componentes base (pills, cards, tabla clínica)
+- `tailwind.config.ts` — Config de Tailwind, fonts, spacing, dark mode
+- `src/components/ui/` — Componentes shadcn/ui personalizados
+
+---
+
+## Reglas de Accesibilidad (WCAG AA)
+
+### Contraste de Texto
+
+**Requerimientos:**
+- Normal text (< 18px): Mínimo 4.5:1 de contraste
+- Large text (≥ 18px bold or ≥ 24px): Mínimo 3:1
+- Separadores/borders: Mínimo 3:1 (pueden ser menores si decorativos)
+- Gráficos/icons: Mínimo 3:1 contra fondo adyacente
+
+**Verificación:**
+- Usar [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
+- DevTools: Element → Accessibility → Color contrast
+- Probar en LIGHT Y DARK mode siempre
+
+### ARIA Labels
+
+**Reglas obligatorias:**
+- Botones SIN texto visible: deben tener `aria-label="..."`
+- Iconos sólos (Help, Bell, etc.): `aria-label` requerido
+- Dropdowns: Radix UI maneja automáticamente `role="menu"`
+- Inputs: Usar `<label>` o `aria-label` (nunca solo placeholder)
+- Tooltips: `aria-describedby` o usar Radix `<Tooltip>`
+
+**Ejemplo:**
+```tsx
+<button aria-label="Abrir búsqueda global (⌘K)" onClick={handleSearch}>
+  <SearchIcon size={16} />
+</button>
+```
+
+### Navegación por Teclado
+
+**Requerimientos:**
+- Tab order: Izquierda → derecha, top → bottom (lógico)
+- Focus ring: Siempre visible (no remover con `outline: none` sin alternativa)
+- Dropdown items: Navegables con Arrow keys (Radix maneja)
+- Escape: Cierra modals, dropdowns, tooltips
+
+**Focus Ring Estándar:**
+```tsx
+className="focus:ring-2 focus:ring-b-8 focus:outline-none"
+```
+
+### Elementos Específicos
+
+**Workspace Header (AppShell):**
+- Header border visible en dark mode (no opacity < 100%)
+- Plan Badge: Contraste mínimo 4.5:1 en ambos modos
+- Search pill: Keyboard shortcut (⌘K) debe tener contraste 4.5:1+
+- Dropdown items: text-n-10 en light, `dark:text-n-11` en dark
+- Separadores: `bg-n-4 dark:bg-n-5` (visible en ambos)
+- Icons en dropdowns: mínimo 3:1 contra fondo
+
+**Formularios:**
+- Labels siempre visibles (no confiar en placeholder solo)
+- Error messages: color + icon, no color sólo
+- Required fields: * más aria-required o aria-label
+
+**Tablas:**
+- Headers: `<th scope="col">` o `scope="row"`
+- Datos: Contraste 4.5:1 contra fondo
+- Hover states: Visible, no confiar en color sólo
+
+### Testing de Accesibilidad
+
+**Herramientas:**
+1. **axe DevTools** (Chrome/Firefox plugin) — Scans automáticos WCAG
+2. **Lighthouse** (Chrome DevTools) — Built-in accessibility audit
+3. **NVDA** (Windows) o **VoiceOver** (Mac) — Screen readers
+4. **Keyboard-only testing** — Tab, Arrow keys, Enter, Escape sin mouse
+
+**Checklist pre-commit:**
+- [ ] Contraste 4.5:1 en light mode (WebAIM)
+- [ ] Contraste 4.5:1 en dark mode (WebAIM)
+- [ ] Todos los buttons/icons tienen aria-label
+- [ ] Tab order es lógico (testing con Tab key)
+- [ ] Focus ring visible en todos los elementos
+- [ ] Dropdowns navegables con arrow keys
+- [ ] Escape cierra overlays
+
+### Documentación de Auditoría
+
+Auditoría más reciente: **2026-04-18**
+- Reporte: `.claude/plans/audit_report.md`
+- Fixes implementados: `.claude/plans/audit_fixes.md`
+- Cumplimiento: ~95% WCAG AA post-correcciones
+
+---
+
 ## Comandos de desarrollo
 
 ```bash

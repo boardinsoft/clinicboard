@@ -21,7 +21,6 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +28,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuLabel,
-  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
 import {
   SidebarProvider,
@@ -47,7 +45,6 @@ import {
   Calendar,
   Pill,
   Bell,
-  Settings,
   Moon,
   Sun,
   LogOut,
@@ -72,6 +69,7 @@ import {
   ShieldCheck,
   BookOpen,
   Keyboard,
+  Settings,
 } from 'lucide-react';
 
 interface AppShellProps {
@@ -338,12 +336,15 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
     <div className="flex flex-col w-full h-screen overflow-hidden bg-background text-foreground">
 
       {/* ══ WORKSPACE BAR (Topbar) ═════════════════════════════════════════════ */}
-      <header className="flex items-center h-12 border-b border-border/40 px-4 shrink-0 bg-n-1 z-30">
+      <header
+        data-workspace-bar
+        className="flex items-center h-12 border-b border-border px-4 shrink-0 bg-n-1 z-30"
+      >
 
         {/* ── SECCIÓN IZQUIERDA: Contexto (Macro-gap: 4) ── */}
         <div className="flex items-center gap-4 shrink-0">
           {/* Brand Mark (Micro-gap: 2) */}
-          <div className="flex items-center gap-2 mr-1">
+          <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-b-8 shadow-sm">
               <Stethoscope className="w-4 h-4 text-white" strokeWidth={2.2} />
             </div>
@@ -352,12 +353,15 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
             </span>
           </div>
 
-          <div className="w-px h-4 bg-n-5" />
+          <div className="w-px h-4 bg-n-5 mx-1" />
 
-          {/* Clínica Selector (Meso-gap: 2) */}
+          {/* Clínica Selector (Meso: px-3, gap-2) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 px-3 py-1.5 rounded-[5px] hover:bg-n-3 transition-colors outline-none group">
+              <button 
+                aria-label="Seleccionar organización activa"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-[5px] hover:bg-n-3 transition-colors outline-none group"
+              >
                 <Building2 size={13} className="text-n-8 group-hover:text-n-10 transition-colors" strokeWidth={1.8} />
                 <span className="text-[13px] font-medium text-n-12 truncate max-w-[160px]">
                   Clínica San Rafael
@@ -366,44 +370,51 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-60 rounded-lg shadow-lg border-n-5 p-1 bg-popover">
-              <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-n-8 px-3 py-2">
-                Mis Organizaciones
-              </DropdownMenuLabel>
-              <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] bg-b-1 text-b-8 font-medium cursor-pointer">
-                <Building2 size={14} strokeWidth={1.8} />
-                <span className="flex-1">Clínica San Rafael</span>
-                <Activity size={12} className="text-b-8" />
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 cursor-pointer transition-colors">
-                <Building2 size={14} className="text-n-8" strokeWidth={1.8} />
-                <span className="flex-1">Hospital Central</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-n-4 my-1" />
-              <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-b-8 font-medium hover:bg-b-1 cursor-pointer transition-colors">
-                <Plus size={14} strokeWidth={2} />
-                <span>Agregar clínica</span>
-              </DropdownMenuItem>
+              <div className="px-3 py-2 border-b border-n-4">
+                <h4 className="text-[10px] uppercase tracking-wider text-n-8 font-bold">Mis Organizaciones</h4>
+              </div>
+              <div className="p-1">
+                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] bg-b-1 text-b-8 font-semibold cursor-pointer">
+                  <Building2 size={14} strokeWidth={1.8} />
+                  <span className="flex-1">Clínica San Rafael</span>
+                  <Activity size={12} className="text-b-8" />
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-3 cursor-pointer transition-colors">
+                  <Building2 size={14} className="text-n-8" strokeWidth={1.8} />
+                  <span className="flex-1">Hospital Central</span>
+                </DropdownMenuItem>
+              </div>
+              <DropdownMenuSeparator className="bg-n-4 dark:bg-n-5 my-1" />
+              <div className="p-1">
+                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-b-8 font-medium hover:bg-b-1 cursor-pointer transition-colors">
+                  <Plus size={14} strokeWidth={2} />
+                  <span>Agregar clínica</span>
+                </DropdownMenuItem>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Plan Badge */}
-          <span className="inline-flex items-center px-2 py-[3px] text-[10px] font-semibold tracking-[0.06em] uppercase rounded-[3px] bg-info-bg text-info leading-none flex-shrink-0">
+          {/* Plan Badge (px-2) */}
+          <span className="inline-flex items-center px-2 py-[3px] text-[11px] font-semibold tracking-[0.06em] uppercase rounded-[3px] bg-b-2 text-b-8 dark:bg-b-8/20 dark:text-b-7 leading-none flex-shrink-0">
             Plan Pro
           </span>
 
-          <div className="w-px h-4 bg-n-5" />
+          <div className="w-px h-4 bg-n-5 mx-1" />
 
           {/* Cargo/Especialidad */}
-          <div className="inline-flex items-center gap-1 px-0.5">
-            <span className="text-sm font-medium text-n-10 whitespace-nowrap">
+          <div className="inline-flex items-center gap-1">
+            <span className="text-sm font-medium text-n-10 dark:text-n-11 whitespace-nowrap transition-colors">
               {prefix} {specialty}
             </span>
           </div>
 
-          {/* Connect Resources Pill */}
+          {/* Connect Resources Pill (px-3, gap-2) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 h-8 px-3 rounded-[5px] bg-success-bg border border-success-border text-b-9 hover:bg-b-1 transition-all outline-none group">
+              <button 
+                aria-label="Ver estado de servicios y recursos conectados"
+                className="flex items-center gap-2 h-8 px-3 rounded-[5px] bg-success-bg border border-success-border text-b-9 dark:text-b-8 hover:bg-b-1 dark:hover:bg-b-8/10 transition-all outline-none group"
+              >
                 <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                 <span className="text-[12.5px] font-medium whitespace-nowrap">
                   3 recursos conectados
@@ -413,57 +424,57 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-[320px] rounded-lg shadow-2xl border-n-5 p-0 bg-popover overflow-hidden mt-2">
               <div className="flex items-center justify-between px-3.5 py-3 border-b border-n-4">
-                <h3 className="text-[11px] font-bold text-n-12 uppercase tracking-[0.08em]">Recursos conectados</h3>
+                <h3 className="text-[11px] font-bold text-n-12 uppercase tracking-wider">Recursos conectados</h3>
                 <button className="text-[11px] font-bold text-b-8 hover:text-b-7 transition-colors">+ Agregar recurso</button>
               </div>
 
               <div className="max-h-[300px] overflow-y-auto no-scrollbar">
                 {/* FHIR */}
-                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-2 transition-colors">
+                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 transition-colors group/item">
                   <div className="w-9 h-9 rounded-md bg-info-bg flex items-center justify-center text-info shrink-0">
                     <Globe size={16} strokeWidth={1.8} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-medium text-n-12 leading-tight mb-0.5">FHIR R4 Server</div>
-                    <div className="text-[11px] text-n-8 truncate mono">api.fhir.example.com</div>
+                    <div className="text-[12px] font-semibold text-n-12 leading-tight mb-0.5">FHIR R4 Server</div>
+                    <div className="text-[11px] text-n-9 truncate mono">api.fhir.example.com</div>
                   </div>
-                  <span className="text-[11px] font-medium text-success whitespace-nowrap px-1">● Conectado</span>
+                  <span className="text-[11px] font-semibold text-success whitespace-nowrap px-1">● Conectado</span>
                 </div>
 
                 {/* HL7 */}
-                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-2 transition-colors">
+                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 transition-colors group/item">
                   <div className="w-9 h-9 rounded-md bg-b-1 flex items-center justify-center text-b-8 shrink-0 border border-b-2">
                     <ShieldCheck size={16} strokeWidth={1.8} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-medium text-n-12 leading-tight mb-0.5">HL7v2 Interface</div>
-                    <div className="text-[11px] text-n-8 truncate mono">hl7.hospital.local:2575</div>
+                    <div className="text-[12px] font-semibold text-n-12 leading-tight mb-0.5">HL7v2 Interface</div>
+                    <div className="text-[11px] text-n-9 truncate mono">hl7.hospital.local:2575</div>
                   </div>
-                  <span className="text-[11px] font-medium text-success whitespace-nowrap px-1">● Conectado</span>
+                  <span className="text-[11px] font-semibold text-success whitespace-nowrap px-1">● Conectado</span>
                 </div>
 
                 {/* DICOM */}
-                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-2 transition-colors">
+                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-n-4 hover:bg-n-3 transition-colors group/item">
                   <div className="w-9 h-9 rounded-md bg-warning-bg flex items-center justify-center text-warning shrink-0 border border-warning-border/30">
                     <Pill size={16} strokeWidth={1.8} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-medium text-n-12 leading-tight mb-0.5">PACS / DICOM</div>
-                    <div className="text-[11px] text-n-8 truncate mono">pacs.hospital.local:104</div>
+                    <div className="text-[12px] font-semibold text-n-12 leading-tight mb-0.5">PACS / DICOM</div>
+                    <div className="text-[11px] text-n-9 truncate mono">pacs.hospital.local:104</div>
                   </div>
-                  <span className="text-[11px] font-medium text-success whitespace-nowrap px-1">● Conectado</span>
+                  <span className="text-[11px] font-semibold text-success whitespace-nowrap px-1">● Conectado</span>
                 </div>
 
                 {/* LIS (Offline) */}
-                <div className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-n-2 transition-colors">
+                <div className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-n-3 transition-colors group/item">
                   <div className="w-9 h-9 rounded-md bg-n-3 flex items-center justify-center text-n-8 shrink-0 border border-n-4">
                     <Database size={16} strokeWidth={1.8} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-medium text-n-12 leading-tight mb-0.5 opacity-60">Laboratorio (LIS)</div>
-                    <div className="text-[11px] text-n-8 truncate mono opacity-60">lab.system.local</div>
+                    <div className="text-[12px] font-semibold text-n-12 leading-tight mb-0.5 opacity-60">Laboratorio (LIS)</div>
+                    <div className="text-[11px] text-n-9 truncate mono opacity-60">lab.system.local</div>
                   </div>
-                  <span className="text-[11px] font-medium text-warning whitespace-nowrap px-1">● Offline</span>
+                  <span className="text-[11px] font-semibold text-warning whitespace-nowrap px-1">● Offline</span>
                 </div>
               </div>
 
@@ -480,26 +491,26 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
         {/* ── CENTRO: Espacio Flexible ── */}
         <div className="flex-1" />
 
-        {/* ── SECCIÓN DERECHA: Acciones ── */}
-        <div className="flex items-center gap-1 shrink-0">
-
-          {/* Feedback */}
-          <button className="px-2.5 py-1.5 text-[13px] font-medium text-n-10 hover:bg-n-3 hover:text-n-12 rounded-[5px] transition-colors">
+        {/* ── SECCIÓN DERECHA: Acciones (Micro-gap: 1.5) ── */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          
+          {/* Feedback (px-3) */}
+          <button className="px-3 py-1.5 text-[13px] font-medium text-n-10 hover:bg-n-3 hover:text-n-12 rounded-[5px] transition-colors">
             Feedback
           </button>
 
           {/* Ayuda */}
           <IconBtn icon={HelpCircle} label="Ayuda" className="text-n-8" />
 
-
-          {/* Search Pill */}
+          {/* Search Pill (px-3, gap-2) */}
           <button
             onClick={() => setIsSearchModalOpen(true)}
-            className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 border border-n-5 rounded-[5px] text-[13px] text-n-8 hover:bg-n-3 hover:border-n-6 hover:text-n-10 focus:bg-background focus:border-brand-8 focus:ring-2 focus:ring-brand-8/10 outline-none transition-all ml-1"
+            aria-label="Abrir búsqueda global (⌘K)"
+            className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 dark:bg-n-3 border border-n-5 dark:border-n-5 rounded-[5px] text-[13px] text-n-8 hover:bg-n-3 dark:hover:bg-n-4 hover:border-n-6 hover:text-n-10 focus:bg-background focus:border-brand-8 focus:ring-2 focus:ring-brand-8/10 outline-none transition-all ml-1 shadow-sm"
           >
             <SearchIcon size={14} strokeWidth={1.8} />
             <span className="flex-1 text-left font-medium">Buscar…</span>
-            <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium mono bg-background border border-n-5 rounded-[3px] text-n-8/70">
+            <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium mono bg-background border border-n-5 rounded-[3px] text-n-8">
               ⌘K
             </span>
           </button>
@@ -532,16 +543,16 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
               Asistente IA
             </TooltipContent>
           </Tooltip>
-          <div className="w-px h-5 bg-n-5 mx-2" />
+          <div className="w-px h-5 bg-n-5 mx-3" />
 
-          {/* Upgrade Plan CTA */}
+          {/* Upgrade Plan CTA (Prominencia: px-3.5) */}
           <button 
             className="inline-flex items-center justify-center px-3.5 h-8 text-[12.5px] font-semibold text-white bg-b-8 border border-b-9 rounded-[5px] hover:bg-b-7 active:bg-b-9 transition-all tracking-tight whitespace-nowrap"
           >
             Actualizar plan
           </button>
 
-          <div className="w-px h-5 bg-n-5 mx-2" />
+          <div className="w-px h-5 bg-n-5 mx-3" />
 
           {/* Avatar Menu Trigger */}
           <DropdownMenu>
@@ -566,38 +577,49 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
               </div>
 
               <div className="p-1">
-                <DropdownMenuItem onClick={() => router.push('/settings')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem onClick={() => router.push('/settings')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
                   <UserIcon size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Mi perfil</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings?tab=preferences')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem onClick={() => router.push('/settings?tab=preferences')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
                   <Settings size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Preferencias</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings?tab=billing')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem onClick={() => router.push('/settings?tab=billing')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
                   <CreditCard size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Facturación</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/settings?tab=organization')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem onClick={() => router.push('/settings?tab=organization')} className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
                   <Building2 size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Gestionar organización</span>
                 </DropdownMenuItem>
               </div>
 
-              <div className="h-px bg-n-4 mx-1.5 my-1" />
+              <div className="h-px bg-n-4 dark:bg-n-5 mx-1.5 my-1" />
 
               <div className="p-1">
-                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors"
+                >
+                  {mounted && theme === 'dark' ? (
+                    <Sun size={16} className="text-n-8" strokeWidth={1.8} />
+                  ) : (
+                    <Moon size={16} className="text-n-8" strokeWidth={1.8} />
+                  )}
+                  <span>{mounted && theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
                   <Keyboard size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Atajos de teclado</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
+                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 hover:text-n-12 cursor-pointer transition-colors">
                   <BookOpen size={16} className="text-n-8" strokeWidth={1.8} />
                   <span>Documentación</span>
                 </DropdownMenuItem>
               </div>
 
-              <div className="h-px bg-n-4 mx-1.5 my-1" />
+              <div className="h-px bg-n-4 dark:bg-n-5 mx-1.5 my-1" />
 
               <div className="p-1">
                 <DropdownMenuItem
@@ -618,6 +640,7 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
         <IconRail />
         <SecondarySidebar />
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+          <SubHeader />
           {/* Global Search Dialog */}
           <Dialog open={isSearchModalOpen} onOpenChange={setIsSearchModalOpen}>
             <DialogContent className="sm:max-w-xl top-[18%] w-full rounded-xl shadow-2xl p-0 overflow-hidden border-n-5 bg-popover">
