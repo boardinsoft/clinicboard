@@ -1,12 +1,8 @@
-'use client';
-
 import React from 'react';
-import { Clock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatTime, nowInVE, formatRelativeTime } from '@/lib/date-utils';
-import type { Appointment, AppointmentStatus } from '@/lib/fhir/types';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Appointment, AppointmentStatus } from '@/types/database.types';
 import {
     Kanban,
     KanbanBoard,
@@ -14,36 +10,31 @@ import {
     KanbanColumnContent,
     KanbanItem,
 } from '@/components/reui/kanban';
+import { Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { formatTime, formatRelativeTime, nowInVE } from '@/lib/date-utils';
 
 interface AppointmentsKanbanProps {
     appointments: Appointment[];
     onSelect: (id: string) => void;
-    selectedId: string | null;
+    selectedId?: string;
 }
 
-interface ColumnConfig {
-    id: string;
-    title: string;
-    statuses: AppointmentStatus[];
-}
-
-const COLUMNS: ColumnConfig[] = [
-    { id: 'proposed',  title: 'Propuestas',                statuses: ['proposed', 'pending'] },
+const COLUMNS: { id: string; title: string; statuses: AppointmentStatus[] }[] = [
+    { id: 'pending',   title: 'Por Confirmar / Pendientes', statuses: ['proposed', 'pending'] },
     { id: 'confirmed', title: 'Confirmadas',               statuses: ['booked'] },
     { id: 'arrived',   title: 'En Espera',                 statuses: ['arrived'] },
     { id: 'completed', title: 'En Consulta / Finalizadas', statuses: ['fulfilled'] },
 ];
 
-// Mapa de estado → etiqueta + color de texto semántico
-// Los colores usan var(--apt-status-*) definidos en globals.css
-const STATUS_CONFIG: Record<AppointmentStatus, { label: string; colorStyle: string }> = {
-    proposed:  { label: 'Propuesta',  colorStyle: 'var(--n-8)' },
-    pending:   { label: 'Pendiente',  colorStyle: 'var(--s-warning)' },
-    booked:    { label: 'Confirmada', colorStyle: 'var(--b-8)' },
-    arrived:   { label: 'En espera',  colorStyle: 'var(--s-info)' },
-    fulfilled: { label: 'Completada', colorStyle: 'var(--s-success)' },
-    cancelled: { label: 'Cancelada',  colorStyle: 'var(--s-danger)' },
-    noshow:    { label: 'No asistió', colorStyle: 'var(--s-danger)' },
+// Mapa de estado → etiqueta + clase de color de Tailwind
+const STATUS_CONFIG: Record<AppointmentStatus, { label: string; colorClass: string }> = {
+    proposed:  { label: 'Propuesta',  colorClass: 'text-neutral-8' },
+    pending:   { label: 'Pendiente',  colorClass: 'text-warning' },
+    booked:    { label: 'Confirmada', colorClass: 'text-brand' },
+    arrived:   { label: 'En espera',  colorClass: 'text-info' },
+    fulfilled: { label: 'Completada', colorClass: 'text-success' },
+    cancelled: { label: 'Cancelada',  colorClass: 'text-destructive' },
+    noshow:    { label: 'No asistió', colorClass: 'text-destructive' },
 };
 
 const COLUMN_STATUSES: Record<string, AppointmentStatus[]> = Object.fromEntries(
@@ -93,10 +84,10 @@ function AppointmentCard({
                     </div>
                     {statusCfg && (
                         <span
-                            className="font-bold text-[9px] uppercase tracking-widest shrink-0"
-                            style={{
-                                color: statusCfg.colorStyle,
-                            }}
+                            className={cn(
+                                "font-bold text-[9px] uppercase tracking-widest shrink-0",
+                                statusCfg.colorClass
+                            )}
                         >
                             {statusCfg.label}
                         </span>

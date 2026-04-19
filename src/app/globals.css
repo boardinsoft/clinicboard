@@ -9,7 +9,7 @@
 
 @layer base {
   :root {
-    /* ── Escala Neutra (Slate Frío) ── */
+    /* ── Escala Neutra (Slate Frío - Light) ── */
     --n-1:  #fbfcfd;   /* page bg */
     --n-2:  #f5f7fa;   /* surface-75 */
     --n-3:  #eef1f5;   /* surface-100 */
@@ -23,8 +23,8 @@
     --n-11: #222938;   /* heading */
     --n-12: #0f141e;   /* ink */
 
-    /* ── Escala Brand (Clinical Teal) ── */
-    --b-1:  #f0fbf8;   /* lightest */
+    /* ── Escala Brand (Clinical Teal - Light) ── */
+    --b-1:  #f0fbf8;
     --b-2:  #dbf6ef;
     --b-3:  #bfefe2;
     --b-4:  #99e4d1;
@@ -45,115 +45,106 @@
     --s-neutral:     #5a6478;  --s-neutral-bg:  #eef1f5;  --s-neutral-br:  #d7dde5;
 
     /* ── Alias de Aplicación (Shadcn Mapping) ── */
-    --background:              oklch(0.99 0.003 241); /* #fbfcfd */
-    --foreground:              oklch(0.12 0.015 241); /* #0f141e */
+    --background:              var(--n-1);
+    --foreground:              var(--n-12);
     
     --card:                    #ffffff;
-    --card-foreground:         oklch(0.12 0.015 241);
+    --card-foreground:         var(--n-12);
     
     --popover:                 #ffffff;
-    --popover-foreground:      oklch(0.12 0.015 241);
+    --popover-foreground:      var(--n-12);
 
-    --primary:                 oklch(0.612 0.147 175); /* #0ca488 */
+    --primary:                 var(--b-8);
     --primary-foreground:      #ffffff;
 
-    --secondary:               oklch(0.95 0.005 241);  /* #eef1f5 */
-    --secondary-foreground:    oklch(0.25 0.020 241);  /* #222938 */
+    --secondary:               var(--n-3);
+    --secondary-foreground:    var(--n-11);
 
-    --muted:                   oklch(0.97 0.004 241);  /* #f5f7fa */
-    --muted-foreground:        oklch(0.58 0.015 241);  /* #7f8a9b */
+    --muted:                   var(--n-2);
+    --muted-foreground:        var(--n-8);
 
-    --accent:                  oklch(0.95 0.020 175);  /* #dbf6ef */
-    --accent-foreground:       oklch(0.55 0.140 175);  /* #0fb088 */
+    --accent:                  var(--b-2);
+    --accent-foreground:       var(--b-7);
 
-    --destructive:             oklch(0.55 0.180 25);   /* #d24848 */
+    --destructive:             #d24848;
     --destructive-foreground:  #ffffff;
 
-    --border:                  oklch(0.88 0.010 241);  /* #d7dde5 */
-    --input:                   oklch(0.88 0.010 241);
-    --ring:                    oklch(0.612 0.147 175);
+    --border:                  var(--n-5);
+    --input:                   var(--n-5);
+    --ring:                    var(--b-8);
 
-    /* ── Tipografía Modular ── */
-    --text-xs:   12px;   --leading-xs:   16px;   --weight-xs:   400;
-    --text-sm:   13px;   --leading-sm:   18px;   --weight-sm:   400;
-    --text-base: 15px;   --leading-base: 22px;   --weight-base: 400;
-    --text-lg:   16px;   --leading-lg:   24px;   --weight-lg:   400;
-    --text-xl:   18px;   --leading-xl:   26px;   --weight-xl:   500;
-    --text-2xl:  20px;   --leading-2xl:  28px;   --weight-2xl:  500;
-    --text-3xl:  24px;   --leading-3xl:  32px;   --weight-3xl:  600;
-    --text-4xl:  28px;   --leading-4xl:  36px;   --weight-4xl:  600;
-    --text-5xl:  32px;   --leading-5xl:  40px;   --weight-5xl:  700;
+    /* ── Tipografía (Variables de Layout) ── */
+    --font-outfit: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
-    --radius: 0.375rem;
+    /* ── Radio y Tracking ── */
+    --radius: 0.5rem; /* 8px base */
+    --tracking-normal:   0em;
+    --tracking-wider:    0.05em;
+    --tracking-widest:   0.08em;
 
-    /* Sidebar - Adaptado a Clinical Slate */
+    /* Sidebar */
     --sidebar-background:      var(--n-1);
     --sidebar-foreground:      var(--n-10);
     --sidebar-primary:         var(--b-8);
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent:          var(--n-3);
+    --sidebar-accent:          var(--n-2);
     --sidebar-accent-foreground: var(--n-11);
     --sidebar-border:          var(--n-5);
     --sidebar-ring:            var(--b-8);
   }
 
   .dark {
-    /* ── Escala Neutra Dark (Slate Frío) ── */
-    --dn-1:  #0b0f15;
-    --dn-2:  #11161f;
-    --dn-3:  #161c27;
-    --dn-4:  #1c2330;
-    --dn-5:  #232b3a;
-    --dn-6:  #2c3648;
-    --dn-7:  #3a4558;
-    --dn-8:  #596376;
-    --dn-9:  #7a8496;
-    --dn-10: #a0aabb;
-    --dn-11: #cbd2de;
-    --dn-12: #eef1f5;
+    /* ── Escala Neutra (Slate Frío - Dark Overrides) ── */
+    --n-1:  #0b0f15;   /* page bg */
+    --n-2:  #11161f;   /* surface-75 */
+    --n-3:  #161c27;   /* surface-100 */
+    --n-4:  #1c2330;   /* surface-200 */
+    --n-5:  #232b3a;   /* border-muted */
+    --n-6:  #2c3648;   /* border-default */
+    --n-7:  #3a4558;   /* border-strong */
+    --n-8:  #596376;   /* muted text */
+    --n-9:  #7a8496;   /* secondary text */
+    --n-10: #a0aabb;   /* strong text */
+    --n-11: #cbd2de;   /* heading */
+    --n-12: #eef1f5;   /* ink */
 
     /* ── Brand Dark ── */
-    --db-5:  #0fb088;
-    --db-8:  #1fd4a8;  /* más luminoso en dark */
-    --db-9:  #3fe6bd;
+    --b-8:  #1fd4a8;
 
     /* ── Alias de Aplicación Dark ── */
-    --background:              oklch(0.10 0.015 241); /* #0b0f15 */
-    --foreground:              oklch(0.95 0.005 241); /* #eef1f5 */
+    --background:              var(--n-1);
+    --foreground:              var(--n-12);
 
-    --card:                    oklch(0.14 0.015 241); /* #11161f */
-    --card-foreground:         oklch(0.95 0.005 241);
+    --card:                    var(--n-2);
+    --card-foreground:         var(--n-12);
 
-    --popover:                 oklch(0.18 0.018 241); /* #161c27 */
-    --popover-foreground:      oklch(0.95 0.005 241);
+    --popover:                 var(--n-3);
+    --popover-foreground:      var(--n-12);
 
-    --primary:                 oklch(0.78 0.160 175); /* #1fd4a8 */
+    --primary:                 var(--b-8);
     --primary-foreground:      #03271f;
 
-    --secondary:               oklch(0.22 0.020 241); /* #1c2330 */
-    --secondary-foreground:    oklch(0.88 0.010 241); /* #cbd2de */
+    --secondary:               var(--n-4);
+    --secondary-foreground:    var(--n-11);
 
-    --muted:                   oklch(0.18 0.018 241); /* #161c27 */
-    --muted-foreground:        oklch(0.65 0.015 241); /* #7a8496 */
+    --muted:                   var(--n-3);
+    --muted-foreground:        var(--n-9);
 
-    --accent:                  oklch(0.25 0.025 241); /* #232b3a */
-    --accent-foreground:       oklch(0.85 0.080 175); /* #3fe6bd */
+    --accent:                  var(--n-5);
+    --accent-foreground:       var(--b-8);
 
-    --destructive:             oklch(0.55 0.180 25);
-    --destructive-foreground:  #ffffff;
+    --border:                  var(--n-5);
+    --input:                   var(--n-5);
+    --ring:                    var(--b-8);
 
-    --border:                  oklch(0.25 0.025 241); /* #232b3a */
-    --input:                   oklch(0.25 0.025 241);
-    --ring:                    oklch(0.78 0.160 175);
-
-    --sidebar-background:      var(--dn-2);
-    --sidebar-foreground:      var(--dn-10);
-    --sidebar-primary:         var(--db-8);
+    --sidebar-background:      var(--n-1);
+    --sidebar-foreground:      var(--n-10);
+    --sidebar-primary:         var(--b-8);
     --sidebar-primary-foreground: #03271f;
-    --sidebar-accent:          var(--dn-4);
-    --sidebar-accent-foreground: var(--dn-12);
-    --sidebar-border:          var(--dn-5);
-    --sidebar-ring:            var(--db-8);
+    --sidebar-accent:          var(--n-2);
+    --sidebar-accent-foreground: var(--n-12);
+    --sidebar-border:          var(--n-5);
   }
 
   * {
@@ -163,10 +154,29 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
-    font-size: var(--text-base);
-    line-height: var(--leading-base);
+    font-size: 15px;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ── Headings ── */
+  h1, h2, h3, h4, h5, h6, p { margin: 0; }
+  h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+  h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.015em; }
+  h3 { font-size: 24px; font-weight: 600; letter-spacing: -0.015em; }
+  h4 { font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
+  h5 { font-size: 18px; font-weight: 500; letter-spacing: -0.005em; }
+  h6 { font-size: 16px; font-weight: 500; letter-spacing: -0.005em; }
+
+  .mono {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-variant-ligatures: none;
+    letter-spacing: -0.02em;
+    font-size: 0.95em;
+  }
+
+  .text-muted {
+    color: var(--n-8);
   }
 
   .mono {
@@ -183,10 +193,123 @@
   h6 { font-size: var(--text-lg); font-weight: 500; letter-spacing: -0.005em; }
 }
 
+@layer components {
+  /* ── Pill: Estilo clínico con indicador de punto ── */
+  .pill {
+    @apply inline-flex items-center gap-1.5 font-medium whitespace-nowrap border transition-colors;
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 9999px;
+  }
+
+  .pill::before {
+    content: '';
+    @apply w-1.5 h-1.5 rounded-full shrink-0;
+  }
+
+  .pill-success {
+    background-color: var(--s-success-bg);
+    border-color: var(--s-success-br);
+    color: var(--b-9);
+  }
+  .dark .pill-success { color: var(--b-8); }
+  .pill-success::before { background-color: var(--s-success); }
+
+  .pill-warning {
+    background-color: var(--s-warning-bg);
+    border-color: var(--s-warning-br);
+    color: var(--s-warning);
+  }
+  .pill-warning::before { background-color: var(--s-warning); }
+
+  .pill-danger {
+    background-color: var(--s-danger-bg);
+    border-color: var(--s-danger-br);
+    color: var(--destructive);
+  }
+  .pill-danger::before { background-color: var(--destructive); }
+
+  .pill-info {
+    background-color: var(--s-info-bg);
+    border-color: var(--s-info-br);
+    color: var(--s-info);
+  }
+  .pill-info::before { background-color: var(--s-info); }
+
+  .pill-neutral {
+    background-color: var(--muted);
+    border-color: var(--border);
+    color: var(--muted-foreground);
+  }
+  .pill-neutral::before { background-color: color-mix(in oklch, var(--muted-foreground), transparent 60%); }
+
+  /* ── Card Estilo Clínico ── */
+  .card-clinic {
+    @apply border border-border bg-card overflow-hidden;
+    border-radius: 8px;
+  }
+
+  .card-header-clinic {
+    @apply p-4;
+    border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 60%);
+  }
+
+  .card-body-clinic {
+    @apply p-4;
+  }
+
+  .card-footer-clinic {
+    @apply p-4 bg-n-2;
+    border-top: 1px solid color-mix(in oklch, var(--border), transparent 60%);
+  }
+
+  /* ── Tabla Clínica ── */
+  .table-clinic {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .table-clinic th {
+    @apply text-left font-semibold uppercase tracking-wider text-n-8 bg-n-2;
+    border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 40%);
+    font-size: 11px;
+    padding: 12px 16px;
+  }
+
+  .table-clinic td {
+    @apply text-foreground align-middle;
+    border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 60%);
+    padding: 12px 16px;
+  }
+
+  .table-clinic .table-name { @apply font-semibold text-foreground; }
+  .table-clinic .mono { @apply font-mono text-[12px] text-n-9 tracking-tight; }
+  .table-clinic tr:hover td {
+    background-color: color-mix(in oklch, var(--n-2), transparent 50%);
+    @apply transition-colors;
+  }
+  /* ── Animaciones ── */
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(201, 134, 24, 0.4); }
+    50% { box-shadow: 0 0 0 3px rgba(201, 134, 24, 0.2); }
+  }
+
+  .animate-pulse-dot {
+    animation: pulse-dot 2s infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+}
+
 @layer utilities {
-  .text-xs { font-size: var(--text-xs); line-height: var(--leading-xs); }
-  .text-sm { font-size: var(--text-sm); line-height: var(--leading-sm); }
-  .text-lg { font-size: var(--text-lg); line-height: var(--leading-lg); }
+  .text-xs { font-size: 12px; line-height: 16px; }
+  .text-sm { font-size: 13px; line-height: 18px; }
+  .text-lg { font-size: 16px; line-height: 24px; }
   
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

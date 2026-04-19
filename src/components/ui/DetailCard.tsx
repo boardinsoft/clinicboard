@@ -20,17 +20,17 @@ export function DetailCard({ title, subtitle, meta, extra, active, onClick, icon
         <div
             onClick={onClick}
             className={cn(
-                "group relative flex flex-col gap-1.5 px-4 py-3 rounded-xl border cursor-pointer transition-all duration-300",
+                "group relative flex flex-col gap-1.5 px-4 py-3 rounded-lg border cursor-pointer transition-all duration-200",
                 active
-                    ? "bg-accent border-primary/25 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] ring-1 ring-primary/5"
-                    : "bg-card border-border/30 hover:bg-accent/30 hover:border-border/60 hover:shadow-sm"
+                    ? "bg-neutral-2 border-brand-8/30"
+                    : "bg-background border-border/40 hover:bg-neutral-2/50 hover:border-border/60"
             )}
         >
             <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0 pr-6">
-                    {icon && <span className={cn("shrink-0", active ? "text-primary" : "text-muted-foreground")}>{icon}</span>}
+                    {icon && <span className={cn("shrink-0", active ? "text-brand-8" : "text-neutral-8")}>{icon}</span>}
                     <span className={cn(
-                        "text-sm font-semibold truncate",
+                        "text-sm font-semibold truncate tracking-tight",
                         active ? "text-foreground" : "text-foreground/90"
                     )}>
                         {title}
@@ -38,7 +38,7 @@ export function DetailCard({ title, subtitle, meta, extra, active, onClick, icon
                 </div>
                 <div className="flex items-center gap-2">
                     {meta && (
-                        <span className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded shrink-0 uppercase tracking-tight">
+                        <span className="text-[10px] font-bold text-neutral-8 bg-neutral-2 px-1.5 py-0.5 rounded-sm shrink-0 uppercase tracking-widest border border-border/40">
                             {meta}
                         </span>
                     )}
@@ -55,9 +55,9 @@ export function DetailCard({ title, subtitle, meta, extra, active, onClick, icon
 
             {subtitle && (
                 <p className={cn(
-                    "text-xs truncate",
+                    "text-xs truncate font-medium",
                     icon ? "pl-7" : "pl-0",
-                    active ? "text-foreground/70" : "text-muted-foreground"
+                    active ? "text-foreground/70" : "text-neutral-8"
                 )}>
                     {subtitle}
                 </p>
@@ -82,8 +82,8 @@ export function DetailCard({ title, subtitle, meta, extra, active, onClick, icon
                             key={i}
                             variant={active ? "default" : "outline"}
                             className={cn(
-                                "text-[9px] h-4 px-1.5 font-medium border-0 uppercase tracking-tighter",
-                                active ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"
+                                "text-[9px] h-4.5 px-1.5 font-bold border-0 uppercase tracking-tighter",
+                                active ? "bg-brand-8 text-white" : "bg-neutral-2 text-neutral-8"
                             )}
                         >
                             {tag}
@@ -94,5 +94,3 @@ export function DetailCard({ title, subtitle, meta, extra, active, onClick, icon
         </div>
     );
 }
-
-

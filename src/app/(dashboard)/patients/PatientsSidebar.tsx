@@ -82,14 +82,14 @@ export default function PatientsSidebar() {
 
             {/* ── BÚSQUEDA INTEGRADA (InnerSideBarFilterSearchInput style) ── */}
             <div className="px-3 py-3 border-b border-border/20">
-                <div className="relative group">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
-                    <Input 
-                        placeholder="Buscar..." 
+                <div className="relative group/search">
+                    <Input
+                        placeholder="Buscar paciente..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="h-8 pl-9 pr-2 bg-muted/20 border-border/10 text-sm rounded-md focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:bg-background transition-all placeholder:text-muted-foreground/40"
+                        className="h-8 pr-2 bg-muted/20 border-border text-sm rounded-md focus-visible:bg-background transition-all placeholder:text-neutral-8"
                     />
+
                 </div>
             </div>
 
@@ -167,8 +167,7 @@ export default function PatientsSidebar() {
                                             <div className={cn(
                                                 "w-1.5 h-1.5 rounded-full shrink-0",
                                                 item.status === 'arrived' 
-                                                    ? "bg-[var(--s-success)] shadow-[0_0_6px_var(--s-success)/0.4]"
- 
+                                                    ? "bg-success shadow-[0_0_6px_rgba(12,164,136,0.4)]" 
                                                     : "bg-muted-foreground/20"
                                             )} />
                                             <span className="truncate flex-1 text-sm font-medium">{item.patient_name}</span>

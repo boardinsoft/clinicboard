@@ -1740,8 +1740,8 @@ export default function HistoryPage() {
                     actions={
                         <div className="flex items-center gap-2.5">
                             {isReadOnly && (
-                                <Badge variant="outline" className="h-8 gap-1.5 border-amber-200 bg-amber-50 text-amber-700 font-bold px-3">
-                                    <Shield className="w-3 h-3" /> Finalizado
+                                <Badge variant="pill-warning">
+                                    Finalizado
                                 </Badge>
                             )}
                             
@@ -4438,7 +4438,7 @@ export default function HistoryPage() {
                                         <div className="flex flex-wrap gap-2">
                                             {clinicalData.allergies.length > 0
                                                 ? clinicalData.allergies.map((a) => (
-                                                    <Badge key={a.id} variant="destructive" className="bg-destructive text-white border-0 text-[10px] font-bold uppercase tracking-tighter shadow-sm shadow-destructive/20">
+                                                    <Badge key={a.id} variant="pill-danger">
                                                         {a.code_display}
                                                     </Badge>
                                                 ))

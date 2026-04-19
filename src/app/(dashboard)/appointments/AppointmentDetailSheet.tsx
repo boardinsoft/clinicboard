@@ -266,7 +266,7 @@ export default function AppointmentDetailSheet({
                 <SheetHeader className="p-6 pb-2">
                     <div className="flex items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2">
-                            <Badge variant={config.variant} className={cn("uppercase text-[10px] font-bold tracking-widest", config.color)}>
+                            <Badge variant={config.variant}>
                                 {config.label}
                             </Badge>
                             {getAppointmentTemporalLabel(appointment) && (

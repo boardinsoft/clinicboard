@@ -63,13 +63,16 @@ interface PatientDetailViewProps {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function PropertyItem({ label, value, className }: { label: string; value: string; className?: string }) {
+function PropertyItem({ label, value, className, mono }: { label: string; value: string; className?: string; mono?: boolean }) {
     return (
         <div className={cn("flex flex-col gap-1 py-1.5", className)}>
-            <span className="text-[11px] font-bold text-muted-foreground/70 font-sans">
+            <span className="text-[10px] font-bold text-neutral-8 uppercase tracking-wider font-sans">
                 {label}
             </span>
-            <span className="text-[13px] font-medium text-foreground/90 font-sans tracking-tight">
+            <span className={cn(
+                "text-[13px] font-medium text-foreground transition-colors",
+                mono ? "mono" : "font-sans tracking-tight"
+            )}>
                 {value || '—'}
             </span>
         </div>
@@ -139,10 +142,10 @@ export default function PatientDetailView({ patient, conditions: initialConditio
         router.refresh();
     };
 
-    const docId = (patient.identifiers as PatientIdentifier[] | null)?.[0]?.value;
-    const phone = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'phone')?.value;
-    const email = (patient.telecom as PatientTelecom[] | null)?.find(t => t.system === 'email')?.value;
-    const address = (patient.address as PatientAddress[] | null)?.[0]?.text;
+    const docId = Array.isArray(patient.identifiers) ? (patient.identifiers as PatientIdentifier[])[0]?.value : undefined;
+    const phone = Array.isArray(patient.telecom) ? (patient.telecom as PatientTelecom[]).find(t => t.system === 'phone')?.value : undefined;
+    const email = Array.isArray(patient.telecom) ? (patient.telecom as PatientTelecom[]).find(t => t.system === 'email')?.value : undefined;
+    const address = Array.isArray(patient.address) ? (patient.address as PatientAddress[])[0]?.text : undefined;
 
     const fullName = `${patient.name_family}, ${patient.name_given?.join(' ')}`;
 
@@ -157,9 +160,10 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                 ]}
                 actions={
                     <div className="flex items-center gap-2">
-                        <Badge variant={patient.active ? "pill-success" : "pill-muted"} className="text-[11px] mr-2">
-                            {patient.active ? 'Activo' : 'Inactivo'}
+                        <Badge variant={patient.active ? "pill-success" : "pill-neutral"}>
+                            {patient.active ? "Activo" : "Inactivo"}
                         </Badge>
+
                         <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold border-border gap-2 px-3 font-sans transition-colors duration-100" onClick={() => router.push(`/patients/${patient.id}/edit`)}>
                             <Edit className="w-3.5 h-3.5" /> Editar
                         </Button>
@@ -231,11 +235,11 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                 description="Información personal básica y documentos de identificación oficial."
                                 orientation="horizontal"
                             >
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 rounded-xl border border-border bg-card/30">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 rounded-lg border border-border bg-card/30">
                                     <PropertyItem label="Nombre completo" value={`${patient.name_given?.join(' ')} ${patient.name_family}`} />
-                                    <PropertyItem label="Cédula / ID" value={docId || '—'} />
-                                    <PropertyItem label="Fecha de nacimiento" value={formatDate(patient.birth_date)} />
-                                    <PropertyItem label="Edad actual" value={`${calcAge(patient.birth_date)} años`} />
+                                    <PropertyItem label="Cédula / ID" value={docId || '—'} mono />
+                                    <PropertyItem label="Fecha de nacimiento" value={formatDate(patient.birth_date)} mono />
+                                    <PropertyItem label="Edad actual" value={`${calcAge(patient.birth_date)} años`} mono />
                                     <PropertyItem label="Género" value={getGenderLabel(patient.gender)} />
                                 </div>
                             </PageSection>
