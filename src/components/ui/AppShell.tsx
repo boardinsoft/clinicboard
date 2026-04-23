@@ -39,11 +39,11 @@ import {
 } from '@/components/ui/resizable';
 
 import {
-  LayoutDashboard,
+  Home,
   Users,
+  Notebook,
   FileText,
-  Calendar,
-  Pill,
+  History,
   Bell,
   Moon,
   Sun,
@@ -70,6 +70,9 @@ import {
   BookOpen,
   Keyboard,
   Settings,
+  Pill,
+  Calendar,
+  LayoutDashboard,
 } from 'lucide-react';
 
 interface AppShellProps {
@@ -79,11 +82,11 @@ interface AppShellProps {
 }
 
 const navMain = [
-  { href: '/', label: 'Tablero', icon: LayoutDashboard },
+  { href: '/', label: 'Tablero', icon: Home },
   { href: '/patients', label: 'Pacientes', icon: Users },
-  { href: '/history', label: 'Historia Clínica', icon: FileText },
-  { href: '/appointments', label: 'Citas', icon: Calendar },
-  { href: '/prescriptions', label: 'Recetas', icon: Pill },
+  { href: '/appointments', label: 'Citas', icon: Notebook },
+  { href: '/history', label: 'Historia', icon: History },
+  { href: '/prescriptions', label: 'Recetas', icon: FileText },
 ];
 
 const QUICK_ACTIONS = [
@@ -134,13 +137,17 @@ function IconBtn({
           onClick={onClick}
           aria-label={label}
         >
-          <Icon size={16} strokeWidth={1.8} />
+          <Icon size={17} strokeWidth={1.8} />
           {showDot && (
             <span className="absolute top-[5px] right-[5px] w-[7px] h-[7px] bg-warning rounded-full border-[1.5px] border-n-1 animate-pulse-dot" />
           )}
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="bottom" className="text-[11px] font-medium bg-n-12 text-n-1 border-none shadow-md">
+      <TooltipContent 
+        side="bottom" 
+        sideOffset={12}
+        className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100"
+      >
         {label}
       </TooltipContent>
     </Tooltip>
@@ -198,10 +205,10 @@ function IconRail() {
 
   return (
     <aside
-      className="flex flex-col items-center w-14 h-full bg-n-1 shrink-0 z-20 border-r border-border/40"
+      className="flex flex-col items-center w-[56px] h-full bg-n-1 shrink-0 z-20 border-r border-border/40 py-[10px]"
       aria-label="Navegación principal"
     >
-      <nav className="flex flex-col flex-1 w-full pt-2">
+      <nav className="flex flex-col flex-1 w-full gap-1">
         {navMain.map((item) => {
           const isActive =
             item.href === '/'
@@ -210,7 +217,10 @@ function IconRail() {
           return (
             <Tooltip key={item.href}>
               <TooltipTrigger asChild>
-                <div className="w-full flex items-center justify-center py-0.5">
+                <div className="w-full flex items-center justify-center relative">
+                  {isActive && (
+                    <div className="absolute left-0 w-[3px] h-[18px] bg-b-8 rounded-r-[3px]" />
+                  )}
                   <button
                     onClick={() => {
                       if (item.href === '/') {
@@ -223,17 +233,21 @@ function IconRail() {
                       }
                     }}
                     className={cn(
-                      'flex h-9 w-9 items-center justify-center rounded-md transition-colors duration-100',
+                      'flex h-9 w-9 items-center justify-center rounded-[6px] transition-colors duration-100 relative',
                       isActive
-                        ? 'text-n-12 bg-n-2'
-                        : 'text-n-8 hover:bg-n-2 hover:text-n-11'
+                        ? 'text-b-8 bg-b-1 dark:bg-n-3'
+                        : 'text-n-8 hover:bg-n-3 hover:text-n-11'
                     )}
                   >
-                    <item.icon className="w-5 h-5" strokeWidth={1.8} />
+                    <item.icon size={17} strokeWidth={1.8} />
                   </button>
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="right" className="text-[11px] font-medium">
+              <TooltipContent 
+                side="right" 
+                sideOffset={12}
+                className="text-[11px] font-medium bg-n-11 text-n-1 dark:bg-n-4 dark:text-n-10 border-n-10 dark:border-n-6 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100"
+              >
                 {item.label}
               </TooltipContent>
             </Tooltip>

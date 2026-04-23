@@ -1,7 +1,6 @@
 "use client"
 
-import * as React from "react"
-import { ArchiveX, Command, File, Inbox, Send, Trash2 } from "lucide-react"
+import { ArchiveX, Command, File, Inbox, Send, Trash2, Home, Users, Notebook, History, FileText } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
 import { Label } from "@/components/ui/label"
@@ -29,33 +28,33 @@ const data = {
   },
   navMain: [
     {
-      title: "Inbox",
-      url: "#",
-      icon: Inbox,
+      title: "Tablero",
+      url: "/",
+      icon: Home,
       isActive: true,
     },
     {
-      title: "Drafts",
-      url: "#",
-      icon: File,
+      title: "Pacientes",
+      url: "/patients",
+      icon: Users,
       isActive: false,
     },
     {
-      title: "Sent",
-      url: "#",
-      icon: Send,
+      title: "Citas",
+      url: "/appointments",
+      icon: Notebook,
       isActive: false,
     },
     {
-      title: "Junk",
-      url: "#",
-      icon: ArchiveX,
+      title: "Historia",
+      url: "/history",
+      icon: History,
       isActive: false,
     },
     {
-      title: "Trash",
-      url: "#",
-      icon: Trash2,
+      title: "Recetas",
+      url: "/prescriptions",
+      icon: FileText,
       isActive: false,
     },
   ],
@@ -161,7 +160,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {/* This will make the sidebar appear as icons. */}
       <Sidebar
         collapsible="none"
-        className="!w-[calc(var(--sidebar-width-icon)_+_1px)] border-r"
+        className="!w-[calc(var(--sidebar-width-icon)_+_1px)] border-r py-[10px]"
       >
         <SidebarHeader>
           <SidebarMenu>
@@ -169,7 +168,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
                 <a href="#">
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <Command className="size-4" />
+                    <Command className="size-4" strokeWidth={1.8} />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">Acme Inc</span>
@@ -183,7 +182,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent className="px-1.5 md:px-0">
-              <SidebarMenu>
+              <SidebarMenu className="gap-1">
                 {data.navMain.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
@@ -205,7 +204,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       isActive={activeItem?.title === item.title}
                       className="px-2.5 md:px-2"
                     >
-                      <item.icon />
+                      <item.icon strokeWidth={1.8} />
                       <span>{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
