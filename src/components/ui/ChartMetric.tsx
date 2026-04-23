@@ -18,7 +18,6 @@ export function ChartMetric({
   diffValue,
   status = 'default',
   align = 'start',
-  tooltip,
   className,
   ...props
 }: ChartMetricProps) {

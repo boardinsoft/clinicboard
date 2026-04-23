@@ -13,10 +13,6 @@ interface ChartContentProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function ChartContent({
   children,
-  isEmpty = false,
-  emptyState,
-  loadingState,
-  disabledState,
   className,
   ...props
 }: ChartContentProps) {

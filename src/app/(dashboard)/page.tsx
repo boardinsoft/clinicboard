@@ -7,27 +7,23 @@ import {
   Timer,
   CalendarDays,
   Plus,
-  Activity,
   Clock,
   Stethoscope,
 } from 'lucide-react';
 import {
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Cell,
 } from 'recharts';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardAction } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge, badgeVariants } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WelcomeHeader } from '@/components/ui/WelcomeHeader';
 import { MetricCard } from '@/components/ui/MetricCard';
