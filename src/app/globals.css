@@ -96,6 +96,7 @@
 
   .dark {
     /* ── Escala Neutra (Slate Frío - Dark Overrides) ── */
+    /* Contraste reducido para minimizar fatiga visual */
     --n-1:  #0b0f15;   /* page bg */
     --n-2:  #11161f;   /* surface-75 */
     --n-3:  #161c27;   /* surface-100 */
@@ -105,19 +106,21 @@
     --n-7:  #3a4558;   /* border-strong */
     --n-8:  #596376;   /* muted text */
     --n-9:  #7a8496;   /* secondary text */
-    --n-10: #a0aabb;   /* strong text */
-    --n-11: #cbd2de;   /* heading */
-    --n-12: #eef1f5;   /* ink */
+    --n-10: #8a97ab;   /* strong text (reducido) */
+    --n-11: #9faab9;   /* heading (reducido de #cbd2de) */
+    --n-12: #b8c4d0;   /* ink (reducido de #eef1f5) */
 
     /* ── Brand Dark ── */
     --b-8:  #1fd4a8;
+    --b-9:  #1ac496;
 
     /* ── Semantic Colors Dark ── */
-    --s-success:     #1fd4a8;  --s-success-bg:  rgba(31, 212, 168, 0.15);  --s-success-br:  rgba(31, 212, 168, 0.4);
-    --s-warning:     #f59e0b;  --s-warning-bg:  rgba(245, 158, 11, 0.15);  --s-warning-br:  rgba(245, 158, 11, 0.4);
-    --s-danger:      #ef4444;  --s-danger-bg:   rgba(239, 68, 68, 0.15);   --s-danger-br:   rgba(239, 68, 68, 0.4);
-    --s-info:        #60a5fa;  --s-info-bg:     rgba(96, 165, 250, 0.15);  --s-info-br:     rgba(96, 165, 250, 0.4);
-    --s-neutral:     #9ca3af;  --s-neutral-bg:  rgba(156, 163, 175, 0.15); --s-neutral-br:  rgba(156, 163, 175, 0.4);
+    /* Opacidad reducida para reducir fatiga visual */
+    --s-success:     #1fd4a8;  --s-success-bg:  rgba(31, 212, 168, 0.12);  --s-success-br:  rgba(31, 212, 168, 0.3);
+    --s-warning:     #f59e0b;  --s-warning-bg:  rgba(245, 158, 11, 0.12);  --s-warning-br:  rgba(245, 158, 11, 0.3);
+    --s-danger:      #ef4444;  --s-danger-bg:   rgba(239, 68, 68, 0.12);   --s-danger-br:   rgba(239, 68, 68, 0.3);
+    --s-info:        #60a5fa;  --s-info-bg:     rgba(96, 165, 250, 0.12);  --s-info-br:     rgba(96, 165, 250, 0.3);
+    --s-neutral:     #9ca3af;  --s-neutral-bg:  rgba(156, 163, 175, 0.12); --s-neutral-br:  rgba(156, 163, 175, 0.3);
 
     /* ── Alias de Aplicación Dark ── */
     --background:              var(--n-1);
