@@ -17,14 +17,17 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from '@/components/ui/tooltip';
-import type { Patient } from '@/lib/fhir/types';
+import type { Tables } from '@/types/database.types';
+import type { Patient as PatientRow } from '@/types/database.types';
 import TableSearch from '@/components/ui/TableSearch';
 
 interface PatientsListViewProps {
-  patients: Patient[];
+  patients: Tables<'patients'>[];
   totalItems: number;
-  selectedPatientForPreview?: Patient | null;
-  onSelectPatientForPreview?: (p: Patient | null) => void;
+  page?: number;
+  pageSize?: number;
+  selectedPatientForPreview?: PatientRow | null;
+  onSelectPatientForPreview?: (p: PatientRow | null) => void;
 }
 
 interface PatientIdentifier {
@@ -38,23 +41,23 @@ interface PatientTelecom {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function getCI(p: Patient): string {
+function getCI(p: PatientRow): string {
   return Array.isArray(p.identifiers)
-    ? (p.identifiers as PatientIdentifier[])[0]?.value ?? '—'
+    ? (p.identifiers as unknown as PatientIdentifier[])[0]?.value ?? '—'
     : '—';
 }
 
-function getPhone(p: Patient): string {
+function getPhone(p: PatientRow): string {
   return Array.isArray(p.telecom)
-    ? (p.telecom as PatientTelecom[]).find(t => t.system === 'phone')?.value ?? '—'
+    ? (p.telecom as unknown as PatientTelecom[]).find(t => t.system === 'phone')?.value ?? '—'
     : '—';
 }
 
-function getFullName(p: Patient): string {
+function getFullName(p: PatientRow): string {
   return `${p.name_given?.join(' ') ?? ''} ${p.name_family ?? ''}`.trim();
 }
 
-function calcAge(birthDate?: string): string {
+function calcAge(birthDate?: string | null): string {
   if (!birthDate) return '—';
   const birth = new Date(birthDate);
   const today = new Date();
@@ -64,7 +67,7 @@ function calcAge(birthDate?: string): string {
   return `${age} años`;
 }
 
-function getGenderLabel(gender?: string): string {
+function getGenderLabel(gender?: string | null): string {
   switch (gender) {
     case 'male': return 'Masc.';
     case 'female': return 'Fem.';
@@ -103,7 +106,7 @@ export default function PatientsListView({
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const handleSelectPatient = (p: Patient) => {
+  const handleSelectPatient = (p: PatientRow) => {
     if (typeof onSelectPatientForPreview !== 'function') return;
     if (selectedPatientForPreview?.id === p.id) {
       onSelectPatientForPreview(null);

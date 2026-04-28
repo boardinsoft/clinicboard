@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prescriptionSchema } from '@/lib/schemas/prescription.schema';
 import { MedicationRequestStatus } from '@/lib/fhir/types';
+import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
 
 /**
  * createPrescription(data)

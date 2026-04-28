@@ -76,6 +76,7 @@ import {
   Pill,
   Calendar,
   LayoutDashboard,
+  AlertCircle,
 } from 'lucide-react';
 
 interface AppShellProps {
@@ -84,6 +85,7 @@ interface AppShellProps {
   practitioner?: Practitioner | null;
   clinics: Clinic[];
   initialClinic: Clinic | null;
+  emailConfirmed?: boolean;
 }
 
 const navMain = [
@@ -285,7 +287,7 @@ function SecondarySidebar() {
 }
 
 // ─── App Layout ───────────────────────────────────────────────────────────────
-function AppLayout({ children, user, practitioner, clinics, initialClinic }: AppShellProps) {
+function AppLayout({ children, user, practitioner, clinics, initialClinic, emailConfirmed }: AppShellProps) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { addTab, activeTabId } = useTabStore();
@@ -644,7 +646,13 @@ function AppLayout({ children, user, practitioner, clinics, initialClinic }: App
                 </div>
                 <div className="flex flex-col min-w-0">
                   <div className="text-[13px] font-bold text-n-12 truncate leading-tight mb-0.5">{displayName}</div>
-                  <div className="text-[12px] text-n-8 truncate mb-1.5">{user?.email}</div>
+                  <div className="text-[12px] text-n-8 truncate mb-1">{user?.email}</div>
+                  {!emailConfirmed && (
+                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-warning/10 border border-warning/30 text-warning text-[11px] font-semibold w-fit mb-1.5">
+                      <AlertCircle size={11} strokeWidth={2.5} />
+                      <span>Email no confirmado</span>
+                    </div>
+                  )}
                   <div className="text-[11px] text-n-8 mono uppercase tracking-tight">{specialty}</div>
                 </div>
               </div>

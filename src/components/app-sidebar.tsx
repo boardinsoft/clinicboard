@@ -1,5 +1,6 @@
 "use client"
 
+import React from 'react';
 import { ArchiveX, Command, File, Inbox, Send, Trash2, Home, Users, Notebook, History, FileText } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"

@@ -115,6 +115,7 @@ export type Database = {
       appointments: {
         Row: {
           appointment_type: string | null
+          clinic_id: string | null
           created_at: string | null
           description: string | null
           end_time: string
@@ -130,6 +131,7 @@ export type Database = {
         }
         Insert: {
           appointment_type?: string | null
+          clinic_id?: string | null
           created_at?: string | null
           description?: string | null
           end_time: string
@@ -145,6 +147,7 @@ export type Database = {
         }
         Update: {
           appointment_type?: string | null
+          clinic_id?: string | null
           created_at?: string | null
           description?: string | null
           end_time?: string
@@ -171,6 +174,13 @@ export type Database = {
             columns: ["practitioner_id"]
             isOneToOne: false
             referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
             referencedColumns: ["id"]
           },
         ]
@@ -415,6 +425,7 @@ export type Database = {
       encounters: {
         Row: {
           appointment_id: string
+          clinic_id: string | null
           created_at: string | null
           encounter_class: string | null
           encounter_category: string | null
@@ -431,6 +442,7 @@ export type Database = {
         }
         Insert: {
           appointment_id: string
+          clinic_id?: string | null
           created_at?: string | null
           encounter_class?: string | null
           encounter_category?: string | null
@@ -447,6 +459,7 @@ export type Database = {
         }
         Update: {
           appointment_id?: string
+          clinic_id?: string | null
           created_at?: string | null
           encounter_class?: string | null
           encounter_category?: string | null
@@ -481,6 +494,13 @@ export type Database = {
             columns: ["practitioner_id"]
             isOneToOne: false
             referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "encounters_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
             referencedColumns: ["id"]
           },
         ]
@@ -613,13 +633,16 @@ export type Database = {
           created_at?: string | null
           encrypted_notes?: string | null
           extensions?: Json | null
+          family_history?: Json | null
           fhir_id?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
+          habits?: Json | null
           id?: string
           identifiers?: Json | null
           name_family?: string
           name_given?: string[]
           practitioner_id?: string | null
+          personal_history?: Json | null
           telecom?: Json | null
           updated_at?: string | null
         }
@@ -684,6 +707,84 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      clinics: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          name: string
+          owner_practitioner_id: string | null
+          slug: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          name: string
+          owner_practitioner_id?: string | null
+          slug?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          owner_practitioner_id?: string | null
+          slug?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      clinic_practitioners: {
+        Row: {
+          active: boolean | null
+          clinic_id: string
+          created_at: string | null
+          id: string
+          is_owner: boolean | null
+          practitioner_id: string
+          role: string | null
+          role_id: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          clinic_id: string
+          created_at?: string | null
+          id?: string
+          is_owner?: boolean | null
+          practitioner_id: string
+          role?: string | null
+          role_id?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          clinic_id?: string
+          created_at?: string | null
+          id?: string
+          is_owner?: boolean | null
+          practitioner_id?: string
+          role?: string | null
+          role_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_practitioners_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_practitioners_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -26,6 +26,16 @@ export default async function DashboardLayout({
         .single();
 
     const clinics: Clinic[] = await getPractitionerClinics(supabase, practitioner?.id);
+
+    const hasOnboardingComplete = practitioner && clinics.length > 0;
+
+    if (!hasOnboardingComplete) {
+        if (!user.email_confirmed_at) {
+            redirect('/login?reason=email_unconfirmed');
+        }
+        redirect('/onboarding');
+    }
+
     const initialClinic: Clinic | null = clinics[0] || null;
 
     return (
@@ -35,6 +45,7 @@ export default async function DashboardLayout({
                 practitioner={practitioner}
                 clinics={clinics}
                 initialClinic={initialClinic}
+                emailConfirmed={!!user?.email_confirmed_at}
             >
                 {children}
             </AppShell>

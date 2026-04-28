@@ -78,3 +78,76 @@ export async function signOut() {
         redirect('/login');
     }, 'signOut');
 }
+
+export async function registerUser(email: string, password: string) {
+    if (!email || !password) {
+        logger.warn('Intento de registro sin credenciales completas');
+        return { error: 'Por favor, ingresa correo y contraseña' };
+    }
+
+    const passwordRequirements = [
+        { test: (p: string) => p.length >= 8, message: 'La contraseña debe tener al menos 8 caracteres' },
+        { test: (p: string) => /[A-Z]/.test(p), message: 'La contraseña debe tener al menos una mayúscula' },
+        { test: (p: string) => /[a-z]/.test(p), message: 'La contraseña debe tener al menos una minúscula' },
+        { test: (p: string) => /[0-9]/.test(p), message: 'La contraseña debe tener al menos un número' },
+        { test: (p: string) => /[^A-Za-z0-9]/.test(p), message: 'La contraseña debe tener al menos un carácter especial' },
+    ];
+
+    for (const req of passwordRequirements) {
+        if (!req.test(password)) {
+            return { error: req.message };
+        }
+    }
+
+    try {
+        const supabase = await createServerSupabaseClient();
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: emailExists } = await (supabase as any).rpc('check_email_exists', {
+            p_email: email.toLowerCase(),
+        });
+
+        if (emailExists) {
+            logger.security('Intento de registro con email ya existente', { email });
+            return { error: 'Este correo electrónico ya está registrado. ¿Ya tienes cuenta?' };
+        }
+
+        const { data, error } = await supabase.auth.signUp({
+            email: email.toLowerCase(),
+            password,
+            options: {
+                emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/onboarding`,
+                data: {
+                    registered_at: new Date().toISOString(),
+                }
+            }
+        });
+
+        if (error) {
+            logger.security('Intento de registro fallido', {
+                email,
+                errorCode: error.message,
+                errorStatus: error.status,
+            });
+            return { error: error.message };
+        }
+
+        logger.info('Registro iniciado', {
+            userId: data.user?.id,
+            email,
+        });
+
+        return {
+            success: true,
+            message: 'Se envío un enlace de confirmación a tu correo. Por favor, verifica tu bandeja de entrada.',
+            userId: data.user?.id
+        };
+    } catch (error) {
+        if (error && typeof error === 'object' && 'digest' in error) {
+            throw error;
+        }
+
+        logger.error('Error en registerUser', error);
+        return { error: 'Error inesperado. Por favor, intenta nuevamente.' };
+    }
+}
