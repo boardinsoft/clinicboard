@@ -7,6 +7,7 @@ export const encounterSchema = z.object({
     patient_id: z.string().uuid('ID de paciente inválido (se requiere UUID)'),
     practitioner_id: z.string().uuid('ID de profesional inválido (se requiere UUID)'),
     appointment_id: z.string().uuid('Se requiere una cita válida para crear un encuentro'),
+    clinic_id: z.string().uuid('ID de clínica inválido (se requiere UUID)'),
     encounter_class: z.enum(['AMB', 'IMP', 'EMER', 'HH'], {
         error: () => 'Clase debe ser AMB, IMP, EMER o HH',
     }),

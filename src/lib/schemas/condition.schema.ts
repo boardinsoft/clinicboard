@@ -4,6 +4,7 @@ export const ClinicalStatusEnum = z.enum(['active', 'recurrence', 'relapse', 'in
 
 export const conditionSchema = z.object({
     patient_id: z.string().uuid('Invalid patient ID (UUID required)'),
+    clinic_id: z.string().uuid('Invalid clinic ID (UUID required)'),
     code: z.string().min(1, 'ICD-10/SNOMED code is required'),
     code_display: z.string().min(1, 'Condition name is required'),
     clinical_status: ClinicalStatusEnum,

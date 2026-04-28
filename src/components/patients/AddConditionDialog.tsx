@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { createCondition } from '@/actions/conditions';
+import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import type { Condition } from '@/types/database.types';
 import {
     Dialog,
@@ -35,6 +36,7 @@ interface AddConditionDialogProps {
 
 export function AddConditionDialog({ patientId, open, onOpenChange, onSuccess }: AddConditionDialogProps) {
     const [saving, setSaving] = useState(false);
+    const { activeClinic } = useActiveClinic();
 
     const form = useForm<FormValues>({
         resolver: zodResolver(schema),
@@ -49,6 +51,7 @@ export function AddConditionDialog({ patientId, open, onOpenChange, onSuccess }:
                 code: values.code,
                 code_display: values.code_display,
                 onset_date: values.onset_date || undefined,
+                clinic_id: activeClinic?.id || '',
             });
 
             if (result.error) {

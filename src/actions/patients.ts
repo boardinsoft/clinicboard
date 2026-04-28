@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { patientSchema } from '@/lib/schemas/patient.schema';
 import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
+import type { Json } from '@/types/database.types';
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -248,10 +249,10 @@ export async function updatePatientAnamnesis(patientId: string, data: {
     const { error } = await supabase
         .from('patients')
         .update({
-            family_history,
-            personal_history: personal_history.length > 0 ? personal_history : null,
-            habits,
-            extensions
+            family_history: family_history as Json,
+            personal_history: personal_history.length > 0 ? personal_history as Json : null,
+            habits: habits as Json,
+            extensions: extensions as Json
         })
         .eq('id', patientId)
         .eq('practitioner_id', practitionerId);

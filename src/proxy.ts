@@ -59,7 +59,10 @@ export async function proxy(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
-    const isPublicRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/auth');
+    const isPublicRoute = request.nextUrl.pathname.startsWith('/login') ||
+        request.nextUrl.pathname.startsWith('/auth') ||
+        request.nextUrl.pathname.startsWith('/register') ||
+        request.nextUrl.pathname.startsWith('/onboarding');
 
     // === SESSION TIMEOUT CHECK ===
     // Verificar timeout de inactividad (10 minutos) para usuarios autenticados
@@ -112,12 +115,14 @@ export async function proxy(request: NextRequest) {
     }
 
     if (user && isPublicRoute) {
-        // user is logged in, redirect to dashboard if trying to access login
+        const isOnboardingRoute = request.nextUrl.pathname.startsWith('/onboarding');
+        if (isOnboardingRoute) {
+            return supabaseResponse;
+        }
         const url = request.nextUrl.clone();
-        url.pathname = '/';
+        url.pathname = '/dashboard';
         const redirectResponse = NextResponse.redirect(url);
 
-        // Preserve cookies setup by createServerClient
         supabaseResponse.cookies.getAll().forEach((cookie) => {
             redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
         });

@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { createAllergy } from '@/actions/allergies';
+import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import type { AllergyIntolerance } from '@/types/database.types';
 import {
     Dialog,
@@ -53,6 +54,7 @@ interface AddAllergyDialogProps {
 
 export function AddAllergyDialog({ patientId, open, onOpenChange, onSuccess }: AddAllergyDialogProps) {
     const [saving, setSaving] = useState(false);
+    const { activeClinic } = useActiveClinic();
 
     const form = useForm<FormValues>({
         resolver: zodResolver(schema),
@@ -75,6 +77,7 @@ export function AddAllergyDialog({ patientId, open, onOpenChange, onSuccess }: A
                 allergy_type: values.allergy_type,
                 category: values.category,
                 criticality: values.criticality,
+                clinic_id: activeClinic?.id || '',
             });
 
             if (result.error) {

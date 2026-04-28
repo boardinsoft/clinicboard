@@ -285,7 +285,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                                     {c.code} · Iniciado el {formatDate(c.onset_date)}
                                                 </p>
                                             </div>
-                                            <Badge variant={c.clinical_status === 'active' ? 'pill-success' : 'pill-muted'} className="text-[11px]">
+                                            <Badge variant={c.clinical_status === 'active' ? 'pill-success' : 'pill-neutral'} className="text-[11px]">
                                                 {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
                                             </Badge>
                                         </div>

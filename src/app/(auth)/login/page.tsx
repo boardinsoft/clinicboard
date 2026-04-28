@@ -44,6 +44,15 @@ export default function LoginPage() {
     },
   })
 
+  React.useEffect(() => {
+    const subscription = form.watch((_, { name }) => {
+      if (name === 'email') {
+        form.setValue('password', '', { shouldValidate: false });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   async function onSubmit(values: LoginFormValues) {
     setLoading(true)
     setErrorMsg(null)
@@ -186,7 +195,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/20 transition-all duration-300 active:scale-[0.98] h-11"
-              disabled={loading}
+              disabled={loading || !form.formState.isValid}
             >
               {loading ? (
                 <>
@@ -200,12 +209,12 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-sm text-muted-foreground">
-            ¿No estás registrado?{" "}
+            ¿No tienes cuenta?{' '}
             <Link
-              href="/#contacto"
-              className="text-primary underline-offset-4 hover:underline font-medium"
+              href="/register"
+              className="text-b-8 underline-offset-4 hover:underline font-medium"
             >
-              Contacta con ventas
+              Crea tu clínica
             </Link>
           </p>
 

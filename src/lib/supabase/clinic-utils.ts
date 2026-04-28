@@ -9,7 +9,18 @@ export interface Clinic {
     role_name?: string;
 }
 
-export async function getPractitionerClinics(supabase: SupabaseClient<Database>, practitionerId: string): Promise<Clinic[]> {
+interface ClinicPractitionerRow {
+    clinic_id: string;
+    active: boolean | null;
+    role: string | null;
+    clinics: {
+        id: string;
+        name: string;
+        slug: string | null;
+    };
+}
+
+export async function getPractitionerClinics(supabase: SupabaseClient<Database>, practitionerId: string | undefined): Promise<Clinic[]> {
     if (!practitionerId) return [];
 
     const { data, error } = await supabase
@@ -17,14 +28,11 @@ export async function getPractitionerClinics(supabase: SupabaseClient<Database>,
         .select(`
             clinic_id,
             active,
-            role_id,
-            clinics!inner (
+            role,
+            clinics (
                 id,
                 name,
                 slug
-            ),
-            roles!inner (
-                name
             )
         `)
         .eq('practitioner_id', practitionerId)
@@ -37,12 +45,12 @@ export async function getPractitionerClinics(supabase: SupabaseClient<Database>,
 
     if (!data || data.length === 0) return [];
 
-    return data.map((cp: any) => ({
+    return data.map((cp: ClinicPractitionerRow) => ({
         id: cp.clinics.id,
         name: cp.clinics.name,
-        slug: cp.clinics.slug,
-        active: cp.active,
-        role_name: cp.roles?.name,
+        slug: cp.clinics.slug ?? '',
+        active: cp.active ?? false,
+        role_name: cp.role ?? undefined,
     }));
 }
 

@@ -334,7 +334,6 @@ export async function cancelAppointment(id: string, reason: string) {
         .update({
             status: 'cancelled',
             description: `Cancelación: ${reason}`,
-            cancellation_reason: reason
         })
         .eq('id', id)
         .eq('practitioner_id', practitionerId)
@@ -452,10 +451,10 @@ export async function markNoShow(id: string) {
         return { error: 'No autorizado' };
     }
 
-    // Check current status
+// Check current status
     const { data: currentAppt } = await supabase
         .from('appointments')
-        .select('status, end_time')
+        .select('status, clinic_id, end_time')
         .eq('id', id)
         .single();
 
@@ -564,7 +563,7 @@ export async function rescheduleAppointment(id: string, newStartTime: string, ne
     // Check current status
     const { data: currentAppt } = await supabase
         .from('appointments')
-        .select('status')
+        .select('status, clinic_id')
         .eq('id', id)
         .single();
 
@@ -587,7 +586,7 @@ export async function rescheduleAppointment(id: string, newStartTime: string, ne
     const overlapResult = await checkOverlap(
         supabase,
         practitionerId,
-        currentAppt.clinic_id,
+        currentAppt?.clinic_id || '',
         newStartTime,
         newEndTime,
         id
@@ -606,7 +605,7 @@ export async function rescheduleAppointment(id: string, newStartTime: string, ne
         })
         .eq('id', id)
         .eq('practitioner_id', practitionerId)
-        .eq('clinic_id', currentAppt.clinic_id)
+        .eq('clinic_id', currentAppt?.clinic_id || '')
         .eq('status', currentStatus)
         .select()
         .single();
@@ -644,7 +643,6 @@ export async function cleanupExpiredAppointments() {
         .update({
             status: 'cancelled',
             description: 'Cancelación automática: La cita expiró sin ser confirmada o atendida.',
-            cancellation_reason: 'Expiración automática del sistema'
         })
         .eq('practitioner_id', practitionerId)
         .in('status', ['proposed', 'pending'])
@@ -704,6 +702,8 @@ export async function startConsultationFromAppointment(appointmentId: string, de
         .single();
 
     if (apptError || !appt) return { error: 'Cita no encontrada o sin permisos.' };
+
+    if (!appt.clinic_id) return { error: 'La cita no tiene clínica asociada.' };
 
     const currentStatus = (appt.status as AppointmentStatus) || 'proposed';
     if (!['booked', 'arrived'].includes(currentStatus)) {

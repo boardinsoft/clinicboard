@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Appointment, AppointmentStatus } from '@/types/database.types';
+import { Appointment, AppointmentStatus } from '@/lib/fhir/types';
 import {
     Kanban,
     KanbanBoard,
@@ -16,7 +16,7 @@ import { formatTime, formatRelativeTime, nowInVE } from '@/lib/date-utils';
 interface AppointmentsKanbanProps {
     appointments: Appointment[];
     onSelect: (id: string) => void;
-    selectedId?: string;
+    selectedId?: string | null;
 }
 
 const COLUMNS: { id: string; title: string; statuses: AppointmentStatus[] }[] = [

@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { createWalkInAppointment } from '@/actions/appointments';
+import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import { Loader2, Zap } from 'lucide-react';
 import { PatientSearchField } from '@/components/patients/PatientSearchField';
 
@@ -68,6 +69,7 @@ export default function NewWalkInDialog({
 }: NewWalkInDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [alertError, setAlertError] = useState<string | null>(null);
+    const { activeClinic } = useActiveClinic();
 
     const form = useForm<WalkInFormValues>({
         defaultValues: {
@@ -89,7 +91,8 @@ export default function NewWalkInDialog({
             const result = await createWalkInAppointment({
                 patient_id: values.patient_id,
                 appointment_type: values.appointment_type,
-                description: values.description
+                description: values.description,
+                clinic_id: activeClinic?.id || ''
             });
             
             if (result.error) {

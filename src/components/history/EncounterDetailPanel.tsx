@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 import { getClinicalNote } from '@/actions/clinicalNotes';
 import { getAddenda } from '@/actions/encounters';
 import { formatDate, formatTime } from '@/lib/date-utils';
