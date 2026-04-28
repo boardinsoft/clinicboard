@@ -8,7 +8,7 @@ import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
 
 /**
  * createCondition(data)
- * Guard auth, validate with conditionSchema, verify patient ownership, 
+ * Guard auth, validate with conditionSchema, verify patient ownership,
  * insert with clinical_status='active', verification_status='confirmed'.
  */
 export async function createCondition(formData: {
@@ -17,6 +17,7 @@ export async function createCondition(formData: {
     code_display: string;
     onset_date?: string;
     note?: string;
+    clinic_id: string;
 }) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
@@ -25,12 +26,17 @@ export async function createCondition(formData: {
         return { error: 'No autorizado. Perfil de profesional no encontrado.' };
     }
 
-    // 1. Verify patient ownership (practitioner_id)
+    if (!formData.clinic_id) {
+        return { error: 'Clínica no especificada.' };
+    }
+
+    // 1. Verify patient ownership (practitioner_id + clinic_id)
     const { data: patient, error: patientError } = await supabase
         .from('patients')
         .select('id')
         .eq('id', formData.patient_id)
         .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', formData.clinic_id)
         .single();
 
     if (patientError || !patient) {
@@ -55,6 +61,7 @@ export async function createCondition(formData: {
         .from('conditions')
         .insert([{
             patient_id: validation.data.patient_id,
+            clinic_id: validation.data.clinic_id,
             clinical_status: validation.data.clinical_status,
             verification_status: validation.data.verification_status,
             code: validation.data.code,
@@ -120,20 +127,26 @@ export async function updateConditionStatus(id: string, clinical_status: 'active
  * getConditionsByPatient(patientId)
  * Query by patient_id, join with patients for ownership, order by created_at DESC.
  */
-export async function getConditionsByPatient(patientId: string) {
+export async function getConditionsByPatient(patientId: string, clinicId?: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
+    if (!practitionerId) {
         return { error: 'No autorizado' };
     }
 
-    const { data, error } = await supabase
+    let query = supabase
         .from('conditions')
         .select('*, patients!inner(practitioner_id)')
         .eq('patient_id', patientId)
-        .eq('patients.practitioner_id', user.id)
+        .eq('patients.practitioner_id', practitionerId)
         .order('created_at', { ascending: false });
+
+    if (clinicId) {
+        query = query.eq('clinic_id', clinicId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error('Error in getConditionsByPatient:', error);

@@ -4,8 +4,10 @@ import React, { ReactNode, useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { signOut } from '@/actions/auth';
+import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import type { User } from '@supabase/supabase-js';
 import type { Practitioner } from '@/types/database.types';
+import type { Clinic } from '@/lib/supabase/clinic-utils';
 import TabBar from './TabBar';
 import { useTabStore } from '@/store/useTabStore';
 import TabContentManager from './TabContentManager';
@@ -37,6 +39,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
+import { ClinicChangeModal } from '@/components/ui/ClinicChangeModal';
+import { Loader2 } from 'lucide-react';
 
 import {
   Home,
@@ -64,7 +68,6 @@ import {
   Server,
   Network,
   ChevronsUpDown,
-  Plus,
   Globe,
   ShieldCheck,
   BookOpen,
@@ -79,6 +82,8 @@ interface AppShellProps {
   children: ReactNode;
   user?: User | null;
   practitioner?: Practitioner | null;
+  clinics: Clinic[];
+  initialClinic: Clinic | null;
 }
 
 const navMain = [
@@ -280,18 +285,22 @@ function SecondarySidebar() {
 }
 
 // ─── App Layout ───────────────────────────────────────────────────────────────
-function AppLayout({ children, user, practitioner }: AppShellProps) {
+function AppLayout({ children, user, practitioner, clinics, initialClinic }: AppShellProps) {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { addTab, activeTabId } = useTabStore();
   const { rightPanelOpen, toggleRightPanel } = useLayoutStore();
   const { theme, setTheme } = useTheme();
+  const { activeClinic, setActiveClinic, isChangingClinic } = useActiveClinic();
 
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [showChangeModal, setShowChangeModal] = useState(false);
+  const [pendingClinic, setPendingClinic] = useState<Clinic | null>(null);
+  const [changeError, setChangeError] = useState<string | null>(null);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const displayName =
@@ -346,8 +355,51 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
     router.push(result.url);
   };
 
+  const handleClinicSelect = (clinic: Clinic) => {
+    if (clinic.id === activeClinic?.id) return;
+    setPendingClinic(clinic);
+    setChangeError(null);
+    setShowChangeModal(true);
+  };
+
+  const handleConfirmClinicChange = async () => {
+    if (!pendingClinic) return;
+    try {
+      setChangeError(null);
+      await setActiveClinic(pendingClinic);
+      setShowChangeModal(false);
+      setPendingClinic(null);
+    } catch {
+      setChangeError('Error al cambiar de clínica. Intenta de nuevo.');
+    }
+  };
+
+  const handleCancelClinicChange = () => {
+    setShowChangeModal(false);
+    setPendingClinic(null);
+    setChangeError(null);
+  };
+
   return (
     <div className="flex flex-col w-full h-screen overflow-hidden bg-background text-foreground">
+      {isChangingClinic && (
+        <div className="clinic-change-overlay">
+          <div className="clinic-change-spinner">
+            <Loader2 className="h-8 w-8 text-b-8 animate-spin" />
+            <p className="text-sm font-medium text-white">Cambiando de clínica...</p>
+          </div>
+        </div>
+      )}
+
+      <ClinicChangeModal
+        isOpen={showChangeModal}
+        currentClinic={activeClinic}
+        targetClinic={pendingClinic}
+        isLoading={isChangingClinic}
+        error={changeError}
+        onConfirm={handleConfirmClinicChange}
+        onCancel={handleCancelClinicChange}
+      />
 
       {/* ══ WORKSPACE BAR (Topbar) ═════════════════════════════════════════════ */}
       <header
@@ -372,38 +424,45 @@ function AppLayout({ children, user, practitioner }: AppShellProps) {
           {/* Clínica Selector (Meso: px-3, gap-2) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button 
+              <button
                 aria-label="Seleccionar organización activa"
                 className="flex items-center gap-2 px-3 py-1.5 rounded-[5px] hover:bg-n-3 dark:hover:bg-n-2 transition-all outline-none group"
+                disabled={isChangingClinic}
               >
-                <Building2 size={13} className="text-n-9 group-hover:text-n-11 transition-colors" strokeWidth={1.8} />
+                {isChangingClinic ? (
+                  <Loader2 size={13} className="text-b-8 animate-spin" strokeWidth={1.8} />
+                ) : (
+                  <Building2 size={13} className="text-n-9 group-hover:text-n-11 transition-colors" strokeWidth={1.8} />
+                )}
                 <span className="text-[13px] font-medium text-n-11 dark:text-n-11 truncate max-w-[160px]">
-                  Clínica San Rafael
+                  {activeClinic?.name || 'Sin clínica'}
                 </span>
                 <ChevronsUpDown size={12} className="text-n-8 dark:text-n-9 ml-0.5" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-60 rounded-lg shadow-lg border-n-5 p-1 bg-popover">
               <div className="px-3 py-2 border-b border-n-4">
-                <h4 className="text-[10px] uppercase tracking-wider text-n-9 dark:text-n-10 font-bold">Mis Organizaciones</h4>
+                <h4 className="text-[10px] uppercase tracking-wider text-n-9 dark:text-n-10 font-bold">Clínicas Vinculadas</h4>
               </div>
               <div className="p-1">
-                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] bg-n-2 dark:bg-n-3 text-n-12 dark:text-n-11 font-medium cursor-pointer hover:bg-n-3 dark:hover:bg-n-4 transition-colors">
-                  <Building2 size={14} strokeWidth={1.8} />
-                  <span className="flex-1">Clínica San Rafael</span>
-                  <Activity size={12} className="text-b-8" />
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-11 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 cursor-pointer transition-colors">
-                  <Building2 size={14} className="text-n-9 dark:text-n-10" strokeWidth={1.8} />
-                  <span className="flex-1">Hospital Central</span>
-                </DropdownMenuItem>
-              </div>
-              <DropdownMenuSeparator className="bg-n-4 dark:bg-n-5 my-1" />
-              <div className="p-1">
-                <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 font-medium hover:bg-n-3 dark:hover:bg-n-2 cursor-pointer transition-colors">
-                  <Plus size={14} className="text-n-9 dark:text-n-10" strokeWidth={2} />
-                  <span>Agregar clínica</span>
-                </DropdownMenuItem>
+                {clinics.map((clinic) => (
+                  <DropdownMenuItem
+                    key={clinic.id}
+                    onClick={() => handleClinicSelect(clinic)}
+                    className={cn(
+                      'flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] cursor-pointer transition-colors',
+                      activeClinic?.id === clinic.id
+                        ? 'bg-n-2 dark:bg-n-3 text-n-12 dark:text-n-11 font-medium'
+                        : 'text-n-11 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2'
+                    )}
+                  >
+                    <Building2 size={14} strokeWidth={1.8} className={activeClinic?.id === clinic.id ? 'text-b-8' : 'text-n-9'} />
+                    <span className="flex-1">{clinic.name}</span>
+                    {activeClinic?.id === clinic.id && (
+                      <Activity size={12} className="text-b-8" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
               </div>
             </DropdownMenuContent>
           </DropdownMenu>

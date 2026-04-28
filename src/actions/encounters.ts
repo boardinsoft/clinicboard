@@ -58,11 +58,14 @@ export async function createEncounter(formData: {
     status?: EncounterStatus;
     encounter_category?: string;
     encounter_subcategory?: string;
+    clinic_id: string;
 }) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
 
     if (!practitionerId) return { error: 'No autorizado. Perfil de profesional no encontrado.' };
+
+    if (!formData.clinic_id) return { error: 'Clínica no especificada.' };
 
     const encounterData = {
         ...formData,
@@ -73,12 +76,13 @@ export async function createEncounter(formData: {
     const validation = encounterSchema.safeParse(encounterData);
     if (!validation.success) return { error: z.flattenError(validation.error).fieldErrors };
 
-    // Verificar que la cita existe y pertenece al practitioner
+    // Verificar que la cita existe y pertenece al practitioner y clínica
     const { data: appt, error: apptError } = await supabase
         .from('appointments')
-        .select('id, patient_id')
+        .select('id, patient_id, clinic_id')
         .eq('id', formData.appointment_id)
         .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', formData.clinic_id)
         .single();
 
     if (apptError || !appt) {
@@ -91,6 +95,7 @@ export async function createEncounter(formData: {
         .insert([{
             patient_id: validation.data.patient_id,
             practitioner_id: practitionerId,
+            clinic_id: validation.data.clinic_id,
             encounter_class: validation.data.encounter_class,
             encounter_category: validation.data.encounter_category,
             encounter_subcategory: validation.data.encounter_subcategory,
@@ -110,6 +115,7 @@ export async function createEncounter(formData: {
             encounter_id: encounter.id,
             patient_id: validation.data.patient_id,
             practitioner_id: practitionerId,
+            clinic_id: validation.data.clinic_id,
             is_finalized: false,
         }])
         .select()
@@ -277,6 +283,7 @@ export async function getEncountersFiltered(filters?: {
     status?: string;
     date_from?: string;
     date_to?: string;
+    clinicId?: string;
 }): Promise<{ data: EncounterWithClinicalNote[] }> {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
@@ -294,6 +301,10 @@ export async function getEncountersFiltered(filters?: {
         .eq('practitioner_id', practitionerId)
         .order('start_time', { ascending: false })
         .limit(50);
+
+    if (filters?.clinicId) {
+        query = query.eq('clinic_id', filters.clinicId);
+    }
 
     if (filters?.status) {
         query = query.eq('status', filters.status as Database['public']['Enums']['encounter_status']);
