@@ -43,8 +43,17 @@ export const VENEZUELA_CITIES: Record<string, string[]> = {
 };
 
 export const profileStepSchema = z.object({
-    name_given: z.array(z.string()).min(1, 'Al menos un nombre es requerido'),
-    name_family: z.string().min(1, 'Apellido es requerido'),
+    name_given: z.array(z.string())
+        .min(1, 'Al menos un nombre es requerido')
+        .max(50, 'El nombre no puede exceder 50 caracteres')
+        .refine(
+            (val) => val.every((n) => /^[a-zA-ZáéíóúñÑ\s-]+$/.test(n)),
+            'Solo letras, espacios y guiones'
+        ),
+    name_family: z.string()
+        .min(1, 'Apellido es requerido')
+        .max(50, 'El apellido no puede exceder 50 caracteres')
+        .refine((val) => /^[a-zA-ZáéíóúñÑ\s-]+$/.test(val), 'Solo letras, espacios y guiones'),
     specialty: z.string().optional(),
     gender: z.enum(['male', 'female', 'other', 'unknown']).optional(),
     license_number: z.string()

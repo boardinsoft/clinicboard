@@ -38,7 +38,7 @@ export const OnboardingStepComplete = forwardRef<OnboardingStepCompleteRef, Onbo
                     </div>
                     <CardTitle className="text-base font-semibold text-foreground">¡Todo listo!</CardTitle>
                     <CardDescription className="text-[13px] text-n-8 mt-1">
-                        Tu clínica <span className="font-medium text-foreground">{clinic?.name}</span> está configurada
+                        Estás a punto de crear tu clínica <span className="font-medium text-foreground">{clinic?.name}</span>
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -63,17 +63,22 @@ export const OnboardingStepComplete = forwardRef<OnboardingStepCompleteRef, Onbo
                             </div>
                             <div>
                                 <p className="text-[13px] font-medium text-foreground">{clinic?.name}</p>
-                                <p className="text-[11px] text-n-8 font-mono">clinicboard.app/{clinic?.slug}</p>
+                                <p className="text-[11px] text-n-8 font-mono">{clinic?.slug}.clinicboard.app</p>
                             </div>
                         </div>
 
-                        {location?.address && (
+                        {location && (location.address || location.phone) && (
                             <div className="flex items-start gap-3">
                                 <div className="w-8 h-8 rounded-[6px] bg-n-3 flex items-center justify-center">
                                     <MapPin className="w-4 h-4 text-n-8" />
                                 </div>
                                 <div>
-                                    <p className="text-[13px] font-medium text-foreground">{location.address}</p>
+                                    <p className="text-[13px] font-medium text-foreground">
+                                        {[location.city, location.state].filter(Boolean).join(', ')}
+                                    </p>
+                                    {location.address && (
+                                        <p className="text-[11px] text-n-8">{location.address}</p>
+                                    )}
                                     {location.phone && (
                                         <p className="text-[11px] text-n-8 font-mono">{location.phone}</p>
                                     )}

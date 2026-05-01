@@ -201,17 +201,25 @@ export async function createClinicAsAdmin(input: CreateClinicAsAdminInput) {
     }
 }
 
-export async function checkSlugAvailability(slug: string) {
+export async function checkSlugAvailability(slug: string, name?: string) {
     try {
         const supabase = await createServerSupabaseClient();
 
-        const { data } = await supabase
+        const { data: existingClinic } = await supabase
             .from('clinics')
-            .select('id')
-            .eq('slug', slug.toLowerCase())
+            .select('id, name, slug')
+            .or(`slug.ilike.${slug.toLowerCase()}${name ? `,name.ilike.${name}` : ''}`)
             .single();
 
-        return { available: !data };
+        if (existingClinic) {
+            const conflict = existingClinic.slug?.toLowerCase() === slug.toLowerCase() ? 'slug' : 'name';
+            return { 
+                available: false, 
+                conflict 
+            };
+        }
+
+        return { available: true };
     } catch {
         return { available: false, error: 'Error al verificar disponibilidad' };
     }
