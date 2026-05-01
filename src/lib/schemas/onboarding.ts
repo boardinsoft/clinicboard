@@ -72,7 +72,7 @@ export const clinicStepSchema = z.object({
     slug: z.string()
         .min(3, 'El slug debe tener al menos 3 caracteres')
         .max(30, 'El slug no puede exceder 30 caracteres')
-        .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Solo letras minúsculas, números y guiones (no consecutivos)')
+        .regex(/^[a-z]+(?:-[a-z]+)*$/, 'Solo letras minúsculas y guiones (no consecutivos)')
         .refine((val) => !val.startsWith('-') && !val.endsWith('-'), 'No comenzar ni terminar con guión')
         .refine((val) => !RESERVED_SLUGS.includes(val), 'Esta URL no está disponible'),
 });
@@ -113,7 +113,7 @@ export function generateSlug(name: string): string {
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/[^a-z\s-]/g, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
         .substring(0, 30);

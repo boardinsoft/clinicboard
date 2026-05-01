@@ -8,6 +8,8 @@ import {
     DialogContent,
     DialogTitle,
     DialogDescription,
+    DialogHeader,
+    DialogFooter,
 } from '@/components/ui/dialog';
 import { OnboardingSidebar } from './OnboardingSidebar';
 import { OnboardingStepProfile } from './OnboardingStepProfile';
@@ -16,7 +18,7 @@ import { OnboardingStepLocation } from './OnboardingStepLocation';
 import { OnboardingStepComplete } from './OnboardingStepComplete';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
-import type { ProfileStepData, ClinicStepData, LocationStepData, OnboardingState } from '@/lib/schemas/onboarding';
+import type { ProfileStepData, ClinicStepData, LocationStepData } from '@/lib/schemas/onboarding';
 import { saveOnboardingState, clearOnboardingState } from '@/lib/schemas/onboarding';
 import type { OnboardingStepProfileRef } from './OnboardingStepProfile';
 import type { OnboardingStepClinicRef } from './OnboardingStepClinic';
@@ -75,6 +77,8 @@ export function OnboardingDialog({
     }));
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
+    const [showCloseConfirm, setShowCloseConfirm] = React.useState(false);
+    const [isClinicAvailable, setIsClinicAvailable] = React.useState(true);
 
     const profileRef = React.useRef<OnboardingStepProfileRef>(null);
     const clinicRef = React.useRef<OnboardingStepClinicRef>(null);
@@ -85,12 +89,16 @@ export function OnboardingDialog({
 
     const handleStepChange = (stepId: StepId) => {
         setCurrentStep(stepId);
+        if (stepId === 'clinic') {
+            setIsClinicAvailable(true);
+        }
     };
 
     const handleProfileSubmit = (data: ProfileStepData) => {
         const newState = { ...stepData, profile: data };
         setStepData(newState);
         setCurrentStep('clinic');
+        setIsClinicAvailable(true);
         if (userId) {
             saveOnboardingState({ userId, currentStep: 2, profile: data });
         }
@@ -114,10 +122,25 @@ export function OnboardingDialog({
         }
     };
 
+    const handleOpenChange = (newOpen: boolean) => {
+        if (!newOpen && currentStep !== 'complete' && !isLoading) {
+            setShowCloseConfirm(true);
+        } else {
+            onOpenChange(newOpen);
+        }
+    };
+
     const handleBack = () => {
         const currentIndex = steps.findIndex((s) => s.id === currentStep);
         if (currentIndex > 0) {
             setCurrentStep(steps[currentIndex - 1].id);
+        }
+    };
+
+    const handleCloseConfirm = (confirmed: boolean) => {
+        setShowCloseConfirm(false);
+        if (confirmed) {
+            onOpenChange(false);
         }
     };
 
@@ -161,7 +184,6 @@ export function OnboardingDialog({
     };
 
     const canGoBack = currentStepIndex > 0;
-    const isLastStep = currentStep === 'complete';
 
     const renderStepContent = () => {
         switch (currentStep) {
@@ -179,6 +201,7 @@ export function OnboardingDialog({
                         ref={clinicRef}
                         defaultValues={stepData.clinic || undefined}
                         onSubmit={handleClinicSubmit}
+                        onAvailabilityChange={setIsClinicAvailable}
                     />
                 );
             case 'location':
@@ -204,79 +227,108 @@ export function OnboardingDialog({
     const continueButtonText = currentStep === 'complete' ? 'Ir al Tablero' : 'Continuar';
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="p-0 max-w-4xl max-h-[90vh] overflow-hidden rounded-[8px] border border-n-5">
-                <DialogTitle className="sr-only">
-                    Onboarding de ClinicBoard
-                </DialogTitle>
-                <DialogDescription className="sr-only">
-                    Configura tu perfil profesional y clínica
-                </DialogDescription>
+        <>
+            <Dialog open={open} onOpenChange={handleOpenChange}>
+                <DialogContent className="p-0 max-w-4xl max-h-[90vh] overflow-hidden rounded-[8px] border border-n-5">
+                    <DialogTitle className="sr-only">
+                        Onboarding de ClinicBoard
+                    </DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Configura tu perfil profesional y clínica
+                    </DialogDescription>
 
-                <div className="flex h-[600px]">
-                    <OnboardingSidebar
-                        currentStep={currentStep}
-                        onStepChange={(stepId) => handleStepChange(stepId as StepId)}
-                        completedSteps={[
-                            stepData.profile ? 'profile' : null,
-                            stepData.clinic ? 'clinic' : null,
-                            stepData.location ? 'location' : null,
-                        ].filter(Boolean) as StepId[]}
-                    />
+                    <div className="flex h-[600px]">
+                        <OnboardingSidebar
+                            currentStep={currentStep}
+                            onStepChange={(stepId) => handleStepChange(stepId as StepId)}
+                            completedSteps={[
+                                stepData.profile ? 'profile' : null,
+                                stepData.clinic ? 'clinic' : null,
+                                stepData.location ? 'location' : null,
+                            ].filter(Boolean) as StepId[]}
+                        />
 
-                    <div className="flex-1 flex flex-col">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={currentStep}
-                                initial="initial"
-                                animate="enter"
-                                exit="exit"
-                                variants={pageVariants}
-                                transition={pageTransition}
-                                className="flex-1 p-6 overflow-y-auto"
-                            >
-                                {error && (
-                                    <div className="mb-4 p-3 bg-destructive/5 border border-destructive/20 rounded-md text-[13px] text-destructive">
-                                        {error}
-                                    </div>
-                                )}
-                                {renderStepContent()}
-                            </motion.div>
-                        </AnimatePresence>
+                        <div className="flex-1 flex flex-col">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentStep}
+                                    initial="initial"
+                                    animate="enter"
+                                    exit="exit"
+                                    variants={pageVariants}
+                                    transition={pageTransition}
+                                    className="flex-1 p-6 overflow-y-auto"
+                                >
+                                    {error && (
+                                        <div className="mb-4 p-3 bg-destructive/5 border border-destructive/20 rounded-md text-[13px] text-destructive">
+                                            {error}
+                                        </div>
+                                    )}
+                                    {renderStepContent()}
+                                </motion.div>
+                            </AnimatePresence>
 
-                        <div className="p-6 border-t border-n-5 bg-n-2">
-                            <div className="flex items-center gap-3">
-                                {canGoBack && (
+                            <div className="p-6 border-t border-n-5 bg-n-2">
+                                <div className="flex items-center gap-3">
+                                    {canGoBack && (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={handleBack}
+                                            className="flex items-center gap-2"
+                                        >
+                                            <ArrowLeft className="w-4 h-4" />
+                                            Atrás
+                                        </Button>
+                                    )}
+                                    <div className="flex-1" />
                                     <Button
                                         type="button"
-                                        variant="outline"
-                                        onClick={handleBack}
+                                        variant="default"
+                                        onClick={handleContinue}
                                         className="flex items-center gap-2"
+                                        disabled={isLoading || (currentStep === 'clinic' && !isClinicAvailable)}
                                     >
-                                        <ArrowLeft className="w-4 h-4" />
-                                        Atrás
+                                        {isLoading ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : continueButtonText}
+                                        {!isLoading && currentStep !== 'complete' && (
+                                            <ArrowRight className="w-4 h-4" />
+                                        )}
                                     </Button>
-                                )}
-                                <div className="flex-1" />
-                                <Button
-                                    type="button"
-                                    variant="default"
-                                    onClick={handleContinue}
-                                    className="flex items-center gap-2"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : continueButtonText}
-                                    {!isLoading && currentStep !== 'complete' && (
-                                        <ArrowRight className="w-4 h-4" />
-                                    )}
-                                </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </DialogContent>
-        </Dialog>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={showCloseConfirm} onOpenChange={handleCloseConfirm}>
+                <DialogContent className="max-w-md rounded-[8px] border border-n-5 p-6">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-semibold text-n-12">¿Salir del registro?</DialogTitle>
+                    </DialogHeader>
+                    <p className="text-[14px] text-n-7 mt-2">
+                        Tu progreso está guardado. Podrás continuar cuando vuelvas a abrir ClinicBoard.
+                    </p>
+                    <DialogFooter className="mt-4 gap-2 flex-row-reverse sm:gap-2">
+                        <Button
+                            variant="default"
+                            onClick={() => handleCloseConfirm(true)}
+                            className="w-full sm:w-auto"
+                        >
+                            Salir
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => handleCloseConfirm(false)}
+                            className="w-full sm:w-auto"
+                        >
+                            Continuar registro
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

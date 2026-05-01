@@ -19,14 +19,21 @@ export interface OnboardingStepClinicRef {
 interface OnboardingStepClinicProps {
     defaultValues?: ClinicStepData;
     onSubmit: (data: ClinicStepData) => void;
+    onAvailabilityChange?: (available: boolean) => void;
 }
 
 export const OnboardingStepClinic = forwardRef<OnboardingStepClinicRef, OnboardingStepClinicProps>(
-    ({ defaultValues, onSubmit }, ref) => {
+    ({ defaultValues, onSubmit, onAvailabilityChange }, ref) => {
         const [availabilityStatus, setAvailabilityStatus] = React.useState<'checking' | 'available' | 'unavailable' | null>(null);
         const [slugManuallyEdited, setSlugManuallyEdited] = React.useState(false);
         const [conflictMessage, setConflictMessage] = React.useState<string | null>(null);
         const [slugSuggestions, setSlugSuggestions] = React.useState<string[]>([]);
+
+        React.useEffect(() => {
+            if (onAvailabilityChange) {
+                onAvailabilityChange(availabilityStatus === 'available');
+            }
+        }, [availabilityStatus, onAvailabilityChange]);
 
         const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
         const nameValueRef = useRef<string>('');
@@ -50,11 +57,10 @@ export const OnboardingStepClinic = forwardRef<OnboardingStepClinicRef, Onboardi
 
         const generateSlugSuggestions = useCallback((baseSlug: string): string[] => {
             const suggestions: string[] = [];
-            const timestamp = Date.now().toString().slice(-4);
             if (baseSlug.length < 25) {
-                suggestions.push(`${baseSlug}-1`);
+                suggestions.push(`${baseSlug}cl`);
             }
-            suggestions.push(`${baseSlug}-${timestamp}`);
+            suggestions.push(`${baseSlug}sa`);
             return suggestions.slice(0, 2);
         }, []);
 
