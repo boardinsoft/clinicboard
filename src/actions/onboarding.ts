@@ -104,28 +104,18 @@ export async function createClinicAsAdmin(input: CreateClinicAsAdminInput) {
             return { error: 'Error al crear tu perfil profesional.' };
         }
 
-        // Create clinic with location data
+        // Create clinic
         const clinicInsert: {
             name: string;
             slug: string;
             active: boolean;
             updated_at: string;
-            telecom?: string;
-            address?: string;
         } = {
             name: input.clinic.name,
             slug: input.clinic.slug.toLowerCase(),
             active: true,
             updated_at: new Date().toISOString(),
         };
-
-        // Store location in telecom JSONB
-        if (input.location?.phone) {
-            clinicInsert.telecom = JSON.stringify([{ system: 'phone', value: input.location.phone }]);
-        }
-        if (input.location?.address) {
-            clinicInsert.address = JSON.stringify([{ city: input.location.city, state: input.location.state, line: [input.location.address] }]);
-        }
 
         const { data: newClinic, error: clinicError } = await supabase
             .from('clinics')

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { Clinic } from '@/lib/supabase/clinic-utils';
 
 interface ActiveClinicContextValue {
@@ -9,6 +9,8 @@ interface ActiveClinicContextValue {
     isLoading: boolean;
     isChangingClinic: boolean;
     clinics: Clinic[];
+    needsOnboarding: boolean;
+    practitionerId: string | null;
 }
 
 const ActiveClinicContext = createContext<ActiveClinicContextValue>({
@@ -17,6 +19,8 @@ const ActiveClinicContext = createContext<ActiveClinicContextValue>({
     isLoading: true,
     isChangingClinic: false,
     clinics: [],
+    needsOnboarding: false,
+    practitionerId: null,
 });
 
 export function useActiveClinic() {
@@ -31,62 +35,30 @@ interface ActiveClinicProviderProps {
     children: React.ReactNode;
     initialClinic: Clinic | null;
     initialClinics: Clinic[];
+    needsOnboarding?: boolean;
+    practitionerId?: string | null;
 }
 
-export function ActiveClinicProvider({ children, initialClinic, initialClinics }: ActiveClinicProviderProps) {
+export function ActiveClinicProvider({ children, initialClinic, initialClinics, needsOnboarding = false, practitionerId = null }: ActiveClinicProviderProps) {
     const [activeClinic, setActiveClinicState] = useState<Clinic | null>(initialClinic);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isChangingClinic, setIsChangingClinic] = useState(false);
-    const [clinics, setClinics] = useState<Clinic[]>(initialClinics);
+    const [clinics] = useState<Clinic[]>(initialClinics);
 
-    useEffect(() => {
-        setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
-        const handleClinicChanged = (event: CustomEvent<Clinic>) => {
-            setActiveClinicState(event.detail);
-        };
-
-        window.addEventListener('clinicChanged', handleClinicChanged as EventListener);
-
-        const stored = localStorage.getItem('activeClinic');
-        if (stored) {
-            try {
-                const parsed = JSON.parse(stored);
-                setActiveClinicState(parsed);
-            } catch {
-                // ignore
-            }
-        }
-
-        return () => {
-            window.removeEventListener('clinicChanged', handleClinicChanged as EventListener);
-        };
-    }, []);
-
-    const setActiveClinic = useCallback(async (clinic: Clinic | null) => {
+    const setActiveClinic = async (clinic: Clinic | null) => {
         if (!clinic) return;
-
-        setIsChangingClinic(true);
-
-        try {
-            setActiveClinicState(clinic);
-            localStorage.setItem('activeClinic', JSON.stringify(clinic));
-
-            window.dispatchEvent(new CustomEvent('clinicChanged', { detail: clinic }));
-        } finally {
-            setIsChangingClinic(false);
-        }
-    }, []);
+        setActiveClinicState(clinic);
+        localStorage.setItem('activeClinic', JSON.stringify(clinic));
+        window.dispatchEvent(new CustomEvent('clinicChanged', { detail: clinic }));
+    };
 
     return (
         <ActiveClinicContext.Provider value={{
             activeClinic,
             setActiveClinic,
-            isLoading,
-            isChangingClinic,
+            isLoading: false,
+            isChangingClinic: false,
             clinics,
+            needsOnboarding,
+            practitionerId,
         }}>
             {children}
         </ActiveClinicContext.Provider>

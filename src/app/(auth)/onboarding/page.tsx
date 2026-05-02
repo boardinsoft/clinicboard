@@ -204,7 +204,13 @@ export default function OnboardingPage() {
         <div className="min-h-svh bg-n-1">
             <OnboardingDialog
                 open={dialogOpen}
-                onOpenChange={setDialogOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        router.push('/login?reason=onboarding_incomplete');
+                    } else {
+                        setDialogOpen(true);
+                    }
+                }}
                 userId={userId}
                 initialData={savedState || undefined}
                 onComplete={handleComplete}

@@ -32,8 +32,8 @@ import { ChartCard } from '@/components/ui/ChartCard';
 import { ChartHeader } from '@/components/ui/ChartHeader';
 import { ChartMetric } from '@/components/ui/ChartMetric';
 import { ChartContent } from '@/components/ui/ChartContent';
-import { ChartEmptyState } from '@/components/ui/ChartEmptyState';
-import { ChartLoadingState } from '@/components/ui/ChartLoadingState';
+import { OnboardingResumeModal } from '@/components/onboarding/OnboardingResumeModal';
+import { useActiveClinic } from '@/providers/ActiveClinicContext';
 
 const statusLabels: Record<string, string> = {
   booked: 'Confirmada',
@@ -86,8 +86,10 @@ interface PractitionerBasic {
 export default function DashboardPage() {
   const supabase = createClient();
   const router = useRouter();
+  const { needsOnboarding, practitionerId } = useActiveClinic();
 
   const [loading, setLoading] = useState(true);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [stats, setStats] = useState<StatItem[]>([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState<AppointmentItem[]>([]);
   const [recentEvolutions, setRecentEvolutions] = useState<EvolutionItem[]>([]);
@@ -173,6 +175,12 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
+
+  useEffect(() => {
+    if (needsOnboarding) {
+      setShowOnboardingModal(true);
+    }
+  }, [needsOnboarding]);
 
   if (loading) {
     return (
@@ -465,6 +473,12 @@ export default function DashboardPage() {
         </Card>
 
       </div>
+
+      <OnboardingResumeModal
+        open={showOnboardingModal}
+        onOpenChange={setShowOnboardingModal}
+        practitionerId={practitionerId}
+      />
     </div>
   );
 }

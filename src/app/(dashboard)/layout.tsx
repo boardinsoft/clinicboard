@@ -29,17 +29,19 @@ export default async function DashboardLayout({
 
     const hasOnboardingComplete = practitioner && clinics.length > 0;
 
-    if (!hasOnboardingComplete) {
-        if (!user.email_confirmed_at) {
-            redirect('/login?reason=email_unconfirmed');
-        }
-        redirect('/onboarding');
+    if (!user.email_confirmed_at) {
+        redirect('/login?reason=email_unconfirmed');
     }
 
     const initialClinic: Clinic | null = clinics[0] || null;
 
     return (
-        <ActiveClinicProvider initialClinic={initialClinic} initialClinics={clinics}>
+        <ActiveClinicProvider 
+            initialClinic={initialClinic} 
+            initialClinics={clinics}
+            needsOnboarding={!hasOnboardingComplete}
+            practitionerId={practitioner?.id}
+        >
             <AppShell
                 user={user}
                 practitioner={practitioner}

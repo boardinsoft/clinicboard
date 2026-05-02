@@ -76,21 +76,17 @@ export async function proxy(request: NextRequest) {
             const timeSinceLastActivity = now - lastActivity;
 
             if (timeSinceLastActivity > sessionTimeoutMs) {
-                // Sesión expirada por inactividad
                 const url = request.nextUrl.clone();
                 url.pathname = '/login';
                 url.searchParams.set('reason', 'session_timeout');
 
                 const redirectResponse = NextResponse.redirect(url);
-
-                // Limpiar cookies de sesión
                 redirectResponse.cookies.delete('clinicboard_last_activity');
 
                 return redirectResponse;
             }
         }
 
-        // Actualizar timestamp de última actividad
         supabaseResponse.cookies.set('clinicboard_last_activity', Date.now().toString(), {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -98,6 +94,30 @@ export async function proxy(request: NextRequest) {
             maxAge: sessionTimeoutMs / 1000,
             path: '/',
         });
+    }
+
+    if (user) {
+        const isOnboardingRoute = request.nextUrl.pathname.startsWith('/onboarding');
+        const isDashboardRoute = request.nextUrl.pathname === '/dashboard';
+
+        if (!isOnboardingRoute && !isDashboardRoute) {
+            try {
+                const { data: practitioner } = await supabase
+                    .from('practitioners')
+                    .select('onboarding_completed')
+                    .eq('auth_user_id', user.id)
+                    .single();
+
+                if (practitioner?.onboarding_completed !== true) {
+                    const url = request.nextUrl.clone();
+                    url.pathname = '/onboarding';
+                    url.searchParams.set('reason', 'incomplete');
+                    return NextResponse.redirect(url);
+                }
+            } catch {
+                // Continue without blocking
+            }
+        }
     }
 
     if (!user && !isPublicRoute) {
