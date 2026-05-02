@@ -146,7 +146,7 @@ function IconBtn({
         >
           <Icon size={17} strokeWidth={1.8} />
           {showDot && (
-            <span className="absolute top-[5px] right-[5px] w-[7px] h-[7px] bg-warning rounded-full border-[1.5px] border-n-1 animate-pulse-dot" />
+            <span className="absolute top-[5px] right-[5px] w-[7px] h-[7px] bg-warning rounded-full border-[1.5px] border-n-12 dark:border-n-1 animate-pulse-dot" />
           )}
         </Button>
       </TooltipTrigger>
@@ -196,7 +196,7 @@ function SubHeader() {
               {secondaryPanelOpen ? 'Colapsar panel' : 'Expandir panel'}
             </TooltipContent>
           </Tooltip>
-          <div className="w-px h-4 bg-n-5 mx-2" />
+          <div className="w-px h-4 bg-n-5" />
         </>
       )}
       {subHeaderContent !== undefined ? subHeaderContent : <TabBar />}
@@ -305,14 +305,13 @@ function AppLayout({ children, user, practitioner, clinics, initialClinic, email
   const [changeError, setChangeError] = useState<string | null>(null);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  const displayName =
-    practitioner?.name_given?.[0] ||
+const displayName =
+    user?.user_metadata?.full_name ||
     user?.email?.split('@')[0] ||
     'Usuario';
   const initials = displayName.charAt(0).toUpperCase();
 
-  const specialty = practitioner?.specialty || 'Cardiología';
-  const prefix = practitioner?.gender === 'female' ? 'Dra.' : 'Dr.';
+  const specialty = practitioner?.specialty || 'Sin especialidad';
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -411,9 +410,9 @@ function AppLayout({ children, user, practitioner, clinics, initialClinic, email
 
         {/* ── SECCIÓN IZQUIERDA: Contexto (Macro-gap: 4) ── */}
         <div className="flex items-center gap-4 shrink-0">
-          {/* Brand Mark (Micro-gap: 2) */}
+          {/* Brand Mark (h-8 for alignment, gap-2) */}
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-b-8 shadow-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-[6px] bg-b-8 shadow-sm">
               <Stethoscope className="w-4 h-4 text-white" strokeWidth={2.2} />
             </div>
             <span className="text-[13px] font-bold tracking-tight text-n-12 select-none">
@@ -421,7 +420,7 @@ function AppLayout({ children, user, practitioner, clinics, initialClinic, email
             </span>
           </div>
 
-          <div className="w-px h-4 bg-n-5 mx-2" />
+          <div className="w-px h-4 bg-n-5" />
 
           {/* Clínica Selector (Meso: px-3, gap-2) */}
           <DropdownMenu>
@@ -474,12 +473,12 @@ function AppLayout({ children, user, practitioner, clinics, initialClinic, email
             Pro
           </span>
 
-          <div className="w-px h-4 bg-n-5 mx-2" />
+          <div className="w-px h-4 bg-n-5" />
 
           {/* Cargo/Especialidad */}
           <div className="inline-flex items-center gap-1">
             <span className="text-sm font-medium text-n-10 dark:text-n-11 whitespace-nowrap transition-colors">
-              {prefix} {specialty}
+              {specialty}
             </span>
           </div>
 
@@ -614,7 +613,7 @@ function AppLayout({ children, user, practitioner, clinics, initialClinic, email
                 />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-[11px] font-medium bg-n-12 text-n-1 border-none shadow-md">
+            <TooltipContent side="bottom" sideOffset={12} className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100">
               Asistente IA
             </TooltipContent>
           </Tooltip>
@@ -683,12 +682,17 @@ function AppLayout({ children, user, practitioner, clinics, initialClinic, email
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                   className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors"
                 >
-                  {mounted && theme === 'dark' ? (
-                    <Sun size={16} className="text-n-8" strokeWidth={1.8} />
+                  {/* Icono: Sol si está en dark (para cambiar a light), Luna si está en light (para cambiar a dark) */}
+                  {mounted ? (
+                    theme === 'dark' ? (
+                      <Sun size={16} className="text-n-8" strokeWidth={1.8} />
+                    ) : (
+                      <Moon size={16} className="text-n-8" strokeWidth={1.8} />
+                    )
                   ) : (
                     <Moon size={16} className="text-n-8" strokeWidth={1.8} />
                   )}
-                  <span>{mounted && theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>
+                  <span>{mounted ? (theme === 'dark' ? 'Modo claro' : 'Modo oscuro') : 'Modo'}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors">
                   <Keyboard size={16} className="text-n-8" strokeWidth={1.8} />
