@@ -1,19 +1,17 @@
 'use client';
 
 import React, { useState, useEffect, useTransition } from 'react';
-import { useLayoutStore } from '@/store/useLayoutStore';
 import { Button } from '@/components/ui/button';
-import { 
-    CalendarDays, 
-    LayoutGrid, 
-    Plus, 
+import {
+    CalendarDays,
+    LayoutGrid,
+    Plus,
     RefreshCw,
     Calendar as CalendarIcon,
     ChevronLeft,
     ChevronRight
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import AppointmentsSidebar from './AppointmentsSidebar';
 import AppointmentsTimeline from './AppointmentsTimeline';
 import AppointmentsKanban from './AppointmentsKanban';
 import AppointmentDetailSheet from './AppointmentDetailSheet';
@@ -22,10 +20,11 @@ import NewWalkInDialog from './NewWalkInDialog';
 import WalkInQueuePanel from './WalkInQueuePanel';
 import { getAppointments, startConsultationFromAppointment } from '@/actions/appointments';
 import { nowInVE, toISODate } from '@/lib/date-utils';
-import type { Appointment, AppointmentStatus } from '@/lib/fhir/types';
+import type { Appointment } from '@/lib/fhir/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { PageHeader, PageContainer } from '@/components/ui/PageLayout';
+import { useAppointmentsStore } from '@/store/useAppointmentsStore';
 
 interface AppointmentsViewProps {
     initialAppointments: Appointment[];
@@ -33,9 +32,7 @@ interface AppointmentsViewProps {
 
 export default function AppointmentsView({ initialAppointments }: AppointmentsViewProps) {
     const [view, setView] = useState<'timeline' | 'kanban' | 'queue'>('timeline');
-    const [selectedDate, setSelectedDate] = useState<Date>(nowInVE());
     const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
-    const [statusFilter, setStatusFilter] = useState<AppointmentStatus[]>([]);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [newDialogOpen, setNewDialogOpen] = useState(false);
@@ -45,7 +42,7 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
 
-    const { setSecondaryPanel } = useLayoutStore();
+    const { selectedDate, statusFilter, setSelectedDate } = useAppointmentsStore();
 
     const selectedAppointment = appointments.find(a => a.id === selectedAppointmentId) || null;
 
@@ -87,26 +84,6 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
     useEffect(() => {
         refreshData();
     }, [refreshData]);
-
-    // Handle Sidebar Mounting
-    useEffect(() => {
-        setSecondaryPanel(
-            <AppointmentsSidebar
-                appointments={appointments}
-                selectedDate={selectedDate}
-                onDateChange={setSelectedDate}
-                selectedId={selectedAppointmentId}
-                onSelect={(id) => {
-                    setSelectedAppointmentId(id);
-                    setDetailOpen(true);
-                }}
-                statusFilter={statusFilter}
-                onStatusFilterChange={setStatusFilter}
-                onNew={() => setNewDialogOpen(true)}
-            />,
-            'Agenda'
-        );
-    }, [appointments, selectedDate, selectedAppointmentId, statusFilter, setSecondaryPanel]);
 
     const handleNextDay = () => {
         const next = new Date(selectedDate);

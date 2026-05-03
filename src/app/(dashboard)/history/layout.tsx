@@ -5,18 +5,17 @@ import { useLayoutStore } from '@/store/useLayoutStore';
 import SpecialtySidebar from './SpecialtySidebar';
 
 export default function HistoryLayout({ children }: { children: ReactNode }) {
-    const { setSubHeaderContent, setSecondaryPanel } = useLayoutStore();
+    const { setSubHeaderContent, setSecondaryPanel, clearSecondaryPanel } = useLayoutStore();
 
     useEffect(() => {
-        // Historia Clínica no usa subheader de tabs — la navegación es via sidebar
         setSubHeaderContent(null);
-        // Sidebar de navegación del módulo
         setSecondaryPanel(<SpecialtySidebar />, 'Historia clínica');
 
         return () => {
             setSubHeaderContent(undefined);
+            clearSecondaryPanel();
         };
-    }, [setSubHeaderContent, setSecondaryPanel]);
+    }, [setSubHeaderContent, setSecondaryPanel, clearSecondaryPanel]);
 
     return <>{children}</>;
 }
