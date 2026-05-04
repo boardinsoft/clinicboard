@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useTransition, useMemo } from 'react';
-import { Plus, RefreshCw, CalendarDays, CheckSquare, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, RefreshCw, CalendarDays, CheckSquare, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import AppointmentDetailSheet from './AppointmentDetailSheet';
 import NewAppointmentDialog from './NewAppointmentDialog';
 import NewWalkInDialog from './NewWalkInDialog';
@@ -17,13 +18,14 @@ import { PageHeader, PageContainer } from '@/components/ui/PageLayout';
 import { useAppointmentsStore } from '@/store/useAppointmentsStore';
 import MonthlyCalendar from './MonthlyCalendar';
 import FilterDropdown from './FilterDropdown';
+import DayTimeline from './DayTimeline';
 
 interface AppointmentsViewProps {
     initialAppointments: Appointment[];
 }
 
 export default function AppointmentsView({ initialAppointments }: AppointmentsViewProps) {
-    const [view, setView] = useState<'calendar' | 'queue'>('calendar');
+    const [view, setView] = useState<'calendar' | 'day' | 'queue'>('calendar');
     const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
@@ -53,11 +55,19 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
         setSelectedDate(newDate);
     };
 
+    const navigateDay = (direction: number) => {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(newDate.getDate() + direction);
+        setSelectedDate(newDate);
+    };
+
     const goToToday = () => {
         setSelectedDate(new Date());
     };
 
     const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const dayLabel = `${DAY_NAMES[selectedDate.getDay()]}, ${selectedDate.getDate()} de ${MONTHS[selectedDate.getMonth()]} de ${selectedDate.getFullYear()}`;
     const currentMonth = selectedDate.getMonth();
     const currentYear = selectedDate.getFullYear();
 
@@ -133,55 +143,113 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
 
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
+<TooltipProvider>
                         <Tabs
                             value={view}
-                            onValueChange={(v) => setView(v as 'calendar' | 'queue')}
+                            onValueChange={(v) => setView(v as 'calendar' | 'day' | 'queue')}
                             className="w-auto"
                         >
-                            <TabsList className="bg-transparent p-0 h-9 gap-4">
-                                <TabsTrigger
-                                    value="calendar"
-                                    className="h-9 px-0 bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-b-8 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[11px] font-bold text-n-8 data-[state=active]:text-n-11 transition-all duration-100 gap-1.5"
-                                >
-                                    Mes
-                                </TabsTrigger>
+                            <TabsList className="bg-transparent p-0 h-9 gap-2">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <TabsTrigger
+                                            value="calendar"
+                                            className="h-9 w-9 p-0 bg-transparent rounded-[6px] border border-transparent data-[state=active]:border-n-5 data-[state=active]:bg-n-3 data-[state=active]:shadow-none text-n-8 data-[state=active]:text-n-12 transition-all duration-100 flex items-center justify-center"
+                                        >
+                                            <CalendarDays size={18} strokeWidth={1.8} />
+                                        </TabsTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom" className="bg-n-12 text-n-1 border-n-12">
+                                        Vista Mensual
+                                    </TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <TabsTrigger
+                                            value="day"
+                                            className="h-9 w-9 p-0 bg-transparent rounded-[6px] border border-transparent data-[state=active]:border-n-5 data-[state=active]:bg-n-3 data-[state=active]:shadow-none text-n-8 data-[state=active]:text-n-12 transition-all duration-100 flex items-center justify-center"
+                                        >
+                                            <Clock size={18} strokeWidth={1.8} />
+                                        </TabsTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom" className="bg-n-12 text-n-1 border-n-12">
+                                        Vista de Día
+                                    </TooltipContent>
+                                </Tooltip>
                                 {hasQueueAppointments && (
-                                    <TabsTrigger
-                                        value="queue"
-                                        className="h-9 px-0 bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-b-8 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[11px] font-bold text-n-8 data-[state=active]:text-n-11 transition-all duration-100 gap-1.5"
-                                    >
-                                        Cola de Espera
-                                    </TabsTrigger>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <TabsTrigger
+                                                value="queue"
+                                                className="h-9 w-9 p-0 bg-transparent rounded-[6px] border border-transparent data-[state=active]:border-n-5 data-[state=active]:bg-n-3 data-[state=active]:shadow-none text-n-8 data-[state=active]:text-n-12 transition-all duration-100 flex items-center justify-center"
+                                            >
+                                                <CheckSquare size={18} strokeWidth={1.8} />
+                                            </TabsTrigger>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" className="bg-n-12 text-n-1 border-n-12">
+                                            Cola de Espera
+                                        </TooltipContent>
+                                    </Tooltip>
                                 )}
                             </TabsList>
                         </Tabs>
+                        </TooltipProvider>
 
-                        <div className="flex items-center gap-1">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 rounded-md hover:bg-n-2"
-                                onClick={() => navigateMonth(-1)}
-                            >
-                                <ChevronLeft className="w-4 h-4 text-n-8" />
-                            </Button>
-                            <h2 className="text-sm font-semibold text-n-11 capitalize min-w-[120px] text-center">
-                                {MONTHS[currentMonth]} {currentYear}
-                            </h2>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 rounded-md hover:bg-n-2"
-                                onClick={() => navigateMonth(1)}
-                            >
-                                <ChevronRight className="w-4 h-4 text-n-8" />
-                            </Button>
-                        </div>
+                        {view === 'calendar' && (
+                            <>
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 rounded-md hover:bg-n-2"
+                                        onClick={() => navigateMonth(-1)}
+                                    >
+                                        <ChevronLeft className="w-4 h-4 text-n-8" />
+                                    </Button>
+                                    <h2 className="text-sm font-semibold text-n-11 capitalize min-w-[120px] text-center">
+                                        {MONTHS[currentMonth]} {currentYear}
+                                    </h2>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 rounded-md hover:bg-n-2"
+                                        onClick={() => navigateMonth(1)}
+                                    >
+                                        <ChevronRight className="w-4 h-4 text-n-8" />
+                                    </Button>
+                                </div>
 
-                        <FilterDropdown appointments={appointments} />
+                                <FilterDropdown appointments={appointments} />
+                            </>
+                        )}
+
+                        {view === 'day' && (
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 rounded-md hover:bg-n-2"
+                                    onClick={() => navigateDay(-1)}
+                                >
+                                    <ChevronLeft className="w-4 h-4 text-n-8" />
+                                </Button>
+                                <h2 className="text-sm font-semibold text-n-11 min-w-[220px] text-center">
+                                    {dayLabel}
+                                </h2>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 rounded-md hover:bg-n-2"
+                                    onClick={() => navigateDay(1)}
+                                >
+                                    <ChevronRight className="w-4 h-4 text-n-8" />
+                                </Button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-2">
+{view !== 'day' && (
                         <Button
                             variant="ghost"
                             size="sm"
@@ -190,6 +258,7 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                         >
                             Hoy
                         </Button>
+                    )}
 
                         <Button
                             size="sm"
@@ -213,6 +282,13 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                                 appointments={appointments}
                                 onEventClick={handleEventClick}
                                 onNewAppointment={handleNewAppointment}
+                            />
+                        )}
+                        {view === 'day' && (
+                            <DayTimeline
+                                appointments={appointments}
+                                onEventClick={handleEventClick}
+                                onRefresh={refreshData}
                             />
                         )}
                         {view === 'queue' && (

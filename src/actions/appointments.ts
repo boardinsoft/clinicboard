@@ -187,7 +187,7 @@ export async function createAppointment(formData: {
     const overlapResult = await checkOverlap(
         supabase,
         practitionerId,
-        validation.data.clinic_id,
+        validation.data.clinic_id!,
         validation.data.start_time,
         validation.data.end_time
     );
@@ -201,7 +201,7 @@ export async function createAppointment(formData: {
         const duplicateResult = await checkDuplicateType(
             supabase,
             practitionerId,
-            validation.data.clinic_id,
+            validation.data.clinic_id!,
             validation.data.patient_id,
             validation.data.appointment_type
         );
@@ -1003,16 +1003,27 @@ export async function getTodayAppointmentsWithPatients(clinicId?: string): Promi
 
   if (error || !data) return [];
 
-  return data.map((row: any) => ({
-    id: row.id,
-    start_time: row.start_time,
-    end_time: row.end_time,
-    status: row.status ?? 'proposed',
-    patient_id: row.patient_id,
-    appointment_type: row.appointment_type ?? null,
-    patient_name: [
-      row.patients?.name_given?.join(' ') ?? '',
-      row.patients?.name_family ?? '',
-    ].join(' ').trim() || 'Paciente',
-  }));
+  return data.map((row) => {
+    const r = row as {
+      id: string;
+      start_time: string;
+      end_time: string;
+      status: string;
+      patient_id: string;
+      appointment_type: string | null;
+      patients: { name_given: string[] | null; name_family: string | null } | null;
+    };
+    return {
+      id: r.id,
+      start_time: r.start_time,
+      end_time: r.end_time,
+      status: r.status ?? 'proposed',
+      patient_id: r.patient_id,
+      appointment_type: r.appointment_type ?? null,
+      patient_name: [
+        r.patients?.name_given?.join(' ') ?? '',
+        r.patients?.name_family ?? '',
+      ].join(' ').trim() || 'Paciente',
+    };
+  });
 }

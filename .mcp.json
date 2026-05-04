@@ -11,6 +11,14 @@
         "@testsprite/testsprite-mcp"
       ],
       "env": {}
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp"
+      ],
+      "env": {}
     }
   }
 }
