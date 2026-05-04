@@ -29,13 +29,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Calendar, Clock, Loader2, Plus } from 'lucide-react';
 import { createAppointment } from '@/actions/appointments';
@@ -46,6 +39,7 @@ import { nowInVE } from '@/lib/date-utils';
 import { AppointmentPicker } from '@/components/ui/appointment-picker';
 import { format, parse } from 'date-fns';
 import { APPOINTMENT_TYPES } from '@/lib/appointmentConstants';
+import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import AlertConflict from '@/components/ui/AlertConflict';
 
 interface NewAppointmentDialogProps {
@@ -61,6 +55,7 @@ export default function NewAppointmentDialog({
 }: NewAppointmentDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [alertError, setAlertError] = useState<string | null>(null);
+    const { activeClinic } = useActiveClinic();
 
     // Initial times (today, now + 30min)
     const getDefaultTimes = () => {
@@ -123,18 +118,34 @@ export default function NewAppointmentDialog({
 
 
     const onSubmit = async (values: AppointmentSchemaType) => {
+        console.log('[onSubmit] FUNCTION STARTED');
+        console.log('[onSubmit] values:', JSON.stringify(values, null, 2));
         setIsSubmitting(true);
+        console.log('[onSubmit] after setIsSubmitting');
         try {
-            // Convert to ISO string for backend
+            console.log('[onSubmit] checking activeClinic...');
+            if (!activeClinic?.id) {
+                console.log('[onSubmit] No activeClinic found:', activeClinic);
+                toast.error('No se ha seleccionado una clínica');
+                setIsSubmitting(false);
+                return;
+            }
+            console.log('[onSubmit] activeClinic found:', activeClinic.id);
+
             const payload = {
                 ...values,
+                clinic_id: activeClinic.id,
                 start_time: new Date(values.start_time).toISOString(),
                 end_time: new Date(values.end_time).toISOString(),
             };
+            console.log('[onSubmit] payload:', JSON.stringify(payload, null, 2));
 
+            console.log('[onSubmit] calling createAppointment...');
             const result = await createAppointment(payload);
+            console.log('[onSubmit] createAppointment returned:', JSON.stringify(result, null, 2));
 
             if (result.error) {
+                console.log('[createAppointment error]', JSON.stringify(result.error, null, 2));
                 const errorMsg = typeof result.error === 'string' ? result.error : 'Error al crear la cita';
                 const isBlockingError = typeof result.error === 'string' && (
                     result.error.includes('ya tiene una cita activa') ||
@@ -161,6 +172,10 @@ export default function NewAppointmentDialog({
         }
     };
 
+    const onInvalid = (errors: unknown) => {
+        console.log('[onSubmit] VALIDATION FAILED - errors:', JSON.stringify(errors, null, 2));
+    };
+
     return (
         <>
             <AlertConflict
@@ -179,7 +194,9 @@ export default function NewAppointmentDialog({
                     </DialogHeader>
 
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-2">
+                        <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6 py-2"
+                            onSubmitCapture={() => console.log('[form] submit captured')}
+                        >
                             <FormField
                                 control={form.control}
                                 name="patient_id"
@@ -268,8 +285,11 @@ export default function NewAppointmentDialog({
                             <DialogFooter className="pt-4 border-t border-muted-foreground/10 bg-muted/5 -mx-6 px-6 -mb-2">
                                 <Button
                                     type="button"
+                                    onClick={() => {
+                                        console.log('[DEBUG] Cancel clicked');
+                                        onOpenChange(false);
+                                    }}
                                     variant="ghost"
-                                    onClick={() => onOpenChange(false)}
                                     className="h-10 px-6"
                                 >
                                     Cancelar
