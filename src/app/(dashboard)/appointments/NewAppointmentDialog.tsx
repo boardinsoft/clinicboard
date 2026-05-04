@@ -30,8 +30,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
-    AlertDialog,
-    AlertDialogAction,
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
@@ -47,22 +45,14 @@ import { PatientSearchField } from '@/components/patients/PatientSearchField';
 import { nowInVE } from '@/lib/date-utils';
 import { AppointmentPicker } from '@/components/ui/appointment-picker';
 import { format, parse } from 'date-fns';
+import { APPOINTMENT_TYPES } from '@/lib/appointmentConstants';
+import AlertConflict from '@/components/ui/AlertConflict';
 
 interface NewAppointmentDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onCreated: () => void;
 }
-
-const APPOINTMENT_TYPES = [
-    "Consulta General",
-    "Control",
-    "Primera Vez",
-    "Seguimiento",
-    "Segunda Opinión",
-    "Emergencia",
-    "Telemedicina"
-];
 
 export default function NewAppointmentDialog({
     open,
@@ -173,17 +163,11 @@ export default function NewAppointmentDialog({
 
     return (
         <>
-            <AlertDialog open={!!alertError} onOpenChange={(open) => { if (!open) setAlertError(null); }}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Conflicto de Cita</AlertDialogTitle>
-                        <AlertDialogDescription>{alertError}</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogAction onClick={() => setAlertError(null)}>Entendido</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <AlertConflict
+                open={!!alertError}
+                onOpenChange={(open) => { if (!open) setAlertError(null); }}
+                message={alertError}
+            />
 
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="sm:max-w-2xl overflow-hidden max-h-[90vh] overflow-y-auto">

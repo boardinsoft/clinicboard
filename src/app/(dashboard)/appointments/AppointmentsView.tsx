@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useTransition } from 'react';
-import { Plus, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useTransition, useMemo } from 'react';
+import { Plus, RefreshCw, CalendarDays, CheckSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppointmentDetailSheet from './AppointmentDetailSheet';
@@ -28,16 +28,38 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [newDialogOpen, setNewDialogOpen] = useState(false);
-    const [newDialogDate, setNewDialogDate] = useState<Date | undefined>(undefined);
     const [walkInDialogOpen, setWalkInDialogOpen] = useState(false);
     const [hasCleanedUp, setHasCleanedUp] = useState(false);
 
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
 
-    const { selectedDate, statusFilter } = useAppointmentsStore();
+    const { selectedDate, setSelectedDate, statusFilter } = useAppointmentsStore();
 
     const selectedAppointment = appointments.find(a => a.id === selectedAppointmentId) || null;
+
+    const todayCount = useMemo(() => {
+        const today = new Date().toDateString();
+        return appointments.filter(a => new Date(a.start_time).toDateString() === today).length;
+    }, [appointments]);
+
+    const queueCount = useMemo(() => {
+        return appointments.filter(a => a.queue_position !== null).length;
+    }, [appointments]);
+
+    const navigateMonth = (direction: number) => {
+        const newDate = new Date(selectedDate);
+        newDate.setMonth(newDate.getMonth() + direction);
+        setSelectedDate(newDate);
+    };
+
+    const goToToday = () => {
+        setSelectedDate(new Date());
+    };
+
+    const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const currentMonth = selectedDate.getMonth();
+    const currentYear = selectedDate.getFullYear();
 
     const refreshData = React.useCallback(() => {
         startTransition(async () => {
@@ -76,8 +98,7 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
         refreshData();
     }, [selectedDate, statusFilter, refreshData]);
 
-    const handleNewAppointment = (date?: Date) => {
-        setNewDialogDate(date);
+    const handleNewAppointment = () => {
         setNewDialogOpen(true);
     };
 
@@ -91,12 +112,26 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
     return (
         <div className="flex flex-col h-full bg-background overflow-hidden">
             <PageHeader
-                title="Agenda de Citas"
-                description="Gestiona tus citas y agenda"
+                title="Calendario de Citas"
                 breadcrumbs={[{ label: 'Citas' }]}
                 className="py-4 border-b-0"
             >
-                <div className="flex items-center justify-between mt-2">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-n-2 border border-n-4 text-xs font-medium">
+                        <CalendarDays size={12} strokeWidth={1.8} className="text-n-8" />
+                        <span className="text-n-8">Citas hoy:</span>
+                        <span className="text-n-12 font-semibold">{todayCount}</span>
+                    </div>
+                    {queueCount > 0 && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-n-2 border border-n-4 text-xs font-medium">
+                            <CheckSquare size={12} strokeWidth={1.8} className="text-n-8" />
+                            <span className="text-n-8">En cola:</span>
+                            <span className="text-n-12 font-semibold">{queueCount}</span>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Tabs
                             value={view}
@@ -121,10 +156,41 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                             </TabsList>
                         </Tabs>
 
-                        <FilterDropdown />
+                        <div className="flex items-center gap-1">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-md hover:bg-n-2"
+                                onClick={() => navigateMonth(-1)}
+                            >
+                                <ChevronLeft className="w-4 h-4 text-n-8" />
+                            </Button>
+                            <h2 className="text-sm font-semibold text-n-11 capitalize min-w-[120px] text-center">
+                                {MONTHS[currentMonth]} {currentYear}
+                            </h2>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-md hover:bg-n-2"
+                                onClick={() => navigateMonth(1)}
+                            >
+                                <ChevronRight className="w-4 h-4 text-n-8" />
+                            </Button>
+                        </div>
+
+                        <FilterDropdown appointments={appointments} />
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-3 text-xs font-medium text-n-8 hover:text-n-11 hover:bg-n-2"
+                            onClick={goToToday}
+                        >
+                            Hoy
+                        </Button>
+
                         <Button
                             size="sm"
                             className="h-8 px-3 gap-1.5 bg-b-8 hover:bg-b-8/90 text-white"
@@ -184,7 +250,6 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                 open={newDialogOpen}
                 onOpenChange={setNewDialogOpen}
                 onCreated={refreshData}
-                defaultDate={newDialogDate}
             />
 
             <NewWalkInDialog

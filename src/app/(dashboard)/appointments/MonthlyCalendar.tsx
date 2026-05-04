@@ -1,31 +1,21 @@
 'use client';
 
 import React, { useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Clock } from 'lucide-react';
+import { Plus, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAppointmentsStore } from '@/store/useAppointmentsStore';
-import type { Appointment, AppointmentStatus } from '@/lib/fhir/types';
+import type { Appointment } from '@/lib/fhir/types';
 import { formatTime } from '@/lib/date-utils';
-
-const FHIR_STATUS_CONFIG: Record<AppointmentStatus, { label: string; colorClass: string; borderClass: string }> = {
-    proposed: { label: 'Propuesta', colorClass: 'bg-n-5', borderClass: 'border-l-n-5' },
-    pending: { label: 'Pendiente', colorClass: 'bg-warning/20 text-warning', borderClass: 'border-l-warning' },
-    booked: { label: 'Confirmada', colorClass: 'bg-info/20 text-info', borderClass: 'border-l-info' },
-    arrived: { label: 'En Consulta', colorClass: 'bg-warning/20 text-warning', borderClass: 'border-l-warning' },
-    fulfilled: { label: 'Completada', colorClass: 'bg-success/20 text-success', borderClass: 'border-l-success' },
-    cancelled: { label: 'Cancelada', colorClass: 'bg-destructive/20 text-destructive', borderClass: 'border-l-destructive' },
-    noshow: { label: 'No asistió', colorClass: 'bg-n-8/20 text-n-8', borderClass: 'border-l-n-8' },
-};
+import { FHIR_STATUS_CONFIG, formatPatientName } from '@/lib/appointmentConstants';
 
 const DAYS_OF_WEEK = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
 interface MonthlyCalendarProps {
     appointments: Appointment[];
-    onDateSelect?: (date: Date) => void;
     onEventClick?: (appointment: Appointment) => void;
     onNewAppointment?: (date: Date) => void;
 }
@@ -35,7 +25,7 @@ export default function MonthlyCalendar({
     onEventClick,
     onNewAppointment,
 }: MonthlyCalendarProps) {
-    const { selectedDate, setSelectedDate, statusFilter, patientSearch } = useAppointmentsStore();
+    const { selectedDate, statusFilter, patientSearch } = useAppointmentsStore();
 
     const filteredAppointments = useMemo(() => {
         return appointments.filter(apt => {
@@ -44,7 +34,7 @@ export default function MonthlyCalendar({
             }
             if (patientSearch) {
                 const patientName = apt.patient
-                    ? `${apt.patient.name_family}, ${apt.patient.name_given?.join(' ')}`.toLowerCase()
+                    ? formatPatientName(apt.patient).toLowerCase()
                     : '';
                 if (!patientName.includes(patientSearch.toLowerCase())) {
                     return false;
@@ -88,70 +78,12 @@ export default function MonthlyCalendar({
         });
     }, [filteredAppointments]);
 
-    const navigateMonth = (direction: number) => {
-        const newDate = new Date(selectedDate);
-        newDate.setMonth(newDate.getMonth() + direction);
-        setSelectedDate(newDate);
-    };
-
-    const goToToday = () => {
-        setSelectedDate(new Date());
-    };
-
     const days = useMemo(() => getDaysInMonth(selectedDate), [selectedDate, getDaysInMonth]);
     const today = new Date();
-
     const currentMonth = selectedDate.getMonth();
-    const currentYear = selectedDate.getFullYear();
 
     return (
         <div className="flex flex-col h-full bg-background">
-            {/* Calendar Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-n-5">
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 rounded-md hover:bg-n-2"
-                            onClick={() => navigateMonth(-1)}
-                        >
-                            <ChevronLeft className="w-4 h-4 text-n-8" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 rounded-md hover:bg-n-2"
-                            onClick={() => navigateMonth(1)}
-                        >
-                            <ChevronRight className="w-4 h-4 text-n-8" />
-                        </Button>
-                    </div>
-                    <h2 className="text-lg font-semibold text-n-11 capitalize">
-                        {MONTHS[currentMonth]} {currentYear}
-                    </h2>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 px-3 text-xs font-medium border-n-5 text-n-8 hover:text-n-11"
-                        onClick={goToToday}
-                    >
-                        Hoy
-                    </Button>
-                    <Button
-                        size="sm"
-                        className="h-8 px-3 gap-1.5 bg-b-8 hover:bg-b-8/90 text-white"
-                        onClick={() => onNewAppointment?.(selectedDate)}
-                    >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span className="text-xs font-medium">Nueva Cita</span>
-                    </Button>
-                </div>
-            </div>
-
             {/* Day Headers */}
             <div className="grid grid-cols-7 border-b border-n-5">
                 {DAYS_OF_WEEK.map((day) => (
@@ -244,16 +176,14 @@ export default function MonthlyCalendar({
                                                 onClick={() => onNewAppointment?.(day)}
                                             >
                                                 <Plus className="w-3 h-3 mr-1" />
-                                                Agregar cita
+                                                Nueva Cita
                                             </Button>
                                         </div>
                                     ) : (
                                         <div className="space-y-1 px-2">
                                             {dayAppointments.map((apt) => {
                                                 const statusConfig = FHIR_STATUS_CONFIG[apt.status];
-                                                const patientName = apt.patient
-                                                    ? `${apt.patient.name_family}, ${apt.patient.name_given?.join(' ')}`
-                                                    : 'Paciente';
+                                                const patientName = formatPatientName(apt.patient);
 
                                                 return (
                                                     <button

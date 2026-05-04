@@ -27,9 +27,3 @@ export const useAppointmentsStore = create<AppointmentsState>((set) => ({
     setPatientSearch: (search) => set({ patientSearch: search }),
     clearAllFilters: () => set({ statusFilter: [], patientSearch: '' }),
 }));
-
-export const selectHasActiveFilters = (state: AppointmentsState) =>
-    state.statusFilter.length > 0 || state.patientSearch.length > 0;
-
-export const selectFilteredCount = (state: AppointmentsState) =>
-    state.statusFilter.length;

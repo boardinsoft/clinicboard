@@ -28,8 +28,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
-    AlertDialog,
-    AlertDialogAction,
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
@@ -41,20 +39,14 @@ import { createWalkInAppointment } from '@/actions/appointments';
 import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import { Loader2, Zap } from 'lucide-react';
 import { PatientSearchField } from '@/components/patients/PatientSearchField';
+import { APPOINTMENT_TYPES } from '@/lib/appointmentConstants';
+import AlertConflict from '@/components/ui/AlertConflict';
 
 interface NewWalkInDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onCreated: () => void;
 }
-
-const APPOINTMENT_TYPES = [
-    "Consulta General",
-    "Control",
-    "Primera Vez",
-    "Seguimiento",
-    "Emergencia"
-];
 
 interface WalkInFormValues {
     patient_id: string;
@@ -124,17 +116,11 @@ export default function NewWalkInDialog({
 
     return (
         <>
-        <AlertDialog open={!!alertError} onOpenChange={(open) => { if (!open) setAlertError(null); }}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Conflicto de Cita</AlertDialogTitle>
-                    <AlertDialogDescription>{alertError}</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogAction onClick={() => setAlertError(null)}>Entendido</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+            <AlertConflict
+                open={!!alertError}
+                onOpenChange={(open) => { if (!open) setAlertError(null); }}
+                message={alertError}
+            />
 
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md">

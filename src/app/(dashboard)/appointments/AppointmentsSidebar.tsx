@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, CalendarDays, CheckSquare } from 'lucide-react';
+import { CalendarDays, CheckSquare } from 'lucide-react';
 import {
     SidebarMenu,
     SidebarMenuButton,
@@ -10,20 +10,11 @@ import {
 import { useRouter, usePathname } from 'next/navigation';
 
 interface AppointmentsSidebarProps {
-    onNewAppointment?: () => void;
 }
 
-export default function AppointmentsSidebar({ onNewAppointment }: AppointmentsSidebarProps) {
+export default function AppointmentsSidebar() {
     const router = useRouter();
     const pathname = usePathname();
-
-    const handleNewAppointment = () => {
-        if (onNewAppointment) {
-            onNewAppointment();
-        } else {
-            router.push('/appointments?new=true');
-        }
-    };
 
     return (
         <div className="flex flex-col h-full bg-sidebar border-r border-border/40 font-sans">
@@ -44,15 +35,6 @@ export default function AppointmentsSidebar({ onNewAppointment }: AppointmentsSi
                         >
                             <CalendarDays className="w-4 h-4 text-muted-foreground/50" />
                             <span className="text-sm font-medium">Agenda</span>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton
-                            onClick={handleNewAppointment}
-                            className="h-9 px-3"
-                        >
-                            <Plus className="w-4 h-4 text-muted-foreground/50" />
-                            <span className="text-sm font-medium">Nueva cita</span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
