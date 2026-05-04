@@ -4,10 +4,11 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useAppointmentsStore } from '@/store/useAppointmentsStore';
 import type { Appointment } from '@/lib/fhir/types';
-import { formatTime, nowInVE } from '@/lib/date-utils';
+import { nowInVE } from '@/lib/date-utils';
 import { FHIR_STATUS_CONFIG, FHIR_STATUS_PILL_VARIANT, formatPatientName } from '@/lib/appointmentConstants';
 import {
     confirmAppointment,
@@ -18,7 +19,6 @@ import {
 } from '@/actions/appointments';
 import { toast } from 'sonner';
 
-const HOURS = Array.from({ length: 13 }, (_, i) => i + 8);
 const START_HOUR = 8;
 const END_HOUR = 20;
 
@@ -172,31 +172,32 @@ export default function DayTimeline({ appointments, onEventClick, onRefresh }: D
         return (
             <Card
                 key={apt.id}
-                className="mb-2 cursor-pointer hover:bg-n-2/40 hover:border-n-4 transition-all duration-100 group"
+                className="cursor-pointer hover:border-n-4 transition-all duration-100 group"
                 onClick={() => onEventClick?.(apt)}
             >
-                <div className="flex items-center h-11 px-3 gap-2">
+                <CardHeader className="flex-row items-center gap-2 px-3 py-2">
                     <div className={cn(
-                        "w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0",
+                        "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0",
                         avatarColor
                     )}>
                         {patientInitials}
                     </div>
 
-                    <span className="text-sm font-medium text-n-12 truncate flex-1 min-w-0">
-                        {patientName}
-                    </span>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-n-11 truncate">
+                            {patientName}
+                        </p>
+                        <p className="text-[11px] text-n-8 font-mono tabular-nums">
+                            {startTime} — {endTime}
+                        </p>
+                    </div>
 
-                    <span className={cn(
-                        "shrink-0 text-[9px] px-1.5 py-0.5 rounded-full",
-                        FHIR_STATUS_PILL_VARIANT[apt.status]
-                    )}>
+                    <Badge
+                        variant={FHIR_STATUS_PILL_VARIANT[apt.status] as 'pill' | 'pill-success' | 'pill-warning' | 'pill-danger' | 'pill-info' | 'pill-neutral'}
+                        className="shrink-0"
+                    >
                         {statusConfig.label}
-                    </span>
-
-                    <span className="text-[11px] text-n-8 font-mono tabular-nums shrink-0 w-20 text-right">
-                        {startTime} - {endTime}
-                    </span>
+                    </Badge>
 
                     {quickActions.length > 0 && (
                         <div className="flex items-center gap-1 shrink-0 pl-2 border-l border-n-3/50 opacity-0 group-hover:opacity-100 transition-opacity duration-100">
@@ -219,7 +220,7 @@ export default function DayTimeline({ appointments, onEventClick, onRefresh }: D
                             ))}
                         </div>
                     )}
-                </div>
+                </CardHeader>
             </Card>
         );
     };
@@ -246,12 +247,12 @@ export default function DayTimeline({ appointments, onEventClick, onRefresh }: D
                         {sortedHours.map(hour => (
                             <div key={hour}>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-[10px] font-semibold text-n-8 bg-n-2/50 px-2 py-0.5 rounded">
+                                    <Badge variant="secondary" className="text-[10px] font-semibold px-2 py-0.5">
                                         {hour.toString().padStart(2, '0')}:00
-                                    </span>
+                                    </Badge>
                                     <div className="flex-1 h-px bg-n-3/30" />
                                 </div>
-                                <div className="ml-2">
+                                <div className="space-y-2">
                                     {appointmentsByHour[hour].map(renderAppointmentCard)}
                                 </div>
                             </div>
