@@ -1,52 +1,44 @@
 'use client';
 
 import React, { useState, useEffect, useTransition } from 'react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-    CalendarDays,
-    LayoutGrid,
-    Plus,
-    RefreshCw,
-    Calendar as CalendarIcon,
-    ChevronLeft,
-    ChevronRight
-} from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import AppointmentsTimeline from './AppointmentsTimeline';
-import AppointmentsKanban from './AppointmentsKanban';
 import AppointmentDetailSheet from './AppointmentDetailSheet';
 import NewAppointmentDialog from './NewAppointmentDialog';
 import NewWalkInDialog from './NewWalkInDialog';
 import WalkInQueuePanel from './WalkInQueuePanel';
 import { getAppointments, startConsultationFromAppointment } from '@/actions/appointments';
-import { nowInVE, toISODate } from '@/lib/date-utils';
+import { toISODate } from '@/lib/date-utils';
 import type { Appointment } from '@/lib/fhir/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { PageHeader, PageContainer } from '@/components/ui/PageLayout';
 import { useAppointmentsStore } from '@/store/useAppointmentsStore';
+import MonthlyCalendar from './MonthlyCalendar';
+import FilterDropdown from './FilterDropdown';
 
 interface AppointmentsViewProps {
     initialAppointments: Appointment[];
 }
 
 export default function AppointmentsView({ initialAppointments }: AppointmentsViewProps) {
-    const [view, setView] = useState<'timeline' | 'kanban' | 'queue'>('timeline');
+    const [view, setView] = useState<'calendar' | 'queue'>('calendar');
     const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [newDialogOpen, setNewDialogOpen] = useState(false);
+    const [newDialogDate, setNewDialogDate] = useState<Date | undefined>(undefined);
     const [walkInDialogOpen, setWalkInDialogOpen] = useState(false);
     const [hasCleanedUp, setHasCleanedUp] = useState(false);
 
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
 
-    const { selectedDate, statusFilter, setSelectedDate } = useAppointmentsStore();
+    const { selectedDate, statusFilter } = useAppointmentsStore();
 
     const selectedAppointment = appointments.find(a => a.id === selectedAppointmentId) || null;
 
-    // Refresh data when criteria change
     const refreshData = React.useCallback(() => {
         startTransition(async () => {
             const result = await getAppointments({
@@ -59,7 +51,6 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
         });
     }, [selectedDate, statusFilter]);
 
-    // Auto-cleanup expired appointments on mount
     useEffect(() => {
         if (!hasCleanedUp) {
             const cleanup = async () => {
@@ -83,132 +74,83 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
 
     useEffect(() => {
         refreshData();
-    }, [refreshData]);
+    }, [selectedDate, statusFilter, refreshData]);
 
-    const handleNextDay = () => {
-        const next = new Date(selectedDate);
-        next.setDate(next.getDate() + 1);
-        setSelectedDate(next);
+    const handleNewAppointment = (date?: Date) => {
+        setNewDialogDate(date);
+        setNewDialogOpen(true);
     };
 
-    const handlePrevDay = () => {
-        const prev = new Date(selectedDate);
-        prev.setDate(prev.getDate() - 1);
-        setSelectedDate(prev);
+    const handleEventClick = (apt: Appointment) => {
+        setSelectedAppointmentId(apt.id);
+        setDetailOpen(true);
     };
 
-    const formattedDate = selectedDate.toLocaleDateString('es-ES', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-    });
+    const hasQueueAppointments = appointments.some(a => a.queue_position !== null);
 
     return (
         <div className="flex flex-col h-full bg-background overflow-hidden">
-            {/* Page Header */}
             <PageHeader
                 title="Agenda de Citas"
-                description={formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)}
+                description="Gestiona tus citas y agenda"
                 breadcrumbs={[{ label: 'Citas' }]}
-                className="py-6 border-b-0"
+                className="py-4 border-b-0"
             >
                 <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-6">
-                        <Tabs 
-                            value={view} 
-                            onValueChange={(v) => setView(v as 'timeline' | 'kanban' | 'queue')}
+                    <div className="flex items-center gap-4">
+                        <Tabs
+                            value={view}
+                            onValueChange={(v) => setView(v as 'calendar' | 'queue')}
                             className="w-auto"
                         >
-                            <TabsList className="bg-transparent p-0 h-9 gap-6">
-                                <TabsTrigger 
-                                    value="timeline" 
-                                    className="h-9 px-0 bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[11px] font-bold text-muted-foreground/60 data-[state=active]:text-foreground transition-all duration-100 gap-1.5"
+                            <TabsList className="bg-transparent p-0 h-9 gap-4">
+                                <TabsTrigger
+                                    value="calendar"
+                                    className="h-9 px-0 bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-b-8 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[11px] font-bold text-n-8 data-[state=active]:text-n-11 transition-all duration-100 gap-1.5"
                                 >
-                                    <CalendarDays className="w-3.5 h-3.5" />
-                                    <span>Cronograma</span>
+                                    Mes
                                 </TabsTrigger>
-                                <TabsTrigger 
-                                    value="kanban" 
-                                    className="h-9 px-0 bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[11px] font-bold text-muted-foreground/60 data-[state=active]:text-foreground transition-all duration-100 gap-1.5"
-                                >
-                                    <LayoutGrid className="w-3.5 h-3.5" />
-                                    <span>Flujo de Trabajo</span>
-                                </TabsTrigger>
-                                {appointments.some(a => a.queue_position !== null) && (
-                                    <TabsTrigger 
-                                        value="queue" 
-                                        className="h-9 px-0 bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[11px] font-bold text-muted-foreground/60 data-[state=active]:text-foreground transition-all duration-100 gap-1.5"
+                                {hasQueueAppointments && (
+                                    <TabsTrigger
+                                        value="queue"
+                                        className="h-9 px-0 bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-b-8 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[11px] font-bold text-n-8 data-[state=active]:text-n-11 transition-all duration-100 gap-1.5"
                                     >
-                                        <div className="relative">
-                                            <Plus className="w-3.5 h-3.5 rotate-45" />
-                                            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-orange-500 rounded-full" />
-                                        </div>
-                                        <span>Cola de Espera</span>
+                                        Cola de Espera
                                     </TabsTrigger>
                                 )}
                             </TabsList>
                         </Tabs>
 
-                        <div className="flex items-center bg-muted/30 rounded-lg p-1">
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-7 w-7 hover:bg-background transition-colors"
-                                onClick={handlePrevDay}
-                            >
-                                <ChevronLeft className="w-4 h-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 px-2 text-[11px] font-bold gap-1.5 hover:bg-background transition-colors"
-                                onClick={() => setSelectedDate(nowInVE())}
-                            >
-                                <CalendarIcon className="w-3 h-3 text-primary" />
-                                Hoy
-                            </Button>
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-7 w-7 hover:bg-background transition-colors"
-                                onClick={handleNextDay}
-                            >
-                                <ChevronRight className="w-4 h-4" />
-                            </Button>
-                        </div>
+                        <FilterDropdown />
                     </div>
-                    
-                    {isPending && <RefreshCw className="w-3.5 h-3.5 text-primary animate-spin" />}
+
+                    <div className="flex items-center gap-2">
+                        <Button
+                            size="sm"
+                            className="h-8 px-3 gap-1.5 bg-b-8 hover:bg-b-8/90 text-white"
+                            onClick={() => handleNewAppointment()}
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span className="text-xs font-medium">Nueva Cita</span>
+                        </Button>
+
+                        {isPending && <RefreshCw className="w-3.5 h-3.5 text-b-8 animate-spin" />}
+                    </div>
                 </div>
             </PageHeader>
 
-            {/* Main Content Area */}
             <main className="flex-1 overflow-hidden relative">
                 <PageContainer size="full" className="h-full p-0 flex flex-col border-t border-border/40">
                     <div className="flex-1 relative">
-                        {view === 'timeline' && (
-                            <AppointmentsTimeline 
+                        {view === 'calendar' && (
+                            <MonthlyCalendar
                                 appointments={appointments}
-                                onSelect={(id) => {
-                                    setSelectedAppointmentId(id);
-                                    setDetailOpen(true);
-                                }}
-                                selectedId={selectedAppointmentId}
-                                selectedDate={selectedDate}
-                            />
-                        )}
-                        {view === 'kanban' && (
-                            <AppointmentsKanban 
-                                appointments={appointments}
-                                onSelect={(id) => {
-                                    setSelectedAppointmentId(id);
-                                    setDetailOpen(true);
-                                }}
-                                selectedId={selectedAppointmentId}
+                                onEventClick={handleEventClick}
+                                onNewAppointment={handleNewAppointment}
                             />
                         )}
                         {view === 'queue' && (
-                            <WalkInQueuePanel 
+                            <WalkInQueuePanel
                                 appointments={appointments}
                                 onSelect={(id) => {
                                     setSelectedAppointmentId(id);
@@ -229,27 +171,27 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                         )}
                     </div>
                 </PageContainer>
-
-                {/* Dialogs and Sheets */}
-                <AppointmentDetailSheet 
-                    appointment={selectedAppointment}
-                    open={detailOpen}
-                    onOpenChange={setDetailOpen}
-                    onAction={refreshData}
-                />
-
-                <NewAppointmentDialog 
-                    open={newDialogOpen}
-                    onOpenChange={setNewDialogOpen}
-                    onCreated={refreshData}
-                />
-
-                <NewWalkInDialog 
-                    open={walkInDialogOpen}
-                    onOpenChange={setWalkInDialogOpen}
-                    onCreated={refreshData}
-                />
             </main>
+
+            <AppointmentDetailSheet
+                appointment={selectedAppointment}
+                open={detailOpen}
+                onOpenChange={setDetailOpen}
+                onAction={refreshData}
+            />
+
+            <NewAppointmentDialog
+                open={newDialogOpen}
+                onOpenChange={setNewDialogOpen}
+                onCreated={refreshData}
+                defaultDate={newDialogDate}
+            />
+
+            <NewWalkInDialog
+                open={walkInDialogOpen}
+                onOpenChange={setWalkInDialogOpen}
+                onCreated={refreshData}
+            />
         </div>
     );
 }

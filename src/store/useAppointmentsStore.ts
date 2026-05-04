@@ -4,26 +4,20 @@ import type { AppointmentStatus } from '@/lib/fhir/types';
 interface AppointmentsState {
     selectedDate: Date;
     statusFilter: AppointmentStatus[];
-
-    openCalendar: boolean;
-    openFilters: boolean;
-    openStats: boolean;
+    patientSearch: string;
 
     setSelectedDate: (date: Date) => void;
     setStatusFilter: (statuses: AppointmentStatus[]) => void;
     toggleStatusFilter: (status: AppointmentStatus) => void;
-    setOpenCalendar: (open: boolean) => void;
-    setOpenFilters: (open: boolean) => void;
-    setOpenStats: (open: boolean) => void;
+    clearStatusFilter: () => void;
+    setPatientSearch: (search: string) => void;
+    clearAllFilters: () => void;
 }
 
 export const useAppointmentsStore = create<AppointmentsState>((set) => ({
     selectedDate: new Date(),
     statusFilter: [],
-
-    openCalendar: true,
-    openFilters: true,
-    openStats: false,
+    patientSearch: '',
 
     setSelectedDate: (date) => set({ selectedDate: date }),
     setStatusFilter: (statuses) => set({ statusFilter: statuses }),
@@ -33,7 +27,13 @@ export const useAppointmentsStore = create<AppointmentsState>((set) => ({
         }
         return { statusFilter: [...state.statusFilter, status] };
     }),
-    setOpenCalendar: (open) => set({ openCalendar: open }),
-    setOpenFilters: (open) => set({ openFilters: open }),
-    setOpenStats: (open) => set({ openStats: open }),
+    clearStatusFilter: () => set({ statusFilter: [] }),
+    setPatientSearch: (search) => set({ patientSearch: search }),
+    clearAllFilters: () => set({ statusFilter: [], patientSearch: '' }),
 }));
+
+export const selectHasActiveFilters = (state: AppointmentsState) =>
+    state.statusFilter.length > 0 || state.patientSearch.length > 0;
+
+export const selectFilteredCount = (state: AppointmentsState) =>
+    state.statusFilter.length;
