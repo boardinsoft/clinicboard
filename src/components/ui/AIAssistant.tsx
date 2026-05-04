@@ -40,7 +40,6 @@ import {
     SidebarMenuItem,
     SidebarMenuAction,
 } from '@/components/ui/sidebar';
-import PatientDetailSidebar from '@/components/patients/PatientDetailSidebar';
 import EncounterDetailPanel from '@/components/history/EncounterDetailPanel';
 
 interface PatientFile {
@@ -165,7 +164,7 @@ const INITIAL_SECTIONS: DocumentSection[] = [
 
 export default function AIAssistant() {
     const { toggleRightPanel, setRightPanelOpen } = useLayoutStore();
-    const { selectedPatientForPreview, setSelectedPatientForPreview } = usePatientStore();
+    const { selectedEncounterForPreview, setSelectedEncounterForPreview } = usePatientStore();
     const pathname = usePathname();
     const [sections, setSections] = useState<DocumentSection[]>(INITIAL_SECTIONS);
     const dropZoneRef = useRef<HTMLDivElement>(null);
@@ -184,21 +183,15 @@ export default function AIAssistant() {
     ]);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-    const { selectedEncounterForPreview, setSelectedEncounterForPreview } = usePatientStore();
-
-    const isPatientModule = pathname?.startsWith('/patients');
-    // Solo mostramos el detalle del paciente si estamos en el módulo de pacientes Y hay uno seleccionado
-    const showPatientPreview = isPatientModule && selectedPatientForPreview;
-
     const isHistoryModule = pathname?.startsWith('/history');
     const showEncounterPreview = isHistoryModule && !!selectedEncounterForPreview;
 
     // Auto-scroll logic for chat
     React.useEffect(() => {
-        if (!showPatientPreview && !isPatientModule && scrollContainerRef.current) {
+        if (scrollContainerRef.current) {
             scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
         }
-    }, [messages, showPatientPreview, isPatientModule]);
+    }, [messages]);
 
     const handleSendMessage = async () => {
         if (!chatInput.trim()) return;
@@ -274,19 +267,6 @@ export default function AIAssistant() {
                 encounter={selectedEncounterForPreview!}
                 onClose={() => {
                     setSelectedEncounterForPreview(null);
-                    setRightPanelOpen(false);
-                }}
-            />
-        );
-    }
-
-    // ─── Renderizado Condicional: Detalle de Paciente ───
-    if (showPatientPreview) {
-        return (
-            <PatientDetailSidebar
-                patient={selectedPatientForPreview}
-                onClose={() => {
-                    setSelectedPatientForPreview(null);
                     setRightPanelOpen(false);
                 }}
             />

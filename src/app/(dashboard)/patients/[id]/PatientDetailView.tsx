@@ -27,8 +27,6 @@ import {
 import { useRouter } from 'next/navigation';
 import { getEncounters } from '@/actions/encounters';
 import { archivePatient, reactivatePatient } from '@/actions/patients';
-import { useLayoutStore } from '@/store/useLayoutStore';
-import { useTabStore } from '@/store/useTabStore';
 import { usePatientStore } from '@/store/usePatientStore';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -66,7 +64,7 @@ interface PatientDetailViewProps {
 function PropertyItem({ label, value, className, mono }: { label: string; value: string; className?: string; mono?: boolean }) {
     return (
         <div className={cn("flex flex-col gap-1 py-1.5", className)}>
-            <span className="text-[10px] font-bold text-neutral-8 uppercase tracking-wider font-sans">
+            <span className="text-xs font-medium text-muted-foreground">
                 {label}
             </span>
             <span className={cn(
@@ -105,22 +103,10 @@ export default function PatientDetailView({ patient, conditions: initialConditio
     const [showAddAllergy, setShowAddAllergy] = useState(false);
     const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
     const [archiving, setArchiving] = useState(false);
-    const { setRightPanelOpen } = useLayoutStore();
-    const { removeTab, findTabByUrl } = useTabStore();
-    const { 
-        viewStates, 
-        setPatientView, 
-        openPatientTab,
-        setActivePatient 
-    } = usePatientStore();
+    const { viewStates, setPatientView } = usePatientStore();
 
-    const savedTab = (viewStates[patient.id]?.activeSubTab as TabValue) || 'overview';
+    const savedTab = (viewStates && viewStates[patient.id]?.activeSubTab as TabValue) || 'overview';
     const [activeTab, setActiveTab] = useState<TabValue>(savedTab);
-
-    useEffect(() => {
-        setActivePatient(patient.id);
-        setRightPanelOpen(false);
-    }, [patient.id, setActivePatient, setRightPanelOpen]);
 
     useEffect(() => {
         const fetchEncounters = async () => {
@@ -406,8 +392,6 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                     toast.error('Error al archivar', { description: result.error });
                                     return;
                                 }
-                                const patientTab = findTabByUrl(`/patients/${patient.id}`);
-                                if (patientTab) removeTab(patientTab.id);
                                 toast.success('Paciente archivado');
                                 router.push('/patients');
                             }}

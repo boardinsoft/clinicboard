@@ -279,9 +279,7 @@ function SecondarySidebar() {
       className="flex flex-col h-full w-64 bg-n-1 shrink-0 overflow-hidden border-r border-border/40"
       data-secondary-sidebar
     >
-      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-        {secondaryPanelContent}
-      </div>
+      {secondaryPanelContent}
     </aside>
   );
 }

@@ -372,7 +372,7 @@
   .table-clinic .table-name { @apply font-semibold text-foreground; }
   .table-clinic .mono { @apply font-mono text-[12px] text-n-9 tracking-tight; }
   .table-clinic tr:hover td {
-    background-color: color-mix(in oklch, var(--n-2), transparent 50%);
+    background-color: oklch(0.99 0.003 241);
     @apply transition-colors;
   }
   /* ── Animaciones ── */
