@@ -131,7 +131,7 @@ export default function MonthlyCalendar({
                                     </span>
 
                                     {dayAppointments.length > 0 && (
-                                        <div className="flex flex-col gap-1 mt-1.5 px-0.5 w-full">
+                                        <div className="flex flex-col gap-1.5 mt-2 px-1 w-full">
                                             {dayAppointments.slice(0, 3).map((apt, i) => (
                                                 <Badge
                                                     key={i}
