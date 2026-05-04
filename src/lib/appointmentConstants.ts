@@ -20,6 +20,16 @@ export const FHIR_STATUS_COLORS: Record<AppointmentStatus, string> = {
     noshow: 'bg-n-8',
 };
 
+export const FHIR_STATUS_PILL_VARIANT: Record<AppointmentStatus, string> = {
+    proposed: 'pill-neutral',
+    pending: 'pill-warning',
+    booked: 'pill-info',
+    arrived: 'pill-warning',
+    fulfilled: 'pill-success',
+    cancelled: 'pill-danger',
+    noshow: 'pill-neutral',
+};
+
 export const APPOINTMENT_TYPES = [
     "Consulta General",
     "Control",

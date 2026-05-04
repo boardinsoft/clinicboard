@@ -123,12 +123,11 @@ export default function FilterDropdown({ appointments }: FilterDropdownProps) {
                                         <Checkbox
                                             checked={isChecked}
                                             onCheckedChange={() => handleStatusToggle(status)}
-                                            className="border-n-5 data-[state=checked]:bg-b-8 data-[state=checked]:border-b-8"
                                         />
                                         <div className={cn("w-2 h-2 rounded-full", FHIR_STATUS_COLORS[status])} />
                                         <span className={cn(
                                             "flex-1 text-sm transition-colors",
-                                            isChecked ? "text-n-12 font-medium" : "text-n-11 group-hover:text-foreground"
+                                            isChecked ? "text-n-12 font-medium" : "text-n-11 group-hover:text-n-12"
                                         )}>
                                             {config.label}
                                         </span>
