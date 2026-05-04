@@ -132,18 +132,21 @@ export default function MonthlyCalendar({
 
                                     {dayAppointments.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mt-1 px-0.5">
-                                            {dayAppointments.slice(0, 3).map((apt, i) => (
-                                                <div
+                                            {dayAppointments.slice(0, 2).map((apt, i) => (
+                                                <Badge
                                                     key={i}
+                                                    variant="secondary"
                                                     className={cn(
-                                                        "w-2 h-2 rounded-full",
-                                                        FHIR_STATUS_COLORS[apt.status] || 'bg-n-5'
+                                                        "text-[8px] px-1 py-0 leading-tight max-w-full truncate",
+                                                        FHIR_STATUS_COLORS[apt.status] ? "" : "text-n-8"
                                                     )}
-                                                />
+                                                >
+                                                    {apt.appointment_type || 'Consulta'}
+                                                </Badge>
                                             ))}
-                                            {dayAppointments.length > 3 && (
-                                                <span className="text-[9px] text-n-8 font-medium">
-                                                    +{dayAppointments.length - 3}
+                                            {dayAppointments.length > 2 && (
+                                                <span className="text-[9px] text-n-8 font-medium self-center">
+                                                    +{dayAppointments.length - 2}
                                                 </span>
                                             )}
                                         </div>
