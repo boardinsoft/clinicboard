@@ -187,7 +187,7 @@ export default function DayTimeline({ appointments, onEventClick, onRefresh }: D
                         <p className="text-sm font-medium text-n-11 truncate">
                             {patientName}
                         </p>
-                        <p className="text-[11px] text-n-8 font-mono tabular-nums">
+                        <p className="text-xs text-n-9 font-mono tabular-nums">
                             {startTime} — {endTime}
                         </p>
                     </div>
@@ -207,7 +207,7 @@ export default function DayTimeline({ appointments, onEventClick, onRefresh }: D
                                     variant="ghost"
                                     size="sm"
                                     className={cn(
-                                        "h-6 px-1.5 text-[9px] font-semibold",
+                                        "h-8 px-2 text-[10px] font-semibold focus-visible:ring-2 focus-visible:ring-b-8",
                                         ActionsColors[action.key]
                                     )}
                                     onClick={(e) => {
@@ -231,14 +231,14 @@ export default function DayTimeline({ appointments, onEventClick, onRefresh }: D
                 {filteredAppointments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full ml-14">
                         <CalendarDays className="w-12 h-12 text-n-4 opacity-25 mb-2" />
-                        <p className="text-xs text-n-7 font-medium">Sin citas para este día</p>
+                        <p className="text-xs text-n-8 font-medium">Sin citas para este día</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
                         {isNowInView && (
                             <div className="sticky top-0 z-30 flex items-center gap-2 mb-4">
                                 <div className="w-2.5 h-2.5 rounded-full bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
-                                <span className="text-[9px] font-bold text-destructive tracking-wide bg-destructive/10 px-2 py-0.5 rounded-full">
+                                <span className="text-[10px] font-bold text-destructive tracking-wide bg-destructive/10 px-2 py-0.5 rounded-full">
                                     AHORA · {nowHour.toString().padStart(2, '0')}:{nowMinutes.toString().padStart(2, '0')}
                                 </span>
                             </div>

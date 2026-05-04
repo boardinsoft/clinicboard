@@ -10,7 +10,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { useAppointmentsStore } from '@/store/useAppointmentsStore';
 import type { Appointment } from '@/lib/fhir/types';
 import { formatTime } from '@/lib/date-utils';
-import { FHIR_STATUS_CONFIG, FHIR_STATUS_COLORS, FHIR_STATUS_PILL_VARIANT, formatPatientName } from '@/lib/appointmentConstants';
+import { FHIR_STATUS_CONFIG, FHIR_STATUS_PILL_VARIANT, formatPatientName } from '@/lib/appointmentConstants';
 
 const DAYS_OF_WEEK = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -123,7 +123,7 @@ export default function MonthlyCalendar({
                                         className={cn(
                                             "text-base font-medium w-8 h-8 flex items-center justify-center rounded-[6px] transition-all",
                                             isCurrentMonth ? "text-n-11" : "text-n-5",
-                                            isToday && "bg-b-8 text-white ring-2 ring-b-8/30 ring-offset-1",
+                                            isToday && "bg-b-8 text-white ring-2 ring-b-8 ring-offset-1",
                                             isSelected && !isToday && "bg-n-11 text-n-1"
                                         )}
                                     >
@@ -137,15 +137,14 @@ export default function MonthlyCalendar({
                                                     key={i}
                                                     variant="secondary"
                                                     className={cn(
-                                                        "text-[10px] px-1.5 py-0.5 leading-tight max-w-full truncate",
-                                                        FHIR_STATUS_COLORS[apt.status] ? "" : "text-n-8"
+                                                        "text-[10px] px-1.5 py-0.5 leading-tight max-w-full truncate text-n-9"
                                                     )}
                                                 >
                                                     {apt.appointment_type || 'Consulta'}
                                                 </Badge>
                                             ))}
                                             {dayAppointments.length > 3 && (
-                                                <span className="text-[9px] text-n-8 font-medium px-1.5">
+                                                <span className="text-[10px] text-n-9 font-medium px-1.5">
                                                     +{dayAppointments.length - 3}
                                                 </span>
                                             )}
@@ -195,7 +194,7 @@ export default function MonthlyCalendar({
                                                             key={apt.id}
                                                             onClick={() => onEventClick?.(apt)}
                                                             className={cn(
-                                                                "w-full flex flex-col items-start px-3 py-2 hover:bg-n-2/50 transition-colors text-left",
+                                                                "w-full flex flex-col items-start px-3 py-2 hover:bg-n-2/50 transition-colors text-left focus-visible:ring-2 focus-visible:ring-b-8",
                                                                 "border-l-4",
                                                                 statusConfig?.borderClass || 'border-l-n-5'
                                                             )}
@@ -206,17 +205,17 @@ export default function MonthlyCalendar({
                                                                 </span>
                                                                 <Badge
                                                                     variant={FHIR_STATUS_PILL_VARIANT[apt.status] as 'pill' | 'pill-success' | 'pill-warning' | 'pill-danger' | 'pill-info' | 'pill-neutral'}
-                                                                    className="shrink-0 text-[9px]"
+                                                                    className="shrink-0 text-[10px]"
                                                                 >
                                                                     {statusConfig?.label || apt.status}
                                                                 </Badge>
                                                             </div>
                                                             <div className="flex items-center gap-2 mt-1 w-full">
-                                                                <span className="text-[11px] font-mono text-n-8">
+                                                                <span className="text-[11px] font-mono text-n-9">
                                                                     {formatTime(apt.start_time)}
                                                                 </span>
                                                                 {apt.appointment_type && (
-                                                                    <Badge variant="secondary" className="text-[9px] text-n-8">
+                                                                    <Badge variant="secondary" className="text-[10px] text-n-9">
                                                                         {apt.appointment_type}
                                                                     </Badge>
                                                                 )}
