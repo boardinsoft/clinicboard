@@ -33,13 +33,13 @@ function calcDuration(start: string, end: string | null): string {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-    'planned':     { label: 'Planificada', className: 'bg-muted/60 text-muted-foreground border-border/40' },
-    'arrived':     { label: 'Llegó',       className: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800' },
-    'triaged':     { label: 'Triaje',      className: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800' },
-    'in-progress': { label: 'En curso',    className: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800' },
-    'finished':    { label: 'Finalizada',  className: 'bg-primary/5 text-primary border-primary/20' },
-    'cancelled':   { label: 'Cancelada',   className: 'bg-destructive/5 text-destructive border-destructive/20' },
-    'onleave':     { label: 'Pausa',       className: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/30 dark:text-purple-400 dark:border-purple-800' },
+    'planned':     { label: 'Planificada', className: 'bg-n-2 text-n-8 border-n-5' },
+    'arrived':     { label: 'Llegó',       className: 'bg-info/10 text-info border-info/30' },
+    'triaged':     { label: 'Triaje',      className: 'bg-warning/10 text-warning border-warning/30' },
+    'in-progress': { label: 'En curso',    className: 'bg-info/10 text-info border-info/30' },
+    'finished':    { label: 'Finalizada',  className: 'bg-success/10 text-success border-success/30' },
+    'cancelled':   { label: 'Cancelada',   className: 'bg-destructive/10 text-destructive border-destructive/30' },
+    'onleave':     { label: 'Pausa',       className: 'bg-n-2 text-n-8 border-n-5' },
 };
 
 const CLASS_LABELS: Record<string, string> = {
@@ -53,7 +53,7 @@ const CLASS_LABELS: Record<string, string> = {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
     return (
-        <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/50">
+        <span className="text-[10px] uppercase tracking-wider font-semibold text-n-8">
             {children}
         </span>
     );
@@ -85,7 +85,7 @@ function CollapsibleSection({ title, children, defaultOpen = true }: {
 function PropRow({ label, value, mono }: { label: string; value: string | React.ReactNode; mono?: boolean }) {
     return (
         <div className="flex flex-col gap-0.5">
-            <span className="text-[10px] font-bold text-neutral-8 uppercase tracking-wider">{label}</span>
+            <span className="text-[10px] font-bold text-n-8 uppercase tracking-wider">{label}</span>
             <span className={cn(
                 "text-[13px] font-medium text-foreground",
                 mono ? "mono" : "font-sans"

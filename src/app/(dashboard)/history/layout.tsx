@@ -2,14 +2,14 @@
 
 import { ReactNode, useEffect } from 'react';
 import { useLayoutStore } from '@/store/useLayoutStore';
-import SpecialtySidebar from './SpecialtySidebar';
+import HistoryPatientPanel from './HistoryPatientPanel';
 
 export default function HistoryLayout({ children }: { children: ReactNode }) {
     const { setSubHeaderContent, setSecondaryPanel, clearSecondaryPanel } = useLayoutStore();
 
     useEffect(() => {
         setSubHeaderContent(null);
-        setSecondaryPanel(<SpecialtySidebar />, 'Historia clínica');
+        setSecondaryPanel(<HistoryPatientPanel />, 'Historia clínica');
 
         return () => {
             setSubHeaderContent(undefined);

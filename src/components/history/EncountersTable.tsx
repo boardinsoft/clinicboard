@@ -75,7 +75,7 @@ export default function EncountersTable({ encounters }: { encounters: EncounterF
                 </div>
                 <div className="text-center space-y-1">
                     <h3 className="text-sm font-bold text-foreground">No hay consultas registradas</h3>
-                    <p className="text-[12px] text-neutral-8 max-w-[280px] mx-auto">
+                    <p className="text-[12px] text-n-8 max-w-[280px] mx-auto">
                         Aún no se han registrado encuentros clínicos para este periodo.
                     </p>
                 </div>
@@ -152,7 +152,7 @@ export default function EncountersTable({ encounters }: { encounters: EncounterF
                                     <div className="text-xs font-bold text-foreground group-hover:text-brand-8 transition-colors">
                                         {formatDate(enc.start_time)}
                                     </div>
-                                    <div className="text-[10px] text-neutral-8 mono mt-0.5">
+                                    <div className="text-[10px] text-n-8 mono mt-0.5">
                                         {formatTime(enc.start_time)}
                                     </div>
                                 </td>
@@ -163,7 +163,7 @@ export default function EncountersTable({ encounters }: { encounters: EncounterF
                                         {patientName}
                                     </div>
                                     {age && (
-                                        <div className="text-[10px] text-neutral-8 mt-0.5 mono">{age}</div>
+                                        <div className="text-[10px] text-n-8 mt-0.5 mono">{age}</div>
                                     )}
                                 </td>
 
@@ -183,14 +183,14 @@ export default function EncountersTable({ encounters }: { encounters: EncounterF
 
                                 {/* Motivo */}
                                 <td className="hidden lg:table-cell max-w-[200px]">
-                                    <p className="text-xs text-neutral-9 truncate" title={reason}>
+                                    <p className="text-xs text-n-9 truncate" title={reason}>
                                         {reason}
                                     </p>
                                 </td>
 
                                 {/* Duración */}
                                 <td className="hidden lg:table-cell whitespace-nowrap text-right">
-                                    <span className="text-[11px] text-neutral-8 mono">
+                                    <span className="text-[11px] text-n-8 mono">
                                         {calcDuration(enc.start_time, enc.end_time)}
                                     </span>
                                 </td>
