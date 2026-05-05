@@ -1,0 +1,202 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e8]
+          - generic [ref=e12]: ClinicBoard
+        - button "Seleccionar organización activa" [ref=e14] [cursor=pointer]:
+          - img [ref=e15]
+          - generic [ref=e19]: Clínica Sura
+          - img [ref=e20]
+        - generic [ref=e23]: Pro
+        - generic [ref=e26]: Medicina General
+        - button "Ver estado de servicios y recursos conectados" [ref=e27] [cursor=pointer]:
+          - generic [ref=e29]: 3 recursos
+          - img [ref=e30]
+      - generic [ref=e32]:
+        - button "Feedback" [ref=e33] [cursor=pointer]
+        - button "Ayuda" [ref=e34] [cursor=pointer]:
+          - img
+        - button "Abrir búsqueda global (⌘K)" [ref=e35] [cursor=pointer]:
+          - img [ref=e36]
+          - generic [ref=e39]: Buscar…
+          - generic [ref=e40]: ⌘K
+        - button "Notificaciones" [ref=e41] [cursor=pointer]:
+          - img
+        - button "Asistente IA" [ref=e43] [cursor=pointer]:
+          - img
+        - button "Actualizar" [ref=e45] [cursor=pointer]
+        - button "B" [ref=e47] [cursor=pointer]:
+          - generic [ref=e48]: B
+    - generic [ref=e49]:
+      - complementary "Navegación principal" [ref=e50]:
+        - navigation [ref=e51]:
+          - button [ref=e53] [cursor=pointer]:
+            - img [ref=e54]
+          - button [ref=e58] [cursor=pointer]:
+            - img [ref=e59]
+          - button [ref=e66] [cursor=pointer]:
+            - img [ref=e67]
+          - button [ref=e70] [cursor=pointer]:
+            - img [ref=e71]
+          - button [ref=e76] [cursor=pointer]:
+            - img [ref=e77]
+      - complementary [ref=e229]:
+        - generic [ref=e231]:
+          - generic [ref=e233]: Citas
+          - generic [ref=e234]:
+            - generic [ref=e235]:
+              - button "Navegación" [expanded] [ref=e236] [cursor=pointer]:
+                - img [ref=e237]
+                - generic [ref=e239]: Navegación
+              - list [ref=e241]:
+                - listitem [ref=e242]:
+                  - button "Agenda" [ref=e243] [cursor=pointer]:
+                    - img [ref=e244]
+                    - generic [ref=e246]: Agenda
+                - listitem [ref=e247]:
+                  - button "Cola de espera" [ref=e248] [cursor=pointer]:
+                    - img [ref=e249]
+                    - generic [ref=e252]: Cola de espera
+            - generic [ref=e254]:
+              - button "Opciones" [expanded] [ref=e255] [cursor=pointer]:
+                - img [ref=e256]
+                - generic [ref=e258]: Opciones
+              - list [ref=e260]:
+                - listitem [ref=e261]:
+                  - button "Configuración" [disabled]:
+                    - img
+                    - generic: Configuración
+      - main [ref=e85]:
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - navigation "breadcrumb" [ref=e89]:
+                - list [ref=e90]:
+                  - listitem [ref=e91]:
+                    - link "Citas" [disabled] [ref=e92]
+              - heading "Calendario de Citas" [level=1] [ref=e95]
+            - generic [ref=e97]:
+              - img [ref=e98]
+              - generic [ref=e100]: "Citas hoy:"
+              - generic [ref=e101]: "0"
+            - generic [ref=e102]:
+              - generic [ref=e103]:
+                - tablist [ref=e105]:
+                  - tab [selected] [ref=e106] [cursor=pointer]:
+                    - img [ref=e107]
+                  - tab [ref=e109] [cursor=pointer]:
+                    - img [ref=e110]
+                - generic [ref=e113]:
+                  - button [ref=e114] [cursor=pointer]:
+                    - img
+                  - heading "Mayo 2026" [level=2] [ref=e115]
+                  - button [ref=e116] [cursor=pointer]:
+                    - img
+                - button "Filtros" [ref=e117] [cursor=pointer]:
+                  - generic [ref=e118]: Filtros
+                  - img
+              - generic [ref=e119]:
+                - button "Hoy" [ref=e120] [cursor=pointer]
+                - button "Nueva Cita" [ref=e121] [cursor=pointer]:
+                  - img
+                  - generic [ref=e122]: Nueva Cita
+          - main [ref=e123]:
+            - generic [ref=e126]:
+              - generic [ref=e127]:
+                - generic [ref=e128]: Dom
+                - generic [ref=e129]: Lun
+                - generic [ref=e130]: Mar
+                - generic [ref=e131]: Mié
+                - generic [ref=e132]: Jue
+                - generic [ref=e133]: Vie
+                - generic [ref=e134]: Sáb
+              - generic [ref=e135]:
+                - button "26" [disabled] [ref=e136]:
+                  - generic [ref=e137]: "26"
+                - button "27" [disabled] [ref=e138]:
+                  - generic [ref=e139]: "27"
+                - button "28" [disabled] [ref=e140]:
+                  - generic [ref=e141]: "28"
+                - button "29" [disabled] [ref=e142]:
+                  - generic [ref=e143]: "29"
+                - button "30" [disabled] [ref=e144]:
+                  - generic [ref=e145]: "30"
+                - button "1" [ref=e146] [cursor=pointer]:
+                  - generic [ref=e147]: "1"
+                - button "2" [ref=e148] [cursor=pointer]:
+                  - generic [ref=e149]: "2"
+                - button "3" [ref=e150] [cursor=pointer]:
+                  - generic [ref=e151]: "3"
+                - button "4" [ref=e152] [cursor=pointer]:
+                  - generic [ref=e153]: "4"
+                - button "5" [ref=e154] [cursor=pointer]:
+                  - generic [ref=e155]: "5"
+                - button "6" [ref=e156] [cursor=pointer]:
+                  - generic [ref=e157]: "6"
+                - button "7" [ref=e158] [cursor=pointer]:
+                  - generic [ref=e159]: "7"
+                - button "8" [ref=e160] [cursor=pointer]:
+                  - generic [ref=e161]: "8"
+                - button "9" [ref=e162] [cursor=pointer]:
+                  - generic [ref=e163]: "9"
+                - button "10" [ref=e164] [cursor=pointer]:
+                  - generic [ref=e165]: "10"
+                - button "11" [ref=e166] [cursor=pointer]:
+                  - generic [ref=e167]: "11"
+                - button "12" [ref=e168] [cursor=pointer]:
+                  - generic [ref=e169]: "12"
+                - button "13" [ref=e170] [cursor=pointer]:
+                  - generic [ref=e171]: "13"
+                - button "14" [ref=e172] [cursor=pointer]:
+                  - generic [ref=e173]: "14"
+                - button "15" [ref=e174] [cursor=pointer]:
+                  - generic [ref=e175]: "15"
+                - button "16" [ref=e176] [cursor=pointer]:
+                  - generic [ref=e177]: "16"
+                - button "17" [ref=e178] [cursor=pointer]:
+                  - generic [ref=e179]: "17"
+                - button "18" [ref=e180] [cursor=pointer]:
+                  - generic [ref=e181]: "18"
+                - button "19" [ref=e182] [cursor=pointer]:
+                  - generic [ref=e183]: "19"
+                - button "20" [ref=e184] [cursor=pointer]:
+                  - generic [ref=e185]: "20"
+                - button "21" [ref=e186] [cursor=pointer]:
+                  - generic [ref=e187]: "21"
+                - button "22" [ref=e188] [cursor=pointer]:
+                  - generic [ref=e189]: "22"
+                - button "23" [ref=e190] [cursor=pointer]:
+                  - generic [ref=e191]: "23"
+                - button "24" [ref=e192] [cursor=pointer]:
+                  - generic [ref=e193]: "24"
+                - button "25" [ref=e194] [cursor=pointer]:
+                  - generic [ref=e195]: "25"
+                - button "26" [ref=e196] [cursor=pointer]:
+                  - generic [ref=e197]: "26"
+                - button "27" [ref=e198] [cursor=pointer]:
+                  - generic [ref=e199]: "27"
+                - button "28" [ref=e200] [cursor=pointer]:
+                  - generic [ref=e201]: "28"
+                - button "29" [ref=e202] [cursor=pointer]:
+                  - generic [ref=e203]: "29"
+                - button "30" [ref=e204] [cursor=pointer]:
+                  - generic [ref=e205]: "30"
+                - button "31" [ref=e206] [cursor=pointer]:
+                  - generic [ref=e207]: "31"
+                - button "1" [disabled] [ref=e208]:
+                  - generic [ref=e209]: "1"
+                - button "2" [disabled] [ref=e210]:
+                  - generic [ref=e211]: "2"
+                - button "3" [disabled] [ref=e212]:
+                  - generic [ref=e213]: "3"
+                - button "4" [disabled] [ref=e214]:
+                  - generic [ref=e215]: "4"
+                - button "5" [disabled] [ref=e216]:
+                  - generic [ref=e217]: "5"
+                - button "6" [disabled] [ref=e218]:
+                  - generic [ref=e219]: "6"
+  - button "Open Next.js Dev Tools" [ref=e225] [cursor=pointer]:
+    - img [ref=e226]
+  - alert [ref=e275]

@@ -217,7 +217,7 @@ export function PatientForm({
                                     </p>
                                 </div>
                             </div>
-                            <div className="md:col-span-8 lg:col-span-9">
+                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
                                 <InputGroup>
                                     <InputGroupAddon align="inline-start">
                                         <InputGroupText className="text-n-8">Nom.</InputGroupText>
@@ -246,7 +246,7 @@ export function PatientForm({
                                     </p>
                                 </div>
                             </div>
-                            <div className="md:col-span-8 lg:col-span-9">
+                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
                                 <InputGroup>
                                     <InputGroupAddon align="inline-start">
                                         <InputGroupText className="text-n-8">Ape.</InputGroupText>
@@ -275,7 +275,7 @@ export function PatientForm({
                                     </p>
                                 </div>
                             </div>
-                            <div className="md:col-span-8 lg:col-span-9">
+                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
                                 <Select
                                     onValueChange={(val) => form.setValue("gender", val as "female" | "male" | "other" | "unknown")}
                                     value={form.watch("gender")}
@@ -307,7 +307,7 @@ export function PatientForm({
                                     </p>
                                 </div>
                             </div>
-                            <div className="md:col-span-8 lg:col-span-9">
+                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
                                 <InputGroup>
                                     <InputGroupAddon align="inline-start">
                                         <InputGroupText className="text-n-8">Nac.</InputGroupText>
@@ -334,7 +334,7 @@ export function PatientForm({
                                     </p>
                                 </div>
                             </div>
-                            <div className="md:col-span-8 lg:col-span-9">
+                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
                                 <InputGroup>
                                     <InputGroupAddon align="inline-start">
                                         <InputGroupText className="text-n-8">ID</InputGroupText>
@@ -360,7 +360,7 @@ export function PatientForm({
                                     </p>
                                 </div>
                             </div>
-                            <div className="md:col-span-8 lg:col-span-9">
+                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
                                 <InputGroup>
                                     <InputGroupAddon align="inline-start">
                                         <InputGroupText className="text-n-8">+58</InputGroupText>
@@ -386,7 +386,7 @@ export function PatientForm({
                                     </p>
                                 </div>
                             </div>
-                            <div className="md:col-span-8 lg:col-span-9">
+                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
                                 <InputGroup>
                                     <InputGroupAddon align="inline-start">
                                         <InputGroupText className="text-n-8">@</InputGroupText>
@@ -416,7 +416,7 @@ export function PatientForm({
                                     </p>
                                 </div>
                             </div>
-                            <div className="md:col-span-8 lg:col-span-9">
+                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
                                 <InputGroup>
                                     <InputGroupAddon align="block-start" className="pt-3">
                                         <InputGroupText className="text-n-8">Dir.</InputGroupText>
