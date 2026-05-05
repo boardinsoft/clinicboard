@@ -1,0 +1,74 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e8]
+          - generic [ref=e12]: ClinicBoard
+        - button "Seleccionar organización activa" [ref=e14] [cursor=pointer]:
+          - img [ref=e15]
+          - generic [ref=e19]: Clínica Sura
+          - img [ref=e20]
+        - generic [ref=e23]: Pro
+        - generic [ref=e26]: Medicina General
+        - button "Ver estado de servicios y recursos conectados" [ref=e27] [cursor=pointer]:
+          - generic [ref=e29]: 3 recursos
+          - img [ref=e30]
+      - generic [ref=e32]:
+        - button "Feedback" [ref=e33] [cursor=pointer]
+        - button "Ayuda" [ref=e34] [cursor=pointer]:
+          - img
+        - button "Abrir búsqueda global (⌘K)" [ref=e35] [cursor=pointer]:
+          - img [ref=e36]
+          - generic [ref=e39]: Buscar…
+          - generic [ref=e40]: ⌘K
+        - button "Notificaciones" [ref=e41] [cursor=pointer]:
+          - img
+        - button "Asistente IA" [ref=e43] [cursor=pointer]:
+          - img
+        - button "Actualizar" [ref=e45] [cursor=pointer]
+        - button "B" [ref=e47] [cursor=pointer]:
+          - generic [ref=e48]: B
+    - generic [ref=e49]:
+      - complementary "Navegación principal" [ref=e50]:
+        - navigation [ref=e51]:
+          - button [ref=e53] [cursor=pointer]:
+            - img [ref=e54]
+          - button [ref=e59] [cursor=pointer]:
+            - img [ref=e60]
+          - button [ref=e66] [cursor=pointer]:
+            - img [ref=e67]
+          - button [ref=e70] [cursor=pointer]:
+            - img [ref=e71]
+          - button [ref=e76] [cursor=pointer]:
+            - img [ref=e77]
+      - main [ref=e85]:
+        - generic [ref=e86]:
+          - generic [ref=e88]:
+            - generic [ref=e90]:
+              - img [ref=e91]
+              - textbox "Buscar paciente..." [ref=e94]
+            - generic [ref=e95]:
+              - button "Exportar seleccionados" [disabled]:
+                - img
+                - text: Exportar seleccionados
+              - button "Exportar lista" [ref=e96] [cursor=pointer]:
+                - img
+                - text: Exportar lista
+              - button "+ Nuevo Paciente" [ref=e97] [cursor=pointer]:
+                - generic [ref=e98]: +
+                - text: Nuevo Paciente
+          - generic [ref=e101]:
+            - img [ref=e102]
+            - generic [ref=e104]: No hay pacientes registrados
+          - generic [ref=e105]:
+            - generic [ref=e107]: "Total: 0 registros"
+            - generic [ref=e108]:
+              - generic [ref=e110]: Página 1 de 1
+              - generic [ref=e111]:
+                - button [disabled]:
+                  - img
+                - button [disabled]:
+                  - img
+  - button "Open Next.js Dev Tools" [ref=e117] [cursor=pointer]:
+    - img [ref=e118]

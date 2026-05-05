@@ -578,7 +578,7 @@ const displayName =
           <button
             onClick={() => setIsSearchModalOpen(true)}
             aria-label="Abrir búsqueda global (⌘K)"
-            className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 dark:bg-n-3 border border-n-5 dark:border-n-5 rounded-[5px] text-[13px] text-n-9 dark:text-n-10 hover:bg-n-3 dark:hover:bg-n-4 hover:border-n-6 hover:text-n-11 dark:hover:text-n-11 focus:bg-background focus:border-b-8 focus:ring-2 focus:ring-b-8/10 outline-none transition-all shadow-sm"
+            className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 dark:bg-n-3 border border-n-5 dark:border-n-5 rounded-[5px] text-[13px] text-n-9 dark:text-n-10 hover:bg-n-3 dark:hover:bg-n-4 hover:border-n-6 hover:text-n-11 dark:hover:text-n-11 outline-none transition-all shadow-sm"
           >
             <SearchIcon size={14} strokeWidth={1.8} />
             <span className="flex-1 text-left font-medium">Buscar…</span>

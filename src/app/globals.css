@@ -164,7 +164,15 @@
   /* ── Neutralizar focus ring del navegador ── */
   :focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+    box-shadow: none;
+  }
+  .dark :focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+  /* ── Hover sutil universal para dark mode ── */
+  .dark *:hover:not([disabled]):not(.no-hover) {
+    transition: all 0.15s ease;
   }
 
   /* ── Neutralizar autofill del navegador ── */
@@ -248,8 +256,9 @@
     color: #ffffff;
   }
   .dark .pill-success:hover {
-    background-color: #2dddb2;
-    border-color: #2dddb2;
+    background-color: var(--s-success-bg);
+    border-color: var(--s-success-br);
+    color: var(--s-success);
   }
   .pill-success::before { background-color: var(--s-success); }
 
@@ -269,8 +278,9 @@
     color: #ffffff;
   }
   .dark .pill-warning:hover {
-    background-color: #fbbf24;
-    border-color: #fbbf24;
+    background-color: var(--s-warning-bg);
+    border-color: var(--s-warning-br);
+    color: var(--s-warning);
   }
   .pill-warning::before { background-color: var(--s-warning); }
 
@@ -290,8 +300,9 @@
     color: #ffffff;
   }
   .dark .pill-danger:hover {
-    background-color: #f87171;
-    border-color: #f87171;
+    background-color: var(--s-danger-bg);
+    border-color: var(--s-danger-br);
+    color: var(--s-danger);
   }
   .pill-danger::before { background-color: var(--s-danger); }
 
@@ -311,8 +322,9 @@
     color: #ffffff;
   }
   .dark .pill-info:hover {
-    background-color: #93c5fd;
-    border-color: #93c5fd;
+    background-color: var(--s-info-bg);
+    border-color: var(--s-info-br);
+    color: var(--s-info);
   }
   .pill-info::before { background-color: var(--s-info); }
 
@@ -332,8 +344,9 @@
     color: #ffffff;
   }
   .dark .pill-neutral:hover {
-    background-color: #d1d5db;
-    border-color: #d1d5db;
+    background-color: var(--s-neutral-bg);
+    border-color: var(--s-neutral-br);
+    color: var(--s-neutral);
   }
   .pill-neutral::before { background-color: color-mix(in oklch, var(--muted-foreground), transparent 60%); }
 
@@ -378,13 +391,13 @@
   .table-clinic .table-name { @apply font-semibold text-foreground; }
   .table-clinic .mono { @apply font-mono text-[12px] text-n-9 tracking-tight; }
   .table-clinic tr:hover td {
-    background-color: oklch(0.99 0.003 241);
+    background-color: var(--n-3);
     @apply transition-colors;
   }
   /* ── Animaciones ── */
   @keyframes pulse-dot {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(201, 134, 24, 0.4); }
-    50% { box-shadow: 0 0 0 3px rgba(201, 134, 24, 0.2); }
+    0%, 100% { box-shadow: 0 0 0 0 var(--s-warning); }
+    50% { box-shadow: 0 0 0 3px var(--s-warning-br); }
   }
 
   .animate-pulse-dot {

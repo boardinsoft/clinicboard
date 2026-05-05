@@ -1,24 +1,29 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   ChevronLeft,
   ChevronRight,
-  Maximize2,
   AlertCircle,
-  Loader2
+  Loader2,
+  Pencil,
+  Printer,
+  Download,
+  MoreVertical,
+  Eye,
+  Search,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from '@/components/ui/tooltip';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import type { Patient } from '@/types/database.types';
 import { usePatientSearch } from '@/hooks/usePatientSearch';
 
@@ -67,10 +72,39 @@ function getGenderLabel(gender?: string | null): string {
   }
 }
 
+// ─── Checkbox Helpers ─────────────────────────────────────────────────────────
+function togglePatientSelection(
+  selected: Set<string>,
+  patientId: string
+): Set<string> {
+  const next = new Set(selected);
+  if (next.has(patientId)) {
+    next.delete(patientId);
+  } else {
+    next.add(patientId);
+  }
+  return next;
+}
+
+function toggleAllSelection(
+  selected: Set<string>,
+  patientIds: string[],
+  allSelected: boolean
+): Set<string> {
+  if (allSelected) {
+    return new Set(patientIds);
+  }
+  return new Set();
+}
+
 export default function PatientsListView() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  const [selectedPatients, setSelectedPatients] = useState<Set<string>>(new Set());
+  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+  const headerCheckboxRef = React.useRef<HTMLInputElement>(null);
 
   const urlQuery = searchParams.get('q') || '';
   const urlPage = parseInt(searchParams.get('page') || '1');
@@ -97,6 +131,14 @@ export default function PatientsListView() {
     }
   }, [urlQuery]);
 
+// Sync header checkbox indeterminate state
+  useEffect(() => {
+    if (headerCheckboxRef.current) {
+      headerCheckboxRef.current.indeterminate =
+        selectedPatients.size > 0 && selectedPatients.size < patients.length;
+    }
+  }, [selectedPatients, patients.length]);
+
   // Sync query changes to URL
   useEffect(() => {
     if (query !== urlQuery) {
@@ -120,10 +162,6 @@ export default function PatientsListView() {
     }
   }, [currentPage]);
 
-  const handleSelectPatient = (p: Patient) => {
-    router.push(`/patients/${p.id}`);
-  };
-
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     const params = new URLSearchParams(searchParams.toString());
@@ -137,30 +175,59 @@ export default function PatientsListView() {
       <div className="shrink-0 border-b border-border/40 bg-background px-6 py-4">
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
-            <Input
-              type="text"
-              placeholder="Buscar paciente por nombre o cédula..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="h-9 pl-9 pr-4 bg-muted/50 border-border/60 text-sm"
-            />
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <div className="relative flex items-center gap-2 h-8 px-3 bg-n-2 dark:bg-n-3 border border-n-5 dark:border-n-5 rounded-[5px] text-[13px] text-n-9 dark:text-n-10 hover:bg-n-3 dark:hover:bg-n-4 hover:border-n-6 transition-all shadow-sm">
+              <Search className="w-4 h-4 shrink-0 text-n-8" strokeWidth={1.8} />
+              <input
+                type="text"
+                placeholder="Buscar paciente..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="flex-1 bg-transparent text-[13px] text-n-11 dark:text-n-11 placeholder:text-n-8 outline-none min-w-0 h-8"
+              />
+              {query && (
+                <button
+                  onClick={() => setQuery('')}
+                  className="p-0.5 hover:bg-n-5 rounded transition-colors shrink-0"
+                >
+                  <X className="w-3 h-3 text-n-8" />
+                </button>
+              )}
+            </div>
           </div>
-          <Button
-            variant="default"
-            size="sm"
-            className="h-9 px-4 bg-b-8 hover:bg-b-9 text-white font-medium"
-            onClick={() => router.push('/patients/new')}
-          >
-            <span className="mr-1">+</span> Nuevo Paciente
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors"
+              disabled={selectedPatients.size === 0}
+              onClick={() => alert('Exportar seleccionados — Próximamente')}
+            >
+              <Download className="w-4 h-4 mr-1.5" />
+              Exportar seleccionados
+              {selectedPatients.size > 0 && (
+                <span className="ml-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-b-8 text-[10px] font-bold text-white">
+                  {selectedPatients.size}
+                </span>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors"
+              onClick={() => alert('Exportar toda la lista — Próximamente')}
+            >
+              <Download className="w-4 h-4 mr-1.5" />
+              Exportar lista
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              className="h-9 px-4 bg-b-8 hover:bg-b-9 text-white font-medium"
+              onClick={() => router.push('/patients/new')}
+            >
+              <span className="mr-1">+</span> Nuevo Paciente
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -194,7 +261,21 @@ export default function PatientsListView() {
               <thead className="sticky top-0 z-30 shadow-sm">
                 <tr>
                   <th className="w-12 text-center">
-                    <input type="checkbox" className="h-3.5 w-3.5 rounded border-border/60 accent-primary" />
+                    <label className="flex items-center justify-center cursor-pointer h-full">
+                      <input
+                        type="checkbox"
+                        checked={selectedPatients.size === patients.length && patients.length > 0}
+                        ref={headerCheckboxRef}
+                        onChange={() => {
+                          if (selectedPatients.size === patients.length) {
+                            setSelectedPatients(new Set());
+                          } else {
+                            setSelectedPatients(new Set(patients.map(p => p.id)));
+                          }
+                        }}
+                        className="h-4 w-4 rounded border-n-5 accent-b-8 cursor-pointer"
+                      />
+                    </label>
                   </th>
                   <th>Paciente</th>
                   <th>Identificación</th>
@@ -202,21 +283,29 @@ export default function PatientsListView() {
                   <th>Edad</th>
                   <th>Teléfono</th>
                   <th>Estado</th>
-                  <th className="w-20 text-right"></th>
+                  <th className="w-12 text-right"></th>
                 </tr>
               </thead>
               <tbody>
                 {patients.map((p) => (
                   <tr
                     key={p.id}
-                    className="group cursor-pointer transition-colors relative"
-                    onClick={() => handleSelectPatient(p)}
+                    className={cn(
+                      "group cursor-pointer transition-colors relative",
+                      selectedPatients.has(p.id) && "bg-b-2/30"
+                    )}
+                    onClick={() => setOpenPopoverId(p.id)}
                   >
-                    <td className="text-center" onClick={e => e.stopPropagation()}>
-                      <input type="checkbox" className="h-3.5 w-3.5 rounded border-border/60 accent-primary" />
+<td className="text-center" onClick={e => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selectedPatients.has(p.id)}
+                        onCheckedChange={() => {
+                          setSelectedPatients((prev) => togglePatientSelection(prev, p.id));
+                        }}
+                      />
                     </td>
                     <td>
-                      <span className="table-name truncate block group-hover:text-primary transition-colors">
+                      <span className="table-name truncate block group-hover:text-b-8 transition-colors">
                         {getFullName(p)}
                       </span>
                     </td>
@@ -230,21 +319,64 @@ export default function PatientsListView() {
                       </Badge>
                     </td>
                     <td className="text-right">
-                      <div className="flex items-center justify-end gap-2 pr-2">
-                        <TooltipProvider>
-                          <Tooltip delayDuration={300}>
-                            <TooltipTrigger asChild>
+                      <div className="flex items-center justify-end gap-1 pr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Popover
+                          open={openPopoverId === p.id}
+                          onOpenChange={(open) => {
+                            if (!open) setOpenPopoverId(null);
+                          }}
+                        >
+                          <PopoverTrigger asChild>
+                            <button
+                              onClick={(e) => e.stopPropagation()}
+                              className="p-1.5 hover:bg-n-3 dark:hover:bg-n-2 rounded text-n-8 dark:text-n-9 hover:text-n-12 dark:hover:text-n-11 transition-colors"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-48 p-1 bg-n-1 dark:bg-n-2 border border-n-5 dark:border-n-6 shadow-md"
+                            align="end"
+                            side="left"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex flex-col">
                               <button
-                                onClick={(e) => { e.stopPropagation(); router.push(`/patients/${p.id}`); }}
-                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-primary transition-all"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(`/patients/${p.id}`);
+                                  setOpenPopoverId(null);
+                                }}
+                                className="flex items-center gap-2 px-3 py-2 text-sm rounded-[6px] text-n-12 dark:text-n-11 cursor-pointer hover:bg-n-3 dark:hover:bg-n-2 transition-colors"
                               >
-                                <Maximize2 className="w-3.5 h-3.5" />
+                                <Eye className="w-4 h-4 text-n-8" />
+                                Ver detalle
                               </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="left" className="text-[11px] font-medium py-1 px-2">Expandir registro</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <ChevronRight className="w-3.5 h-3.5 transition-all duration-200 text-muted-foreground/40 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0" />
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(`/patients/${p.id}/edit`);
+                                  setOpenPopoverId(null);
+                                }}
+                                className="flex items-center gap-2 px-3 py-2 text-sm rounded-[6px] text-n-12 dark:text-n-11 cursor-pointer hover:bg-n-3 dark:hover:bg-n-2 transition-colors"
+                              >
+                                <Pencil className="w-4 h-4 text-n-8" />
+                                Editar paciente
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  alert(`Imprimir ficha — Próximamente`);
+                                  setOpenPopoverId(null);
+                                }}
+                                className="flex items-center gap-2 px-3 py-2 text-sm rounded-[6px] text-n-12 dark:text-n-11 cursor-pointer hover:bg-n-3 dark:hover:bg-n-2 transition-colors"
+                              >
+                                <Printer className="w-4 h-4 text-n-8" />
+                                Imprimir ficha
+                              </button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </td>
                   </tr>
