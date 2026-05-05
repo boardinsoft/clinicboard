@@ -18,6 +18,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Fieldset } from "@/components/ui/fieldset"
 import { Field, FieldError, FieldLabel, FieldGroup } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupText, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group"
 import {
@@ -206,155 +207,178 @@ export function PatientForm({
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="p-8 pt-6">
-                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-                        <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <CardContent className="p-0">
+                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                        <Fieldset
+                            title="Identidad"
+                            description="Información personal básica del paciente."
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Field>
+                                    <FieldLabel htmlFor="givenNames">
+                                        Nombres <span className="text-b-8">*</span>
+                                    </FieldLabel>
+                                    <InputGroup>
+                                        <InputGroupAddon align="inline-start">
+                                            <InputGroupText className="text-n-8">Nom.</InputGroupText>
+                                        </InputGroupAddon>
+                                        <InputGroupInput
+                                            {...form.register("givenNames")}
+                                            id="givenNames"
+                                            placeholder="María Carmen"
+                                            className="placeholder:text-n-8"
+                                        />
+                                    </InputGroup>
+                                    {form.formState.errors.givenNames && (
+                                        <FieldError>{form.formState.errors.givenNames.message}</FieldError>
+                                    )}
+                                </Field>
+
+                                <Field>
+                                    <FieldLabel htmlFor="familyName">
+                                        Apellidos <span className="text-b-8">*</span>
+                                    </FieldLabel>
+                                    <InputGroup>
+                                        <InputGroupAddon align="inline-start">
+                                            <InputGroupText className="text-n-8">Ape.</InputGroupText>
+                                        </InputGroupAddon>
+                                        <InputGroupInput
+                                            {...form.register("familyName")}
+                                            id="familyName"
+                                            placeholder="García López"
+                                            className="placeholder:text-n-8"
+                                        />
+                                    </InputGroup>
+                                    {form.formState.errors.familyName && (
+                                        <FieldError>{form.formState.errors.familyName.message}</FieldError>
+                                    )}
+                                </Field>
+
+                                <Field>
+                                    <FieldLabel htmlFor="gender">
+                                        Género <span className="text-b-8">*</span>
+                                    </FieldLabel>
+                                    <Select
+                                        onValueChange={(val) => form.setValue("gender", val as "female" | "male" | "other" | "unknown")}
+                                        value={form.watch("gender")}
+                                    >
+                                        <SelectTrigger id="gender" className="h-10 bg-n-1 border-n-5 text-sm">
+                                            <SelectValue placeholder="Seleccionar" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-popover border-n-5">
+                                            <SelectItem value="unknown">Desconocido</SelectItem>
+                                            <SelectItem value="female">Femenino</SelectItem>
+                                            <SelectItem value="male">Masculino</SelectItem>
+                                            <SelectItem value="other">Otro</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {form.formState.errors.gender && (
+                                        <FieldError>{form.formState.errors.gender.message}</FieldError>
+                                    )}
+                                </Field>
+
+                                <Field>
+                                    <FieldLabel htmlFor="birthDate">Fecha de nacimiento</FieldLabel>
+                                    <InputGroup>
+                                        <InputGroupAddon align="inline-start">
+                                            <InputGroupText className="text-n-8">Nac.</InputGroupText>
+                                        </InputGroupAddon>
+                                        <InputGroupInput
+                                            {...form.register("birthDate")}
+                                            id="birthDate"
+                                            type="date"
+                                            max={new Date().toISOString().split("T")[0]}
+                                            className={resolvedTheme === "dark" ? "[color-scheme:dark]" : "[color-scheme:light]"}
+                                        />
+                                    </InputGroup>
+                                </Field>
+                            </div>
+                        </Fieldset>
+
+                        <Fieldset
+                            title="Documentación"
+                            description="Identificación oficial y documentos legales."
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Field>
+                                    <FieldLabel htmlFor="documentId">Cédula / Identificación</FieldLabel>
+                                    <InputGroup>
+                                        <InputGroupAddon align="inline-start">
+                                            <InputGroupText className="text-n-8">ID</InputGroupText>
+                                        </InputGroupAddon>
+                                        <InputGroupInput
+                                            {...form.register("documentId")}
+                                            id="documentId"
+                                            placeholder="00000000"
+                                            className="placeholder:text-n-8 font-mono"
+                                        />
+                                    </InputGroup>
+                                </Field>
+                            </div>
+                        </Fieldset>
+
+                        <Fieldset
+                            title="Contacto"
+                            description="Medios de comunicación directa."
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Field>
+                                    <FieldLabel htmlFor="phone">Teléfono</FieldLabel>
+                                    <InputGroup>
+                                        <InputGroupAddon align="inline-start">
+                                            <InputGroupText className="text-n-8">+58</InputGroupText>
+                                        </InputGroupAddon>
+                                        <InputGroupInput
+                                            {...form.register("phone")}
+                                            id="phone"
+                                            placeholder="412 0000000"
+                                            className="placeholder:text-n-8"
+                                        />
+                                    </InputGroup>
+                                </Field>
+
+                                <Field>
+                                    <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
+                                    <InputGroup>
+                                        <InputGroupAddon align="inline-start">
+                                            <InputGroupText className="text-n-8">@</InputGroupText>
+                                        </InputGroupAddon>
+                                        <InputGroupInput
+                                            {...form.register("email")}
+                                            id="email"
+                                            type="email"
+                                            placeholder="correo@ejemplo.com"
+                                            className="placeholder:text-n-8"
+                                        />
+                                    </InputGroup>
+                                    {form.formState.errors.email && (
+                                        <FieldError>{form.formState.errors.email.message}</FieldError>
+                                    )}
+                                </Field>
+                            </div>
+                        </Fieldset>
+
+                        <Fieldset
+                            title="Dirección"
+                            description="Dirección física de residencia."
+                        >
                             <Field>
-                                <FieldLabel htmlFor="givenNames">
-                                    Nombres <span className="text-b-8">*</span>
-                                </FieldLabel>
                                 <InputGroup>
-                                    <InputGroupAddon align="inline-start">
-                                        <InputGroupText className="text-n-8">Nom.</InputGroupText>
+                                    <InputGroupAddon align="block-start" className="pt-3">
+                                        <InputGroupText className="text-n-8">Dir.</InputGroupText>
                                     </InputGroupAddon>
-                                    <InputGroupInput
-                                        {...form.register("givenNames")}
-                                        id="givenNames"
-                                        placeholder="María Carmen"
-                                        className="placeholder:text-n-8"
+                                    <InputGroupTextarea
+                                        {...form.register("address")}
+                                        id="address"
+                                        placeholder="Av. Principal, Edificio, Apartamento, Ciudad..."
+                                        rows={3}
+                                        className="min-h-[80px] placeholder:text-n-8"
                                     />
                                 </InputGroup>
-                                {form.formState.errors.givenNames && (
-                                    <FieldError>{form.formState.errors.givenNames.message}</FieldError>
-                                )}
                             </Field>
+                        </Fieldset>
 
-                            <Field>
-                                <FieldLabel htmlFor="familyName">
-                                    Apellidos <span className="text-b-8">*</span>
-                                </FieldLabel>
-                                <InputGroup>
-                                    <InputGroupAddon align="inline-start">
-                                        <InputGroupText className="text-n-8">Ape.</InputGroupText>
-                                    </InputGroupAddon>
-                                    <InputGroupInput
-                                        {...form.register("familyName")}
-                                        id="familyName"
-                                        placeholder="García López"
-                                        className="placeholder:text-n-8"
-                                    />
-                                </InputGroup>
-                                {form.formState.errors.familyName && (
-                                    <FieldError>{form.formState.errors.familyName.message}</FieldError>
-                                )}
-                            </Field>
-
-                            <Field>
-                                <FieldLabel htmlFor="gender">
-                                    Género <span className="text-b-8">*</span>
-                                </FieldLabel>
-                                <Select
-                                    onValueChange={(val) => form.setValue("gender", val as "female" | "male" | "other" | "unknown")}
-                                    value={form.watch("gender")}
-                                >
-                                    <SelectTrigger id="gender" className="h-10 bg-n-1 border-n-5 text-sm">
-                                        <SelectValue placeholder="Seleccionar" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-popover border-n-5">
-                                        <SelectItem value="unknown">Desconocido</SelectItem>
-                                        <SelectItem value="female">Femenino</SelectItem>
-                                        <SelectItem value="male">Masculino</SelectItem>
-                                        <SelectItem value="other">Otro</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {form.formState.errors.gender && (
-                                    <FieldError>{form.formState.errors.gender.message}</FieldError>
-                                )}
-                            </Field>
-
-                            <Field>
-                                <FieldLabel htmlFor="birthDate">Fecha de nacimiento</FieldLabel>
-                                <InputGroup>
-                                    <InputGroupAddon align="inline-start">
-                                        <InputGroupText className="text-n-8">Nac.</InputGroupText>
-                                    </InputGroupAddon>
-                                    <InputGroupInput
-                                        {...form.register("birthDate")}
-                                        id="birthDate"
-                                        type="date"
-                                        max={new Date().toISOString().split("T")[0]}
-                                        className={resolvedTheme === "dark" ? "[color-scheme:dark]" : "[color-scheme:light]"}
-                                    />
-                                </InputGroup>
-                            </Field>
-
-                            <Field>
-                                <FieldLabel htmlFor="documentId">Cédula / Identificación</FieldLabel>
-                                <InputGroup>
-                                    <InputGroupAddon align="inline-start">
-                                        <InputGroupText className="text-n-8">ID</InputGroupText>
-                                    </InputGroupAddon>
-                                    <InputGroupInput
-                                        {...form.register("documentId")}
-                                        id="documentId"
-                                        placeholder="00000000"
-                                        className="placeholder:text-n-8 font-mono"
-                                    />
-                                </InputGroup>
-                            </Field>
-
-                            <Field>
-                                <FieldLabel htmlFor="phone">Teléfono</FieldLabel>
-                                <InputGroup>
-                                    <InputGroupAddon align="inline-start">
-                                        <InputGroupText className="text-n-8">+58</InputGroupText>
-                                    </InputGroupAddon>
-                                    <InputGroupInput
-                                        {...form.register("phone")}
-                                        id="phone"
-                                        placeholder="412 0000000"
-                                        className="placeholder:text-n-8"
-                                    />
-                                </InputGroup>
-                            </Field>
-                        </FieldGroup>
-
-                        <Field>
-                            <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
-                            <InputGroup>
-                                <InputGroupAddon align="inline-start">
-                                    <InputGroupText className="text-n-8">@</InputGroupText>
-                                </InputGroupAddon>
-                                <InputGroupInput
-                                    {...form.register("email")}
-                                    id="email"
-                                    type="email"
-                                    placeholder="correo@ejemplo.com"
-                                    className="placeholder:text-n-8"
-                                />
-                            </InputGroup>
-                            {form.formState.errors.email && (
-                                <FieldError>{form.formState.errors.email.message}</FieldError>
-                            )}
-                        </Field>
-
-                        <Field>
-                            <FieldLabel htmlFor="address">Dirección completa</FieldLabel>
-                            <InputGroup>
-                                <InputGroupAddon align="block-start" className="pt-3">
-                                    <InputGroupText className="text-n-8">Dir.</InputGroupText>
-                                </InputGroupAddon>
-                                <InputGroupTextarea
-                                    {...form.register("address")}
-                                    id="address"
-                                    placeholder="Av. Principal, Edificio, Apartamento, Ciudad..."
-                                    rows={3}
-                                    className="min-h-[80px] placeholder:text-n-8"
-                                />
-                            </InputGroup>
-                        </Field>
-
-                        <div className="flex justify-end items-center gap-3 pt-5 border-t border-n-5/30">
+                        <div className="flex justify-end items-center gap-3 p-5 border-t border-n-5/30 bg-n-2/30">
                             <Button
                                 type="button"
                                 variant="ghost"
