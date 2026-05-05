@@ -137,7 +137,7 @@ export function PatientForm({
     const age = calcAge(birthDate)
 
     return (
-        <div className="min-h-screen bg-n-2/50">
+        <div className="min-h-screen bg-n-2">
             <div className="p-8 max-w-4xl mx-auto animate-in fade-in duration-500">
                 {mode === "edit" && patientName ? (
                     <div className="mb-6 p-5 bg-n-1 rounded-lg border border-n-5/30">
@@ -189,7 +189,7 @@ export function PatientForm({
                     </div>
                 )}
 
-                <Card className="border border-n-5/30 bg-n-2/40 shadow-none overflow-hidden">
+                <Card className="border border-n-5/30 bg-n-1 shadow-none overflow-hidden">
                 <CardHeader className="border-b border-n-5/30 pb-5 px-8 pt-6">
                     <div className="flex items-center gap-3">
                         <div className="w-1 h-5 rounded-full bg-b-8" />
