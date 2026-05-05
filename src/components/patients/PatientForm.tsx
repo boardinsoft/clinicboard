@@ -137,58 +137,59 @@ export function PatientForm({
     const age = calcAge(birthDate)
 
     return (
-        <div className="p-8 max-w-4xl mx-auto animate-in fade-in duration-500">
-            {mode === "edit" && patientName ? (
-                <div className="mb-6 p-5 bg-n-1 rounded-lg border border-n-5/30">
-                    <div className="flex items-center gap-4">
-                        <div className={cn(
-                            "w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold shrink-0 border-2 border-n-5/20",
-                            getAvatarColor(gender)
-                        )}>
-                            {initials}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h1 className="text-2xl font-bold text-n-11 tracking-tight leading-tight">
-                                {patientName}
-                            </h1>
-                            <div className="flex items-center gap-3 mt-1.5">
-                                {documentId && (
-                                    <span className="text-xs font-mono text-n-8 bg-n-2 px-2 py-0.5 rounded">{documentId}</span>
-                                )}
-                                {age && (
-                                    <span className="text-xs text-n-8">{age} años</span>
-                                )}
-                                <span className="text-xs text-n-8 capitalize">{getGenderLabel(gender)}</span>
-                                <Badge variant={patientActive ? "pill-success" : "pill-neutral"} className="text-[10px] py-0.5">
-                                    {patientActive ? "Activo" : "Inactivo"}
-                                </Badge>
+        <div className="min-h-screen bg-n-2/50">
+            <div className="p-8 max-w-4xl mx-auto animate-in fade-in duration-500">
+                {mode === "edit" && patientName ? (
+                    <div className="mb-6 p-5 bg-n-1 rounded-lg border border-n-5/30">
+                        <div className="flex items-center gap-4">
+                            <div className={cn(
+                                "w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold shrink-0 border-2 border-n-5/20",
+                                getAvatarColor(gender)
+                            )}>
+                                {initials}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h1 className="text-2xl font-bold text-n-11 tracking-tight leading-tight">
+                                    {patientName}
+                                </h1>
+                                <div className="flex items-center gap-3 mt-1.5">
+                                    {documentId && (
+                                        <span className="text-xs font-mono text-n-8 bg-n-2 px-2 py-0.5 rounded">{documentId}</span>
+                                    )}
+                                    {age && (
+                                        <span className="text-xs text-n-8">{age} años</span>
+                                    )}
+                                    <span className="text-xs text-n-8 capitalize">{getGenderLabel(gender)}</span>
+                                    <Badge variant={patientActive ? "pill-success" : "pill-neutral"} className="text-[10px] py-0.5">
+                                        {patientActive ? "Activo" : "Inactivo"}
+                                    </Badge>
+                                </div>
+                            </div>
+                            <div className="w-10 h-10 rounded-lg bg-b-8/10 flex items-center justify-center shrink-0">
+                                <Edit3 className="w-5 h-5 text-b-8" />
                             </div>
                         </div>
-                        <div className="w-10 h-10 rounded-lg bg-b-8/10 flex items-center justify-center shrink-0">
-                            <Edit3 className="w-5 h-5 text-b-8" />
-                        </div>
+                        <p className="text-sm text-n-8 mt-4 leading-relaxed">
+                            Los cambios se guardarán en el expediente FHIR del paciente
+                        </p>
                     </div>
-                    <p className="text-sm text-n-8 mt-4 leading-relaxed">
-                        Los cambios se guardarán en el expediente FHIR del paciente
-                    </p>
-                </div>
-            ) : (
-                <div className="mb-6 p-5 bg-n-1 rounded-lg border border-n-5/30">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-b-8/10 flex items-center justify-center">
-                            <UserIcon className="size-5 text-b-8" />
+                ) : (
+                    <div className="mb-6 p-5 bg-n-1 rounded-lg border border-n-5/30">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-b-8/10 flex items-center justify-center">
+                                <UserIcon className="size-5 text-b-8" />
+                            </div>
+                            <h1 className="text-2xl font-bold tracking-tight text-n-11">
+                                Alta de Paciente
+                            </h1>
                         </div>
-                        <h1 className="text-2xl font-bold tracking-tight text-n-11">
-                            Alta de Paciente
-                        </h1>
+                        <p className="text-sm text-n-8 mt-2 leading-relaxed">
+                            Complete la información demográfica del paciente
+                        </p>
                     </div>
-                    <p className="text-sm text-n-8 mt-2 leading-relaxed">
-                        Complete la información demográfica del paciente
-                    </p>
-                </div>
-            )}
+                )}
 
-            <Card className="border border-n-5/30 bg-n-2/40 shadow-none overflow-hidden">
+                <Card className="border border-n-5/30 bg-n-1 shadow-none overflow-hidden">
                 <CardHeader className="border-b border-n-5/30 pb-5 px-8 pt-6">
                     <div className="flex items-center gap-3">
                         <div className="w-1 h-5 rounded-full bg-b-8" />
@@ -485,6 +486,7 @@ export function PatientForm({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            </div>
         </div>
     )
 }
