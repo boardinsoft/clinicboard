@@ -22,6 +22,7 @@ export default function EditPatientPage() {
     const [saving, setSaving] = useState(false)
     const [patientName, setPatientName] = useState("")
     const [patientData, setPatientData] = useState<PatientFormValues | null>(null)
+    const [patientActive, setPatientActive] = useState(true)
 
     const formRef = useRef<{ reset: (values: PatientFormValues) => void } | null>(null)
 
@@ -52,7 +53,8 @@ export default function EditPatientPage() {
                     address: (data.address as PatientAddress[] | null)?.[0]?.text || "",
                 }
                 setPatientData(values)
-                setPatientName(data.name_family || "")
+                setPatientName(`${data.name_given?.join(" ") || ""} ${data.name_family || ""}`.trim())
+                setPatientActive(data.active !== false)
             } catch (error: unknown) {
                 console.error("Error fetching patient:", error)
                 const message = error instanceof Error ? error.message : "No se pudo cargar la información del paciente."
@@ -124,6 +126,7 @@ export default function EditPatientPage() {
             isLoading={saving}
             patientId={id}
             patientName={patientName}
+            patientActive={patientActive}
         />
     )
 }

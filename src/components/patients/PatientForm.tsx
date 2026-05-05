@@ -6,8 +6,10 @@ import { useTheme } from "next-themes"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { UserIcon, PhoneIcon, MailIcon, MapPinIcon, CalendarIcon, IdCard, ChevronRight } from "lucide-react"
+import { UserIcon, Edit3 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
     Select,
     SelectContent,
@@ -50,6 +52,40 @@ interface PatientFormProps {
     mode: "create" | "edit"
     patientId?: string
     patientName?: string
+    patientActive?: boolean
+}
+
+function calcAge(birthDate: string): string {
+    if (!birthDate) return ""
+    const birth = new Date(birthDate)
+    const today = new Date()
+    let age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+    return `${age}`
+}
+
+function getGenderLabel(gender: string): string {
+    switch (gender) {
+        case "male": return "Masculino"
+        case "female": return "Femenino"
+        case "other": return "Otro"
+        default: return "Sin especificar"
+    }
+}
+
+function getAvatarColor(gender: string): string {
+    switch (gender) {
+        case "female": return "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400"
+        case "male": return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+        default: return "bg-n-3 text-n-11 dark:bg-n-5 dark:text-n-10"
+    }
+}
+
+function getInitials(givenNames?: string, familyName?: string): string {
+    const first = givenNames?.split(",")[0]?.trim()?.[0] || ""
+    const last = familyName?.[0] || ""
+    return `${first}${last}`.toUpperCase() || "?"
 }
 
 export function PatientForm({
@@ -59,6 +95,7 @@ export function PatientForm({
     mode,
     patientId,
     patientName,
+    patientActive = true,
 }: PatientFormProps) {
     const router = useRouter()
     const { resolvedTheme } = useTheme()
@@ -79,6 +116,13 @@ export function PatientForm({
         },
     })
 
+    const watchAll = form.watch()
+    const givenNames = watchAll.givenNames || defaultValues?.givenNames || ""
+    const familyName = watchAll.familyName || defaultValues?.familyName || patientName || ""
+    const gender = watchAll.gender || defaultValues?.gender || "unknown"
+    const birthDate = watchAll.birthDate || defaultValues?.birthDate || ""
+    const documentId = watchAll.documentId || defaultValues?.documentId || ""
+
     const handleSubmit = async (values: PatientFormValues) => {
         try {
             await onSubmit(values)
@@ -89,124 +133,134 @@ export function PatientForm({
         }
     }
 
-    const getBreadcrumbs = () => {
-        const crumbs: { label: string; href?: string }[] = [
-            { label: "Pacientes", href: "/patients" }
-        ]
-        if (mode === "edit" && patientName) {
-            crumbs.push({ label: patientName, href: `/patients/${patientId}` })
-            crumbs.push({ label: "Edición" })
-        } else {
-            crumbs.push({ label: mode === "create" ? "Nuevo registro" : "Edición" })
-        }
-        return crumbs
-    }
-
-    const breadcrumbs = getBreadcrumbs()
+    const initials = getInitials(givenNames, familyName)
+    const age = calcAge(birthDate)
 
     return (
-        <div className="p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
-            <div className="flex flex-col space-y-2 mb-4">
-                <nav className="flex items-center space-x-2 text-xs text-muted-foreground/60 mb-4">
-                    <button
-                        onClick={() => router.push("/patients")}
-                        className="hover:text-primary transition-colors"
-                    >
-                        Pacientes
-                    </button>
-                    <ChevronRight className="size-3 opacity-40" />
-                    {mode === "edit" && patientName ? (
-                        <>
-                            <button
-                                onClick={() => router.push(`/patients/${patientId}`)}
-                                className="hover:text-primary transition-colors max-w-[150px] truncate"
-                            >
+        <div className="p-8 max-w-4xl mx-auto animate-in fade-in duration-500">
+            {mode === "edit" && patientName ? (
+                <div className="mb-6 p-5 bg-n-1 rounded-lg border border-n-5/30">
+                    <div className="flex items-center gap-4">
+                        <div className={cn(
+                            "w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold shrink-0 border-2 border-n-5/20",
+                            getAvatarColor(gender)
+                        )}>
+                            {initials}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-2xl font-bold text-n-11 tracking-tight leading-tight">
                                 {patientName}
-                            </button>
-                            <ChevronRight className="size-3 opacity-40" />
-                        </>
-                    ) : null}
-                    <span className="text-foreground/80">
-                        {mode === "create" ? "Nuevo registro" : "Edición"}
-                    </span>
-                </nav>
-                <h1 className="text-4xl font-bold tracking-tighter text-foreground flex items-center gap-3">
-                    <UserIcon className="size-8 text-primary" />
-                    {mode === "create" ? "Alta de Paciente" : "Editar Paciente"}
-                </h1>
-                <p className="text-muted-foreground text-sm max-w-xl">
-                    {mode === "create"
-                        ? "Registro centralizado bajo estándar FHIR R4. Complete la información demográfica del paciente."
-                        : "Actualización de registros demográficos bajo normativa HL7 FHIR."}
-                </p>
-            </div>
+                            </h1>
+                            <div className="flex items-center gap-3 mt-1.5">
+                                {documentId && (
+                                    <span className="text-xs font-mono text-n-8 bg-n-2 px-2 py-0.5 rounded">{documentId}</span>
+                                )}
+                                {age && (
+                                    <span className="text-xs text-n-8">{age} años</span>
+                                )}
+                                <span className="text-xs text-n-8 capitalize">{getGenderLabel(gender)}</span>
+                                <Badge variant={patientActive ? "pill-success" : "pill-neutral"} className="text-[10px] py-0.5">
+                                    {patientActive ? "Activo" : "Inactivo"}
+                                </Badge>
+                            </div>
+                        </div>
+                        <div className="w-10 h-10 rounded-lg bg-b-8/10 flex items-center justify-center shrink-0">
+                            <Edit3 className="w-5 h-5 text-b-8" />
+                        </div>
+                    </div>
+                    <p className="text-sm text-n-8 mt-4 leading-relaxed">
+                        Los cambios se guardarán en el expediente FHIR del paciente
+                    </p>
+                </div>
+            ) : (
+                <div className="mb-6 p-5 bg-n-1 rounded-lg border border-n-5/30">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-b-8/10 flex items-center justify-center">
+                            <UserIcon className="size-5 text-b-8" />
+                        </div>
+                        <h1 className="text-2xl font-bold tracking-tight text-n-11">
+                            Alta de Paciente
+                        </h1>
+                    </div>
+                    <p className="text-sm text-n-8 mt-2 leading-relaxed">
+                        Complete la información demográfica del paciente
+                    </p>
+                </div>
+            )}
 
-            <Card className="border-border/10 shadow-none bg-card/20 backdrop-blur-md overflow-hidden">
-                <CardHeader className="border-b border-border/5 bg-muted/5 pb-8">
-                    <CardTitle className="text-lg font-semibold tracking-tight">Datos demográficos</CardTitle>
-                    <CardDescription className="text-sm">
-                        {mode === "create"
-                            ? "Los campos con asterisco (*) son obligatorios."
-                            : "Actualice los campos necesarios."}
-                    </CardDescription>
+            <Card className="border border-n-5/30 bg-n-2/40 shadow-none overflow-hidden">
+                <CardHeader className="border-b border-n-5/30 pb-5 px-8 pt-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1 h-5 rounded-full bg-b-8" />
+                            <div>
+                                <CardTitle className="text-sm font-semibold tracking-tight text-n-11 uppercase">
+                                    Datos demográficos
+                                </CardTitle>
+                                <CardDescription className="text-xs text-n-8 mt-0.5">
+                                    {mode === "create"
+                                        ? "Los campos marcados con * son obligatorios"
+                                        : "Complete o actualice la información necesaria"}
+                                </CardDescription>
+                            </div>
+                        </div>
+                    </div>
                 </CardHeader>
-                <CardContent className="p-8 pt-10">
-                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-10">
-                        <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                <CardContent className="p-8 pt-6">
+                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+                        <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <Field>
-                                <FieldLabel htmlFor="givenNames" className="text-xs font-medium text-muted-foreground mb-2">
-                                    Nombres <span className="text-primary">*</span>
+                                <FieldLabel htmlFor="givenNames">
+                                    Nombres <span className="text-b-8">*</span>
                                 </FieldLabel>
                                 <InputGroup>
-                                    <InputGroupAddon>
-                                        <InputGroupText>
-                                            <UserIcon className="size-4" />
-                                        </InputGroupText>
+                                    <InputGroupAddon align="inline-start">
+                                        <InputGroupText className="text-n-8">Nom.</InputGroupText>
                                     </InputGroupAddon>
                                     <InputGroupInput
                                         {...form.register("givenNames")}
                                         id="givenNames"
-                                        placeholder="Ej: María, Carmen"
+                                        placeholder="María Carmen"
+                                        className="placeholder:text-n-8"
                                     />
                                 </InputGroup>
                                 {form.formState.errors.givenNames && (
-                                    <FieldError className="text-xs mt-1">{form.formState.errors.givenNames.message}</FieldError>
+                                    <FieldError>{form.formState.errors.givenNames.message}</FieldError>
                                 )}
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="familyName" className="text-xs font-medium text-muted-foreground mb-2">
-                                    Apellidos <span className="text-primary">*</span>
+                                <FieldLabel htmlFor="familyName">
+                                    Apellidos <span className="text-b-8">*</span>
                                 </FieldLabel>
                                 <InputGroup>
-                                    <InputGroupAddon>
-                                        <InputGroupText>
-                                            <UserIcon className="size-4" />
-                                        </InputGroupText>
+                                    <InputGroupAddon align="inline-start">
+                                        <InputGroupText className="text-n-8">Ape.</InputGroupText>
                                     </InputGroupAddon>
                                     <InputGroupInput
                                         {...form.register("familyName")}
                                         id="familyName"
-                                        placeholder="Ej: García López"
+                                        placeholder="García López"
+                                        className="placeholder:text-n-8"
                                     />
                                 </InputGroup>
                                 {form.formState.errors.familyName && (
-                                    <FieldError className="text-xs mt-1">{form.formState.errors.familyName.message}</FieldError>
+                                    <FieldError>{form.formState.errors.familyName.message}</FieldError>
                                 )}
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="gender" className="text-xs font-medium text-muted-foreground mb-2">
-                                    Género <span className="text-primary">*</span>
+                                <FieldLabel htmlFor="gender">
+                                    Género <span className="text-b-8">*</span>
                                 </FieldLabel>
                                 <Select
                                     onValueChange={(val) => form.setValue("gender", val as "female" | "male" | "other" | "unknown")}
                                     value={form.watch("gender")}
                                 >
-                                    <SelectTrigger id="gender" className="h-9 bg-background/20 border-border/20 focus:ring-primary/20 text-sm">
-                                        <SelectValue placeholder="Seleccionar género" />
+                                    <SelectTrigger id="gender" className="h-10 bg-n-1 border-n-5 text-sm">
+                                        <SelectValue placeholder="Seleccionar" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-popover/90 backdrop-blur-xl border-border/10">
+                                    <SelectContent className="bg-popover border-n-5">
                                         <SelectItem value="unknown">Desconocido</SelectItem>
                                         <SelectItem value="female">Femenino</SelectItem>
                                         <SelectItem value="male">Masculino</SelectItem>
@@ -214,19 +268,15 @@ export function PatientForm({
                                     </SelectContent>
                                 </Select>
                                 {form.formState.errors.gender && (
-                                    <FieldError className="text-xs mt-1">{form.formState.errors.gender.message}</FieldError>
+                                    <FieldError>{form.formState.errors.gender.message}</FieldError>
                                 )}
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="birthDate" className="text-xs font-medium text-muted-foreground mb-2">
-                                    Fecha de nacimiento
-                                </FieldLabel>
+                                <FieldLabel htmlFor="birthDate">Fecha de nacimiento</FieldLabel>
                                 <InputGroup>
-                                    <InputGroupAddon>
-                                        <InputGroupText>
-                                            <CalendarIcon className="size-4" />
-                                        </InputGroupText>
+                                    <InputGroupAddon align="inline-start">
+                                        <InputGroupText className="text-n-8">Nac.</InputGroupText>
                                     </InputGroupAddon>
                                     <InputGroupInput
                                         {...form.register("birthDate")}
@@ -239,84 +289,72 @@ export function PatientForm({
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="documentId" className="text-xs font-medium text-muted-foreground mb-2">
-                                    Cédula / Identificación
-                                </FieldLabel>
+                                <FieldLabel htmlFor="documentId">Cédula / Identificación</FieldLabel>
                                 <InputGroup>
-                                    <InputGroupAddon>
-                                        <InputGroupText>
-                                            <IdCard className="size-4" />
-                                        </InputGroupText>
+                                    <InputGroupAddon align="inline-start">
+                                        <InputGroupText className="text-n-8">ID</InputGroupText>
                                     </InputGroupAddon>
                                     <InputGroupInput
                                         {...form.register("documentId")}
                                         id="documentId"
-                                        placeholder="V-00000000"
+                                        placeholder="00000000"
+                                        className="placeholder:text-n-8 font-mono"
                                     />
                                 </InputGroup>
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="phone" className="text-xs font-medium text-muted-foreground mb-2">
-                                    Teléfono
-                                </FieldLabel>
+                                <FieldLabel htmlFor="phone">Teléfono</FieldLabel>
                                 <InputGroup>
-                                    <InputGroupAddon>
-                                        <InputGroupText>
-                                            <PhoneIcon className="size-4" />
-                                        </InputGroupText>
+                                    <InputGroupAddon align="inline-start">
+                                        <InputGroupText className="text-n-8">+58</InputGroupText>
                                     </InputGroupAddon>
                                     <InputGroupInput
                                         {...form.register("phone")}
                                         id="phone"
-                                        placeholder="412-0000000"
+                                        placeholder="412 0000000"
+                                        className="placeholder:text-n-8"
                                     />
                                 </InputGroup>
                             </Field>
                         </FieldGroup>
 
-                        <Field className="space-y-2">
-                            <FieldLabel htmlFor="email" className="text-xs font-medium text-muted-foreground mb-2">
-                                Correo electrónico
-                            </FieldLabel>
+                        <Field>
+                            <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
                             <InputGroup>
-                                <InputGroupAddon>
-                                    <InputGroupText>
-                                        <MailIcon className="size-4" />
-                                    </InputGroupText>
+                                <InputGroupAddon align="inline-start">
+                                    <InputGroupText className="text-n-8">@</InputGroupText>
                                 </InputGroupAddon>
                                 <InputGroupInput
                                     {...form.register("email")}
                                     id="email"
                                     type="email"
                                     placeholder="correo@ejemplo.com"
+                                    className="placeholder:text-n-8"
                                 />
                             </InputGroup>
                             {form.formState.errors.email && (
-                                <FieldError className="text-xs mt-1">{form.formState.errors.email.message}</FieldError>
+                                <FieldError>{form.formState.errors.email.message}</FieldError>
                             )}
                         </Field>
 
-                        <Field className="space-y-2">
-                            <FieldLabel htmlFor="address" className="text-xs font-medium text-muted-foreground mb-2">
-                                Dirección completa
-                            </FieldLabel>
+                        <Field>
+                            <FieldLabel htmlFor="address">Dirección completa</FieldLabel>
                             <InputGroup>
-                                <InputGroupAddon className="pt-3">
-                                    <InputGroupText>
-                                        <MapPinIcon className="size-4" />
-                                    </InputGroupText>
+                                <InputGroupAddon align="block-start" className="pt-3">
+                                    <InputGroupText className="text-n-8">Dir.</InputGroupText>
                                 </InputGroupAddon>
                                 <InputGroupTextarea
                                     {...form.register("address")}
                                     id="address"
-                                    placeholder="Calle, Edificio, Apto, Ciudad..."
+                                    placeholder="Av. Principal, Edificio, Apartamento, Ciudad..."
                                     rows={3}
+                                    className="min-h-[80px] placeholder:text-n-8"
                                 />
                             </InputGroup>
                         </Field>
 
-                        <div className="flex justify-between items-center pt-8 border-t border-border/40">
+                        <div className="flex justify-end items-center gap-3 pt-5 border-t border-n-5/30">
                             <Button
                                 type="button"
                                 variant="ghost"
@@ -327,7 +365,7 @@ export function PatientForm({
                                         router.push(mode === "edit" && patientId ? `/patients/${patientId}` : "/patients")
                                     }
                                 }}
-                                className="text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors"
+                                className="text-n-8 hover:text-n-11 hover:bg-n-3 transition-colors h-9 px-4"
                                 disabled={isLoading}
                             >
                                 Cancelar
@@ -336,7 +374,7 @@ export function PatientForm({
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground min-w-[200px] h-11"
+                                className="bg-b-8 hover:bg-b-9 text-white h-9 px-5 font-medium shadow-lg shadow-b-8/20"
                             >
                                 {isLoading
                                     ? mode === "create"

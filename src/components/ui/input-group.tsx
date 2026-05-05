@@ -14,8 +14,8 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="input-group"
       role="group"
       className={cn(
-        "group/input-group border-input dark:bg-neutral-1/30 relative flex w-full items-center rounded-md border outline-none transition-[color,box-shadow]",
-        "h-9 has-[>textarea]:h-auto",
+        "group/input-group border-n-5 bg-n-1 relative flex w-full items-center rounded-md border outline-none transition-all duration-150",
+        "h-10 has-[>textarea]:h-auto",
 
         // Alignment-based padding adjustments.
         "has-[>[data-align=inline-start]]:[&>input]:pl-2",
@@ -24,10 +24,16 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
         "has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3",
 
         // Focus state (Teal-based shadow and ring).
-        "has-[[data-slot=input-group-control]:focus-visible]:ring-brand-8/10 has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:border-brand-8",
+        "has-[[data-slot=input-group-control]:focus-visible]:ring-b-8/20 has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:border-b-8 has-[[data-slot=input-group-control]:focus-visible]:bg-b-8/5",
+
+        // Hover state - subtle indication.
+        "hover:border-n-6",
 
         // Error state (Destructive-based shadow and ring).
         "has-[[data-slot][aria-invalid=true]]:ring-destructive/10 has-[[data-slot][aria-invalid=true]]:border-destructive",
+
+        // Disabled state.
+        "group-data-[disabled=true]/input-group:opacity-60",
 
         className
       )}
@@ -37,18 +43,18 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 const inputGroupAddonVariants = cva(
-  "text-neutral-8 flex h-auto cursor-text select-none items-center justify-center gap-2 py-1.5 text-sm font-medium group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-sm [&>svg:not([class*='size-'])]:size-4",
+  "bg-n-2 text-n-7 flex h-full cursor-text select-none items-center justify-center gap-1.5 px-3 text-xs font-medium rounded-l-md border-r border-n-5/30 group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-sm [&>svg:not([class*='size-'])]:size-3.5 transition-colors",
   {
     variants: {
       align: {
         "inline-start":
-          "order-first pl-3 has-[>button]:ml-[-0.45rem] has-[>kbd]:ml-[-0.35rem]",
+          "order-first has-[>button]:ml-[-0.45rem] has-[>kbd]:ml-[-0.35rem]",
         "inline-end":
-          "order-last pr-3 has-[>button]:mr-[-0.4rem] has-[>kbd]:mr-[-0.35rem]",
+          "order-last rounded-l-none rounded-r-md border-r-0 border-l border-n-5/30 has-[>button]:mr-[-0.4rem] has-[>kbd]:mr-[-0.35rem]",
         "block-start":
-          "[.border-b]:pb-3 order-first w-full justify-start px-3 pt-3 group-has-[>input]/input-group:pt-2.5",
+          "[.border-b]:pb-3 order-first w-full justify-start pt-3 group-has-[>input]/input-group:pt-2.5 rounded-l-none rounded-t-md border-b border-t border-n-5/30",
         "block-end":
-          "[.border-t]:pt-3 order-last w-full justify-start px-3 pb-3 group-has-[>input]/input-group:pb-2.5",
+          "[.border-t]:pt-3 order-last w-full justify-start pb-3 group-has-[>input]/input-group:pb-2.5 rounded-b-md border-t border-b border-n-5/30",
       },
     },
     defaultVariants: {
@@ -120,7 +126,7 @@ function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       className={cn(
-        "text-neutral-8 flex items-center gap-2 text-sm [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none",
+        "text-n-7 flex items-center gap-1.5 text-xs font-medium [&_svg:not([class*='size-'])]:size-3.5 [&_svg]:pointer-events-none",
         className
       )}
       {...props}
@@ -136,7 +142,7 @@ function InputGroupInput({
     <Input
       data-slot="input-group-control"
       className={cn(
-        "flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent",
+        "flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent px-3",
         className
       )}
       {...props}
