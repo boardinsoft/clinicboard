@@ -52,7 +52,7 @@ import type { Patient, Condition, AllergyIntolerance, EncounterWithSpecialty } f
 import type { PatientTelecom, PatientAddress, PatientIdentifier } from '@/types/patient-jsonb';
 import { formatDate, calcAge, getGenderLabel } from '@/lib/clinical';
 
-import { PageContainer, PageSection, PageSectionSeparator } from '@/components/ui/PageLayout';
+import { PageContainer } from '@/components/ui/PageLayout';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface PatientDetailViewProps {
@@ -242,60 +242,56 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                 </Tabs>
             </div>
 
-            <div className="flex-1 overflow-y-auto bg-n-2">
-                <PageContainer size="large" className="bg-n-1">
+<div className="flex-1 overflow-y-auto">
+                <PageContainer size="large">
                     {/* ── PANEL: RESUMEN ── */}
                     {activeTab === 'overview' && (
                         <div className="space-y-6 max-w-4xl mx-auto">
-                            <PageSection>
-                                <Card>
-                                    <div className="px-5 pt-5 pb-4 border-b border-n-5/30">
-                                        <h2 className="text-sm font-bold text-foreground">Identidad y datos maestros</h2>
-                                        <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Información personal básica y documentos de identificación oficial.</p>
-                                    </div>
-                                    <CardContent className="p-0">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-x divide-y divide-n-5/30">
-                                            <div className="p-5">
-                                                <PropertyItem label="Nombre completo" value={`${patient.name_given?.join(' ')} ${patient.name_family}`} />
-                                            </div>
-                                            <div className="p-5">
-                                                <PropertyItem label="Cédula / ID" value={docId || '—'} mono />
-                                            </div>
-                                            <div className="p-5">
-                                                <PropertyItem label="Fecha de nacimiento" value={formatDate(patient.birth_date)} mono />
-                                            </div>
-                                            <div className="p-5">
-                                                <PropertyItem label="Edad actual" value={`${age || '—'} años`} mono />
-                                            </div>
-                                            <div className="p-5">
-                                                <PropertyItem label="Género" value={genderLabel} />
-                                            </div>
+                            <Card className="bg-n-1">
+                                <div className="px-5 pt-5 pb-4 border-b border-n-5/30">
+                                    <h2 className="text-sm font-bold text-foreground">Identidad y datos maestros</h2>
+                                    <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Información personal básica y documentos de identificación oficial.</p>
+                                </div>
+                                <CardContent className="p-0">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-x divide-y divide-n-5/30">
+                                        <div className="p-5">
+                                            <PropertyItem label="Nombre completo" value={`${patient.name_given?.join(' ')} ${patient.name_family}`} />
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            </PageSection>
+                                        <div className="p-5">
+                                            <PropertyItem label="Cédula / ID" value={docId || '—'} mono />
+                                        </div>
+                                        <div className="p-5">
+                                            <PropertyItem label="Fecha de nacimiento" value={formatDate(patient.birth_date)} mono />
+                                        </div>
+                                        <div className="p-5">
+                                            <PropertyItem label="Edad actual" value={`${age || '—'} años`} mono />
+                                        </div>
+                                        <div className="p-5">
+                                            <PropertyItem label="Género" value={genderLabel} />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
 
-                            <PageSection>
-                                <Card>
-                                    <div className="px-5 pt-5 pb-4 border-b border-n-5/30">
-                                        <h2 className="text-sm font-bold text-foreground">Contacto y ubicación</h2>
-                                        <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Medios de comunicación directa y dirección física de residencia.</p>
-                                    </div>
-                                    <CardContent className="p-0">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 divide-x divide-y divide-n-5/30">
-                                            <div className="p-5">
-                                                <PropertyItem label="Teléfono" value={phone || '—'} />
-                                            </div>
-                                            <div className="p-5">
-                                                <PropertyItem label="Correo electrónico" value={email || '—'} />
-                                            </div>
-                                            <div className="sm:col-span-2 p-5">
-                                                <PropertyItem label="Dirección de residencia" value={address || 'Sin dirección registrada'} />
-                                            </div>
+                            <Card className="bg-n-1">
+                                <div className="px-5 pt-5 pb-4 border-b border-n-5/30">
+                                    <h2 className="text-sm font-bold text-foreground">Contacto y ubicación</h2>
+                                    <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Medios de comunicación directa y dirección física de residencia.</p>
+                                </div>
+                                <CardContent className="p-0">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 divide-x divide-y divide-n-5/30">
+                                        <div className="p-5">
+                                            <PropertyItem label="Teléfono" value={phone || '—'} />
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            </PageSection>
+                                        <div className="p-5">
+                                            <PropertyItem label="Correo electrónico" value={email || '—'} />
+                                        </div>
+                                        <div className="sm:col-span-2 p-5">
+                                            <PropertyItem label="Dirección de residencia" value={address || 'Sin dirección registrada'} />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </div>
                     )}
 
