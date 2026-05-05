@@ -246,12 +246,8 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                 <PageContainer size="large" className="bg-n-1">
                     {/* ── PANEL: RESUMEN ── */}
                     {activeTab === 'overview' && (
-                        <div className="space-y-0">
-                            <PageSection
-                                title=""
-                                description=""
-                                orientation="horizontal"
-                            >
+                        <div className="space-y-6 max-w-4xl mx-auto">
+                            <PageSection>
                                 <Card>
                                     <div className="px-5 pt-5 pb-4 border-b border-n-5/30">
                                         <h2 className="text-sm font-bold text-foreground">Identidad y datos maestros</h2>
@@ -279,13 +275,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                 </Card>
                             </PageSection>
 
-                            <PageSectionSeparator />
-
-                            <PageSection
-                                title=""
-                                description=""
-                                orientation="horizontal"
-                            >
+                            <PageSection>
                                 <Card>
                                     <div className="px-5 pt-5 pb-4 border-b border-n-5/30">
                                         <h2 className="text-sm font-bold text-foreground">Contacto y ubicación</h2>
@@ -311,21 +301,16 @@ export default function PatientDetailView({ patient, conditions: initialConditio
 
                     {/* ── PANEL: CONDICIONES ── */}
                     {activeTab === 'conditions' && (
-                        <PageSection
-                            title=""
-                            description=""
-                            actions={
-                                <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-b-8 hover:bg-b-8/10 font-sans transition-colors duration-100" onClick={() => setShowAddCondition(true)}>
-                                    <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
-                                </Button>
-                            }
-                        >
+                        <div className="max-w-4xl mx-auto">
                             <Card>
                                 <div className="px-5 pt-5 pb-4 border-b border-n-5/30 flex items-center justify-between">
                                     <div>
                                         <h2 className="text-sm font-bold text-foreground">Condiciones clínicas</h2>
                                         <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Lista de diagnósticos activos e históricos del paciente.</p>
                                     </div>
+                                    <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-b-8 hover:bg-b-8/10 font-sans transition-colors duration-100" onClick={() => setShowAddCondition(true)}>
+                                        <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
+                                    </Button>
                                 </div>
                                 <CardContent className="p-0 divide-y divide-n-5/30">
                                     {conditions.length === 0 ? (
@@ -349,26 +334,21 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                     )}
                                 </CardContent>
                             </Card>
-                        </PageSection>
+                        </div>
                     )}
 
 {/* ── PANEL: ALERGIAS ── */}
                     {activeTab === 'allergies' && (
-                        <PageSection
-                            title=""
-                            description=""
-                            actions={
-                                <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-b-8 hover:bg-b-8/10 font-sans transition-colors duration-100" onClick={() => setShowAddAllergy(true)}>
-                                    <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
-                                </Button>
-                            }
-                        >
+                        <div className="max-w-4xl mx-auto">
                             <Card>
                                 <div className="px-5 pt-5 pb-4 border-b border-n-5/30 flex items-center justify-between">
                                     <div>
                                         <h2 className="text-sm font-bold text-foreground">Alergias e intolerancias</h2>
                                         <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Registro de sustancias o agentes que provocan reacciones adversas.</p>
                                     </div>
+                                    <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-b-8 hover:bg-b-8/10 font-sans transition-colors duration-100" onClick={() => setShowAddAllergy(true)}>
+                                        <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
+                                    </Button>
                                 </div>
                                 <CardContent className="p-0 divide-y divide-n-5/30">
                                     {allergies.length === 0 ? (
@@ -395,27 +375,31 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                     )}
                                 </CardContent>
                             </Card>
-                        </PageSection>
+                        </div>
                     )}
 
                     {/* ── PANEL: CONSULTAS ── */}
                     {activeTab === 'history' && (
-                        <PageSection
-                            title="Historial evolutivo"
-                            description="Cronología de encuentros clínicos y notas de seguimiento."
-                        >
-                            {loadingEncounters ? (
-                                <div className="space-y-3">
-                                    <Skeleton className="h-20 w-full rounded-lg bg-n-2" />
+                        <div className="max-w-4xl mx-auto space-y-6">
+                            <Card>
+                                <div className="px-5 pt-5 pb-4 border-b border-n-5/30">
+                                    <h2 className="text-sm font-bold text-foreground">Historial evolutivo</h2>
+                                    <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Cronología de encuentros clínicos y notas de seguimiento.</p>
                                 </div>
-                            ) : encounters.length === 0 ? (
-                                <EmptyState icon={Calendar} title="Sin consultas previas" message="Este paciente aún no registra visitas clínicas." />
-                            ) : (
-                                <div className="space-y-3">
-                                    {encounters.map((e) => (
-                                        <Card key={e.id} className="overflow-hidden">
-                                            <CardContent className="p-0">
+                                <CardContent className="p-0">
+                                    {loadingEncounters ? (
+                                        <div className="p-8 space-y-3">
+                                            <Skeleton className="h-20 w-full rounded-lg bg-n-2" />
+                                        </div>
+                                    ) : encounters.length === 0 ? (
+                                        <div className="p-8">
+                                            <EmptyState icon={Calendar} title="Sin consultas previas" message="Este paciente aún no registra visitas clínicas." />
+                                        </div>
+                                    ) : (
+                                        <div className="divide-y divide-n-5/30">
+                                            {encounters.map((e) => (
                                                 <button
+                                                    key={e.id}
                                                     className="w-full text-left flex items-start p-5 gap-5 hover:bg-n-2 transition-all duration-150 group"
                                                     onClick={() => router.push(`/history?patientId=${patient.id}&encounterId=${e.id}`)}
                                                 >
@@ -441,12 +425,12 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                                     </div>
                                                     <ChevronRight className="w-4 h-4 text-n-8/40 self-center group-hover:translate-x-1 group-hover:text-b-8 transition-all duration-150" />
                                                 </button>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
-                        </PageSection>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
                     )}
                 </PageContainer>
             </div>
