@@ -1,7 +1,0 @@
-[    2129ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
-[    2172ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
-[    2777ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
-[    2808ms] [LOG] [Fast Refresh] done in 139ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
-[   99756ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
-[   99782ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
-[  129306ms] [LOG] Row checkbox clicked! {target: button.peer.h-5.w-5.shrink-0.rounded-[6px].border-2.border-n-5.shadow-sm.disabled:cursor-not-allowe…, currentTarget: button.peer.h-5.w-5.shrink-0.rounded-[6px].border-2.border-n-5.shadow-sm.disabled:cursor-not-allowe…, bubbles: true, cancelable: true} @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
