@@ -94,26 +94,30 @@ export default function EditPatientPage() {
 
     if (loading) {
         return (
-            <div className="p-8 max-w-4xl mx-auto space-y-8 animate-pulse text-pretty">
-                <Skeleton className="h-4 w-48 mb-4 bg-muted/10" />
-                <Skeleton className="h-12 w-64 mb-8 bg-muted/20" />
-                <Card className="border-border/10 shadow-none bg-card/20 overflow-hidden">
-                    <Skeleton className="h-[500px] w-full bg-muted/5" />
-                </Card>
+            <div className="min-h-screen bg-n-2">
+                <div className="p-8 max-w-4xl mx-auto space-y-8 animate-pulse text-pretty">
+                    <Skeleton className="h-4 w-48 mb-4 bg-muted/10" />
+                    <Skeleton className="h-12 w-64 mb-8 bg-muted/20" />
+                    <Card className="border-border/10 shadow-none bg-card/20 overflow-hidden">
+                        <Skeleton className="h-[500px] w-full bg-muted/5" />
+                    </Card>
+                </div>
             </div>
         )
     }
 
     if (!patientData) {
         return (
-            <div className="p-8 max-w-4xl mx-auto space-y-8">
-                <Skeleton className="h-4 w-48 mb-4 bg-muted/10" />
-                <Card className="border-border/10 shadow-none bg-card/20">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Paciente no encontrado</CardTitle>
-                        <CardDescription>No se pudo cargar la información del paciente.</CardDescription>
-                    </CardHeader>
-                </Card>
+            <div className="min-h-screen bg-n-2">
+                <div className="p-8 max-w-4xl mx-auto space-y-8">
+                    <Skeleton className="h-4 w-48 mb-4 bg-muted/10" />
+                    <Card className="border-border/10 shadow-none bg-card/20">
+                        <CardHeader>
+                            <CardTitle className="text-lg">Paciente no encontrado</CardTitle>
+                            <CardDescription>No se pudo cargar la información del paciente.</CardDescription>
+                        </CardHeader>
+                    </Card>
+                </div>
             </div>
         )
     }

@@ -150,7 +150,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
     const genderLabel = getGenderLabel(patient.gender);
 
     return (
-        <div className="h-full flex flex-col bg-background font-sans">
+        <div className="h-full flex flex-col bg-n-2 font-sans">
             {/* ── HEADER ── */}
             <div className="px-6 py-6 border-b border-n-5/30 bg-n-1">
                 <div className="flex items-start gap-4 mb-5">
@@ -241,8 +241,8 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                 </Tabs>
             </div>
 
-            <div className="flex-1 overflow-y-auto bg-background">
-                <PageContainer size="large">
+            <div className="flex-1 overflow-y-auto bg-n-2">
+                <PageContainer size="large" className="bg-n-1">
                     {/* ── PANEL: RESUMEN ── */}
                     {activeTab === 'overview' && (
                         <div className="space-y-0">
@@ -251,7 +251,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                 description="Información personal básica y documentos de identificación oficial."
                                 orientation="horizontal"
                             >
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 rounded-lg border border-n-5/30 bg-n-2/40">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 rounded-lg border border-n-5/30 bg-n-1">
                                     <PropertyItem label="Nombre completo" value={`${patient.name_given?.join(' ')} ${patient.name_family}`} />
                                     <PropertyItem label="Cédula / ID" value={docId || '—'} mono />
                                     <PropertyItem label="Fecha de nacimiento" value={formatDate(patient.birth_date)} mono />
@@ -267,7 +267,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                 description="Medios de comunicación directa y dirección física de residencia."
                                 orientation="horizontal"
                             >
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 rounded-xl border border-n-5/30 bg-n-2/40">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 rounded-xl border border-n-5/30 bg-n-1">
                                     <PropertyItem label="Teléfono" value={phone || '—'} />
                                     <PropertyItem label="Correo electrónico" value={email || '—'} />
                                     <div className="sm:col-span-2">
