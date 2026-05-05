@@ -248,11 +248,15 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                     {activeTab === 'overview' && (
                         <div className="space-y-0">
                             <PageSection
-                                title="Identidad y datos maestros"
-                                description="Información personal básica y documentos de identificación oficial."
+                                title=""
+                                description=""
                                 orientation="horizontal"
                             >
                                 <Card>
+                                    <div className="px-5 pt-5 pb-4 border-b border-n-5/30">
+                                        <h2 className="text-sm font-bold text-foreground">Identidad y datos maestros</h2>
+                                        <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Información personal básica y documentos de identificación oficial.</p>
+                                    </div>
                                     <CardContent className="p-0">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-x divide-y divide-n-5/30">
                                             <div className="p-5">
@@ -278,11 +282,15 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                             <PageSectionSeparator />
 
                             <PageSection
-                                title="Contacto y ubicación"
-                                description="Medios de comunicación directa y dirección física de residencia."
+                                title=""
+                                description=""
                                 orientation="horizontal"
                             >
                                 <Card>
+                                    <div className="px-5 pt-5 pb-4 border-b border-n-5/30">
+                                        <h2 className="text-sm font-bold text-foreground">Contacto y ubicación</h2>
+                                        <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Medios de comunicación directa y dirección física de residencia.</p>
+                                    </div>
                                     <CardContent className="p-0">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 divide-x divide-y divide-n-5/30">
                                             <div className="p-5">
@@ -304,20 +312,28 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                     {/* ── PANEL: CONDICIONES ── */}
                     {activeTab === 'conditions' && (
                         <PageSection
-                            title="Condiciones clínicas"
-                            description="Lista de diagnósticos activos e históricos del paciente."
+                            title=""
+                            description=""
                             actions={
                                 <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-b-8 hover:bg-b-8/10 font-sans transition-colors duration-100" onClick={() => setShowAddCondition(true)}>
                                     <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
                                 </Button>
                             }
                         >
-                            {conditions.length === 0 ? (
-                                <EmptyState icon={Activity} title="No hay condiciones clínicas" message="El paciente no tiene diagnósticos registrados actualmente." />
-                            ) : (
-                                <Card>
-                                    <CardContent className="p-0 divide-y divide-n-5/30">
-                                        {conditions.map((c) => (
+                            <Card>
+                                <div className="px-5 pt-5 pb-4 border-b border-n-5/30 flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-sm font-bold text-foreground">Condiciones clínicas</h2>
+                                        <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Lista de diagnósticos activos e históricos del paciente.</p>
+                                    </div>
+                                </div>
+                                <CardContent className="p-0 divide-y divide-n-5/30">
+                                    {conditions.length === 0 ? (
+                                        <div className="p-8">
+                                            <EmptyState icon={Activity} title="No hay condiciones clínicas" message="El paciente no tiene diagnósticos registrados actualmente." />
+                                        </div>
+                                    ) : (
+                                        conditions.map((c) => (
                                             <div key={c.id} className="flex items-center justify-between p-4 bg-n-1 hover:bg-n-2 transition-colors duration-100 first:rounded-t-lg last:rounded-b-lg">
                                                 <div className="flex flex-col gap-0.5">
                                                     <h4 className="text-sm font-bold text-n-11 font-sans">{c.code_display}</h4>
@@ -329,30 +345,38 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                                     {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
                                                 </Badge>
                                             </div>
-                                        ))}
-                                    </CardContent>
-                                </Card>
-                            )}
+                                        ))
+                                    )}
+                                </CardContent>
+                            </Card>
                         </PageSection>
                     )}
 
 {/* ── PANEL: ALERGIAS ── */}
                     {activeTab === 'allergies' && (
                         <PageSection
-                            title="Alergias e intolerancias"
-                            description="Registro de sustancias o agentes que provocan reacciones adversas."
+                            title=""
+                            description=""
                             actions={
                                 <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-b-8 hover:bg-b-8/10 font-sans transition-colors duration-100" onClick={() => setShowAddAllergy(true)}>
                                     <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
                                 </Button>
                             }
                         >
-                            {allergies.length === 0 ? (
-                                <EmptyState icon={FlaskConical} title="Sin alergias registradas" message="No se han reportado alergias o intolerancias para este paciente." />
-                            ) : (
-                                <Card>
-                                    <CardContent className="p-0 divide-y divide-n-5/30">
-                                        {allergies.map((a) => (
+                            <Card>
+                                <div className="px-5 pt-5 pb-4 border-b border-n-5/30 flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-sm font-bold text-foreground">Alergias e intolerancias</h2>
+                                        <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Registro de sustancias o agentes que provocan reacciones adversas.</p>
+                                    </div>
+                                </div>
+                                <CardContent className="p-0 divide-y divide-n-5/30">
+                                    {allergies.length === 0 ? (
+                                        <div className="p-8">
+                                            <EmptyState icon={FlaskConical} title="Sin alergias registradas" message="No se han reportado alergias o intolerancias para este paciente." />
+                                        </div>
+                                    ) : (
+                                        allergies.map((a) => (
                                             <div key={a.id} className="flex items-center gap-4 p-4 bg-n-1 hover:bg-n-2 transition-colors duration-100 first:rounded-t-lg last:rounded-b-lg">
                                                 <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
                                                     <AlertCircle className="w-4 h-4 text-destructive" />
@@ -367,10 +391,10 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                                     {a.criticality === 'high' ? 'Alta' : 'Normal'}
                                                 </Badge>
                                             </div>
-                                        ))}
-                                    </CardContent>
-                                </Card>
-                            )}
+                                        ))
+                                    )}
+                                </CardContent>
+                            </Card>
                         </PageSection>
                     )}
 
