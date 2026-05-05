@@ -77,12 +77,12 @@ function getInitials(givenNames?: string[], familyName?: string): string {
 
 function PropertyItem({ label, value, className, mono }: { label: string; value: string; className?: string; mono?: boolean }) {
     return (
-        <div className={cn("flex flex-col gap-1 py-1.5", className)}>
+        <div className={cn("flex flex-col gap-1 py-3", className)}>
             <span className="text-xs font-semibold uppercase tracking-wider text-n-8">
                 {label}
             </span>
             <span className={cn(
-                "text-[13px] font-medium text-n-11 transition-colors",
+                "text-sm font-medium text-n-11 transition-colors",
                 mono ? "mono" : "font-sans tracking-tight"
             )}>
                 {value || '—'}
@@ -241,19 +241,19 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                 </div>
                                 <CardContent className="p-0">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-x divide-y divide-n-5/30">
-                                        <div className="p-5">
+                                        <div className="p-6">
                                             <PropertyItem label="Nombre completo" value={`${patient.name_given?.join(' ')} ${patient.name_family}`} />
                                         </div>
-                                        <div className="p-5">
+                                        <div className="p-6">
                                             <PropertyItem label="Cédula / ID" value={docId || '—'} mono />
                                         </div>
-                                        <div className="p-5">
+                                        <div className="p-6">
                                             <PropertyItem label="Fecha de nacimiento" value={formatDate(patient.birth_date)} mono />
                                         </div>
-                                        <div className="p-5">
+                                        <div className="p-6">
                                             <PropertyItem label="Edad actual" value={`${age || '—'} años`} mono />
                                         </div>
-                                        <div className="p-5">
+                                        <div className="p-6">
                                             <PropertyItem label="Género" value={genderLabel} />
                                         </div>
                                     </div>
@@ -267,13 +267,13 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                 </div>
                                 <CardContent className="p-0">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 divide-x divide-y divide-n-5/30">
-                                        <div className="p-5">
+                                        <div className="p-6">
                                             <PropertyItem label="Teléfono" value={phone || '—'} />
                                         </div>
-                                        <div className="p-5">
+                                        <div className="p-6">
                                             <PropertyItem label="Correo electrónico" value={email || '—'} />
                                         </div>
-                                        <div className="sm:col-span-2 p-5">
+                                        <div className="sm:col-span-2 p-6">
                                             <PropertyItem label="Dirección de residencia" value={address || 'Sin dirección registrada'} />
                                         </div>
                                     </div>

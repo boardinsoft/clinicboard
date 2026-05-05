@@ -155,6 +155,64 @@ export async function reactivatePatient(id: string) {
     revalidatePath(`/patients/${id}`);
     return { data };
 }
+
+export async function searchPatients({
+    query,
+    clinicId,
+    page = 1,
+    pageSize = 10,
+}: {
+    query: string;
+    clinicId?: string;
+    page?: number;
+    pageSize?: number;
+}) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) return { patients: [], total: 0 };
+
+    // No query or too short - return active patients list
+    if (!query || query.length < 2) {
+        let baseQuery = supabase
+            .from('patients')
+            .select('*', { count: 'exact' })
+            .eq('practitioner_id', practitionerId)
+            .eq('active', true)
+            .order('name_family', { ascending: true });
+
+        if (clinicId) {
+            baseQuery = baseQuery.eq('clinic_id', clinicId);
+        }
+
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
+        const { data, count, error } = await baseQuery.range(from, to);
+
+        if (error) {
+            console.error('Error fetching patients:', error);
+            return { patients: [], total: 0 };
+        }
+        return { patients: data || [], total: count || 0 };
+    }
+
+    // Search with RPC for better performance on name/identifier search
+    const { data, error } = await supabase.rpc('search_patients_v2', {
+        search_term: query,
+        p_id: practitionerId
+    });
+
+    if (error) {
+        console.error('Error in search_patients_v2 RPC:', error);
+        return { patients: [], total: 0 };
+    }
+
+    const patients = data || [];
+    // RPC doesn't support pagination, return all matches with total
+    return { patients, total: patients.length };
+}
+
 export async function getPatients(queryText?: string, clinicId?: string) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
