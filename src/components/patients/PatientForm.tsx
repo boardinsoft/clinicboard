@@ -18,8 +18,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Fieldset } from "@/components/ui/fieldset"
-import { Field, FieldError, FieldLabel, FieldGroup } from "@/components/ui/field"
+import { FieldError } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupText, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group"
 import {
     AlertDialog,
@@ -191,178 +190,233 @@ export function PatientForm({
 
             <Card className="border border-n-5/30 bg-n-2/40 shadow-none overflow-hidden">
                 <CardHeader className="border-b border-n-5/30 pb-5 px-8 pt-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-1 h-5 rounded-full bg-b-8" />
-                            <div>
-                                <CardTitle className="text-sm font-semibold tracking-tight text-n-11 uppercase">
-                                    Datos demográficos
-                                </CardTitle>
-                                <CardDescription className="text-xs text-n-8 mt-0.5">
-                                    {mode === "create"
-                                        ? "Los campos marcados con * son obligatorios"
-                                        : "Complete o actualice la información necesaria"}
-                                </CardDescription>
-                            </div>
+                    <div className="flex items-center gap-3">
+                        <div className="w-1 h-5 rounded-full bg-b-8" />
+                        <div>
+                            <CardTitle className="text-sm font-semibold tracking-tight text-n-11 uppercase">
+                                Datos demográficos
+                            </CardTitle>
+                            <CardDescription className="text-xs text-n-8 mt-0.5">
+                                {mode === "create"
+                                    ? "Los campos marcados con * son obligatorios"
+                                    : "Complete o actualice la información necesaria"}
+                            </CardDescription>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-                        <Fieldset
-                            title="Identidad"
-                            description="Información personal básica del paciente."
-                        >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Field>
-                                    <FieldLabel htmlFor="givenNames">
+                    <form onSubmit={form.handleSubmit(handleSubmit)} className="divide-y divide-n-5/30">
+                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
+                            <div className="md:col-span-4 lg:col-span-3">
+                                <div className="sticky top-8">
+                                    <label htmlFor="givenNames" className="block text-sm font-bold text-foreground mb-1">
                                         Nombres <span className="text-b-8">*</span>
-                                    </FieldLabel>
-                                    <InputGroup>
-                                        <InputGroupAddon align="inline-start">
-                                            <InputGroupText className="text-n-8">Nom.</InputGroupText>
-                                        </InputGroupAddon>
-                                        <InputGroupInput
-                                            {...form.register("givenNames")}
-                                            id="givenNames"
-                                            placeholder="María Carmen"
-                                            className="placeholder:text-n-8"
-                                        />
-                                    </InputGroup>
-                                    {form.formState.errors.givenNames && (
-                                        <FieldError>{form.formState.errors.givenNames.message}</FieldError>
-                                    )}
-                                </Field>
+                                    </label>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Primer nombre y segundos nombres del paciente
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="md:col-span-8 lg:col-span-9">
+                                <InputGroup>
+                                    <InputGroupAddon align="inline-start">
+                                        <InputGroupText className="text-n-8">Nom.</InputGroupText>
+                                    </InputGroupAddon>
+                                    <InputGroupInput
+                                        {...form.register("givenNames")}
+                                        id="givenNames"
+                                        placeholder="María Carmen"
+                                        className="placeholder:text-n-8"
+                                    />
+                                </InputGroup>
+                                {form.formState.errors.givenNames && (
+                                    <FieldError>{form.formState.errors.givenNames.message}</FieldError>
+                                )}
+                            </div>
+                        </div>
 
-                                <Field>
-                                    <FieldLabel htmlFor="familyName">
+                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
+                            <div className="md:col-span-4 lg:col-span-3">
+                                <div className="sticky top-8">
+                                    <label htmlFor="familyName" className="block text-sm font-bold text-foreground mb-1">
                                         Apellidos <span className="text-b-8">*</span>
-                                    </FieldLabel>
-                                    <InputGroup>
-                                        <InputGroupAddon align="inline-start">
-                                            <InputGroupText className="text-n-8">Ape.</InputGroupText>
-                                        </InputGroupAddon>
-                                        <InputGroupInput
-                                            {...form.register("familyName")}
-                                            id="familyName"
-                                            placeholder="García López"
-                                            className="placeholder:text-n-8"
-                                        />
-                                    </InputGroup>
-                                    {form.formState.errors.familyName && (
-                                        <FieldError>{form.formState.errors.familyName.message}</FieldError>
-                                    )}
-                                </Field>
+                                    </label>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Apellidos completos del paciente
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="md:col-span-8 lg:col-span-9">
+                                <InputGroup>
+                                    <InputGroupAddon align="inline-start">
+                                        <InputGroupText className="text-n-8">Ape.</InputGroupText>
+                                    </InputGroupAddon>
+                                    <InputGroupInput
+                                        {...form.register("familyName")}
+                                        id="familyName"
+                                        placeholder="García López"
+                                        className="placeholder:text-n-8"
+                                    />
+                                </InputGroup>
+                                {form.formState.errors.familyName && (
+                                    <FieldError>{form.formState.errors.familyName.message}</FieldError>
+                                )}
+                            </div>
+                        </div>
 
-                                <Field>
-                                    <FieldLabel htmlFor="gender">
+                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
+                            <div className="md:col-span-4 lg:col-span-3">
+                                <div className="sticky top-8">
+                                    <label htmlFor="gender" className="block text-sm font-bold text-foreground mb-1">
                                         Género <span className="text-b-8">*</span>
-                                    </FieldLabel>
-                                    <Select
-                                        onValueChange={(val) => form.setValue("gender", val as "female" | "male" | "other" | "unknown")}
-                                        value={form.watch("gender")}
-                                    >
-                                        <SelectTrigger id="gender" className="h-10 bg-n-1 border-n-5 text-sm">
-                                            <SelectValue placeholder="Seleccionar" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-popover border-n-5">
-                                            <SelectItem value="unknown">Desconocido</SelectItem>
-                                            <SelectItem value="female">Femenino</SelectItem>
-                                            <SelectItem value="male">Masculino</SelectItem>
-                                            <SelectItem value="other">Otro</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    {form.formState.errors.gender && (
-                                        <FieldError>{form.formState.errors.gender.message}</FieldError>
-                                    )}
-                                </Field>
-
-                                <Field>
-                                    <FieldLabel htmlFor="birthDate">Fecha de nacimiento</FieldLabel>
-                                    <InputGroup>
-                                        <InputGroupAddon align="inline-start">
-                                            <InputGroupText className="text-n-8">Nac.</InputGroupText>
-                                        </InputGroupAddon>
-                                        <InputGroupInput
-                                            {...form.register("birthDate")}
-                                            id="birthDate"
-                                            type="date"
-                                            max={new Date().toISOString().split("T")[0]}
-                                            className={resolvedTheme === "dark" ? "[color-scheme:dark]" : "[color-scheme:light]"}
-                                        />
-                                    </InputGroup>
-                                </Field>
+                                    </label>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Sexo biológico registrado
+                                    </p>
+                                </div>
                             </div>
-                        </Fieldset>
-
-                        <Fieldset
-                            title="Documentación"
-                            description="Identificación oficial y documentos legales."
-                        >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Field>
-                                    <FieldLabel htmlFor="documentId">Cédula / Identificación</FieldLabel>
-                                    <InputGroup>
-                                        <InputGroupAddon align="inline-start">
-                                            <InputGroupText className="text-n-8">ID</InputGroupText>
-                                        </InputGroupAddon>
-                                        <InputGroupInput
-                                            {...form.register("documentId")}
-                                            id="documentId"
-                                            placeholder="00000000"
-                                            className="placeholder:text-n-8 font-mono"
-                                        />
-                                    </InputGroup>
-                                </Field>
+                            <div className="md:col-span-8 lg:col-span-9">
+                                <Select
+                                    onValueChange={(val) => form.setValue("gender", val as "female" | "male" | "other" | "unknown")}
+                                    value={form.watch("gender")}
+                                >
+                                    <SelectTrigger id="gender" className="h-10 bg-n-1 border-n-5 text-sm">
+                                        <SelectValue placeholder="Seleccionar" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-popover border-n-5">
+                                        <SelectItem value="unknown">Desconocido</SelectItem>
+                                        <SelectItem value="female">Femenino</SelectItem>
+                                        <SelectItem value="male">Masculino</SelectItem>
+                                        <SelectItem value="other">Otro</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {form.formState.errors.gender && (
+                                    <FieldError>{form.formState.errors.gender.message}</FieldError>
+                                )}
                             </div>
-                        </Fieldset>
+                        </div>
 
-                        <Fieldset
-                            title="Contacto"
-                            description="Medios de comunicación directa."
-                        >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Field>
-                                    <FieldLabel htmlFor="phone">Teléfono</FieldLabel>
-                                    <InputGroup>
-                                        <InputGroupAddon align="inline-start">
-                                            <InputGroupText className="text-n-8">+58</InputGroupText>
-                                        </InputGroupAddon>
-                                        <InputGroupInput
-                                            {...form.register("phone")}
-                                            id="phone"
-                                            placeholder="412 0000000"
-                                            className="placeholder:text-n-8"
-                                        />
-                                    </InputGroup>
-                                </Field>
-
-                                <Field>
-                                    <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
-                                    <InputGroup>
-                                        <InputGroupAddon align="inline-start">
-                                            <InputGroupText className="text-n-8">@</InputGroupText>
-                                        </InputGroupAddon>
-                                        <InputGroupInput
-                                            {...form.register("email")}
-                                            id="email"
-                                            type="email"
-                                            placeholder="correo@ejemplo.com"
-                                            className="placeholder:text-n-8"
-                                        />
-                                    </InputGroup>
-                                    {form.formState.errors.email && (
-                                        <FieldError>{form.formState.errors.email.message}</FieldError>
-                                    )}
-                                </Field>
+                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
+                            <div className="md:col-span-4 lg:col-span-3">
+                                <div className="sticky top-8">
+                                    <label htmlFor="birthDate" className="block text-sm font-bold text-foreground mb-1">
+                                        Fecha de nacimiento
+                                    </label>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Día, mes y año de nacimiento
+                                    </p>
+                                </div>
                             </div>
-                        </Fieldset>
+                            <div className="md:col-span-8 lg:col-span-9">
+                                <InputGroup>
+                                    <InputGroupAddon align="inline-start">
+                                        <InputGroupText className="text-n-8">Nac.</InputGroupText>
+                                    </InputGroupAddon>
+                                    <InputGroupInput
+                                        {...form.register("birthDate")}
+                                        id="birthDate"
+                                        type="date"
+                                        max={new Date().toISOString().split("T")[0]}
+                                        className={resolvedTheme === "dark" ? "[color-scheme:dark]" : "[color-scheme:light]"}
+                                    />
+                                </InputGroup>
+                            </div>
+                        </div>
 
-                        <Fieldset
-                            title="Dirección"
-                            description="Dirección física de residencia."
-                        >
-                            <Field>
+                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
+                            <div className="md:col-span-4 lg:col-span-3">
+                                <div className="sticky top-8">
+                                    <label htmlFor="documentId" className="block text-sm font-bold text-foreground mb-1">
+                                        Cédula / Identificación
+                                    </label>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Documento de identidad oficial
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="md:col-span-8 lg:col-span-9">
+                                <InputGroup>
+                                    <InputGroupAddon align="inline-start">
+                                        <InputGroupText className="text-n-8">ID</InputGroupText>
+                                    </InputGroupAddon>
+                                    <InputGroupInput
+                                        {...form.register("documentId")}
+                                        id="documentId"
+                                        placeholder="00000000"
+                                        className="placeholder:text-n-8 font-mono"
+                                    />
+                                </InputGroup>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
+                            <div className="md:col-span-4 lg:col-span-3">
+                                <div className="sticky top-8">
+                                    <label htmlFor="phone" className="block text-sm font-bold text-foreground mb-1">
+                                        Teléfono
+                                    </label>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Número de contacto principal
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="md:col-span-8 lg:col-span-9">
+                                <InputGroup>
+                                    <InputGroupAddon align="inline-start">
+                                        <InputGroupText className="text-n-8">+58</InputGroupText>
+                                    </InputGroupAddon>
+                                    <InputGroupInput
+                                        {...form.register("phone")}
+                                        id="phone"
+                                        placeholder="412 0000000"
+                                        className="placeholder:text-n-8"
+                                    />
+                                </InputGroup>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
+                            <div className="md:col-span-4 lg:col-span-3">
+                                <div className="sticky top-8">
+                                    <label htmlFor="email" className="block text-sm font-bold text-foreground mb-1">
+                                        Correo electrónico
+                                    </label>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Dirección de correo electrónico
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="md:col-span-8 lg:col-span-9">
+                                <InputGroup>
+                                    <InputGroupAddon align="inline-start">
+                                        <InputGroupText className="text-n-8">@</InputGroupText>
+                                    </InputGroupAddon>
+                                    <InputGroupInput
+                                        {...form.register("email")}
+                                        id="email"
+                                        type="email"
+                                        placeholder="correo@ejemplo.com"
+                                        className="placeholder:text-n-8"
+                                    />
+                                </InputGroup>
+                                {form.formState.errors.email && (
+                                    <FieldError>{form.formState.errors.email.message}</FieldError>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
+                            <div className="md:col-span-4 lg:col-span-3">
+                                <div className="sticky top-8">
+                                    <label htmlFor="address" className="block text-sm font-bold text-foreground mb-1">
+                                        Dirección completa
+                                    </label>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Residencia actual del paciente
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="md:col-span-8 lg:col-span-9">
                                 <InputGroup>
                                     <InputGroupAddon align="block-start" className="pt-3">
                                         <InputGroupText className="text-n-8">Dir.</InputGroupText>
@@ -375,10 +429,10 @@ export function PatientForm({
                                         className="min-h-[80px] placeholder:text-n-8"
                                     />
                                 </InputGroup>
-                            </Field>
-                        </Fieldset>
+                            </div>
+                        </div>
 
-                        <div className="flex justify-end items-center gap-3 p-5 border-t border-n-5/30 bg-n-2/30">
+                        <div className="flex justify-end items-center gap-3 p-5 bg-n-2/30 border-t border-n-5/30">
                             <Button
                                 type="button"
                                 variant="ghost"

@@ -52,8 +52,7 @@ import type { Patient, Condition, AllergyIntolerance, EncounterWithSpecialty } f
 import type { PatientTelecom, PatientAddress, PatientIdentifier } from '@/types/patient-jsonb';
 import { formatDate, calcAge, getGenderLabel } from '@/lib/clinical';
 
-import { PageContainer, PageSectionSeparator } from '@/components/ui/PageLayout';
-import { Fieldset } from '@/components/ui/fieldset';
+import { PageContainer, PageSection, PageSectionSeparator } from '@/components/ui/PageLayout';
 
 interface PatientDetailViewProps {
     patient: Patient;
@@ -246,158 +245,154 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                 <PageContainer size="large">
                     {/* ── PANEL: RESUMEN ── */}
                     {activeTab === 'overview' && (
-                        <div className="space-y-4">
-                            <Fieldset
+                        <div className="space-y-0">
+                            <PageSection
                                 title="Identidad y datos maestros"
                                 description="Información personal básica y documentos de identificación oficial."
+                                orientation="horizontal"
                             >
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 rounded-lg border border-n-5/30 bg-n-2/40">
                                     <PropertyItem label="Nombre completo" value={`${patient.name_given?.join(' ')} ${patient.name_family}`} />
                                     <PropertyItem label="Cédula / ID" value={docId || '—'} mono />
                                     <PropertyItem label="Fecha de nacimiento" value={formatDate(patient.birth_date)} mono />
                                     <PropertyItem label="Edad actual" value={`${age || '—'} años`} mono />
                                     <PropertyItem label="Género" value={genderLabel} />
                                 </div>
-                            </Fieldset>
+                            </PageSection>
 
                             <PageSectionSeparator />
 
-                            <Fieldset
+                            <PageSection
                                 title="Contacto y ubicación"
                                 description="Medios de comunicación directa y dirección física de residencia."
+                                orientation="horizontal"
                             >
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 rounded-xl border border-n-5/30 bg-n-2/40">
                                     <PropertyItem label="Teléfono" value={phone || '—'} />
                                     <PropertyItem label="Correo electrónico" value={email || '—'} />
                                     <div className="sm:col-span-2">
                                         <PropertyItem label="Dirección de residencia" value={address || 'Sin dirección registrada'} />
                                     </div>
                                 </div>
-                            </Fieldset>
+                            </PageSection>
                         </div>
                     )}
 
                     {/* ── PANEL: CONDICIONES ── */}
                     {activeTab === 'conditions' && (
-                        <div className="space-y-4">
-                            <Fieldset
-                                title="Condiciones clínicas"
-                                description="Lista de diagnósticos activos e históricos del paciente."
-                            >
-                                {conditions.length === 0 ? (
-                                    <EmptyState icon={Activity} title="No hay condiciones clínicas" message="El paciente no tiene diagnósticos registrados actualmente." />
-                                ) : (
-                                    <div className="border border-n-5/30 rounded-xl overflow-hidden divide-y divide-n-5/20 bg-n-2/40">
-                                        {conditions.map((c) => (
-                                            <div key={c.id} className="flex items-center justify-between p-4 bg-n-1 hover:bg-n-2 transition-colors duration-100">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <h4 className="text-sm font-bold text-n-11 font-sans">{c.code_display}</h4>
-                                                    <p className="text-[11px] text-n-8 font-sans tracking-tight tabular-nums">
-                                                        {c.code} · Iniciado el {formatDate(c.onset_date)}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Badge variant={c.clinical_status === 'active' ? 'pill-success' : 'pill-neutral'} className="text-[11px]">
-                                                        {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
-                                                    </Badge>
-                                                    <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-b-8 hover:bg-b-8/10 font-sans transition-colors duration-100" onClick={() => setShowAddCondition(true)}>
-                                                        <Plus className="w-3.5 h-3.5 mr-1" />
-                                                    </Button>
-                                                </div>
+                        <PageSection
+                            title="Condiciones clínicas"
+                            description="Lista de diagnósticos activos e históricos del paciente."
+                            actions={
+                                <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-b-8 hover:bg-b-8/10 font-sans transition-colors duration-100" onClick={() => setShowAddCondition(true)}>
+                                    <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
+                                </Button>
+                            }
+                        >
+                            {conditions.length === 0 ? (
+                                <EmptyState icon={Activity} title="No hay condiciones clínicas" message="El paciente no tiene diagnósticos registrados actualmente." />
+                            ) : (
+                                <div className="border border-n-5/30 rounded-xl overflow-hidden divide-y divide-n-5/20 bg-n-2/40">
+                                    {conditions.map((c) => (
+                                        <div key={c.id} className="flex items-center justify-between p-4 bg-n-1 hover:bg-n-2 transition-colors duration-100">
+                                            <div className="flex flex-col gap-0.5">
+                                                <h4 className="text-sm font-bold text-n-11 font-sans">{c.code_display}</h4>
+                                                <p className="text-[11px] text-n-8 font-sans tracking-tight tabular-nums">
+                                                    {c.code} · Iniciado el {formatDate(c.onset_date)}
+                                                </p>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </Fieldset>
-                        </div>
+                                            <Badge variant={c.clinical_status === 'active' ? 'pill-success' : 'pill-neutral'} className="text-[11px]">
+                                                {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
+                                            </Badge>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </PageSection>
                     )}
 
                     {/* ── PANEL: ALERGIAS ── */}
                     {activeTab === 'allergies' && (
-                        <div className="space-y-4">
-                            <Fieldset
-                                title="Alergias e intolerancias"
-                                description="Registro de sustancias o agentes que provocan reacciones adversas."
-                            >
-                                {allergies.length === 0 ? (
-                                    <EmptyState icon={FlaskConical} title="Sin alergias registradas" message="No se han reportado alergias o intolerancias para este paciente." />
-                                ) : (
-                                    <div className="border border-n-5/30 rounded-xl overflow-hidden divide-y divide-n-5/20 bg-n-2/40">
-                                        {allergies.map((a) => (
-                                            <div key={a.id} className="flex items-center gap-4 p-4 bg-n-1 hover:bg-n-2 transition-colors duration-100">
-                                                <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
-                                                    <AlertCircle className="w-4 h-4 text-destructive" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="text-sm font-bold text-n-11 truncate font-sans">{a.code_display}</h4>
-                                                    <p className="text-[11px] text-n-8 font-sans">
-                                                        {(Array.isArray(a.reactions) && (a.reactions as Array<{ text: string }>)[0]?.text) || 'Sin reacción especificada'}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Badge variant={a.criticality === 'high' ? 'pill-danger' : 'pill-warning'} className="text-[11px]">
-                                                        {a.criticality === 'high' ? 'Alta' : 'Normal'}
-                                                    </Badge>
-                                                    <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-b-8 hover:bg-b-8/10 font-sans transition-colors duration-100" onClick={() => setShowAddAllergy(true)}>
-                                                        <Plus className="w-3.5 h-3.5" />
-                                                    </Button>
-                                                </div>
+                        <PageSection
+                            title="Alergias e intolerancias"
+                            description="Registro de sustancias o agentes que provocan reacciones adversas."
+                            actions={
+                                <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-b-8 hover:bg-b-8/10 font-sans transition-colors duration-100" onClick={() => setShowAddAllergy(true)}>
+                                    <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
+                                </Button>
+                            }
+                        >
+                            {allergies.length === 0 ? (
+                                <EmptyState icon={FlaskConical} title="Sin alergias registradas" message="No se han reportado alergias o intolerancias para este paciente." />
+                            ) : (
+                                <div className="border border-n-5/30 rounded-xl overflow-hidden divide-y divide-n-5/20 bg-n-2/40">
+                                    {allergies.map((a) => (
+                                        <div key={a.id} className="flex items-center gap-4 p-4 bg-n-1 hover:bg-n-2 transition-colors duration-100">
+                                            <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
+                                                <AlertCircle className="w-4 h-4 text-destructive" />
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </Fieldset>
-                        </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-sm font-bold text-n-11 truncate font-sans">{a.code_display}</h4>
+                                                <p className="text-[11px] text-n-8 font-sans">
+                                                    {(Array.isArray(a.reactions) && (a.reactions as Array<{ text: string }>)[0]?.text) || 'Sin reacción especificada'}
+                                                </p>
+                                            </div>
+                                            <Badge variant={a.criticality === 'high' ? 'pill-danger' : 'pill-warning'} className="text-[11px]">
+                                                {a.criticality === 'high' ? 'Alta' : 'Normal'}
+                                            </Badge>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </PageSection>
                     )}
 
                     {/* ── PANEL: CONSULTAS ── */}
                     {activeTab === 'history' && (
-                        <div className="space-y-4">
-                            <Fieldset
-                                title="Historial evolutivo"
-                                description="Cronología de encuentros clínicos y notas de seguimiento."
-                            >
-                                {loadingEncounters ? (
-                                    <div className="space-y-3">
-                                        <Skeleton className="h-20 w-full rounded-xl bg-n-2" />
-                                    </div>
-                                ) : encounters.length === 0 ? (
-                                    <EmptyState icon={Calendar} title="Sin consultas previas" message="Este paciente aún no registra visitas clínicas." />
-                                ) : (
-                                    <div className="space-y-3">
-                                        {encounters.map((e) => (
-                                            <button
-                                                key={e.id}
-                                                className="w-full text-left flex items-start p-5 gap-5 rounded-xl border border-n-5/30 bg-n-1 hover:border-b-8/40 hover:bg-n-2 transition-all duration-150 group"
-                                                onClick={() => router.push(`/history?patientId=${patient.id}&encounterId=${e.id}`)}
-                                            >
-                                                <div className="flex flex-col items-center gap-2 shrink-0 pt-0.5">
-                                                    <div className="h-10 w-10 rounded-xl bg-b-8/10 flex items-center justify-center text-b-8 group-hover:bg-b-8 group-hover:text-white transition-colors duration-150">
-                                                        <Calendar className="w-5 h-5" />
-                                                    </div>
-                                                    <div className="w-px h-full bg-n-5/40 group-last:hidden" />
+                        <PageSection
+                            title="Historial evolutivo"
+                            description="Cronología de encuentros clínicos y notas de seguimiento."
+                        >
+                            {loadingEncounters ? (
+                                <div className="space-y-3">
+                                    <Skeleton className="h-20 w-full rounded-xl bg-n-2" />
+                                </div>
+                            ) : encounters.length === 0 ? (
+                                <EmptyState icon={Calendar} title="Sin consultas previas" message="Este paciente aún no registra visitas clínicas." />
+                            ) : (
+                                <div className="space-y-3">
+                                    {encounters.map((e) => (
+                                        <button
+                                            key={e.id}
+                                            className="w-full text-left flex items-start p-5 gap-5 rounded-xl border border-n-5/30 bg-n-1 hover:border-b-8/40 hover:bg-n-2 transition-all duration-150 group"
+                                            onClick={() => router.push(`/history?patientId=${patient.id}&encounterId=${e.id}`)}
+                                        >
+                                            <div className="flex flex-col items-center gap-2 shrink-0 pt-0.5">
+                                                <div className="h-10 w-10 rounded-xl bg-b-8/10 flex items-center justify-center text-b-8 group-hover:bg-b-8 group-hover:text-white transition-colors duration-150">
+                                                    <Calendar className="w-5 h-5" />
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between mb-1">
-                                                        <p className="font-sans text-sm font-bold tracking-tight text-n-11 tabular-nums">{formatDate(e.start_time)}</p>
-                                                        <Badge variant={e.status === 'finished' ? 'pill-success' : 'pill-info'} className="text-[11px]">
-                                                            {e.status === 'finished' ? 'Cerrada' : 'Abierta'}
-                                                        </Badge>
-                                                    </div>
-                                                    <p className="text-[11px] font-bold text-n-8 mb-2 font-sans">
-                                                        Dr. {e.practitioner?.name_family || 'No asignado'}
-                                                    </p>
-                                                    <p className="text-[13px] text-n-8 leading-relaxed line-clamp-3 italic font-sans">
-                                                        {e.clinical_note?.evolution_note || 'Sin nota evolutiva registrada en esta consulta.'}
-                                                    </p>
+                                                <div className="w-px h-full bg-n-5/40 group-last:hidden" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <p className="font-sans text-sm font-bold tracking-tight text-n-11 tabular-nums">{formatDate(e.start_time)}</p>
+                                                    <Badge variant={e.status === 'finished' ? 'pill-success' : 'pill-info'} className="text-[11px]">
+                                                        {e.status === 'finished' ? 'Cerrada' : 'Abierta'}
+                                                    </Badge>
                                                 </div>
-                                                <ChevronRight className="w-4 h-4 text-n-8/40 self-center group-hover:translate-x-1 group-hover:text-b-8 transition-all duration-150" />
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </Fieldset>
-                        </div>
+                                                <p className="text-[11px] font-bold text-n-8 mb-2 font-sans">
+                                                    Dr. {e.practitioner?.name_family || 'No asignado'}
+                                                </p>
+                                                <p className="text-[13px] text-n-8 leading-relaxed line-clamp-3 italic font-sans">
+                                                    {e.clinical_note?.evolution_note || 'Sin nota evolutiva registrada en esta consulta.'}
+                                                </p>
+                                            </div>
+                                            <ChevronRight className="w-4 h-4 text-n-8/40 self-center group-hover:translate-x-1 group-hover:text-b-8 transition-all duration-150" />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </PageSection>
                     )}
                 </PageContainer>
             </div>
