@@ -2,11 +2,10 @@
 
 import React from "react"
 import { useRouter } from "next/navigation"
-import { useTheme } from "next-themes"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { UserIcon, Edit3 } from "lucide-react"
+import { UserIcon, Edit3, Calendar as CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,7 +18,10 @@ import {
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { FieldError } from "@/components/ui/field"
-import { InputGroup, InputGroupAddon, InputGroupText, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -88,6 +90,31 @@ function getInitials(givenNames?: string, familyName?: string): string {
     return `${first}${last}`.toUpperCase() || "?"
 }
 
+interface FormFieldProps {
+    label: string
+    required?: boolean
+    description?: string
+    error?: string
+    children: React.ReactNode
+}
+
+function FormField({ label, required, description, error, children }: FormFieldProps) {
+    return (
+        <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-0.5">
+                <label className="text-sm font-medium text-foreground">
+                    {label} {required && <span className="text-b-8">*</span>}
+                </label>
+                {description && (
+                    <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
+                )}
+            </div>
+            {children}
+            {error && <FieldError>{error}</FieldError>}
+        </div>
+    )
+}
+
 export function PatientForm({
     defaultValues,
     onSubmit,
@@ -98,7 +125,6 @@ export function PatientForm({
     patientActive = true,
 }: PatientFormProps) {
     const router = useRouter()
-    const { resolvedTheme } = useTheme()
     const [showCancelConfirm, setShowCancelConfirm] = React.useState(false)
 
     const form = useForm<PatientFormValues>({
@@ -138,7 +164,7 @@ export function PatientForm({
 
     return (
         <div className="min-h-screen bg-n-2">
-            <div className="p-8 max-w-4xl mx-auto animate-in fade-in duration-500">
+            <div className="p-6 max-w-4xl mx-auto animate-in fade-in duration-500">
                 {mode === "edit" && patientName ? (
                     <div className="mb-6 p-5 bg-n-1 rounded-lg border border-n-5/30">
                         <div className="flex items-center gap-4">
@@ -190,302 +216,213 @@ export function PatientForm({
                 )}
 
                 <Card className="border border-n-5/30 bg-n-1 shadow-none overflow-hidden">
-                <CardHeader className="border-b border-n-5/30 pb-5 px-8 pt-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-1 h-5 rounded-full bg-b-8" />
-                        <div>
-                            <CardTitle className="text-sm font-semibold tracking-tight text-n-11 uppercase">
-                                Datos demográficos
-                            </CardTitle>
-                            <CardDescription className="text-xs text-n-8 mt-0.5">
-                                {mode === "create"
-                                    ? "Los campos marcados con * son obligatorios"
-                                    : "Complete o actualice la información necesaria"}
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <form onSubmit={form.handleSubmit(handleSubmit)} className="divide-y divide-n-5/30">
-                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
-                            <div className="md:col-span-4 lg:col-span-3">
-                                <div className="sticky top-8">
-                                    <label htmlFor="givenNames" className="block text-sm font-bold text-foreground mb-1">
-                                        Nombres <span className="text-b-8">*</span>
-                                    </label>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        Primer nombre y segundos nombres del paciente
-                                    </p>
-                                </div>
+                    <CardHeader className="border-b border-n-5/30 pb-5 px-6 pt-5">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1 h-5 rounded-full bg-b-8" />
+                            <div>
+                                <CardTitle className="text-sm font-semibold tracking-tight text-n-11 uppercase">
+                                    Datos demográficos
+                                </CardTitle>
+                                <CardDescription className="text-xs text-n-8 mt-0.5">
+                                    {mode === "create"
+                                        ? "Los campos marcados con * son obligatorios"
+                                        : "Complete o actualice la información necesaria"}
+                                </CardDescription>
                             </div>
-                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
-                                <InputGroup>
-                                    <InputGroupAddon align="inline-start">
-                                        <InputGroupText className="text-n-8">Nom.</InputGroupText>
-                                    </InputGroupAddon>
-                                    <InputGroupInput
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <form onSubmit={form.handleSubmit(handleSubmit)} className="divide-y divide-n-5/30">
+                            <div className="p-6 space-y-6 first:pt-0 last:pb-0">
+                                <FormField
+                                    label="Nombres"
+                                    required
+                                    description="Primer nombre y segundos nombres del paciente"
+                                    error={form.formState.errors.givenNames?.message}
+                                >
+                                    <Input
                                         {...form.register("givenNames")}
                                         id="givenNames"
                                         placeholder="María Carmen"
-                                        className="placeholder:text-n-8"
+                                        className="h-10"
                                     />
-                                </InputGroup>
-                                {form.formState.errors.givenNames && (
-                                    <FieldError>{form.formState.errors.givenNames.message}</FieldError>
-                                )}
-                            </div>
-                        </div>
+                                </FormField>
 
-                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
-                            <div className="md:col-span-4 lg:col-span-3">
-                                <div className="sticky top-8">
-                                    <label htmlFor="familyName" className="block text-sm font-bold text-foreground mb-1">
-                                        Apellidos <span className="text-b-8">*</span>
-                                    </label>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        Apellidos completos del paciente
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
-                                <InputGroup>
-                                    <InputGroupAddon align="inline-start">
-                                        <InputGroupText className="text-n-8">Ape.</InputGroupText>
-                                    </InputGroupAddon>
-                                    <InputGroupInput
+                                <FormField
+                                    label="Apellidos"
+                                    required
+                                    description="Apellidos completos del paciente"
+                                    error={form.formState.errors.familyName?.message}
+                                >
+                                    <Input
                                         {...form.register("familyName")}
                                         id="familyName"
                                         placeholder="García López"
-                                        className="placeholder:text-n-8"
+                                        className="h-10"
                                     />
-                                </InputGroup>
-                                {form.formState.errors.familyName && (
-                                    <FieldError>{form.formState.errors.familyName.message}</FieldError>
-                                )}
-                            </div>
-                        </div>
+                                </FormField>
 
-                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
-                            <div className="md:col-span-4 lg:col-span-3">
-                                <div className="sticky top-8">
-                                    <label htmlFor="gender" className="block text-sm font-bold text-foreground mb-1">
-                                        Género <span className="text-b-8">*</span>
-                                    </label>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        Sexo biológico registrado
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
-                                <Select
-                                    onValueChange={(val) => form.setValue("gender", val as "female" | "male" | "other" | "unknown")}
-                                    value={form.watch("gender")}
+                                <FormField
+                                    label="Género"
+                                    required
+                                    description="Sexo biológico registrado"
+                                    error={form.formState.errors.gender?.message}
                                 >
-                                    <SelectTrigger id="gender" className="h-10 bg-n-1 border-n-5 text-sm">
-                                        <SelectValue placeholder="Seleccionar" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-popover border-n-5">
-                                        <SelectItem value="unknown">Desconocido</SelectItem>
-                                        <SelectItem value="female">Femenino</SelectItem>
-                                        <SelectItem value="male">Masculino</SelectItem>
-                                        <SelectItem value="other">Otro</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {form.formState.errors.gender && (
-                                    <FieldError>{form.formState.errors.gender.message}</FieldError>
-                                )}
-                            </div>
-                        </div>
+                                    <Select
+                                        onValueChange={(val) => form.setValue("gender", val as "female" | "male" | "other" | "unknown")}
+                                        value={form.watch("gender")}
+                                    >
+                                        <SelectTrigger className="h-10 bg-n-1 border-n-5/40 text-sm rounded-md">
+                                            <SelectValue placeholder="Seleccionar" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-popover border-n-5">
+                                            <SelectItem value="unknown">Desconocido</SelectItem>
+                                            <SelectItem value="female">Femenino</SelectItem>
+                                            <SelectItem value="male">Masculino</SelectItem>
+                                            <SelectItem value="other">Otro</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormField>
 
-                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
-                            <div className="md:col-span-4 lg:col-span-3">
-                                <div className="sticky top-8">
-                                    <label htmlFor="birthDate" className="block text-sm font-bold text-foreground mb-1">
-                                        Fecha de nacimiento
-                                    </label>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        Día, mes y año de nacimiento
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
-                                <InputGroup>
-                                    <InputGroupAddon align="inline-start">
-                                        <InputGroupText className="text-n-8">Nac.</InputGroupText>
-                                    </InputGroupAddon>
-                                    <InputGroupInput
-                                        {...form.register("birthDate")}
-                                        id="birthDate"
-                                        type="date"
-                                        max={new Date().toISOString().split("T")[0]}
-                                        className={resolvedTheme === "dark" ? "[color-scheme:dark]" : "[color-scheme:light]"}
-                                    />
-                                </InputGroup>
-                            </div>
-                        </div>
+                                <FormField
+                                    label="Fecha de nacimiento"
+                                    description="Día, mes y año de nacimiento"
+                                >
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <button
+                                                type="button"
+                                                className={cn(
+                                                    "flex h-10 w-full items-center justify-between rounded-md border border-n-5/40 bg-n-1 px-3 py-2 text-sm hover:border-n-5/60 transition-all",
+                                                    !form.watch("birthDate") && "text-muted-foreground"
+                                                )}
+                                            >
+                                                {form.watch("birthDate") ? form.watch("birthDate") : "Seleccionar fecha"}
+                                                <CalendarIcon className="h-4 w-4 text-n-8" />
+                                            </button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={form.watch("birthDate") ? new Date(form.watch("birthDate")!) : undefined}
+                                                onSelect={(date) => {
+                                                    if (date) {
+                                                        form.setValue("birthDate", date.toISOString().split("T")[0])
+                                                    }
+                                                }}
+                                                className="rounded-md border"
+                                                captionLayout="dropdown"
+                                                disabled={(date) => date > new Date()}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </FormField>
 
-                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
-                            <div className="md:col-span-4 lg:col-span-3">
-                                <div className="sticky top-8">
-                                    <label htmlFor="documentId" className="block text-sm font-bold text-foreground mb-1">
-                                        Cédula / Identificación
-                                    </label>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        Documento de identidad oficial
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
-                                <InputGroup>
-                                    <InputGroupAddon align="inline-start">
-                                        <InputGroupText className="text-n-8">ID</InputGroupText>
-                                    </InputGroupAddon>
-                                    <InputGroupInput
+                                <FormField
+                                    label="Cédula / Identificación"
+                                    description="Documento de identidad oficial"
+                                >
+                                    <Input
                                         {...form.register("documentId")}
                                         id="documentId"
                                         placeholder="00000000"
-                                        className="placeholder:text-n-8 font-mono"
+                                        className="h-10 font-mono"
                                     />
-                                </InputGroup>
-                            </div>
-                        </div>
+                                </FormField>
 
-                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
-                            <div className="md:col-span-4 lg:col-span-3">
-                                <div className="sticky top-8">
-                                    <label htmlFor="phone" className="block text-sm font-bold text-foreground mb-1">
-                                        Teléfono
-                                    </label>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        Número de contacto principal
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
-                                <InputGroup>
-                                    <InputGroupAddon align="inline-start">
-                                        <InputGroupText className="text-n-8">+58</InputGroupText>
-                                    </InputGroupAddon>
-                                    <InputGroupInput
+                                <FormField
+                                    label="Teléfono"
+                                    description="Número de contacto principal"
+                                >
+                                    <Input
                                         {...form.register("phone")}
                                         id="phone"
                                         placeholder="412 0000000"
-                                        className="placeholder:text-n-8"
+                                        className="h-10"
                                     />
-                                </InputGroup>
-                            </div>
-                        </div>
+                                </FormField>
 
-                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
-                            <div className="md:col-span-4 lg:col-span-3">
-                                <div className="sticky top-8">
-                                    <label htmlFor="email" className="block text-sm font-bold text-foreground mb-1">
-                                        Correo electrónico
-                                    </label>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        Dirección de correo electrónico
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
-                                <InputGroup>
-                                    <InputGroupAddon align="inline-start">
-                                        <InputGroupText className="text-n-8">@</InputGroupText>
-                                    </InputGroupAddon>
-                                    <InputGroupInput
+                                <FormField
+                                    label="Correo electrónico"
+                                    description="Dirección de correo electrónico"
+                                    error={form.formState.errors.email?.message}
+                                >
+                                    <Input
                                         {...form.register("email")}
                                         id="email"
                                         type="email"
                                         placeholder="correo@ejemplo.com"
-                                        className="placeholder:text-n-8"
+                                        className="h-10"
                                     />
-                                </InputGroup>
-                                {form.formState.errors.email && (
-                                    <FieldError>{form.formState.errors.email.message}</FieldError>
-                                )}
-                            </div>
-                        </div>
+                                </FormField>
 
-                        <div className="grid grid-cols-1 md:grid-cols-12 py-6 px-8 gap-x-12 gap-y-6 first:pt-0 last:pb-0">
-                            <div className="md:col-span-4 lg:col-span-3">
-                                <div className="sticky top-8">
-                                    <label htmlFor="address" className="block text-sm font-bold text-foreground mb-1">
-                                        Dirección completa
-                                    </label>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        Residencia actual del paciente
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="md:col-span-8 lg:col-span-9 bg-n-1 rounded-md p-4">
-                                <InputGroup>
-                                    <InputGroupAddon align="block-start" className="pt-3">
-                                        <InputGroupText className="text-n-8">Dir.</InputGroupText>
-                                    </InputGroupAddon>
-                                    <InputGroupTextarea
+                                <FormField
+                                    label="Dirección completa"
+                                    description="Residencia actual del paciente"
+                                >
+                                    <Textarea
                                         {...form.register("address")}
                                         id="address"
                                         placeholder="Av. Principal, Edificio, Apartamento, Ciudad..."
                                         rows={3}
-                                        className="min-h-[80px] placeholder:text-n-8"
+                                        className="min-h-[80px] resize-none"
                                     />
-                                </InputGroup>
+                                </FormField>
                             </div>
-                        </div>
 
-                        <div className="flex justify-end items-center gap-3 p-5 bg-n-2/30 border-t border-n-5/30">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => {
-                                    if (form.formState.isDirty) {
-                                        setShowCancelConfirm(true)
-                                    } else {
-                                        router.push(mode === "edit" && patientId ? `/patients/${patientId}` : "/patients")
-                                    }
-                                }}
-                                className="text-n-8 hover:text-n-11 hover:bg-n-3 transition-colors h-9 px-4"
-                                disabled={isLoading}
-                            >
-                                Cancelar
-                            </Button>
+                            <div className="flex justify-end items-center gap-3 p-5 bg-n-2/30 border-t border-n-5/30">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => {
+                                        if (form.formState.isDirty) {
+                                            setShowCancelConfirm(true)
+                                        } else {
+                                            router.push(mode === "edit" && patientId ? `/patients/${patientId}` : "/patients")
+                                        }
+                                    }}
+                                    className="text-n-8 hover:text-n-11 hover:bg-n-3 transition-colors h-9 px-4"
+                                    disabled={isLoading}
+                                >
+                                    Cancelar
+                                </Button>
 
-                            <Button
-                                type="submit"
-                                disabled={isLoading}
-                                className="bg-b-8 hover:bg-b-9 text-white h-9 px-5 font-medium shadow-lg shadow-b-8/20"
-                            >
-                                {isLoading
-                                    ? mode === "create"
-                                        ? "Registrando..."
-                                        : "Guardando..."
-                                    : mode === "create"
-                                        ? "Registrar Paciente"
-                                        : "Guardar Cambios"}
-                            </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                                <Button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="bg-b-8 hover:bg-b-9 text-white h-9 px-5 font-medium shadow-lg shadow-b-8/20"
+                                >
+                                    {isLoading
+                                        ? mode === "create"
+                                            ? "Registrando..."
+                                            : "Guardando..."
+                                        : mode === "create"
+                                            ? "Registrar Paciente"
+                                            : "Guardar Cambios"}
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
 
-            <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>¿Descartar cambios?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {mode === "create"
-                                ? "Tienes datos ingresados que se perderán si cancelas."
-                                : "Tienes cambios sin guardar. Si cancelas, se perderán."}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Seguir {mode === "create" ? "registrando" : "editando"}</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => router.push(mode === "edit" && patientId ? `/patients/${patientId}` : "/patients")}>
-                            Descartar
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>¿Descartar cambios?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {mode === "create"
+                                    ? "Tienes datos ingresados que se perderán si cancelas."
+                                    : "Tienes cambios sin guardar. Si cancelas, se perderán."}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Seguir {mode === "create" ? "registrando" : "editando"}</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => router.push(mode === "edit" && patientId ? `/patients/${patientId}` : "/patients")}>
+                                Descartar
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </div>
     )

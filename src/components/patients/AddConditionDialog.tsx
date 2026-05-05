@@ -17,7 +17,11 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Field, FieldLabel, FieldError } from '@/components/ui/field';
-import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { Calendar as CalendarIcon } from 'lucide-react';
 
 const schema = z.object({
     code: z.string().min(1, 'El código es requerido'),
@@ -79,35 +83,55 @@ export function AddConditionDialog({ patientId, open, onOpenChange, onSuccess }:
 
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
                     <Field>
-                        <FieldLabel >Código CIE-10</FieldLabel>
-                        <InputGroup>
-                            <InputGroupInput
-                                placeholder="Ej. J45"
-                                {...form.register('code')}
-                            />
-                        </InputGroup>
+                        <FieldLabel>Código CIE-10</FieldLabel>
+                        <Input
+                            placeholder="Ej. J45"
+                            {...form.register('code')}
+                            className="h-10"
+                        />
                         <FieldError>{form.formState.errors.code?.message}</FieldError>
                     </Field>
 
                     <Field>
-                        <FieldLabel >Nombre de la condición</FieldLabel>
-                        <InputGroup>
-                            <InputGroupInput
-                                placeholder="Ej. Asma bronquial"
-                                {...form.register('code_display')}
-                            />
-                        </InputGroup>
+                        <FieldLabel>Nombre de la condición</FieldLabel>
+                        <Input
+                            placeholder="Ej. Asma bronquial"
+                            {...form.register('code_display')}
+                            className="h-10"
+                        />
                         <FieldError>{form.formState.errors.code_display?.message}</FieldError>
                     </Field>
 
                     <Field>
                         <FieldLabel>Fecha de inicio (opcional)</FieldLabel>
-                        <InputGroup>
-                            <InputGroupInput
-                                type="date"
-                                {...form.register('onset_date')}
-                            />
-                        </InputGroup>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <button
+                                    type="button"
+                                    className={cn(
+                                        "flex h-10 w-full items-center justify-between rounded-md border border-n-5/40 bg-n-1 px-3 py-2 text-sm transition-all",
+                                        !form.watch("onset_date") && "text-muted-foreground"
+                                    )}
+                                >
+                                    {form.watch("onset_date") ? form.watch("onset_date") : "Seleccionar fecha"}
+                                    <CalendarIcon className="h-4 w-4 text-n-8" />
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={form.watch("onset_date") ? new Date(form.watch("onset_date")!) : undefined}
+                                    onSelect={(date) => {
+                                        if (date) {
+                                            form.setValue("onset_date", date.toISOString().split("T")[0])
+                                        }
+                                    }}
+                                    className="rounded-md border"
+                                    captionLayout="dropdown"
+                                    disabled={(date) => date > new Date()}
+                                />
+                            </PopoverContent>
+                        </Popover>
                     </Field>
 
                     <DialogFooter className="pt-2">
