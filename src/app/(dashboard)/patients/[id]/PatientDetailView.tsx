@@ -292,7 +292,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                             {conditions.length === 0 ? (
                                 <EmptyState icon={Activity} title="No hay condiciones clínicas" message="El paciente no tiene diagnósticos registrados actualmente." />
                             ) : (
-                                <div className="border border-n-5/30 rounded-xl overflow-hidden divide-y divide-n-5/20 bg-n-2/40">
+                                <div className="border border-n-5/30 rounded-xl overflow-hidden divide-y divide-n-5/20 bg-n-1">
                                     {conditions.map((c) => (
                                         <div key={c.id} className="flex items-center justify-between p-4 bg-n-1 hover:bg-n-2 transition-colors duration-100">
                                             <div className="flex flex-col gap-0.5">
@@ -325,9 +325,9 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                             {allergies.length === 0 ? (
                                 <EmptyState icon={FlaskConical} title="Sin alergias registradas" message="No se han reportado alergias o intolerancias para este paciente." />
                             ) : (
-                                <div className="border border-n-5/30 rounded-xl overflow-hidden divide-y divide-n-5/20 bg-n-2/40">
-                                    {allergies.map((a) => (
-                                        <div key={a.id} className="flex items-center gap-4 p-4 bg-n-1 hover:bg-n-2 transition-colors duration-100">
+<div className="border border-n-5/30 rounded-xl overflow-hidden divide-y divide-n-5/20 bg-n-1">
+                                        {allergies.map((a) => (
+                                            <div key={a.id} className="flex items-center gap-4 p-4 bg-n-1 hover:bg-n-2 transition-colors duration-100">
                                             <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
                                                 <AlertCircle className="w-4 h-4 text-destructive" />
                                             </div>
