@@ -182,7 +182,7 @@ function IconRail() {
   const slug = activeClinic?.slug ?? '';
 
   const navItems = [
-    { href: `/${slug}`, label: 'Tablero', icon: Home },
+    { href: `/${slug}/dashboard`, label: 'Tablero', icon: Home },
     { href: `/${slug}/patients`, label: 'Pacientes', icon: Users },
     { href: `/${slug}/appointments`, label: 'Citas', icon: Notebook },
     { href: `/${slug}/history/all`, label: 'Historia', icon: History },
