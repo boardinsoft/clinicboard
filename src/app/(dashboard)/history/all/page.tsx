@@ -4,7 +4,6 @@ import EncountersTable from '@/components/history/EncountersTable';
 import EncounterFiltersBar from '@/components/history/EncounterFiltersBar';
 import { RefreshCw } from 'lucide-react';
 import type { EncounterForPreview } from '@/types/database.types';
-import { PageHeader } from '@/components/ui/PageLayout';
 
 interface PageProps {
     searchParams: Promise<{
@@ -27,7 +26,7 @@ export default async function HistoryAllPage({ searchParams }: PageProps) {
 
     return (
         <div className="flex flex-col h-full bg-background">
-            
+
             {/* ── SubHeader plano estilo Supabase ── */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 shrink-0 bg-background">
                 <div className="flex flex-col gap-0.5">
@@ -43,12 +42,6 @@ export default async function HistoryAllPage({ searchParams }: PageProps) {
                 </div>
             </div>
 
-            <div className="border-b border-border/40 bg-background shrink-0 px-6">
-                <Suspense fallback={null}>
-                    <EncounterFiltersBar />
-                </Suspense>
-            </div>
-
             <div className="flex-1 overflow-hidden flex flex-col">
                 <Suspense
                     fallback={
@@ -57,7 +50,14 @@ export default async function HistoryAllPage({ searchParams }: PageProps) {
                         </div>
                     }
                 >
-                    <EncountersTable encounters={encounters as EncounterForPreview[]} />
+                    <EncountersTable
+                        encounters={encounters as EncounterForPreview[]}
+                        toolbar={
+                            <div className="border-b border-border/40 bg-background px-6">
+                                <EncounterFiltersBar />
+                            </div>
+                        }
+                    />
                 </Suspense>
             </div>
         </div>

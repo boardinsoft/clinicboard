@@ -12,7 +12,6 @@ import {
     Upload,
     FileIcon,
     X,
-    MessageSquare,
     MoreHorizontal,
     Send,
     Folder,
@@ -26,7 +25,6 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useLayoutStore } from '@/store/useLayoutStore';
-import { usePatientStore } from '@/store/usePatientStore';
 import { usePathname } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -40,7 +38,6 @@ import {
     SidebarMenuItem,
     SidebarMenuAction,
 } from '@/components/ui/sidebar';
-import EncounterDetailPanel from '@/components/history/EncounterDetailPanel';
 
 interface PatientFile {
     id: string;
@@ -163,8 +160,7 @@ const INITIAL_SECTIONS: DocumentSection[] = [
 ];
 
 export default function AIAssistant() {
-    const { toggleRightPanel, setRightPanelOpen } = useLayoutStore();
-    const { selectedEncounterForPreview, setSelectedEncounterForPreview } = usePatientStore();
+    const { toggleRightPanel } = useLayoutStore();
     const pathname = usePathname();
     const [sections, setSections] = useState<DocumentSection[]>(INITIAL_SECTIONS);
     const dropZoneRef = useRef<HTMLDivElement>(null);
@@ -182,9 +178,6 @@ export default function AIAssistant() {
         }
     ]);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-    const isHistoryModule = pathname?.startsWith('/history');
-    const showEncounterPreview = isHistoryModule && !!selectedEncounterForPreview;
 
     // Auto-scroll logic for chat
     React.useEffect(() => {
@@ -260,20 +253,6 @@ export default function AIAssistant() {
         if (file) handleUpload('documents', file);
     };
 
-    // ─── Renderizado Condicional: Detalle de Encuentro ───
-    if (showEncounterPreview) {
-        return (
-            <EncounterDetailPanel
-                encounter={selectedEncounterForPreview!}
-                onClose={() => {
-                    setSelectedEncounterForPreview(null);
-                    setRightPanelOpen(false);
-                }}
-            />
-        );
-    }
-
-    // ─── Renderizado Normal (IA o Documentos por defecto) ───
     return (
         <aside
             className="h-full w-full bg-background flex flex-col relative"

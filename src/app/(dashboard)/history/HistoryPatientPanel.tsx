@@ -6,7 +6,7 @@ import { formatDate } from '@/lib/date-utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FileSearch, FilePlus, CalendarDays, Plus } from 'lucide-react';
+import { FileSearch, FilePlus, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Patient, EncounterWithClinicalNote } from '@/types/database.types';
 
@@ -167,15 +167,7 @@ export default function HistoryPatientPanel({
                         )}
                     </div>
                 </div>
-            ) : (
-                /* ── SIN PACIENTE ── */
-                <div className="flex flex-col items-center justify-center flex-1 gap-3 px-4 text-center">
-                    <CalendarDays className="w-8 h-8 text-n-8/30" strokeWidth={1.5} />
-                    <p className="text-xs text-n-8/60">
-                        Selecciona un paciente para ver su historial
-                    </p>
-                </div>
-            )}
+            ) : null}
         </div>
     );
 }

@@ -92,7 +92,7 @@ const navMain = [
   { href: '/', label: 'Tablero', icon: Home },
   { href: '/patients', label: 'Pacientes', icon: Users },
   { href: '/appointments', label: 'Citas', icon: Notebook },
-  { href: '/history', label: 'Historia', icon: History },
+  { href: '/history/all', label: 'Historia', icon: History },
   { href: '/prescriptions', label: 'Recetas', icon: FileText },
 ];
 
@@ -115,7 +115,7 @@ const QUICK_ACTIONS = [
     id: 'go-history',
     label: 'Historia Clínica',
     description: 'Consultar encuentros y evoluciones',
-    href: '/history',
+    href: '/history/all',
     icon: FileText,
   },
 ] as const;

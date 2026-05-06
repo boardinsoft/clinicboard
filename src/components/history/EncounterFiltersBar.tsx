@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useCallback, useTransition } from 'react';
-import { Search, ListFilter, X, ArrowUpDown, Download } from 'lucide-react';
+import { ListFilter, X, ArrowUpDown, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { 
@@ -85,7 +85,7 @@ export default function EncounterFiltersBar() {
                                 size="sm" 
                                 className={cn(
                                     "h-8 gap-2 border-dashed border-border/60 font-medium px-3",
-                                    currentStatus !== 'all' && "bg-primary/5 border-primary/30 text-primary hover:text-primary hover:bg-primary/10"
+                                    currentStatus !== 'all' && "bg-b-2 border-b-8/30 text-b-8 hover:text-b-9 hover:bg-b-3"
                                 )}
                             >
                                 <ListFilter className="h-3 w-3" />
