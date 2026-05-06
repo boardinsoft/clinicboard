@@ -132,6 +132,114 @@ export async function createEncounter(formData: {
 }
 
 /**
+ * startWalkInEncounter(payload)
+ * Crea un encounter para un paciente sin cita previa: genera la cita de cola
+ * (walk-in, status=arrived) y el encuentro clínico asociado en un solo paso.
+ */
+export async function startWalkInEncounter(payload: {
+    patient_id: string;
+    clinic_id: string;
+    encounter_class?: 'AMB' | 'IMP' | 'EMER' | 'HH';
+    encounter_category?: string;
+    appointment_type?: string;
+    description?: string;
+}) {
+    const { patient_id: patientId, clinic_id: clinicId, encounter_class: encClass, encounter_category: encCategory, appointment_type: apptType, description: apptDesc } = payload;
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) return { error: 'No autorizado' };
+    if (!clinicId) return { error: 'Clínica no especificada.' };
+
+    const now = new Date();
+    const minutes = now.getMinutes();
+    const roundedMinutes = Math.ceil((minutes + 1) / 15) * 15;
+    now.setMinutes(roundedMinutes, 0, 0);
+    const startTime = now.toISOString();
+    const endTime = new Date(now.getTime() + 15 * 60000).toISOString();
+
+    const { nowInVE, toISODate } = await import('@/lib/date-utils');
+    const localToday = toISODate(nowInVE());
+    const startOfLocalDay = `${localToday}T00:00:00-04:00`;
+
+    const { data: lastInQueue } = await supabase
+        .from('appointments')
+        .select('queue_position')
+        .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', clinicId)
+        .gte('start_time', startOfLocalDay)
+        .order('queue_position', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    const nextPosition = (lastInQueue?.queue_position || 0) + 1;
+
+    const { data: appointment, error: apptError } = await supabase
+        .from('appointments')
+        .insert([{
+            patient_id: patientId,
+            practitioner_id: practitionerId,
+            clinic_id: clinicId,
+            status: 'arrived',
+            start_time: startTime,
+            end_time: endTime,
+            description: apptDesc || 'Consulta por orden de llegada (Walk-In)',
+            queue_position: nextPosition,
+            appointment_type: apptType || 'walk-in',
+        }])
+        .select()
+        .single();
+
+    if (apptError || !appointment) {
+        console.error('[startWalkInEncounter] Appointment insert error:', apptError);
+        return { error: apptError?.message || 'Error al registrar la cita de llegada.' };
+    }
+
+    const { data: encounter, error: encError } = await supabase
+        .from('encounters')
+        .insert([{
+            patient_id: patientId,
+            practitioner_id: practitionerId,
+            clinic_id: clinicId,
+            encounter_class: encClass || 'AMB',
+            encounter_category: encCategory || 'Consulta General',
+            status: 'arrived',
+            start_time: startTime,
+            appointment_id: appointment.id,
+        }])
+        .select()
+        .single();
+
+    if (encError || !encounter) {
+        await supabase.from('appointments').delete().eq('id', appointment.id);
+        console.error('[startWalkInEncounter] Encounter insert error:', encError);
+        return { error: encError?.message || 'Error al crear el encuentro.' };
+    }
+
+    const { data: clinicalNote, error: noteError } = await supabase
+        .from('clinical_notes')
+        .insert([{
+            encounter_id: encounter.id,
+            patient_id: patientId,
+            practitioner_id: practitionerId,
+            is_finalized: false,
+        }])
+        .select()
+        .single();
+
+    if (noteError || !clinicalNote) {
+        await supabase.from('encounters').delete().eq('id', encounter.id);
+        await supabase.from('appointments').delete().eq('id', appointment.id);
+        console.error('[startWalkInEncounter] Clinical note insert error:', noteError);
+        return { error: 'Error al crear la nota clínica del encuentro.' };
+    }
+
+    revalidatePath('/appointments');
+    revalidatePath('/history');
+    return { data: { encounter, clinical_note: clinicalNote } };
+}
+
+/**
  * saveEncounterDraft(id, formData)
  * Guarda vitales en encounters y datos SOAP en clinical_notes en paralelo.
  */
