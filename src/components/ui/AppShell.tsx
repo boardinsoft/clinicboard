@@ -88,38 +88,6 @@ interface AppShellProps {
   emailConfirmed?: boolean;
 }
 
-const navMain = [
-  { href: '/', label: 'Tablero', icon: Home },
-  { href: '/patients', label: 'Pacientes', icon: Users },
-  { href: '/appointments', label: 'Citas', icon: Notebook },
-  { href: '/history/all', label: 'Historia', icon: History },
-  { href: '/prescriptions', label: 'Recetas', icon: FileText },
-];
-
-const QUICK_ACTIONS = [
-  {
-    id: 'new-patient',
-    label: 'Nuevo Paciente',
-    description: 'Registrar un nuevo expediente',
-    href: '/patients/new',
-    icon: Users,
-  },
-  {
-    id: 'go-appointments',
-    label: 'Agenda de Citas',
-    description: 'Ver y gestionar citas del día',
-    href: '/appointments',
-    icon: Calendar,
-  },
-  {
-    id: 'go-history',
-    label: 'Historia Clínica',
-    description: 'Consultar encuentros y evoluciones',
-    href: '/history/all',
-    icon: FileText,
-  },
-] as const;
-
 // ─── Helper: Icono con tooltip ────────────────────────────────────────────────
 function IconBtn({
   icon: Icon,
@@ -209,6 +177,17 @@ function IconRail() {
   const pathname = usePathname() || '/';
   const router = useRouter();
   const { addTab } = useTabStore();
+  const { activeClinic } = useActiveClinic();
+
+  const slug = activeClinic?.slug ?? '';
+
+  const navItems = [
+    { href: `/${slug}`, label: 'Tablero', icon: Home },
+    { href: `/${slug}/patients`, label: 'Pacientes', icon: Users },
+    { href: `/${slug}/appointments`, label: 'Citas', icon: Notebook },
+    { href: `/${slug}/history/all`, label: 'Historia', icon: History },
+    { href: `/${slug}/prescriptions`, label: 'Recetas', icon: FileText },
+  ];
 
   return (
     <aside
@@ -216,10 +195,10 @@ function IconRail() {
       aria-label="Navegación principal"
     >
       <nav className="flex flex-col flex-1 w-full gap-1">
-        {navMain.map((item) => {
+        {navItems.map((item) => {
           const isActive =
-            item.href === '/'
-              ? pathname === '/'
+            item.href === `/${slug}`
+              ? pathname === `/${slug}`
               : pathname.startsWith(item.href);
           return (
             <Tooltip key={item.href}>
@@ -230,14 +209,9 @@ function IconRail() {
                   )}
                   <button
                     onClick={() => {
-                      if (item.href === '/') {
-                        useTabStore.setState({ activeTabId: null });
-                        router.push(item.href);
-                      } else {
-                        const title = getTabTitle(item.href);
-                        addTab({ title, url: item.href });
-                        router.push(item.href);
-                      }
+                      const title = getTabTitle(item.href);
+                      addTab({ title, url: item.href });
+                      router.push(item.href);
                     }}
                     className={cn(
                       'flex h-9 w-9 items-center justify-center rounded-[6px] transition-colors duration-100 relative',
@@ -250,8 +224,8 @@ function IconRail() {
                   </button>
                 </div>
               </TooltipTrigger>
-              <TooltipContent 
-                side="right" 
+              <TooltipContent
+                side="right"
                 sideOffset={12}
                 className="text-[11px] font-medium bg-n-11 text-n-1 dark:bg-n-4 dark:text-n-10 border-n-10 dark:border-n-6 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100"
               >
@@ -302,6 +276,32 @@ function AppLayout({ children, user, practitioner, clinics, initialClinic, email
   const [pendingClinic, setPendingClinic] = useState<Clinic | null>(null);
   const [changeError, setChangeError] = useState<string | null>(null);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  const slug = activeClinic?.slug ?? '';
+
+const QUICK_ACTIONS = [
+    {
+      id: 'new-patient',
+      label: 'Nuevo Paciente',
+      description: 'Registrar un nuevo expediente',
+      href: `/${slug}/patients/new`,
+      icon: Users,
+    },
+    {
+      id: 'go-appointments',
+      label: 'Agenda de Citas',
+      description: 'Ver y gestionar citas del día',
+      href: `/${slug}/appointments`,
+      icon: Calendar,
+    },
+    {
+      id: 'go-history',
+      label: 'Historia Clínica',
+      description: 'Consultar encuentros y evoluciones',
+      href: `/${slug}/history/all`,
+      icon: FileText,
+    },
+  ];
 
 const displayName =
     user?.user_metadata?.full_name ||

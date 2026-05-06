@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Clinic } from '@/lib/supabase/clinic-utils';
 
 interface ActiveClinicContextValue {
@@ -42,12 +43,19 @@ interface ActiveClinicProviderProps {
 export function ActiveClinicProvider({ children, initialClinic, initialClinics, needsOnboarding = false, practitionerId = null }: ActiveClinicProviderProps) {
     const [activeClinic, setActiveClinicState] = useState<Clinic | null>(initialClinic);
     const [clinics] = useState<Clinic[]>(initialClinics);
+    const router = useRouter();
+    const pathname = usePathname();
 
     const setActiveClinic = async (clinic: Clinic | null) => {
         if (!clinic) return;
         setActiveClinicState(clinic);
         localStorage.setItem('activeClinic', JSON.stringify(clinic));
         window.dispatchEvent(new CustomEvent('clinicChanged', { detail: clinic }));
+
+        const currentSlug = initialClinic?.slug ?? '';
+        const newSlug = clinic.slug;
+        const targetPath = pathname.replace(`/${currentSlug}`, `/${newSlug}`) || `/${newSlug}/dashboard`;
+        router.push(targetPath);
     };
 
     return (
