@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useParams } from 'next/navigation';
 import { formatDate } from '@/lib/date-utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,9 +37,11 @@ export default function HistoryPatientPanel({
 }: HistoryPatientPanelProps) {
     const router = useRouter();
     const pathname = usePathname();
+    const params = useParams();
+    const slug = (params.clinicSlug as string) || '';
 
-    const isAllActive = pathname === '/history/all';
-    const isNewEncounterActive = pathname === '/history' && !activeEncounterId;
+    const isAllActive = pathname === `/${slug}/history/all`;
+    const isNewEncounterActive = pathname === `/${slug}/history` && !activeEncounterId;
 
     const patientName = selectedPatient
         ? `${selectedPatient.name_family}, ${selectedPatient.name_given?.join(' ')}`
@@ -59,7 +61,7 @@ export default function HistoryPatientPanel({
             <div className="py-2">
                 {/* Todas las consultas */}
                 <button
-                    onClick={() => router.push('/history/all')}
+                    onClick={() => router.push(`/${slug}/history/all`)}
                     className={cn(
                         "flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition-colors",
                         isAllActive
@@ -73,7 +75,7 @@ export default function HistoryPatientPanel({
 
                 {/* Nueva consulta */}
                 <button
-                    onClick={() => router.push('/history')}
+                    onClick={() => router.push(`/${slug}/history`)}
                     className={cn(
                         "flex items-center gap-2.5 w-full px-4 py-2.5 text-sm font-medium transition-colors",
                         isNewEncounterActive
