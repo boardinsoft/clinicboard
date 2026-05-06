@@ -80,18 +80,30 @@ export default function NewWalkInEncounterDialog({
             });
 
             if (result.error) {
-                const errorMsg = typeof result.error === 'string' ? result.error : 'Error al iniciar la consulta';
-                const isBlockingError = typeof result.error === 'string' && (
-                    errorMsg.includes('ya tiene una cita activa') ||
-                    errorMsg.includes('ya tiene una cita agendada')
-                );
+                const rawError = result.error;
+
+                let errorMsg: string;
+                let details: string | null = null;
+
+                if (typeof rawError === 'string') {
+                    errorMsg = rawError;
+                } else if (rawError !== null && typeof rawError === 'object') {
+                    errorMsg = 'Error al iniciar la consulta';
+                    details = (rawError as { details?: string }).details || null;
+                } else {
+                    errorMsg = 'Error al iniciar la consulta';
+                }
+
+                const isBlockingError = errorMsg.includes('ya tiene una cita activa') ||
+                    errorMsg.includes('ya tiene una cita agendada');
+
+                if (details) console.error('[startWalkInEncounter]', details);
 
                 if (isBlockingError) {
                     setAlertError(errorMsg);
                 } else {
-                    toast.error(errorMsg);
+                    toast.error(details ? `${errorMsg}\n(${details})` : errorMsg);
                 }
-                console.error(result.error);
             } else {
                 toast.success('Consulta iniciada');
                 form.reset();

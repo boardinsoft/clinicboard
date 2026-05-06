@@ -56,17 +56,9 @@ CREATE INDEX IF NOT EXISTS idx_patients_prac_active
   WHERE active = true;
 
 -- ============================================================
--- Index: GIN index on name_given array
--- Speeds up unnest + ILIKE searches on given names
--- ============================================================
-
-CREATE INDEX IF NOT EXISTS idx_patients_name_given_gin
-  ON patients USING gin (to_jsonb(name_given));
-
--- ============================================================
 -- Index: GIN index on identifiers JSONB
 -- Speeds up identifier value searches
 -- ============================================================
 
 CREATE INDEX IF NOT EXISTS idx_patients_identifiers_gin
-  ON patients USING gin (to_jsonb(identifiers));
+  ON patients USING gin (identifiers);

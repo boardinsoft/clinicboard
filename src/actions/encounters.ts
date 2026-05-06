@@ -124,7 +124,11 @@ export async function createEncounter(formData: {
     if (noteError) {
         // Rollback: eliminar el encounter si no se pudo crear la nota
         await supabase.from('encounters').delete().eq('id', encounter.id);
-        return { error: 'Error al crear la nota clínica del encuentro.' };
+        console.error('[createEncounter] Clinical note insert error:', noteError);
+        return {
+            error: 'Error al crear la nota clínica del encuentro.',
+            details: noteError?.message || null,
+        };
     }
 
     revalidatePath('/history');
@@ -222,6 +226,7 @@ export async function startWalkInEncounter(payload: {
             encounter_id: encounter.id,
             patient_id: patientId,
             practitioner_id: practitionerId,
+            clinic_id: clinicId,
             is_finalized: false,
         }])
         .select()
@@ -231,7 +236,10 @@ export async function startWalkInEncounter(payload: {
         await supabase.from('encounters').delete().eq('id', encounter.id);
         await supabase.from('appointments').delete().eq('id', appointment.id);
         console.error('[startWalkInEncounter] Clinical note insert error:', noteError);
-        return { error: 'Error al crear la nota clínica del encuentro.' };
+        return {
+            error: 'Error al crear la nota clínica del encuentro.',
+            details: noteError?.message || null,
+        };
     }
 
     revalidatePath('/appointments');
