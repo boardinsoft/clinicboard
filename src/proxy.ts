@@ -97,8 +97,8 @@ export async function proxy(request: NextRequest) {
     }
 
     if (user) {
-        const isOnboardingRoute = request.nextUrl.pathname.startsWith('/onboarding');
-        const isDashboardRoute = request.nextUrl.pathname === '/dashboard';
+        const isOnboardingRoute = request.nextUrl.pathname.match(/^\/[^/]+\/onboarding$/) !== null;
+        const isDashboardRoute = request.nextUrl.pathname.match(/^\/[^/]+\/dashboard$/) !== null;
 
         if (!isOnboardingRoute && !isDashboardRoute) {
             try {
@@ -110,7 +110,8 @@ export async function proxy(request: NextRequest) {
 
                 if (practitioner?.onboarding_completed !== true) {
                     const url = request.nextUrl.clone();
-                    url.pathname = '/onboarding';
+                    const slug = url.pathname.split('/')[1];
+                    url.pathname = `/${slug}/onboarding`;
                     url.searchParams.set('reason', 'incomplete');
                     return NextResponse.redirect(url);
                 }
