@@ -950,8 +950,8 @@ export default function HistoryPage() {
                                     <CardContent className="p-0">
                                         <div className="p-8 space-y-10">
                                             <Field>
-                                                <FieldLabel className="text-xs font-medium text-muted-foreground mb-2.5">
-                                                    Tipo de Consulta <span className="text-primary">*</span>
+                                                <FieldLabel className="text-xs font-medium text-n-8 mb-2.5">
+                                                    Tipo de Consulta <span className="text-b-8">*</span>
                                                 </FieldLabel>
                                                 <Controller
                                                     control={form.control}
@@ -961,13 +961,13 @@ export default function HistoryPage() {
                                                             field.onChange(val);
                                                             form.setValue('encounterCategory', getCategoryForSubcategory(val));
                                                         }} value={field.value} disabled={!selectedPatient}>
-                                                            <SelectTrigger className="w-full bg-background/50 border-border/10 focus:ring-1 focus:ring-primary/20 transition-all rounded-xl h-11 text-sm font-medium">
+                                                            <SelectTrigger className="w-full bg-n-1 border-n-5/30 focus:ring-b-8/10 focus:ring-1 rounded-md h-10 text-sm font-medium transition-all">
                                                                 <SelectValue placeholder="Clasificación de la visita..." />
                                                             </SelectTrigger>
                                                             <SelectContent className="max-h-[300px]">
                                                                 {ENCOUNTER_CATEGORIES.map(group => (
                                                                     <SelectGroup key={group.label}>
-                                                                        <SelectLabel className="bg-muted/5 font-semibold text-xs tracking-tight text-primary/70">{group.label}</SelectLabel>
+                                                                        <SelectLabel className="bg-n-2 font-semibold text-xs tracking-tight text-n-8">{group.label}</SelectLabel>
                                                                         {group.options.map(opt => (
                                                                             <SelectItem key={opt} value={opt} className="text-sm cursor-pointer">{opt}</SelectItem>
                                                                         ))}
@@ -1065,20 +1065,20 @@ export default function HistoryPage() {
                                                                             <StepperHeader className="flex w-full items-center justify-center">
                                                                                 <StepperIcon
                                                                                     className={`relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${wizardStep === i
-                                                                                        ? 'border-primary bg-primary text-primary-foreground'
+                                                                                        ? 'border-b-8 bg-b-8 text-n-1'
                                                                                         : wizardStep > i
-                                                                                            ? 'border-primary bg-primary/10 text-primary'
-                                                                                            : 'border-neutral-300 bg-neutral-100 text-neutral-400'
+                                                                                            ? 'border-b-8 bg-b-8/10 text-b-8'
+                                                                                            : 'border-n-5 bg-n-2 text-n-8'
                                                                                         }`}
                                                                                 >
                                                                                     {wizardStep > i ? <CheckCircle className="w-5 h-5" /> : st.icon}
                                                                                 </StepperIcon>
                                                                                 {i < arr.length - 1 && (
-                                                                                    <StepperSeparator className={`absolute left-[calc(50%+20px)] right-[calc(-50%+20px)] top-5 block h-0.5 rounded-full ${wizardStep > i ? 'bg-primary' : 'bg-neutral-200'}`} />
+                                                                                    <StepperSeparator className={`absolute left-[calc(50%+20px)] right-[calc(-50%+20px)] top-5 block h-0.5 rounded-full ${wizardStep > i ? 'bg-b-8' : 'bg-n-5'}`} />
                                                                                 )}
                                                                             </StepperHeader>
                                                                             <div className="mt-2 text-center">
-                                                                                <span className={`text-[10px] font-semibold uppercase tracking-wider ${wizardStep === i ? 'text-foreground' : 'text-muted-foreground'}`}>{st.label}</span>
+                                                                                <span className={`text-[10px] font-semibold uppercase tracking-wider ${wizardStep === i ? 'text-n-11' : 'text-n-8'}`}>{st.label}</span>
                                                                             </div>
                                                                         </StepperItem>
                                                                     ))}
@@ -3613,17 +3613,17 @@ export default function HistoryPage() {
 
                                         <div className="space-y-6">
                                             <div>
-                                            <h4 className="text-sm font-semibold text-foreground/80 mb-1">Examen Físico</h4>
-                                            <p className="text-xs text-muted-foreground">Registre únicamente los hallazgos positivos (anormales) activando el sistema correspondiente.</p>
+<h4 className="text-sm font-semibold text-n-11/80 mb-1">Examen Físico</h4>
+                                                <p className="text-xs text-n-8">Registre únicamente los hallazgos positivos (anormales) activando el sistema correspondiente.</p>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                             {PHYSICAL_SYSTEMS.map(sys => (
-                                                <div key={sys.id} className="p-4 rounded-xl border border-border/10 bg-muted/5 transition-all">
+                                                <div key={sys.id} className="p-4 rounded-lg border border-n-5/30 bg-n-2 transition-all">
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-sm font-medium text-foreground/90">{sys.label}</span>
+                                                        <span className="text-sm font-medium text-n-11/90">{sys.label}</span>
                                                         <div className="flex items-center gap-2">
-                                                            <span className={`text-[10px] uppercase font-bold tracking-wider ${form.watch(`physicalExam.${sys.id}.normal` as const) ? 'text-primary/70' : 'text-amber-500'}`}>
+                                                            <span className={`text-[10px] uppercase font-bold tracking-wider ${form.watch(`physicalExam.${sys.id}.normal` as const) ? 'text-n-8' : 'text-amber-500'}`}>
                                                                 {form.watch(`physicalExam.${sys.id}.normal` as const) ? 'Normal' : 'Anormal'}
                                                             </span>
                                                             <Controller
@@ -3646,7 +3646,7 @@ export default function HistoryPage() {
                                                             placeholder="Describa la anormalidad encontrada..."
                                                             rows={2}
                                                             disabled={!selectedPatient}
-                                                            className="text-xs resize-none mt-3 animate-in fade-in slide-in-from-top-2 duration-200 border-amber-500/30 focus-visible:ring-amber-500/20"
+                                                            className="text-xs resize-none mt-3 animate-in fade-in slide-in-from-top-2 duration-200 border-n-5/30 focus-visible:ring-b-8/10 bg-n-1"
                                                         />
                                                     )}
                                                 </div>
