@@ -390,6 +390,30 @@ export async function getEncounters(patientId: string): Promise<{ data: Encounte
 }
 
 /**
+ * getEncounterById(encounterId)
+ * Retorna un encuentro por su ID con nota clínica y datos del profesional.
+ */
+export async function getEncounterById(encounterId: string): Promise<{ data: EncounterWithClinicalNote | null }> {
+    const supabase = await createServerSupabaseClient();
+    const { data, error } = await supabase
+        .from('encounters')
+        .select(`
+            *,
+            practitioner:practitioners(name_given, name_family, specialty),
+            clinical_note:clinical_notes(*)
+        `)
+        .eq('id', encounterId)
+        .single();
+
+    if (error) {
+        console.error('Error fetching encounter by id:', error);
+        return { data: null };
+    }
+
+    return { data: data as EncounterWithClinicalNote };
+}
+
+/**
  * getEncountersFiltered(filters)
  * Retorna encuentros del practitioner autenticado con filtros opcionales.
  * Para la vista tabla /history/all.

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Calendar, Clock, User2, Stethoscope, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,8 @@ function calcDuration(start: string, end: string | null): string {
 
 export default function HistoryTable({ encounters, toolbar, className }: HistoryTableProps) {
     const router = useRouter();
+    const params = useParams();
+    const slug = (params.clinicSlug as string) || '';
     const [isWalkInDialogOpen, setIsWalkInDialogOpen] = useState(false);
 
     if (encounters.length === 0) {
@@ -60,7 +62,7 @@ export default function HistoryTable({ encounters, toolbar, className }: History
                 <NewWalkInEncounterDialog
                     open={isWalkInDialogOpen}
                     onOpenChange={setIsWalkInDialogOpen}
-                    onSuccess={(encounterId) => router.push(`/history?encounterId=${encounterId}`)}
+                    onSuccess={(encounterId) => router.push(`/${slug}/history?encounterId=${encounterId}`)}
                 />
             </>
         );
@@ -120,7 +122,13 @@ export default function HistoryTable({ encounters, toolbar, className }: History
                         return (
                             <tr
                                 key={enc.id}
-                                onClick={() => router.push(`/history?encounterId=${enc.id}`)}
+                                onClick={() => {
+                                    if (enc.status === 'finished') {
+                                        router.push(`/${slug}/history/encounters/${enc.id}`);
+                                    } else {
+                                        router.push(`/${slug}/history?encounterId=${enc.id}`);
+                                    }
+                                }}
                                 className="group transition-colors cursor-pointer"
                             >
                                 <td className="whitespace-nowrap">

@@ -1606,14 +1606,7 @@ export default function HistoryPage() {
     // Setup Sidebar
     useEffect(() => {
         setSecondaryPanel(
-            <HistoryPatientPanel
-                selectedPatient={selectedPatient}
-                encounters={pastEncounters}
-                activeEncounterId={activeEncounterId}
-                onSelectEncounter={handleEncounterSelect}
-                isLoading={isLoadingEncounters}
-                onNewEncounter={handleReset}
-            />,
+            <HistoryPatientPanel />,
             'Historial'
         );
     }, [selectedPatient, pastEncounters, activeEncounterId, isLoadingEncounters, setSecondaryPanel, handleEncounterSelect, handleReset]);
@@ -1624,12 +1617,26 @@ export default function HistoryPage() {
             const pid = searchParams.get('patientId');
             const encId = searchParams.get('encounterId');
 
-            if (pid) {
-                const { data } = await getPatients();
-                const patient = data?.find((p) => p.id === pid);
+            if (pid || encId) {
+                setIsLoadingEncounters(true);
+
+                let patientId = pid;
+                let encounterToLoad: EncounterWithClinicalNote | null = null;
+
+                if (!pid && encId) {
+                    const { getEncounterById } = await import('@/actions/encounters');
+                    const encResult = await getEncounterById(encId);
+                    if (encResult.data) {
+                        patientId = encResult.data.patient_id;
+                        encounterToLoad = encResult.data as EncounterWithClinicalNote;
+                    }
+                }
+
+                const { data: patients } = await getPatients();
+                const patient = patientId ? patients?.find((p) => p.id === patientId) : null;
+
                 if (patient) {
                     setSelectedPatient(patient as Patient);
-                    setIsLoadingEncounters(true);
 
                     // Extract persisted Anamnesis data
                     const p = patient as Patient;
@@ -1692,7 +1699,7 @@ export default function HistoryPage() {
                         console.error('Error fetching clinical data:', error);
                     } finally {
                         setIsLoadingEncounters(false);
-                        if (!encId) setRightPanelOpen(true);
+                        setRightPanelOpen(true);
                     }
                 }
             }

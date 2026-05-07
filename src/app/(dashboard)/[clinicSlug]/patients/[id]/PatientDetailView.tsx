@@ -384,7 +384,13 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                                 <button
                                                     key={e.id}
                                                     className="w-full text-left flex items-start p-5 gap-5 hover:bg-n-2 transition-all duration-150 group"
-                                                    onClick={() => router.push(`/history?patientId=${patient.id}&encounterId=${e.id}`)}
+                                                    onClick={() => {
+                                                        if (e.status === 'finished') {
+                                                            router.push(`/history/encounters/${e.id}`);
+                                                        } else {
+                                                            router.push(`/history?patientId=${patient.id}&encounterId=${e.id}`);
+                                                        }
+                                                    }}
                                                 >
                                                     <div className="flex flex-col items-center gap-2 shrink-0 pt-0.5">
                                                         <div className="h-10 w-10 rounded-xl bg-b-8/10 flex items-center justify-center text-b-8 group-hover:bg-b-8 group-hover:text-white transition-colors duration-150">
