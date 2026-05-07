@@ -206,74 +206,9 @@ const defaultValues: EncounterFormValues = {
     encounterSubcategory: '',
 };
 
-const PHYSICAL_SYSTEMS = [
-    { id: 'headNeck', label: 'Cabeza y Cuello' },
-    { id: 'thorax', label: 'Tórax (Cardiopulmonar)' },
-    { id: 'abdomen', label: 'Abdomen' },
-    { id: 'pelvis', label: 'Pelvis / Genitourinario' },
-    { id: 'extremities', label: 'Extremidades' },
-    { id: 'neurological', label: 'Neurológico' },
-    { id: 'skin', label: 'Piel y Faneras' },
-] as const;
 
-const ENCOUNTER_CATEGORIES = [
-    {
-        label: "1. Emergencia / Urgencia",
-        options: ["Urgencia Menor", "Urgencia Mayor", "Emergencia Vital", "Observación Clínica"]
-    },
-    {
-        label: "2. Consulta Externa General / Especializada",
-        options: ["Consulta de Primera Vez", "Consulta de Seguimiento / Control", "Revisión de Exámenes", "Interconsulta", "Segunda Opinión Médica"]
-    },
-    {
-        label: "3. Atención Quirúrgica y Perioperatoria",
-        options: ["Evaluación Preoperatoria", "Control Postoperatorio Temprano", "Control Postoperatorio Tardío"]
-    },
-    {
-        label: "4. Medicina Preventiva y Salud Ocupacional",
-        options: ["Chequeo Preventivo Integral", "Evaluación Laboral / Pre-empleo", "Control de Niño Sano / Inmunización", "Planificación Familiar y Salud Femenina", "Aptitud Deportiva"]
-    },
-    {
-        label: "5. Procedimientos y Módulos de Terapia",
-        options: ["Procedimiento Médico Mayor Ambulatorio", "Procedimiento de Enfermería", "Terapia Infusional", "Terapia de Rehabilitación"]
-    },
-    {
-        label: "6. Especialidades Aliadas",
-        options: ["Sesión de Psicoterapia", "Asesoría Nutricional"]
-    },
-    {
-        label: "7. Telemedicina / Atención Remota",
-        options: ["Teleconsulta", "Asesoramiento / Renovación de Receta"]
-    }
-];
 
-const KITS_OF_ORDERS = [
-    {
-        id: "kit-respiratory-infection",
-        label: "Infección Respiratoria Alta",
-        content: "1. Amoxicilina/Ácido Clavulánico 875/125mg VO c/12h x 7 días\n2. Ibuprofeno 400mg VO c/8h por dolor/fiebre\n3. Abundante hidratación oral\n4. Reposo médico por 3 días"
-    },
-    {
-        id: "kit-gastroenteritis",
-        label: "Gastroenteritis Aguda",
-        content: "1. Suero de Rehidratación Oral a tolerancia\n2. Loperamida 2mg VO después de cada deposición líquida\n3. Dieta blanda astringente\n4. Consultar por urgencias si signos de deshidratación"
-    },
-    {
-        id: "kit-hypertension",
-        label: "Control de Hipertensión",
-        content: "1. Mantener Losartán 50mg VO c/12h\n2. Dieta hiposódica estricta\n3. Control de PA en casa (Bitácora de 1 semana)\n4. Solicitar: Perfil lipídico, Creatinina, EKG de control"
-    },
-    {
-        id: "kit-routine-labs",
-        label: "Exámenes de Rutina Anuales",
-        content: "Se solicitan laboratorios:\n- Biometría Hemática Completa\n- Química Sanguínea (Glucosa, Urea, Creatinina, Ácido Úrico)\n- Perfil Lipídico (Colesterol total, HDL, LDL, Triglicéridos)\n- Examen General de Orina"
-    }
-];
 
-function getCategoryForSubcategory(sub: string) {
-    const cat = ENCOUNTER_CATEGORIES.find(c => c.options.includes(sub));
-    return cat ? cat.label : '';
-}
 
 
 
@@ -494,26 +429,6 @@ const COMMON_FAMILY_HISTORIES = [
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 
-function VitalInput({ name, label, min, max, step = 1, register, disabled }: {
-    name: Path<EncounterFormValues>; label: string; min: number; max: number;
-    step?: number; register: UseFormRegister<EncounterFormValues>; disabled?: boolean;
-}) {
-    return (
-        <Field>
-            <FieldLabel className="text-xs font-medium text-muted-foreground mb-1.5 truncate" title={label}>
-                {label}
-            </FieldLabel>
-            <Input
-                type="number"
-                min={min}
-                max={max}
-                step={step}
-                disabled={disabled}
-                {...register(name, { valueAsNumber: true })}
-            />
-        </Field>
-    );
-}
 
 function FieldSuggestions({
     fieldKey,
@@ -653,7 +568,7 @@ export default function HistoryPage() {
 
         const abnormalFindings = Object.entries(values.physicalExam)
             .filter(([, v]) => !v.normal)
-            .map(([k, v]) => `${PHYSICAL_SYSTEMS.find(s => s.id === k)?.label || k}: ${v.notes}`)
+            .map(([k, v]) => `${({ headNeck: 'Cabeza y Cuello', thorax: 'Tórax (Cardiopulmonar)', abdomen: 'Abdomen', pelvis: 'Pelvis / Genitourinario', extremities: 'Extremidades', neurological: 'Neurológico', skin: 'Piel y Faneras' } as Record<string,string>)[k] || k}: ${v.notes}`)
             .join(' | ');
 
         let illnessDesc = '';
@@ -1016,18 +931,18 @@ export default function HistoryPage() {
                         <div className="space-y-8">
 
                             {/* AI Scribe Promo */}
-                            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 flex items-center justify-between shadow-sm backdrop-blur-md">
-                                <div className="flex items-center gap-4 text-primary">
-                                    <div className="bg-primary/20 p-3 rounded-full animate-pulse">
+                            <div className="bg-b-8/5 border border-b-8/20 rounded-xl p-6 flex items-center justify-between">
+                                <div className="flex items-center gap-4 text-b-8">
+                                    <div className="bg-b-8/20 p-3 rounded-full">
                                         <MessageSquare className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h4 className="font-semibold text-sm">AI Clinical Scribe</h4>
-                                        <p className="text-xs text-primary/70 font-medium">Transcripción inteligente y autogeneración de nota evolutiva.</p>
+                                        <h4 className="font-semibold text-sm text-n-11">AI Clinical Scribe</h4>
+                                        <p className="text-xs text-n-8 font-medium">Transcripción inteligente y autogeneración de nota evolutiva.</p>
                                     </div>
                                 </div>
-                                <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 font-medium text-xs h-8 px-5">
-                                    Activar <span className="ml-2 text-[8px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded font-bold">BETA</span>
+                                <Button variant="outline" size="sm" className="border-n-5/30 text-n-11 hover:bg-n-2 font-medium text-xs h-8 px-5">
+                                    Activar <span className="ml-2 text-[8px] bg-b-8 text-n-1 px-1.5 py-0.5 rounded font-bold">BETA</span>
                                 </Button>
                             </div>
 
@@ -1045,22 +960,22 @@ export default function HistoryPage() {
                     {isReadOnly && activeEncounterId && (
                         <div className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto px-6 py-6 pb-24">
                         <div className="flex items-center gap-3 mb-6">
-                            <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/50">Notas Evolutivas</span>
-                            <div className="flex-1 h-px bg-border/40" />
+                            <span className="text-[10px] uppercase tracking-wider font-semibold text-n-8">Notas Evolutivas</span>
+                            <div className="flex-1 h-px bg-n-5/40" />
                         </div>
                             <div className="space-y-6">
-                                <Alert className="bg-amber-50 border-amber-200 text-amber-800">
-                                    <Shield className="w-4 h-4 text-amber-600" />
-                                    <AlertTitle className="text-sm font-bold">Registro Permanente</AlertTitle>
-                                    <AlertDescription className="text-xs">
+                                <Alert className="bg-amber-50/80 border-amber-200/50 text-amber-900">
+                                    <Shield className="w-4 h-4 text-amber-500" />
+                                    <AlertTitle className="text-sm font-bold text-amber-900">Registro Permanente</AlertTitle>
+                                    <AlertDescription className="text-xs text-amber-800">
                                         Este acto médico ha sido finalizado y firmado. No es posible editar la nota original, pero puede añadir aclaraciones o información complementaria mediante una <b>Addenda</b>.
                                     </AlertDescription>
                                 </Alert>
 
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-sm font-bold flex items-center gap-2">
-                                            <ClipboardList className="w-4 h-4 text-primary" /> Historial de Addendas
+                                        <h3 className="text-sm font-bold flex items-center gap-2 text-n-11">
+                                            <ClipboardList className="w-4 h-4 text-b-8" /> Historial de Addendas
                                         </h3>
                                         {!isAddingAddendum && (
                                             <Button size="sm" onClick={() => setIsAddingAddendum(true)} className="gap-2">
@@ -1070,19 +985,19 @@ export default function HistoryPage() {
                                     </div>
 
                                     {isAddingAddendum && (
-                                        <Card className="border-amber-200 bg-amber-50/30 overflow-hidden shadow-sm animate-in zoom-in-95 duration-200">
-                                            <CardHeader className="p-4 border-b border-amber-100 bg-amber-50">
-                                                <CardTitle className="text-xs font-bold text-amber-900 uppercase tracking-wider">Nueva Nota Aclaratoria</CardTitle>
-                                            </CardHeader>
+                                        <Card className="border-amber-200/50 bg-amber-50/50 overflow-hidden shadow-none animate-in zoom-in-95 duration-200">
+                                            <div className="px-4 py-3 border-b border-amber-200/50 bg-amber-50/80">
+                                                <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">Nueva Nota Aclaratoria</span>
+                                            </div>
                                             <CardContent className="p-4 space-y-4">
                                                 <Textarea 
                                                     value={newAddendumContent}
                                                     onChange={(e) => setNewAddendumContent(e.target.value)}
                                                     placeholder="Escriba la información complementaria aquí..."
-                                                    className="resize-none min-h-[120px] bg-white border-amber-200 focus:ring-amber-500"
+                                                    className="resize-none min-h-[120px] bg-n-1 border-n-5/30 focus:ring-amber-500/20"
                                                 />
                                                 <div className="flex justify-end gap-2">
-                                                    <Button variant="ghost" size="sm" onClick={() => setIsAddingAddendum(false)} disabled={isSavingAddendum}>Cancelar</Button>
+                                                    <Button variant="ghost" size="sm" onClick={() => setIsAddingAddendum(false)} disabled={isSavingAddendum} className="text-n-8 hover:text-n-11">Cancelar</Button>
                                                     <Button size="sm" onClick={handleAddAddendum} disabled={isSavingAddendum || !newAddendumContent.trim()} className="bg-amber-600 hover:bg-amber-700 text-white gap-2">
                                                         {isSavingAddendum ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                                         Guardar Addenda
@@ -1094,29 +1009,29 @@ export default function HistoryPage() {
 
                                     <div className="space-y-4">
                                         {addenda.length === 0 && !isAddingAddendum ? (
-                                            <div className="text-center py-12 border-2 border-dashed border-muted/20 rounded-2xl bg-muted/5">
-                                                <p className="text-sm text-muted-foreground font-medium">No se han registrado addendas para este encuentro.</p>
+                                            <div className="text-center py-12 border-2 border-dashed border-n-5/20 rounded-xl bg-n-2/30">
+                                                <p className="text-sm text-n-8 font-medium">No se han registrado addendas para este encuentro.</p>
                                             </div>
                                         ) : (
                                             addenda.map((ad, idx) => (
-                                                <Card key={ad.id} className="border-border/10 overflow-hidden shadow-none bg-background/50">
-                                                    <CardHeader className="p-4 py-3 bg-muted/10 border-b border-border/5 flex flex-row items-center justify-between">
+                                                <Card key={ad.id} className="border-n-5/30 overflow-hidden shadow-none bg-n-1">
+                                                    <div className="px-4 py-3 border-b border-n-5/30 bg-n-2/50 flex flex-row items-center justify-between">
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                                            <div className="w-6 h-6 rounded-full bg-b-8/10 flex items-center justify-center text-[10px] font-bold text-b-8">
                                                                 {idx + 1}
                                                             </div>
-                                                            <span className="text-xs font-bold text-foreground">
+                                                            <span className="text-xs font-bold text-n-11">
                                                                 {ad.author?.name_family}, {ad.author?.name_given?.join(' ')}
                                                             </span>
                                                         </div>
-                                                        <span className="text-[10px] font-mono text-muted-foreground">
+                                                        <span className="text-[10px] font-mono text-n-8">
                                                             {new Date(ad.created_at).toLocaleString('es-ES', { 
                                                                 year: 'numeric', month: 'short', day: '2-digit', 
                                                                 hour: '2-digit', minute: '2-digit' 
                                                             })}
                                                         </span>
-                                                    </CardHeader>
-                                                    <CardContent className="p-4 text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                                                    </div>
+                                                    <CardContent className="p-4 text-sm text-n-11 leading-relaxed whitespace-pre-wrap">
                                                         {ad.content}
                                                     </CardContent>
                                                 </Card>
