@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Controller } from 'react-hook-form';
 import { UseFormReturn } from 'react-hook-form';
 import { User, Plus, Activity, CheckCircle, Info } from 'lucide-react';
@@ -9,11 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Stepper, StepperHeader, StepperIcon, StepperItem, StepperSeparator } from '@/components/ui/stepper';
 import { WIZARD_PROFILES, getWizardProfile } from '../wizard/wizard-data';
-import DiagnosisSearch from '@/components/clinical/DiagnosisSearch';
+import { WizardStepContent } from '../wizard/WizardSteps';
 
 const ENCOUNTER_CATEGORIES = [
     { label: 'CONSULTA GENERAL', options: ['Consulta de Medicina General', 'Consulta de Seguimiento', 'Consulta de Control'] },
@@ -50,6 +49,8 @@ type SubjetivoSectionProps = {
     setIsWizardOpen: React.Dispatch<React.SetStateAction<boolean>>;
     wizardStep: number;
     setWizardStep: React.Dispatch<React.SetStateAction<number>>;
+    familyHistorySelectKey?: number;
+    setFamilyHistorySelectKey?: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export default function SubjetivoSection({
@@ -61,6 +62,8 @@ export default function SubjetivoSection({
     setIsWizardOpen,
     wizardStep,
     setWizardStep,
+    familyHistorySelectKey = 0,
+    setFamilyHistorySelectKey,
 }: SubjetivoSectionProps) {
     return (
         <Card className="bg-n-1">
@@ -140,7 +143,7 @@ export default function SubjetivoSection({
                         )}
                         <Textarea
                             {...form.register("chiefComplaint")}
-                            placeholder="¿Por qué acude el paciente hoy?"
+                            placeholder="¿Por qué acudir el paciente hoy?"
                             rows={2}
                             disabled={!selectedPatient}
                             className="resize-none min-h-[80px] bg-n-1 border-n-5/30 focus:ring-b-8/10 rounded-md"
@@ -176,6 +179,8 @@ export default function SubjetivoSection({
                                 const profileKey = getWizardProfile(subcategory, chiefComplaint);
                                 const profile = WIZARD_PROFILES[profileKey];
                                 const totalSteps = profile.steps.length;
+                                const isLastStep = wizardStep === totalSteps - 1;
+                                const currentStepKey = profile.steps[wizardStep]?.key ?? 'illness';
 
                                 return (
                                     <>
@@ -215,64 +220,46 @@ export default function SubjetivoSection({
                                         </div>
 
                                         <div className="flex-1 overflow-y-auto p-6 bg-n-2 min-h-[360px]">
-                                            {profile.steps[wizardStep]?.key === 'illness' && (
-                                                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                                                    <div>
-                                                        <h3 className="text-sm font-semibold text-n-11 mb-1">Estado / Enfermedad Actual</h3>
-                                                        <p className="text-xs text-n-8 mb-4">Indique la sintomatología y evolución de la molestia.</p>
-                                                    </div>
+                                            <WizardStepContent
+                                                stepKey={currentStepKey}
+                                                form={form}
+                                                selectedPatient={selectedPatient}
+                                                familyHistorySelectKey={familyHistorySelectKey}
+                                                setFamilyHistorySelectKey={setFamilyHistorySelectKey}
+                                                profileKey={profileKey}
+                                            />
+                                        </div>
 
-                                                    <Field className="mb-2">
-                                                        <DiagnosisSearch
-                                                            id="suspectedDiagnosis"
-                                                            label="Enfermedad Presuntiva / Diagnóstico Inicial"
-                                                            placeholder="Busque por CIE-10, enfermedad o escriba manualmente..."
-                                                            value={String(form.watch('currentIllness.suspectedDiagnosis') ?? '')}
-                                                            onChange={(v: string) => form.setValue('currentIllness.suspectedDiagnosis', v as any)}
-                                                            labelClassName="text-xs mb-1.5 font-medium leading-none text-n-11"
-                                                        />
-                                                    </Field>
-
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                        <div className="space-y-4">
-                                                            <Field>
-                                                                <FieldLabel className="text-xs mb-1.5 text-n-8">Tiempo de Evolución</FieldLabel>
-                                                                <InputGroup>
-                                                                    <InputGroupInput type="number" placeholder="Ej: 3" {...form.register('currentIllness.timeAmount')} className="bg-n-1 border-n-5/30 rounded-md h-10 text-sm" />
-                                                                    <Select onValueChange={(val: string) => form.setValue('currentIllness.timeUnit' as any, val)}>
-                                                                        <SelectTrigger className="w-[110px] bg-n-1 border-n-5/30 rounded-md h-10"><SelectValue placeholder="Unidad" /></SelectTrigger>
-                                                                        <SelectContent>
-                                                                            <SelectItem value="horas">Horas</SelectItem>
-                                                                            <SelectItem value="días">Días</SelectItem>
-                                                                            <SelectItem value="semanas">Semanas</SelectItem>
-                                                                            <SelectItem value="meses">Meses</SelectItem>
-                                                                        </SelectContent>
-                                                                    </Select>
-                                                                </InputGroup>
-                                                            </Field>
-                                                            <Field>
-                                                                <FieldLabel className="text-xs mb-1.5 text-n-8">Severidad</FieldLabel>
-                                                                <Select onValueChange={(v: string) => form.setValue('currentIllness.severity' as any, v)}>
-                                                                    <SelectTrigger className="bg-n-1 border-n-5/30 rounded-md h-10"><SelectValue placeholder="Escala de severidad" /></SelectTrigger>
-                                                                    <SelectContent>
-                                                                        <SelectItem value="Leve (1-3)">Leve (1-3)</SelectItem>
-                                                                        <SelectItem value="Moderada (4-7)">Moderada (4-7)</SelectItem>
-                                                                        <SelectItem value="Severa (8-10)">Severa (8-10)</SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                            </Field>
-                                                            <Field>
-                                                                <FieldLabel className="text-xs mb-1.5 text-n-8">Factores que agravan</FieldLabel>
-                                                                <Input {...form.register('currentIllness.aggravatingFactors')} placeholder="Agravantes..." className="text-xs bg-n-1 border-n-5/30 rounded-md h-10" />
-                                                            </Field>
-                                                        </div>
-                                                        <Field>
-                                                            <FieldLabel className="text-xs mb-1.5 text-n-8">Aliviantes</FieldLabel>
-                                                            <Textarea {...form.register('currentIllness.alleviatingFactors')} placeholder="Frío, reposo, analgésicos..." rows={2} className="bg-n-1 border-n-5/30 rounded-md" />
-                                                        </Field>
-                                                    </div>
-                                                </div>
-                                            )}
+                                        <div className="p-6 bg-n-1 border-t border-n-5/30 flex flex-row items-center justify-between">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                onClick={() => setWizardStep(prev => Math.max(0, prev - 1))}
+                                                disabled={wizardStep === 0}
+                                                className="text-n-8 hover:text-n-11 hover:bg-n-2"
+                                            >
+                                                Anterior
+                                            </Button>
+                                            <div className="flex gap-2 items-center">
+                                                <span className="text-xs text-n-8">Paso {wizardStep + 1} de {totalSteps}</span>
+                                                {!isLastStep ? (
+                                                    <Button
+                                                        type="button"
+                                                        onClick={() => setWizardStep(prev => Math.min(totalSteps - 1, prev + 1))}
+                                                        className="shadow-sm bg-b-8 hover:bg-b-8/90 text-n-1"
+                                                    >
+                                                        Siguiente
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        type="button"
+                                                        onClick={() => { setIsWizardOpen(false); }}
+                                                        className="shadow-sm border border-b-8 text-n-1 bg-b-8 hover:bg-b-8/90"
+                                                    >
+                                                        <CheckCircle className="w-4 h-4 mr-2" /> Finalizar Asistente
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
                                     </>
                                 );

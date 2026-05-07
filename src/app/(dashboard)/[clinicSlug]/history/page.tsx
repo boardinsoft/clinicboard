@@ -945,6 +945,8 @@ export default function HistoryPage() {
                                     setIsWizardOpen={setIsWizardOpen}
                                     wizardStep={wizardStep}
                                     setWizardStep={setWizardStep}
+                                    familyHistorySelectKey={familyHistorySelectKey}
+                                    setFamilyHistorySelectKey={setFamilyHistorySelectKey}
                                 />
 
                             {/* Conditions & Allergies Cards */}
