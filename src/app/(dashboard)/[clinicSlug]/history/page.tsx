@@ -933,28 +933,22 @@ export default function HistoryPage() {
                         <fieldset disabled={isReadOnly} className="border-none p-0 m-0 space-y-8">
                             {/* ── NOTA CLÍNICA — Secciones verticales continuas ── */}
 
-                            {/* ── Separador de sección ───────────────────────── */}
-                            <div className="flex items-center gap-3">
-                                <span className="text-[11px] font-bold text-muted-foreground/60">SUBJETIVO</span>
-                                <div className="flex-1 h-px bg-border/40" />
-                            </div>
-
-                            {/* Sección: Subjetivo */}
+                            
                             <div className="space-y-8">
-                                <Card className="border-border/10 bg-card/20 backdrop-blur-sm overflow-hidden shadow-none">
-                                    <CardHeader className="border-b border-border/5 bg-muted/5">
+                                <Card className="bg-n-1">
+                                    <div className="px-6 pt-5 pb-4 border-b border-n-5/30">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-primary/10 rounded-lg">
-                                                <User className="w-5 h-5 text-primary" />
+                                            <div className="p-2 bg-b-8/10 rounded-lg">
+                                                <User className="w-5 h-5 text-b-8" />
                                             </div>
                                             <div>
-                                                <CardTitle className="text-lg font-bold tracking-tight">Motivo de Consulta y Antecedentes</CardTitle>
-                                                <CardDescription className="text-xs">Registre la información subjetiva proporcionada por el paciente.</CardDescription>
+                                                <h2 className="text-base font-bold text-n-11 tracking-tight">Motivo de Consulta y Antecedentes</h2>
+                                                <p className="text-xs text-n-8 leading-relaxed mt-0.5">Registre la información subjetiva proporcionada por el paciente.</p>
                                             </div>
                                         </div>
-                                    </CardHeader>
-                                    <CardContent className="p-8 space-y-10">
-                                        <div className="mb-8">
+                                    </div>
+                                    <CardContent className="p-0">
+                                        <div className="p-8 space-y-10">
                                             <Field>
                                                 <FieldLabel className="text-xs font-medium text-muted-foreground mb-2.5">
                                                     Tipo de Consulta <span className="text-primary">*</span>
@@ -3590,41 +3584,35 @@ export default function HistoryPage() {
                             </div>
                         </div>
 
-                        {/* ── Separador de sección ───────────────────────── */}
-                        <div className="flex items-center gap-3 mt-10 mb-6">
-                            <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/50">Objetivo</span>
-                            <div className="flex-1 h-px bg-border/40" />
-                        </div>
-
-                        {/* Sección: Objetivo */}
                         <div className="space-y-8">
-                            <Card className="border-border/10 bg-card/20 backdrop-blur-sm overflow-hidden shadow-none">
-                                <CardHeader className="border-b border-border/5 bg-muted/5">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-primary/10 rounded-lg">
-                                            <Activity className="w-5 h-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <CardTitle className="text-lg font-bold tracking-tight">Signos Vitales y Exploración</CardTitle>
-                                            <CardDescription className="text-xs">Mediciones fisiológicas e informe del examen físico.</CardDescription>
+                            <Card className="bg-n-1">
+                                    <div className="px-6 pt-5 pb-4 border-b border-n-5/30">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-b-8/10 rounded-lg">
+                                                <Activity className="w-5 h-5 text-b-8" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-base font-bold text-n-11 tracking-tight">Signos Vitales y Exploración</h2>
+                                                <p className="text-xs text-n-8 leading-relaxed mt-0.5">Mediciones fisiológicas e informe del examen físico.</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </CardHeader>
+                                    <CardContent className="p-0">
+                                        <div className="p-8 space-y-10">
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6 bg-n-2/50 p-8 rounded-2xl border border-n-5/30">
+                                                <VitalInput name="vitals.bpSystolic" label="PA Sistólica (mmHg)" min={60} max={250} register={form.register} disabled={!selectedPatient} />
+                                                <VitalInput name="vitals.bpDiastolic" label="PA Diastólica (mmHg)" min={40} max={160} register={form.register} disabled={!selectedPatient} />
+                                                <VitalInput name="vitals.heartRate" label="FC (lpm)" min={30} max={250} register={form.register} disabled={!selectedPatient} />
+                                                <VitalInput name="vitals.temperature" label="Temp (°C)" min={34} max={43} step={0.1} register={form.register} disabled={!selectedPatient} />
+                                                <VitalInput name="vitals.respRate" label="FR (rpm)" min={8} max={60} register={form.register} disabled={!selectedPatient} />
+                                                <VitalInput name="vitals.spo2" label="SpO₂ (%)" min={60} max={100} register={form.register} disabled={!selectedPatient} />
+                                                <VitalInput name="vitals.weight" label="Peso (kg)" min={1} max={400} step={0.1} register={form.register} disabled={!selectedPatient} />
+                                                <VitalInput name="vitals.height" label="Talla (cm)" min={30} max={250} register={form.register} disabled={!selectedPatient} />
+                                            </div>
+                                        </div>
 
-                                <CardContent className="p-8 space-y-10">
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6 bg-muted/10 p-8 rounded-2xl border border-border/10">
-                                        <VitalInput name="vitals.bpSystolic" label="PA Sistólica (mmHg)" min={60} max={250} register={form.register} disabled={!selectedPatient} />
-                                        <VitalInput name="vitals.bpDiastolic" label="PA Diastólica (mmHg)" min={40} max={160} register={form.register} disabled={!selectedPatient} />
-                                        <VitalInput name="vitals.heartRate" label="FC (lpm)" min={30} max={250} register={form.register} disabled={!selectedPatient} />
-                                        <VitalInput name="vitals.temperature" label="Temp (°C)" min={34} max={43} step={0.1} register={form.register} disabled={!selectedPatient} />
-                                        <VitalInput name="vitals.respRate" label="FR (rpm)" min={8} max={60} register={form.register} disabled={!selectedPatient} />
-                                        <VitalInput name="vitals.spo2" label="SpO₂ (%)" min={60} max={100} register={form.register} disabled={!selectedPatient} />
-                                        <VitalInput name="vitals.weight" label="Peso (kg)" min={1} max={400} step={0.1} register={form.register} disabled={!selectedPatient} />
-                                        <VitalInput name="vitals.height" label="Talla (cm)" min={30} max={250} register={form.register} disabled={!selectedPatient} />
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        <div>
+                                        <div className="space-y-6">
+                                            <div>
                                             <h4 className="text-sm font-semibold text-foreground/80 mb-1">Examen Físico</h4>
                                             <p className="text-xs text-muted-foreground">Registre únicamente los hallazgos positivos (anormales) activando el sistema correspondiente.</p>
                                         </div>
@@ -3669,13 +3657,6 @@ export default function HistoryPage() {
                             </Card>
                         </div>
 
-                        {/* ── Separador de sección ───────────────────────── */}
-                        <div className="flex items-center gap-3 mt-10 mb-6">
-                            <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/50">Evaluación y Plan</span>
-                            <div className="flex-1 h-px bg-border/40" />
-                        </div>
-
-                        {/* Sección: Evaluación y Plan */}
                         <div className="space-y-8">
 
                             {/* AI Scribe Promo */}
@@ -3694,20 +3675,21 @@ export default function HistoryPage() {
                                 </Button>
                             </div>
 
-                            <Card className="border-border/10 bg-card/20 backdrop-blur-sm overflow-hidden shadow-none">
-                                <CardHeader className="border-b border-border/5 bg-muted/5 py-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-primary/10 rounded-lg">
-                                            <Stethoscope className="w-5 h-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <CardTitle className="text-lg font-bold tracking-tight">Evaluación, Diagnóstico y Plan</CardTitle>
-                                            <CardDescription className="text-xs">Conclusión clínica, codificación CIE-10 e indicaciones terapéuticas.</CardDescription>
+                            <Card className="bg-n-1">
+                                    <div className="px-6 pt-5 pb-4 border-b border-n-5/30">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-b-8/10 rounded-lg">
+                                                <Stethoscope className="w-5 h-5 text-b-8" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-base font-bold text-n-11 tracking-tight">Evaluación, Diagnóstico y Plan</h2>
+                                                <p className="text-xs text-n-8 leading-relaxed mt-0.5">Conclusión clínica, codificación CIE-10 e indicaciones terapéuticas.</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </CardHeader>
-                                <CardContent className="p-8 space-y-12">
-                                    <Field>
+                                    <CardContent className="p-0">
+                                        <div className="p-8 space-y-12">
+                                            <Field>
                                         <FieldLabel className="text-xs font-medium text-muted-foreground mb-2.5">Nota de evolución / Impresión diagnóstica</FieldLabel>
                                         <Textarea
                                             {...form.register("evolutionNote")}
@@ -3717,8 +3699,9 @@ export default function HistoryPage() {
                                             className="resize-none"
                                         />
                                     </Field>
+                                        </div>
 
-                                    <div className="space-y-6 pt-2">
+                                        <div className="space-y-6 pt-2">
                                         <div className="flex justify-between items-center bg-muted/5 p-4 rounded-xl border border-border/5">
                                             <div className="flex items-center gap-2">
                                                 <Stethoscope className="w-4 h-4 text-primary" />
