@@ -10,6 +10,7 @@ import type { Patient, Condition, AllergyIntolerance, EncounterWithClinicalNote 
 import type { Json } from '@/types/database.types';
 import type { Path, UseFormRegister } from 'react-hook-form';
 import HistoryPatientPanel from './HistoryPatientPanel';
+import SubjetivoSection from './sections/SubjetivoSection';
 import DiagnosisSearch from '@/components/clinical/DiagnosisSearch';
 import { FIELD_SUGGESTION_MAP } from '@/lib/constants/wizard-suggestions';
 import { cn } from '@/lib/utils';
@@ -935,18 +936,17 @@ export default function HistoryPage() {
 
                             
                             <div className="space-y-8">
+                                <SubjetivoSection
+                                    form={form}
+                                    selectedPatient={selectedPatient}
+                                    chiefComplaintSelectKey={chiefComplaintSelectKey}
+                                    setChiefComplaintSelectKey={setChiefComplaintSelectKey}
+                                    isWizardOpen={isWizardOpen}
+                                    setIsWizardOpen={setIsWizardOpen}
+                                    wizardStep={wizardStep}
+                                    setWizardStep={setWizardStep}
+                                />
                                 <Card className="bg-n-1">
-                                    <div className="px-6 pt-5 pb-4 border-b border-n-5/30">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-b-8/10 rounded-lg">
-                                                <User className="w-5 h-5 text-b-8" />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-base font-bold text-n-11 tracking-tight">Motivo de Consulta y Antecedentes</h2>
-                                                <p className="text-xs text-n-8 leading-relaxed mt-0.5">Registre la información subjetiva proporcionada por el paciente.</p>
-                                            </div>
-                                        </div>
-                                    </div>
                                     <CardContent className="p-0">
                                         <div className="p-8 space-y-10">
                                             <Field>

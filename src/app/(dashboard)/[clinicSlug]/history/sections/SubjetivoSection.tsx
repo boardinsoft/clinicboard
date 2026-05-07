@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Stepper, StepperHeader, StepperIcon, StepperItem, StepperSeparator } from '@/components/ui/stepper';
-import { WIZARD_PROFILES, getWizardProfile } from '../../wizard/wizard-data';
+import { WIZARD_PROFILES, getWizardProfile } from '../wizard/wizard-data';
 import DiagnosisSearch from '@/components/clinical/DiagnosisSearch';
 
 const ENCOUNTER_CATEGORIES = [
@@ -41,7 +41,8 @@ function getCategoryForSubcategory(subcategory: string): string {
 }
 
 type SubjetivoSectionProps = {
-    form: UseFormReturn<{ [key: string]: unknown }>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    form: UseFormReturn<any>;
     selectedPatient: { id: string; name_family: string; name_given: string[] | null } | null;
     chiefComplaintSelectKey: number;
     setChiefComplaintSelectKey: React.Dispatch<React.SetStateAction<number>>;
@@ -202,8 +203,8 @@ export default function SubjetivoSection({
                                                             id="suspectedDiagnosis"
                                                             label="Enfermedad Presuntiva / Diagnóstico Inicial"
                                                             placeholder="Busque por CIE-10, enfermedad o escriba manualmente..."
-                                                            value={form.watch('currentIllness.suspectedDiagnosis') as string || ''}
-                                                            onChange={(v) => form.setValue('currentIllness.suspectedDiagnosis', v)}
+                                                            value={String(form.watch('currentIllness.suspectedDiagnosis') ?? '')}
+                                                            onChange={(v: string) => form.setValue('currentIllness.suspectedDiagnosis', v as any)}
                                                             labelClassName="text-xs mb-1.5 font-medium leading-none text-n-11"
                                                         />
                                                     </Field>
@@ -214,7 +215,7 @@ export default function SubjetivoSection({
                                                                 <FieldLabel className="text-xs mb-1.5 text-n-8">Tiempo de Evolución</FieldLabel>
                                                                 <InputGroup>
                                                                     <InputGroupInput type="number" placeholder="Ej: 3" {...form.register('currentIllness.timeAmount')} className="bg-n-1 border-n-5/30 rounded-md h-10 text-sm" />
-                                                                    <Select onValueChange={(val) => form.setValue('currentIllness.timeUnit', val)}>
+                                                                    <Select onValueChange={(val: string) => form.setValue('currentIllness.timeUnit' as any, val)}>
                                                                         <SelectTrigger className="w-[110px] bg-n-1 border-n-5/30 rounded-md h-10"><SelectValue placeholder="Unidad" /></SelectTrigger>
                                                                         <SelectContent>
                                                                             <SelectItem value="horas">Horas</SelectItem>
@@ -227,7 +228,7 @@ export default function SubjetivoSection({
                                                             </Field>
                                                             <Field>
                                                                 <FieldLabel className="text-xs mb-1.5 text-n-8">Severidad</FieldLabel>
-                                                                <Select onValueChange={(v) => form.setValue('currentIllness.severity', v)}>
+                                                                <Select onValueChange={(v: string) => form.setValue('currentIllness.severity' as any, v)}>
                                                                     <SelectTrigger className="bg-n-1 border-n-5/30 rounded-md h-10"><SelectValue placeholder="Escala de severidad" /></SelectTrigger>
                                                                     <SelectContent>
                                                                         <SelectItem value="Leve (1-3)">Leve (1-3)</SelectItem>
