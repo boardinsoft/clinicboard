@@ -11,6 +11,8 @@ import type { Json } from '@/types/database.types';
 import type { Path, UseFormRegister } from 'react-hook-form';
 import HistoryPatientPanel from './HistoryPatientPanel';
 import SubjetivoSection from './sections/SubjetivoSection';
+import ObjetivoSection from './sections/ObjetivoSection';
+import EvaluacionSection from './sections/EvaluacionSection';
 import DiagnosisSearch from '@/components/clinical/DiagnosisSearch';
 import { FIELD_SUGGESTION_MAP } from '@/lib/constants/wizard-suggestions';
 import { cn } from '@/lib/utils';
@@ -951,22 +953,24 @@ export default function HistoryPage() {
 
                             {/* Conditions & Allergies Cards */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <Card className="border-border/10 bg-card/20 backdrop-blur-sm shadow-none">
-                                    <CardHeader className="flex flex-row items-center gap-3 border-b border-border/5 bg-muted/5 py-4">
-                                        <div className="p-1.5 bg-primary/10 rounded-md">
-                                            <Activity className="w-4 h-4 text-primary" />
+                                <Card className="bg-n-1 border border-n-5/30 overflow-hidden">
+                                    <div className="px-5 pt-4 pb-3 bg-b-8/5 border-b border-n-5/30">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="p-1.5 bg-b-8/10 rounded-md">
+                                                <Activity className="w-4 h-4 text-b-8" />
+                                            </div>
+                                            <span className="text-sm font-semibold text-n-11">Condiciones preexistentes</span>
                                         </div>
-                                        <CardTitle className="text-sm font-semibold text-primary/80">Condiciones preexistentes</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="p-6">
+                                    </div>
+                                    <CardContent className="p-5">
                                         <div className="flex flex-wrap gap-2">
                                             {clinicalData.conditions.length > 0
                                                 ? clinicalData.conditions.map((c) => (
-                                                    <Badge key={c.id} variant="outline" className="border-border/20 bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-tighter">
+                                                    <Badge key={c.id} variant="outline" className="border-n-5/30 bg-b-8/5 text-b-8 text-[10px] font-bold uppercase tracking-tighter">
                                                         {c.code_display}
                                                     </Badge>
                                                 ))
-                                                : <span className="text-xs text-muted-foreground/40 font-medium">
+                                                : <span className="text-xs text-n-8 font-medium">
                                                     {selectedPatient ? 'Sin condiciones registradas' : '—'}
                                                 </span>
                                             }
@@ -974,15 +978,17 @@ export default function HistoryPage() {
                                     </CardContent>
                                 </Card>
 
-                                <Card className="border-destructive/20 bg-destructive/5 backdrop-blur-sm shadow-none relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-destructive/40"></div>
-                                    <CardHeader className="flex flex-row items-center gap-3 border-b border-destructive/10 bg-destructive/5 py-4">
-                                        <div className="p-1.5 bg-destructive/10 rounded-md">
-                                            <AlertTriangle className="w-4 h-4 text-destructive" />
+                                <Card className="bg-n-1 border border-destructive/20 overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-destructive/40" />
+                                    <div className="px-5 pt-4 pb-3 bg-destructive/5 border-b border-destructive/10">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="p-1.5 bg-destructive/10 rounded-md">
+                                                <AlertTriangle className="w-4 h-4 text-destructive" />
+                                            </div>
+                                            <span className="text-sm font-semibold text-n-11">Alergias conocidas</span>
                                         </div>
-                                        <CardTitle className="text-sm font-semibold text-destructive/80">Alergias conocidas</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="p-6">
+                                    </div>
+                                    <CardContent className="p-5">
                                         <div className="flex flex-wrap gap-2">
                                             {clinicalData.allergies.length > 0
                                                 ? clinicalData.allergies.map((a) => (
@@ -990,7 +996,7 @@ export default function HistoryPage() {
                                                         {a.code_display}
                                                     </Badge>
                                                 ))
-                                                : <span className="text-xs text-muted-foreground/40 font-medium">
+                                                : <span className="text-xs text-n-8 font-medium">
                                                     {selectedPatient ? 'Sin alergias registradas' : '—'}
                                                 </span>
                                             }
@@ -1001,76 +1007,10 @@ export default function HistoryPage() {
                         </div>
 
                         <div className="space-y-8">
-                            <Card className="bg-n-1">
-                                    <div className="px-6 pt-5 pb-4 border-b border-n-5/30">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-b-8/10 rounded-lg">
-                                                <Activity className="w-5 h-5 text-b-8" />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-base font-bold text-n-11 tracking-tight">Signos Vitales y Exploración</h2>
-                                                <p className="text-xs text-n-8 leading-relaxed mt-0.5">Mediciones fisiológicas e informe del examen físico.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <CardContent className="p-0">
-                                        <div className="p-8 space-y-10">
-                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6 bg-n-2/50 p-8 rounded-2xl border border-n-5/30">
-                                                <VitalInput name="vitals.bpSystolic" label="PA Sistólica (mmHg)" min={60} max={250} register={form.register} disabled={!selectedPatient} />
-                                                <VitalInput name="vitals.bpDiastolic" label="PA Diastólica (mmHg)" min={40} max={160} register={form.register} disabled={!selectedPatient} />
-                                                <VitalInput name="vitals.heartRate" label="FC (lpm)" min={30} max={250} register={form.register} disabled={!selectedPatient} />
-                                                <VitalInput name="vitals.temperature" label="Temp (°C)" min={34} max={43} step={0.1} register={form.register} disabled={!selectedPatient} />
-                                                <VitalInput name="vitals.respRate" label="FR (rpm)" min={8} max={60} register={form.register} disabled={!selectedPatient} />
-                                                <VitalInput name="vitals.spo2" label="SpO₂ (%)" min={60} max={100} register={form.register} disabled={!selectedPatient} />
-                                                <VitalInput name="vitals.weight" label="Peso (kg)" min={1} max={400} step={0.1} register={form.register} disabled={!selectedPatient} />
-                                                <VitalInput name="vitals.height" label="Talla (cm)" min={30} max={250} register={form.register} disabled={!selectedPatient} />
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-6">
-                                            <div>
-<h4 className="text-sm font-semibold text-n-11/80 mb-1">Examen Físico</h4>
-                                                <p className="text-xs text-n-8">Registre únicamente los hallazgos positivos (anormales) activando el sistema correspondiente.</p>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                                            {PHYSICAL_SYSTEMS.map(sys => (
-                                                <div key={sys.id} className="p-4 rounded-lg border border-n-5/30 bg-n-2 transition-all">
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-sm font-medium text-n-11/90">{sys.label}</span>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className={`text-[10px] uppercase font-bold tracking-wider ${form.watch(`physicalExam.${sys.id}.normal` as const) ? 'text-n-8' : 'text-amber-500'}`}>
-                                                                {form.watch(`physicalExam.${sys.id}.normal` as const) ? 'Normal' : 'Anormal'}
-                                                            </span>
-                                                            <Controller
-                                                                control={form.control}
-                                                                name={`physicalExam.${sys.id}.normal` as const}
-                                                                render={({ field }) => (
-                                                                    <Switch
-                                                                        checked={!field.value}
-                                                                        onCheckedChange={(checked) => field.onChange(!checked)}
-                                                                        disabled={!selectedPatient}
-                                                                        className={field.value ? '' : 'bg-amber-500'}
-                                                                    />
-                                                                )}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    {!form.watch(`physicalExam.${sys.id}.normal` as const) && (
-                                                        <Textarea
-                                                            {...form.register(`physicalExam.${sys.id}.notes` as const)}
-                                                            placeholder="Describa la anormalidad encontrada..."
-                                                            rows={2}
-                                                            disabled={!selectedPatient}
-                                                            className="text-xs resize-none mt-3 animate-in fade-in slide-in-from-top-2 duration-200 border-n-5/30 focus-visible:ring-b-8/10 bg-n-1"
-                                                        />
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <ObjetivoSection
+                                form={form}
+                                selectedPatient={selectedPatient}
+                            />
                         </div>
 
                         <div className="space-y-8">
@@ -1091,159 +1031,15 @@ export default function HistoryPage() {
                                 </Button>
                             </div>
 
-                            <Card className="bg-n-1">
-                                    <div className="px-6 pt-5 pb-4 border-b border-n-5/30">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-b-8/10 rounded-lg">
-                                                <Stethoscope className="w-5 h-5 text-b-8" />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-base font-bold text-n-11 tracking-tight">Evaluación, Diagnóstico y Plan</h2>
-                                                <p className="text-xs text-n-8 leading-relaxed mt-0.5">Conclusión clínica, codificación CIE-10 e indicaciones terapéuticas.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <CardContent className="p-0">
-                                        <div className="p-8 space-y-12">
-                                            <Field>
-                                        <FieldLabel className="text-xs font-medium text-muted-foreground mb-2.5">Nota de evolución / Impresión diagnóstica</FieldLabel>
-                                        <Textarea
-                                            {...form.register("evolutionNote")}
-                                            placeholder="Resumen del análisis clínico y razonamiento del diagnóstico…"
-                                            rows={6}
-                                            disabled={!selectedPatient}
-                                            className="resize-none"
-                                        />
-                                    </Field>
-                                        </div>
-
-                                        <div className="space-y-6 pt-2">
-                                        <div className="flex justify-between items-center bg-muted/5 p-4 rounded-xl border border-border/5">
-                                            <div className="flex items-center gap-2">
-                                                <Stethoscope className="w-4 h-4 text-primary" />
-                                                <span className="text-sm font-semibold text-foreground/80">Diagnósticos CIE-10</span>
-                                            </div>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => appendDiagnosis({ code: '', description: '', type: 'other' })}
-                                                disabled={!selectedPatient}
-                                                className="gap-2 h-8 text-xs font-medium border-primary/20 text-primary hover:bg-primary/10"
-                                            >
-                                                <Plus className="w-3.5 h-3.5" /> Agregar Código
-                                            </Button>
-                                        </div>
-
-                                        <div className="space-y-4 bg-muted/5 p-6 rounded-2xl border border-border/10">
-                                            {diagnosesFields.length === 0 && (
-                                                <div className="bg-background/40 p-1.5 rounded-xl border border-border/10 focus-within:border-primary/40 transition-all">
-                                                    <Controller
-                                                        control={form.control}
-                                                        name="diagnoses"
-                                                        render={() => (
-                                                            <DiagnosisSearch
-                                                                id="diagnosis-initial"
-                                                                label=""
-                                                                placeholder="Busque por código o nombre (ej: J01.9)..."
-                                                                value=""
-                                                                onChange={val => {
-                                                                    const [code, ...descParts] = val.split(' — ');
-                                                                    const desc = descParts.join(' — ');
-                                                                    if (code && desc) {
-                                                                        appendDiagnosis({ code, description: desc, type: 'primary' });
-                                                                    }
-                                                                }}
-                                                                disabled={!selectedPatient}
-                                                            />
-                                                        )}
-                                                    />
-                                                </div>
-                                            )}
-
-                                            {diagnosesFields.map((field, index) => (
-                                                <div key={field.id} className="flex gap-4 items-end bg-background/40 p-5 rounded-2xl border border-border/10 shadow-sm relative group animate-in slide-in-from-left-2 duration-200">
-                                                    <div className="flex-1">
-                                                        <Controller
-                                                            control={form.control}
-                                                            name={`diagnoses.${index}.code`}
-                                                            render={() => (
-                                                                <DiagnosisSearch
-                                                                    id={`diagnosis-${index}`}
-                                                                    label={index === 0 ? "Diagnóstico principal" : `Relacionado #${index}`}
-                                                                    placeholder="CIE-10..."
-                                                                    value={`${form.watch(`diagnoses.${index}.code`)}${form.watch(`diagnoses.${index}.description`) ? ' — ' + form.watch(`diagnoses.${index}.description`) : ''}`}
-                                                                    onChange={val => {
-                                                                        const [code, ...descParts] = val.split(' — ');
-                                                                        const desc = descParts.join(' — ');
-                                                                        form.setValue(`diagnoses.${index}.code`, code);
-                                                                        form.setValue(`diagnoses.${index}.description`, desc);
-                                                                    }}
-                                                                    disabled={!selectedPatient}
-                                                                />
-                                                            )}
-                                                        />
-                                                    </div>
-                                                    <div className="flex flex-col gap-2">
-                                                        <Button
-                                                            type="button"
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-10 w-10 shrink-0 rounded-xl"
-                                                            onClick={() => removeDiagnosis(index)}
-                                                            title="Quitar"
-                                                        >
-                                                            <X className="w-4 h-4" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <Field className="pt-4">
-                                        <div className="flex items-center justify-between mb-2.5">
-                                            <FieldLabel className="text-xs font-medium text-muted-foreground m-0">Plan terapéutico e indicaciones</FieldLabel>
-                                            <Select onValueChange={(val) => {
-                                                const kit = KITS_OF_ORDERS.find(k => k.id === val);
-                                                if (kit) {
-                                                    const currentPlan = form.getValues('treatmentPlan');
-                                                    const newPlan = currentPlan ? `${currentPlan}\n\n=== ${kit.label} ===\n${kit.content}` : `=== ${kit.label} ===\n${kit.content}`;
-                                                    form.setValue('treatmentPlan', newPlan);
-                                                    toast.success('Kit aplicado', { description: `Se ha insertado el kit: ${kit.label}` });
-                                                }
-                                            }} disabled={!selectedPatient}>
-                                                <SelectTrigger className="w-[200px] h-8 text-xs bg-primary/5 border-primary/20 text-primary">
-                                                    <SelectValue placeholder="Aplicar Kit de Órdenes..." />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {KITS_OF_ORDERS.map(kit => (
-                                                        <SelectItem key={kit.id} value={kit.id} className="text-xs">{kit.label}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <Textarea
-                                            {...form.register("treatmentPlan")}
-                                            placeholder="Medicamentos, dosis, estudios solicitados, próxima cita…"
-                                            rows={6}
-                                            disabled={!selectedPatient}
-                                            className="resize-none min-h-[160px]"
-                                        />
-                                    </Field>
-
-                                    <div className="pt-8 border-t border-border/5">
-                                        <div className="flex flex-wrap gap-3" role="group" aria-label="Acciones rápidas">
-                                            {['Generar Receta', 'Orden de Laboratorios', 'Certificado Médico', 'Referencia'].map(action => (
-                                                <Button key={action} variant="outline" size="sm" disabled={!selectedPatient} className="bg-background/5 hover:bg-primary/10 hover:text-primary border-border/10 hover:border-primary/30 transition-all font-medium text-xs h-8 px-4">
-                                                    {action}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
                         </div>
+
+                        <EvaluacionSection
+                            form={form}
+                            selectedPatient={selectedPatient}
+                            diagnosesFields={diagnosesFields}
+                            appendDiagnosis={appendDiagnosis}
+                            removeDiagnosis={removeDiagnosis}
+                        />
                     </fieldset>
 
                     {isReadOnly && activeEncounterId && (
