@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { Controller } from 'react-hook-form';
 import { UseFormReturn } from 'react-hook-form';
 import { User, Plus, Activity, CheckCircle, Info } from 'lucide-react';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
@@ -81,6 +81,30 @@ export default function SubjetivoSection({
                         <FieldLabel className="text-xs font-medium text-n-8 mb-2.5">
                             Tipo de Consulta <span className="text-b-8">*</span>
                         </FieldLabel>
+                        <Controller
+                            control={form.control}
+                            name="encounterSubcategory"
+                            render={({ field }) => (
+                                <Select onValueChange={(val) => {
+                                    field.onChange(val);
+                                    form.setValue('encounterCategory', getCategoryForSubcategory(val));
+                                }} value={field.value} disabled={!selectedPatient}>
+                                    <SelectTrigger className="w-full bg-n-1 border-n-5/30 focus:ring-b-8/10 focus:ring-1 rounded-md h-10 text-sm font-medium transition-all">
+                                        <SelectValue placeholder="Clasificación de la visita..." />
+                                    </SelectTrigger>
+                                    <SelectContent className="max-h-[300px]">
+                                        {ENCOUNTER_CATEGORIES.map(group => (
+                                            <SelectGroup key={group.label}>
+                                                <SelectLabel className="text-[10px] font-bold text-n-8 uppercase tracking-widest px-2 py-1.5">{group.label}</SelectLabel>
+                                                {group.options.map(opt => (
+                                                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
                     </Field>
                 </div>
 
