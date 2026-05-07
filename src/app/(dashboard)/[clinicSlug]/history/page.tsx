@@ -8,65 +8,31 @@ import { getPatients, getPatientClinicalData, updatePatientAnamnesis } from '@/a
 import { saveEncounterDraft, finalizeEncounter, getEncounters } from '@/actions/encounters';
 import type { Patient, Condition, AllergyIntolerance, EncounterWithClinicalNote } from '@/types/database.types';
 import type { Json } from '@/types/database.types';
-import type { Path, UseFormRegister } from 'react-hook-form';
 import HistoryPatientPanel from './HistoryPatientPanel';
 import SubjetivoSection from './sections/SubjetivoSection';
 import ObjetivoSection from './sections/ObjetivoSection';
 import EvaluacionSection from './sections/EvaluacionSection';
 import AddendaSection from './sections/AddendaSection';
 import ConditionsAllergiesSection from './sections/ConditionsAllergiesSection';
-import DiagnosisSearch from '@/components/clinical/DiagnosisSearch';
-import { FIELD_SUGGESTION_MAP } from '@/lib/constants/wizard-suggestions';
 import { cn } from '@/lib/utils';
 
 // Shadcn UI Components
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Stepper, StepperHeader, StepperIcon, StepperItem, StepperSeparator } from '@/components/ui/stepper';
 import { toast } from 'sonner';
 import { PageHeader, PageContainer } from '@/components/ui/PageLayout';
-import { WIZARD_PROFILES, getWizardProfile } from './wizard/wizard-data';
 
 // Form & Validation
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, useFieldArray, Controller, SubmitHandler } from 'react-hook-form';
+import { useForm, useFieldArray, SubmitHandler } from 'react-hook-form';
 import * as z from 'zod';
 
 // Icons
 import {
     Save,
     MessageSquare,
-    Plus,
-    Stethoscope,
-    Activity,
-    User,
     RefreshCw,
-    AlertTriangle,
-    X,
-    Info,
-    CheckCircle2,
-    Clock,
-    CheckCircle,
-    Zap,
-    Shield,
-    Settings2,
-    Users,
-    ClipboardList,
-    Search,
-    Microscope,
-    Utensils,
-    Dumbbell,
-    MessageCircle,
-    HeartPulse
+    CheckCircle2
 } from 'lucide-react';
 
 const encounterSchema = z.object({
@@ -214,9 +180,6 @@ const defaultValues: EncounterFormValues = {
 
 
 
-
-
-// ─── Subcomponents ────────────────────────────────────────────────────────────
 
 
 
@@ -513,27 +476,6 @@ export default function HistoryPage() {
         init();
     }, [searchParams, setRightPanelOpen, form]);
 
-    const handleAddAddendum = async () => {
-        if (!activeEncounterId || !newAddendumContent.trim()) return;
-        setIsSavingAddendum(true);
-        try {
-            const { createAddendum, getAddenda } = await import('@/actions/encounters');
-            const res = await createAddendum(activeEncounterId, newAddendumContent);
-            if (res.error) {
-                toast.error('Error al guardar addenda: ' + res.error);
-            } else {
-                toast.success('Addenda guardada correctamente');
-                setNewAddendumContent('');
-                setIsAddingAddendum(false);
-                const list = await getAddenda(activeEncounterId);
-                setAddenda(list.data);
-            }
-        } catch {
-            toast.error('Error inesperado');
-        } finally {
-            setIsSavingAddendum(false);
-        }
-    };
 
     const patientName = selectedPatient 
         ? `${selectedPatient.name_family}, ${selectedPatient.name_given?.join(' ')}`
