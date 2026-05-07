@@ -59,7 +59,7 @@ export default function AddendaSection({
                 setNewAddendumContent('');
                 setIsAddingAddendum(false);
                 const list = await getAddenda(activeEncounterId);
-                // Parent should update addenda state via callback — for now this is a standalone preview
+                setAddenda(list.data || []);
             }
         } catch {
             import('sonner').then(({ toast }) => toast.error('Error inesperado'));
