@@ -180,7 +180,7 @@ const defaultValues: EncounterFormValues = {
     encounterSubcategory: '',
 };
 
-type HistoryTab = 'consulta' | 'antecedentes' | 'alergologia' | 'exploracion' | 'juicio' | 'estudios';
+type HistoryTab = 'consulta' | 'antecedentes' | 'alergologia' | 'exploracion' | 'estudios' | 'juicio';
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 export default function HistoryPage() {
@@ -490,8 +490,8 @@ export default function HistoryPage() {
         { value: 'antecedentes', label: 'Antecedentes' },
         { value: 'alergologia', label: 'Alergología' },
         { value: 'exploracion', label: 'Exploración' },
-        { value: 'juicio', label: 'Juicio Clínico' },
         { value: 'estudios', label: 'Estudios' },
+        { value: 'juicio', label: 'Juicio Clínico' },
     ];
 
     return (
