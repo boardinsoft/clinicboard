@@ -524,24 +524,22 @@ export default function HistoryPage() {
                             )}
                         </div>
                     }
-                    className="pb-0 pt-5 px-6"
-                />
-
-                <div className="px-6 py-5 border-b border-n-5/30 bg-background">
-                    <Tabs value={activeHistoryTab} onValueChange={(v) => setActiveHistoryTab(v as HistoryTab)} className="w-full">
-                        <TabsList className="w-full justify-start gap-2 bg-transparent p-0 h-auto border-0 rounded-none">
+                    className="pt-5 pb-4 px-6"
+                >
+                    <Tabs value={activeHistoryTab} onValueChange={(v) => setActiveHistoryTab(v as HistoryTab)} className="w-full mt-4">
+                        <TabsList className="w-full justify-start gap-0 bg-transparent p-0 h-auto border-0">
                             {HISTORY_TABS.map((tab) => (
                                 <TabsTrigger
                                     key={tab.value}
                                     value={tab.value}
-                                    className="px-4 py-2 text-xs font-medium rounded-lg border border-transparent data-[state=active]:border-n-5/30 data-[state=active]:bg-n-1 data-[state=active]:text-n-11 data-[state=active]:shadow-sm text-n-8 hover:text-n-11 hover:bg-n-2/50 transition-all duration-100"
+                                    className="px-4 py-2 text-xs font-medium rounded-md border border-transparent data-[state=active]:border-n-5/30 data-[state=active]:bg-n-1 data-[state=active]:text-n-11 data-[state=active]:shadow-sm text-n-8 hover:text-n-11 hover:bg-n-2/50 transition-all duration-100"
                                 >
                                     {tab.label}
                                 </TabsTrigger>
                             ))}
                         </TabsList>
                     </Tabs>
-                </div>
+                </PageHeader>
 
                 <div className="flex-1 overflow-y-auto w-full">
                     <PageContainer size="full" className="pb-24">
