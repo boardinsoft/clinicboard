@@ -28,7 +28,7 @@ export default function AlergologiaSection({ clinicalData, selectedPatient, form
                             <AlertTriangle className={`w-5 h-5 ${hasAllergies ? 'text-destructive' : 'text-b-8'}`} />
                         </div>
                         <div>
-                            <h2 className="text-base font-bold text-n-11 tracking-tight">Alergología</h2>
+                            <h2 className="text-sm font-bold text-n-11">Alergología</h2>
                             <p className="text-xs text-n-8 leading-relaxed mt-0.5">
                                 {hasAllergies
                                     ? `⚠️ ${clinicalData.allergies.length} alergia(s) registrada(s) — verificar antes de prescribir`
@@ -70,7 +70,7 @@ export default function AlergologiaSection({ clinicalData, selectedPatient, form
                             <Activity className="w-5 h-5 text-b-8" />
                         </div>
                         <div>
-                            <h2 className="text-base font-bold text-n-11 tracking-tight">Condiciones Preexistentes</h2>
+                            <h2 className="text-sm font-bold text-n-11">Condiciones Preexistentes</h2>
                             <p className="text-xs text-n-8 leading-relaxed mt-0.5">Referencia rápida — solo lectura. Edite desde el perfil del paciente.</p>
                         </div>
                     </div>
@@ -79,7 +79,7 @@ export default function AlergologiaSection({ clinicalData, selectedPatient, form
                     <div className="flex flex-wrap gap-2">
                         {clinicalData.conditions.length > 0
                             ? clinicalData.conditions.map((c) => (
-                                <Badge key={c.id} variant="outline" className="border-n-5/30 bg-b-8/5 text-b-8 text-[10px] font-bold uppercase tracking-tighter">
+                                <Badge key={c.id} variant="outline" className="border-n-5/30 bg-b-8/5 text-b-8 text-[11px] font-medium">
                                     {c.code_display}
                                 </Badge>
                             ))

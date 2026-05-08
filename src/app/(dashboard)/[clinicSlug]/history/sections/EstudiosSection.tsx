@@ -26,7 +26,7 @@ export default function EstudiosSection({ form, selectedPatient, encounterId, is
                             <FileSearch className="w-5 h-5 text-b-8" />
                         </div>
                         <div>
-                            <h2 className="text-base font-bold text-n-11 tracking-tight">Estudios Complementarios</h2>
+                            <h2 className="text-sm font-bold text-n-11">Estudios Complementarios</h2>
                             <p className="text-xs text-n-8 leading-relaxed mt-0.5">Laboratorio e imagenología. Registre resultados o solicitudes.</p>
                         </div>
                     </div>

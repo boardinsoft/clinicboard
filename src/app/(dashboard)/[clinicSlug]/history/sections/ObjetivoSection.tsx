@@ -60,7 +60,7 @@ export default function ObjetivoSection({ form, selectedPatient }: ObjetivoSecti
                         <Activity className="w-5 h-5 text-b-8" />
                     </div>
                     <div>
-                        <h2 className="text-base font-bold text-n-11 tracking-tight">Signos Vitales y Exploración</h2>
+                        <h2 className="text-sm font-bold text-n-11">Signos Vitales y Exploración</h2>
                         <p className="text-xs text-n-8 leading-relaxed mt-0.5">Mediciones fisiológicas e informe del examen físico.</p>
                     </div>
                 </div>
@@ -91,7 +91,7 @@ export default function ObjetivoSection({ form, selectedPatient }: ObjetivoSecti
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-sm font-medium text-n-11/90">{sys.label}</span>
                                     <div className="flex items-center gap-2">
-                                        <span className={`text-[10px] uppercase font-bold tracking-wider ${form.watch(`physicalExam.${sys.id}.normal` as const) ? 'text-n-8' : 'text-amber-500'}`}>
+                                        <span className={`text-[10px] font-semibold ${form.watch(`physicalExam.${sys.id}.normal` as const) ? 'text-n-8' : 'text-amber-500'}`}>
                                             {form.watch(`physicalExam.${sys.id}.normal` as const) ? 'Normal' : 'Anormal'}
                                         </span>
                                         <Controller

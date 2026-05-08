@@ -73,7 +73,7 @@ export default function SubjetivoSection({
                         <User className="w-5 h-5 text-b-8" />
                     </div>
                     <div>
-                        <h2 className="text-base font-bold text-n-11 tracking-tight">Motivo de Consulta y Antecedentes</h2>
+                        <h2 className="text-sm font-bold text-n-11">Motivo de Consulta y Antecedentes</h2>
                         <p className="text-xs text-n-8 leading-relaxed mt-0.5">Registre la información subjetiva proporcionada por el paciente.</p>
                     </div>
                 </div>
