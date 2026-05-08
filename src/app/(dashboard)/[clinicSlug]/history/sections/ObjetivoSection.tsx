@@ -31,7 +31,7 @@ type VitalInputProps = {
 function VitalInput({ name, label, min, max, step, register, disabled }: VitalInputProps) {
     return (
         <div className="space-y-1.5">
-            <label className="text-[10px] font-medium text-n-8">{label}</label>
+            <label className="block text-[10px] font-medium text-n-8 text-center leading-4">{label}</label>
             <input
                 type="number"
                 {...register(name)}
@@ -39,7 +39,7 @@ function VitalInput({ name, label, min, max, step, register, disabled }: VitalIn
                 max={max}
                 step={step}
                 disabled={disabled}
-                className="w-full h-10 px-3 bg-n-1 border border-n-5/30 rounded-md text-sm text-n-11 text-center focus:outline-none focus:ring-1 focus:ring-b-8/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-10 px-2 bg-n-1 border border-n-5/30 rounded-md text-sm text-n-11 focus:outline-none focus:ring-1 focus:ring-b-8/10 disabled:opacity-50 disabled:cursor-not-allowed grid place-content-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
         </div>
     );
