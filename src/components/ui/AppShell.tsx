@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ReactNode, useState, useEffect } from 'react';
+import React, { ReactNode, useState, useEffect, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { signOut } from '@/actions/auth';
@@ -800,7 +800,9 @@ const displayName =
                 <>
                   <ResizableHandle withHandle className="w-px bg-border hover:bg-b-8 transition-colors" />
                   <ResizablePanel id="right-panel" defaultSize={25} minSize={20} maxSize={50}>
-                    <AIAssistant />
+                    <Suspense fallback={<div className="h-full w-full bg-background animate-pulse" />}>
+                      <AIAssistant />
+                    </Suspense>
                   </ResizablePanel>
                 </>
               )}

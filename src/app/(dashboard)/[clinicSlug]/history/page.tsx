@@ -13,6 +13,7 @@ import SubjetivoSection from './sections/SubjetivoSection';
 import ObjetivoSection from './sections/ObjetivoSection';
 import EvaluacionSection from './sections/EvaluacionSection';
 import AddendaSection from './sections/AddendaSection';
+import DocumentosSection from './sections/DocumentosSection';
 import ConditionsAllergiesSection from './sections/ConditionsAllergiesSection';
 import { cn } from '@/lib/utils';
 
@@ -237,7 +238,7 @@ export default function HistoryPage() {
             selectedPatient,
             clinicalData
         });
-    }, [form, tabId, setTabData, selectedPatient, clinicalData]);
+    }, [tabId, setTabData, selectedPatient, clinicalData]);
 
     const handleReset = useCallback(() => {
         if (confirm('¿Limpiar todos los datos del formulario actual?')) {
@@ -250,7 +251,6 @@ export default function HistoryPage() {
         const readOnly = enc?.status === 'finished';
         setIsReadOnly(readOnly);
         if (enc) {
-            // Check if reason_code is an array of objects
             const rc = enc.clinical_note?.reason_code;
             const chiefComplaint = (Array.isArray(rc)
                 ? (rc as Array<Record<string, string>>)[0]?.text
@@ -274,10 +274,12 @@ export default function HistoryPage() {
                 setAddenda([]);
             }
         } else {
-            handleReset();
+            if (confirm('¿Limpiar todos los datos del formulario actual?')) {
+                form.reset(defaultValues);
+            }
             setAddenda([]);
         }
-    }, [handleReset, form]);
+    }, []);
 
     const onSave: SubmitHandler<EncounterFormValues> = async (values) => {
         if (!selectedPatient) {
@@ -381,103 +383,114 @@ export default function HistoryPage() {
             <HistoryPatientPanel />,
             'Historial'
         );
-    }, [selectedPatient, pastEncounters, activeEncounterId, isLoadingEncounters, setSecondaryPanel, handleEncounterSelect, handleReset]);
+    }, [selectedPatient, activeEncounterId, setSecondaryPanel]);
 
     // Load initial data
     useEffect(() => {
+        const pid = searchParams.get('patientId');
+        const encId = searchParams.get('encounterId');
+
+        if (!pid && !encId) return;
+
+        let cancelled = false;
+
         async function init() {
-            const pid = searchParams.get('patientId');
-            const encId = searchParams.get('encounterId');
+            setIsLoadingEncounters(true);
 
-            if (pid || encId) {
-                setIsLoadingEncounters(true);
+            let patientId = pid;
+            let encounterToLoad: EncounterWithClinicalNote | null = null;
 
-                let patientId = pid;
-                let encounterToLoad: EncounterWithClinicalNote | null = null;
+            if (!pid && encId) {
+                const { getEncounterById } = await import('@/actions/encounters');
+                const encResult = await getEncounterById(encId);
+                if (encResult.data && !cancelled) {
+                    patientId = encResult.data.patient_id;
+                    encounterToLoad = encResult.data as EncounterWithClinicalNote;
+                }
+            }
 
-                if (!pid && encId) {
-                    const { getEncounterById } = await import('@/actions/encounters');
-                    const encResult = await getEncounterById(encId);
-                    if (encResult.data) {
-                        patientId = encResult.data.patient_id;
-                        encounterToLoad = encResult.data as EncounterWithClinicalNote;
+            if (cancelled) return;
+
+            const { data: patients } = await getPatients();
+            const patient = patientId ? patients?.find((p) => p.id === patientId) : null;
+
+            if (!patient || cancelled) return;
+
+            setSelectedPatient(patient as Patient);
+
+            const p = patient as Patient;
+            const famHist = Array.isArray(p.family_history) ? (p.family_history[0] as { text?: string })?.text || '' : '';
+            const habitsHist = Array.isArray(p.habits) ? (p.habits[0] as { text?: string })?.text || '' : '';
+            const persHist = Array.isArray(p.personal_history) ? p.personal_history as { label?: string, text?: string }[] : [];
+            const pastCond = persHist.find(h => h.label === 'Patológicos')?.text || '';
+            const surgHist = persHist.find(h => h.label === 'Quirúrgico')?.text || '';
+            const ext = Array.isArray(p.extensions) ? p.extensions as { url?: string, valueString?: string }[] : [];
+            const knownAllergies = ext.find(e => e.url === 'knownAllergies')?.valueString || '';
+
+            form.reset({
+                ...defaultValues,
+                familyHistory: famHist,
+                habitsHistory: habitsHist,
+                pastConditions: pastCond,
+                surgicalHistory: surgHist,
+                knownAllergies: knownAllergies
+            });
+
+            try {
+                const [cData, { data: encs }] = await Promise.all([
+                    getPatientClinicalData(patient.id),
+                    getEncounters(patient.id)
+                ]);
+
+                if (cancelled) return;
+
+                setClinicalData(cData as { conditions: Condition[]; allergies: AllergyIntolerance[] });
+                setPastEncounters((encs || []) as EncounterWithClinicalNote[]);
+
+                if (encId && encs) {
+                    const encounter = encs.find(e => e.id === encId);
+                    if (encounter && !cancelled) {
+                        setActiveEncounterId(encId);
+                        const readOnly = encounter.status === 'finished';
+                        setIsReadOnly(readOnly);
+
+                        const rcEnc = encounter.clinical_note?.reason_code;
+                        const chiefComplaint = (Array.isArray(rcEnc)
+                            ? (rcEnc as Array<Record<string, string>>)[0]?.text
+                            : typeof rcEnc === 'string' ? rcEnc : '') || '';
+
+                        form.reset({
+                            ...form.getValues(),
+                            evolutionNote: encounter.clinical_note?.evolution_note || '',
+                            treatmentPlan: encounter.clinical_note?.plan || '',
+                            chiefComplaint,
+                            vitals: (encounter.vital_signs as Record<string, unknown>) || defaultVitals,
+                            physicalExam: (encounter.clinical_note?.physical_exam as unknown as EncounterFormValues["physicalExam"]) || defaultValues.physicalExam,
+                            diagnoses: (encounter.clinical_note?.diagnosis as unknown as EncounterFormValues["diagnoses"]) || [],
+                            encounterCategory: encounter.encounter_category || '',
+                            encounterSubcategory: encounter.encounter_subcategory || '',
+                        });
+
+                        if (readOnly) {
+                            import('@/actions/encounters').then(m => m.getAddenda(encounter.id)).then(res => setAddenda(res.data));
+                        }
                     }
                 }
-
-                const { data: patients } = await getPatients();
-                const patient = patientId ? patients?.find((p) => p.id === patientId) : null;
-
-                if (patient) {
-                    setSelectedPatient(patient as Patient);
-
-                    // Extract persisted Anamnesis data
-                    const p = patient as Patient;
-                    const famHist = Array.isArray(p.family_history) ? (p.family_history[0] as { text?: string })?.text || '' : '';
-                    const habitsHist = Array.isArray(p.habits) ? (p.habits[0] as { text?: string })?.text || '' : '';
-                    const persHist = Array.isArray(p.personal_history) ? p.personal_history as { label?: string, text?: string }[] : [];
-                    const pastCond = persHist.find(h => h.label === 'Patológicos')?.text || '';
-                    const surgHist = persHist.find(h => h.label === 'Quirúrgico')?.text || '';
-                    const ext = Array.isArray(p.extensions) ? p.extensions as { url?: string, valueString?: string }[] : [];
-                    const knownAllergies = ext.find(e => e.url === 'knownAllergies')?.valueString || '';
-
-                    form.reset({
-                        ...defaultValues,
-                        familyHistory: famHist,
-                        habitsHistory: habitsHist,
-                        pastConditions: pastCond,
-                        surgicalHistory: surgHist,
-                        knownAllergies: knownAllergies
-                    });
-
-                    try {
-                        const [cData, { data: encs }] = await Promise.all([
-                            getPatientClinicalData(patient.id),
-                            getEncounters(patient.id)
-                        ]);
-
-                        setClinicalData(cData as { conditions: Condition[]; allergies: AllergyIntolerance[] });
-                        setPastEncounters((encs || []) as EncounterWithClinicalNote[]);
-
-                        if (encId && encs) {
-                            const encounter = encs.find(e => e.id === encId);
-                            if (encounter) {
-                                setActiveEncounterId(encId);
-                                const readOnly = encounter.status === 'finished';
-                                setIsReadOnly(readOnly);
-                                
-                                const rcEnc = encounter.clinical_note?.reason_code;
-                                const chiefComplaint = (Array.isArray(rcEnc)
-                                    ? (rcEnc as Array<Record<string, string>>)[0]?.text
-                                    : typeof rcEnc === 'string' ? rcEnc : '') || '';
-
-                                form.reset({
-                                    ...form.getValues(),
-                                    evolutionNote: encounter.clinical_note?.evolution_note || '',
-                                    treatmentPlan: encounter.clinical_note?.plan || '',
-                                    chiefComplaint,
-                                    vitals: (encounter.vital_signs as Record<string, unknown>) || defaultVitals,
-                                    physicalExam: (encounter.clinical_note?.physical_exam as unknown as EncounterFormValues["physicalExam"]) || defaultValues.physicalExam,
-                                    diagnoses: (encounter.clinical_note?.diagnosis as unknown as EncounterFormValues["diagnoses"]) || [],
-                                    encounterCategory: encounter.encounter_category || '',
-                                    encounterSubcategory: encounter.encounter_subcategory || '',
-                                });
-
-                                if (readOnly) {
-                                    import('@/actions/encounters').then(m => m.getAddenda(encounter.id)).then(res => setAddenda(res.data));
-                                }
-                            }
-                        }
-                    } catch (error) {
-                        console.error('Error fetching clinical data:', error);
-                    } finally {
-                        setIsLoadingEncounters(false);
-                        setRightPanelOpen(true);
-                    }
+            } catch (error) {
+                console.error('Error fetching clinical data:', error);
+            } finally {
+                if (!cancelled) {
+                    setIsLoadingEncounters(false);
                 }
             }
         }
+
         init();
-    }, [searchParams, setRightPanelOpen, form]);
+
+        return () => {
+            cancelled = true;
+        };
+    }, [searchParams.get('patientId'), searchParams.get('encounterId')]);
 
 
     const patientName = selectedPatient 
@@ -596,6 +609,11 @@ export default function HistoryPage() {
                             setAddenda={setAddenda}
                         />
                     )}
+
+                    <DocumentosSection
+                        encounterId={activeEncounterId}
+                        isReadOnly={isReadOnly}
+                    />
                     </PageContainer>
                 </div>
             </form>
