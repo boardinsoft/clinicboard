@@ -541,7 +541,7 @@ export default function HistoryPage() {
                     </Tabs>
                 </PageHeader>
 
-                <div className="flex-1 overflow-y-auto w-full">
+                <div className="flex-1 overflow-y-auto w-full bg-n-2">
                     <PageContainer size="full" className="pb-24">
                         <fieldset disabled={isReadOnly} className="border-none p-0 m-0">
 
