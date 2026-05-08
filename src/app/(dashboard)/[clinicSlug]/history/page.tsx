@@ -14,7 +14,9 @@ import ObjetivoSection from './sections/ObjetivoSection';
 import EvaluacionSection from './sections/EvaluacionSection';
 import AddendaSection from './sections/AddendaSection';
 import DocumentosSection from './sections/DocumentosSection';
-import ConditionsAllergiesSection from './sections/ConditionsAllergiesSection';
+import AntecedentesSection from './sections/AntecedentesSection';
+import AlergologiaSection from './sections/AlergologiaSection';
+import EstudiosSection from './sections/EstudiosSection';
 import { cn } from '@/lib/utils';
 
 // Shadcn UI Components
@@ -22,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { PageHeader, PageContainer } from '@/components/ui/PageLayout';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Form & Validation
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -178,16 +181,8 @@ const defaultValues: EncounterFormValues = {
     encounterSubcategory: '',
 };
 
+type HistoryTab = 'consulta' | 'antecedentes' | 'alergologia' | 'exploracion' | 'juicio' | 'estudios' | 'cierre';
 
-
-
-
-
-
-
-
-
-// ─── Workspace Header ─────────────────────────────────────────────────────────
 // ─── Main Component ─────────────────────────────────────────────────────────────
 export default function HistoryPage() {
     const searchParams = useSearchParams();
@@ -197,8 +192,6 @@ export default function HistoryPage() {
     const tabId = activeTabId || '/history';
     const currentTab = tabs.find(t => t.id === tabId);
 
-    // Contextual State (External to the encounter form itself)
-    // Type the tab data to properly access persisted state
     interface TabData { selectedPatient?: Patient; clinicalData?: { conditions: Condition[]; allergies: AllergyIntolerance[] }; formValues?: EncounterFormValues; }
     const tabData = currentTab?.data as TabData | undefined;
 
@@ -219,8 +212,8 @@ export default function HistoryPage() {
     const [isAddingAddendum, setIsAddingAddendum] = useState(false);
     const [newAddendumContent, setNewAddendumContent] = useState('');
     const [isSavingAddendum, setIsSavingAddendum] = useState(false);
+    const [activeHistoryTab, setActiveHistoryTab] = useState<HistoryTab>('consulta');
 
-    // Initialize Form
     const form = useForm<EncounterFormValues>({
         resolver: zodResolver(encounterSchema),
         defaultValues: tabData?.formValues || defaultValues,
@@ -231,7 +224,6 @@ export default function HistoryPage() {
         name: "diagnoses",
     });
 
-    // Sync to tab store
     useEffect(() => {
         setTabData(tabId, {
             formValues: form.getValues(),
@@ -317,8 +309,7 @@ export default function HistoryPage() {
 
         const subjective = `MOTIVO: ${values.chiefComplaint} | ENFERMEDAD ACTUAL: ${illnessDesc.replace(/\n/g, ' ')}`;
         const objective = `SIGNOS VITALES: ${JSON.stringify(values.vitals)} | HALLAZGOS FÍSICOS: ${abnormalFindings || 'Normal'} | EVOLUCIÓN: ${values.evolutionNote}`;
-        
-        // Un encuentro solo puede guardarse si ya existe (fue creado desde una cita)
+
         if (!activeEncounterId) {
             toast.error('Sin encuentro activo', {
                 description: 'Para registrar una consulta, inicia el encuentro desde la agenda de citas.'
@@ -363,8 +354,8 @@ export default function HistoryPage() {
         if (res.error) {
             toast.error('Error al finalizar', { description: res.error as string });
         } else {
-            toast.success('Encuentro finalizado', { 
-                description: 'El acto médico ha sido cerrado y firmado con éxito.' 
+            toast.success('Encuentro finalizado', {
+                description: 'El acto médico ha sido cerrado y firmado con éxito.'
             });
             if (selectedPatient) {
                 const { data: encs } = await getEncounters(selectedPatient.id);
@@ -377,7 +368,6 @@ export default function HistoryPage() {
         }
     };
 
-    // Setup Sidebar
     useEffect(() => {
         setSecondaryPanel(
             <HistoryPatientPanel />,
@@ -385,7 +375,6 @@ export default function HistoryPage() {
         );
     }, [selectedPatient, activeEncounterId, setSecondaryPanel]);
 
-    // Load initial data
     useEffect(() => {
         const pid = searchParams.get('patientId');
         const encId = searchParams.get('encounterId');
@@ -493,14 +482,24 @@ export default function HistoryPage() {
     }, [searchParams.get('patientId'), searchParams.get('encounterId')]);
 
 
-    const patientName = selectedPatient 
+    const patientName = selectedPatient
         ? `${selectedPatient.name_family}, ${selectedPatient.name_given?.join(' ')}`
         : 'Historia Clínica';
+
+    const HISTORY_TABS: { value: HistoryTab; label: string }[] = [
+        { value: 'consulta', label: 'Motivo de Consulta' },
+        { value: 'antecedentes', label: 'Antecedentes' },
+        { value: 'alergologia', label: 'Alergología' },
+        { value: 'exploracion', label: 'Exploración' },
+        { value: 'juicio', label: 'Juicio Clínico' },
+        { value: 'estudios', label: 'Estudios' },
+        { value: 'cierre', label: 'Cierre' },
+    ];
 
     return (
         <div className="flex flex-col h-full bg-background overflow-hidden">
             <form id="history-form" onSubmit={form.handleSubmit(onSave as SubmitHandler<EncounterFormValues>)} className="flex flex-col h-full w-full">
-                {/* ── Page Header ───────────────────────────────────────────── */}
+
                 <PageHeader
                     title={patientName}
                     description={selectedPatient ? `Expediente: ${(selectedPatient?.identifiers as Array<Record<string, string>> | null)?.[0]?.value || 'S/D'}` : 'Seleccione un paciente para comenzar el registro clínico.'}
@@ -527,16 +526,30 @@ export default function HistoryPage() {
                             )}
                         </div>
                     }
-                    className="pb-5 pt-5"
+                    className="pb-0 pt-5 px-6"
                 />
+
+                <div className="px-6 py-4 border-b border-n-5/30 bg-background">
+                    <Tabs value={activeHistoryTab} onValueChange={(v) => setActiveHistoryTab(v as HistoryTab)} className="w-full">
+                        <TabsList className="w-full justify-start gap-1 bg-transparent p-0 h-auto border-0 rounded-none">
+                            {HISTORY_TABS.map((tab) => (
+                                <TabsTrigger
+                                    key={tab.value}
+                                    value={tab.value}
+                                    className="px-4 py-2 text-xs font-medium rounded-lg border border-transparent data-[state=active]:border-n-5/30 data-[state=active]:bg-n-1 data-[state=active]:text-n-11 data-[state=active]:shadow-sm text-n-8 hover:text-n-11 hover:bg-n-2/50 transition-all duration-100"
+                                >
+                                    {tab.label}
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </Tabs>
+                </div>
 
                 <div className="flex-1 overflow-y-auto w-full">
                     <PageContainer size="full" className="pb-24">
-                        <fieldset disabled={isReadOnly} className="border-none p-0 m-0 space-y-8">
-                            {/* ── NOTA CLÍNICA — Secciones verticales continuas ── */}
+                        <fieldset disabled={isReadOnly} className="border-none p-0 m-0">
 
-                            
-                            <div className="space-y-8">
+                            {activeHistoryTab === 'consulta' && (
                                 <SubjetivoSection
                                     form={form}
                                     selectedPatient={selectedPatient}
@@ -549,146 +562,157 @@ export default function HistoryPage() {
                                     familyHistorySelectKey={familyHistorySelectKey}
                                     setFamilyHistorySelectKey={setFamilyHistorySelectKey}
                                 />
+                            )}
 
-                            {/* Conditions & Allergies Cards */}
-                            <div className="space-y-8">
-                                <ConditionsAllergiesSection
-                                    clinicalData={clinicalData}
+                            {activeHistoryTab === 'antecedentes' && (
+                                <AntecedentesSection
+                                    form={form}
                                     selectedPatient={selectedPatient}
                                 />
-                            </div>
-                        </div>
+                            )}
 
-                        <div className="space-y-8">
-                            <ObjetivoSection
-                                form={form}
-                                selectedPatient={selectedPatient}
-                            />
-                        </div>
+                            {activeHistoryTab === 'alergologia' && (
+                                <AlergologiaSection
+                                    clinicalData={clinicalData}
+                                    selectedPatient={selectedPatient}
+                                    form={form}
+                                />
+                            )}
 
-                        <div className="space-y-8">
+                            {activeHistoryTab === 'exploracion' && (
+                                <ObjetivoSection
+                                    form={form}
+                                    selectedPatient={selectedPatient}
+                                />
+                            )}
 
-                            {/* AI Scribe Promo */}
-                            <div className="bg-b-8/5 border border-b-8/20 rounded-lg p-6 flex items-center justify-between">
-                                <div className="flex items-center gap-4 text-b-8">
-                                    <div className="bg-b-8/20 p-3 rounded-full">
-                                        <MessageSquare className="w-6 h-6" />
+                            {activeHistoryTab === 'juicio' && (
+                                <>
+                                    <div className="bg-b-8/5 border border-b-8/20 rounded-lg p-6 flex items-center justify-between mb-8">
+                                        <div className="flex items-center gap-4 text-b-8">
+                                            <div className="bg-b-8/20 p-3 rounded-full">
+                                                <MessageSquare className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-sm text-n-11">AI Clinical Scribe</h4>
+                                                <p className="text-xs text-n-8 font-medium">Transcripción inteligente y autogeneración de nota evolutiva.</p>
+                                            </div>
+                                        </div>
+                                        <Button variant="outline" size="sm" className="border-n-5/30 text-n-11 hover:bg-n-2 font-medium text-xs h-8 px-5">
+                                            Activar <span className="ml-2 text-[8px] bg-b-8 text-n-1 px-1.5 py-0.5 rounded font-bold">BETA</span>
+                                        </Button>
                                     </div>
-                                    <div>
-                                        <h4 className="font-semibold text-sm text-n-11">AI Clinical Scribe</h4>
-                                        <p className="text-xs text-n-8 font-medium">Transcripción inteligente y autogeneración de nota evolutiva.</p>
-                                    </div>
-                                </div>
-                                <Button variant="outline" size="sm" className="border-n-5/30 text-n-11 hover:bg-n-2 font-medium text-xs h-8 px-5">
-                                    Activar <span className="ml-2 text-[8px] bg-b-8 text-n-1 px-1.5 py-0.5 rounded font-bold">BETA</span>
-                                </Button>
-                            </div>
+                                    <EvaluacionSection
+                                        form={form}
+                                        selectedPatient={selectedPatient}
+                                        diagnosesFields={diagnosesFields}
+                                        appendDiagnosis={appendDiagnosis}
+                                        removeDiagnosis={removeDiagnosis}
+                                    />
+                                </>
+                            )}
 
-                        </div>
+                            {activeHistoryTab === 'estudios' && (
+                                <EstudiosSection
+                                    form={form}
+                                    selectedPatient={selectedPatient}
+                                />
+                            )}
 
-                        <EvaluacionSection
-                            form={form}
-                            selectedPatient={selectedPatient}
-                            diagnosesFields={diagnosesFields}
-                            appendDiagnosis={appendDiagnosis}
-                            removeDiagnosis={removeDiagnosis}
-                        />
-                    </fieldset>
+                            {activeHistoryTab === 'cierre' && (
+                                <>
+                                    <DocumentosSection
+                                        encounterId={activeEncounterId}
+                                        isReadOnly={isReadOnly}
+                                    />
+                                    {isReadOnly && activeEncounterId && (
+                                        <div className="mt-8">
+                                            <AddendaSection
+                                                isReadOnly={isReadOnly}
+                                                activeEncounterId={activeEncounterId}
+                                                addenda={addenda}
+                                                isAddingAddendum={isAddingAddendum}
+                                                setIsAddingAddendum={setIsAddingAddendum}
+                                                newAddendumContent={newAddendumContent}
+                                                setNewAddendumContent={setNewAddendumContent}
+                                                isSavingAddendum={isSavingAddendum}
+                                                setIsSavingAddendum={setIsSavingAddendum}
+                                                setAddenda={setAddenda}
+                                            />
+                                        </div>
+                                    )}
+                                </>
+                            )}
 
-                    {isReadOnly && activeEncounterId && (
-                        <AddendaSection
-                            isReadOnly={isReadOnly}
-                            activeEncounterId={activeEncounterId}
-                            addenda={addenda}
-                            isAddingAddendum={isAddingAddendum}
-                            setIsAddingAddendum={setIsAddingAddendum}
-                            newAddendumContent={newAddendumContent}
-                            setNewAddendumContent={setNewAddendumContent}
-                            isSavingAddendum={isSavingAddendum}
-                            setIsSavingAddendum={setIsSavingAddendum}
-                            setAddenda={setAddenda}
-                        />
-                    )}
-
-                    <DocumentosSection
-                        encounterId={activeEncounterId}
-                        isReadOnly={isReadOnly}
-                    />
+                        </fieldset>
                     </PageContainer>
                 </div>
             </form>
 
-                {/* ── Sticky Clinical Actions Footer ───────────────────────────────── */}
-                <div 
-                    className="fixed bottom-0 left-0 right-0 z-[60] border-t border-n-5/30 bg-n-1/95 backdrop-blur-sm px-6 py-4"
-                    style={{ marginBottom: '0' }}
-                >
-                    <div className="flex items-center justify-between gap-4 w-full max-w-7xl mx-auto">
+            <div className="fixed bottom-0 left-0 right-0 z-[60] border-t border-n-5/30 bg-n-1/95 backdrop-blur-sm px-6 py-4">
+                <div className="flex items-center justify-between gap-4 w-full max-w-7xl mx-auto">
 
-                        {/* Left: Reset action */}
+                    {!isReadOnly && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+   size="sm"
+                            onClick={handleReset}
+                            disabled={isSaving || !selectedPatient}
+                            className="gap-2 text-n-8 hover:text-n-11 h-9 px-4"
+                        >
+                            <RotateCcw className="w-4 h-4" />
+                            Reiniciar Nota
+                        </Button>
+                    )}
+
+                    <div className="flex items-center gap-3">
                         {!isReadOnly && (
                             <Button
                                 type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleReset}
+                                variant="outline"
+                                size="md"
+                                onClick={() => form.handleSubmit(onSave as SubmitHandler<EncounterFormValues>)()}
                                 disabled={isSaving || !selectedPatient}
-                                className="gap-2 text-n-8 hover:text-n-11 h-9 px-4"
+                                className="gap-2 h-10 px-5 border-n-5/30 text-n-11 hover:bg-n-2 shadow-sm"
                             >
-                                <RotateCcw className="w-4 h-4" />
-                                Reiniciar Nota
+                                {isSaving ? (
+                                    <RefreshCw className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Save className="w-4 h-4" />
+                                )}
+                                Guardar Borrador
                             </Button>
                         )}
 
-                        {/* Right: Primary actions */}
-                        <div className="flex items-center gap-3">
-                            {!isReadOnly && (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="md"
-                                    onClick={() => form.handleSubmit(onSave as SubmitHandler<EncounterFormValues>)()}
-                                    disabled={isSaving || !selectedPatient}
-                                    className="gap-2 h-10 px-5 border-n-5/30 text-n-11 hover:bg-n-2 shadow-sm"
-                                >
-                                    {isSaving ? (
-                                        <RefreshCw className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <Save className="w-4 h-4" />
-                                    )}
-                                    Guardar Borrador
-                                </Button>
-                            )}
+                        {!isReadOnly && activeEncounterId && (
+                            <Button
+                                type="button"
+                                variant="default"
+                                size="md"
+                                className="gap-2 h-10 px-6 shadow-md"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (confirm('¿Firmar y cerrar este acto médico? Una vez finalizado, la nota clínica será permanente y no podrá editarse directamente.')) {
+                                        handleFinalize();
+                                    }
+                                }}
+                                disabled={isSaving}
+                            >
+                                <CheckCircle2 className="w-4 h-4" />
+                                Firmar Acto Médico
+                            </Button>
+                        )}
 
-                            {!isReadOnly && activeEncounterId && (
-                                <Button
-                                    type="button"
-                                    variant="default"
-                                    size="md"
-                                    className="gap-2 h-10 px-6 shadow-md"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        if (confirm('¿Firmar y cerrar este acto médico? Una vez finalizado, la nota clínica será permanente y no podrá editarse directamente.')) {
-                                            handleFinalize();
-                                        }
-                                    }}
-                                    disabled={isSaving}
-                                >
-                                    <CheckCircle2 className="w-4 h-4" />
-                                    Firmar Acto Médico
-                                </Button>
-                            )}
-
-                            {isReadOnly && (
-                                <span className="text-sm text-n-8 font-medium flex items-center gap-2">
-                                    <FileText className="w-4 h-4" />
-                                    Nota clínica sellada
-                                </span>
-                            )}
-                        </div>
+                        {isReadOnly && (
+                            <span className="text-sm text-n-8 font-medium flex items-center gap-2">
+                                <FileText className="w-4 h-4" />
+                                Nota clínica sellada
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>
+        </div>
     );
 }
-
