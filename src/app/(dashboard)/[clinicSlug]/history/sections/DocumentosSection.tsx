@@ -8,8 +8,6 @@ import {
     Upload,
     Download,
     Trash2,
-    MoreHorizontal,
-    FolderOpen,
     FileIcon,
     ChevronDown,
     ChevronUp,
@@ -17,6 +15,7 @@ import {
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { FileSearch } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PatientFile {
@@ -70,10 +69,7 @@ function DocumentSectionCard({
                     <span className="text-xs font-semibold text-n-11">{section.title}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Badge
-                        variant="secondary"
-                        className="h-5 px-1.5 min-w-5 justify-center rounded-md text-[10px] font-bold bg-n-3 text-n-8"
-                    >
+                    <Badge variant="pill-neutral">
                         {section.files.length}
                     </Badge>
                     {!isReadOnly && (
@@ -97,7 +93,7 @@ function DocumentSectionCard({
 
             <div className="p-2">
                 {section.files.length === 0 ? (
-                    <div className="py-4 text-center text-[11px] text-n-8 italic">
+                    <div className="py-4 text-center text-[11px] text-n-8">
                         Sin archivos
                     </div>
                 ) : (
@@ -186,78 +182,82 @@ export default function DocumentosSection({ encounterId, isReadOnly }: Documento
     const totalFiles = sections.reduce((acc, s) => acc + s.files.length, 0);
 
     return (
-        <div className="w-full max-w-5xl mx-auto px-6 py-6">
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                    <FolderOpen className="w-4 h-4 text-b-8" />
-                    <span className="text-[10px] uppercase tracking-wider font-semibold text-n-8">
-                        Documentos Adjuntos
-                    </span>
-                    {totalFiles > 0 && (
-                        <Badge
-                            variant="secondary"
-                            className="h-5 px-1.5 min-w-5 justify-center rounded-md text-[10px] font-bold bg-b-2 text-b-8"
-                        >
-                            {totalFiles}
-                        </Badge>
-                    )}
-                    <div className="flex-1 h-px bg-n-5/20" />
-                </div>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1 h-7 px-2 text-n-8 hover:text-n-11"
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                >
-                    {isCollapsed ? (
-                        <ChevronDown className="w-4 h-4" />
-                    ) : (
-                        <ChevronUp className="w-4 h-4" />
-                    )}
-                </Button>
-            </div>
-
-            {!isCollapsed && (
-                <>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                        {sections.map((section) => (
-                            <DocumentSectionCard
-                                key={section.id}
-                                section={section}
-                                onUpload={handleUpload}
-                                isReadOnly={isReadOnly}
-                            />
-                        ))}
-                    </div>
-
-                    {!isReadOnly && (
-                        <div
-                            ref={dropZoneRef}
-                            className={cn(
-                                'border border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center transition-all duration-200',
-                                isDragging
-                                    ? 'border-b-8 bg-b-2/30 text-b-8'
-                                    : 'border-n-5/40 text-n-8 hover:border-n-5 hover:bg-n-2/30'
-                            )}
-                            onDragOver={(e) => {
-                                e.preventDefault();
-                                setIsDragging(true);
-                            }}
-                            onDragLeave={() => setIsDragging(false)}
-                            onDrop={handleGlobalDrop}
-                        >
-                            <Upload
-                                className={cn('w-6 h-6 mb-2 opacity-40', isDragging && 'opacity-100')}
-                            />
-                            <p className="text-sm font-semibold text-n-11">
-                                {isDragging ? 'Soltar aquí' : 'Arrastra archivos o haz clic para subir'}
-                            </p>
-                            <p className="text-[11px] text-n-8 mt-0.5">
-                                PDF, JPG, PNG, DICOM hasta 50MB
-                            </p>
+        <Card className="bg-n-1">
+            <div className="px-6 pt-5 pb-4 border-b border-n-5/30">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-b-8/10 rounded-lg">
+                            <FileSearch className="w-5 h-5 text-b-8" />
                         </div>
-                    )}
-                </>
+                        <div>
+                            <h2 className="text-sm font-bold text-n-11">Documentos Adjuntos</h2>
+                            <p className="text-xs text-n-8 leading-relaxed mt-0.5">Archivos clínicos, imágenes diagnósticas y resultados.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                        {totalFiles > 0 && (
+                            <Badge variant="pill-info">
+                                {totalFiles}
+                            </Badge>
+                        )}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-1 h-7 px-2 text-n-8 hover:text-n-11"
+                            onClick={() => setIsCollapsed(!isCollapsed)}
+                        >
+                            {isCollapsed ? (
+                                <ChevronDown className="w-4 h-4" />
+                            ) : (
+                                <ChevronUp className="w-4 h-4" />
+                            )}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+            {!isCollapsed && (
+                <CardContent className="p-0">
+                    <div className="p-6 space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {sections.map((section) => (
+                                <DocumentSectionCard
+                                    key={section.id}
+                                    section={section}
+                                    onUpload={handleUpload}
+                                    isReadOnly={isReadOnly}
+                                />
+                            ))}
+                        </div>
+
+                        {!isReadOnly && (
+                            <div
+                                ref={dropZoneRef}
+                                className={cn(
+                                    'border border-dashed rounded-lg p-5 flex flex-col items-center justify-center text-center transition-all duration-200',
+                                    isDragging
+                                        ? 'border-b-8 bg-b-2/30 text-b-8'
+                                        : 'border-n-5/40 text-n-8 hover:border-n-5 hover:bg-n-2/30'
+                                )}
+                                onDragOver={(e) => {
+                                    e.preventDefault();
+                                    setIsDragging(true);
+                                }}
+                                onDragLeave={() => setIsDragging(false)}
+                                onDrop={handleGlobalDrop}
+                            >
+                                <Upload
+                                    className={cn('w-6 h-6 mb-2 opacity-40', isDragging && 'opacity-100')}
+                                />
+                                <p className="text-sm font-semibold text-n-11">
+                                    {isDragging ? 'Soltar aquí' : 'Arrastra archivos o haz clic para subir'}
+                                </p>
+                                <p className="text-[11px] text-n-8 mt-0.5">
+                                    PDF, JPG, PNG, DICOM hasta 50MB
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
             )}
 
             {isDragging && (
@@ -268,6 +268,6 @@ export default function DocumentosSection({ encounterId, isReadOnly }: Documento
                     </div>
                 </div>
             )}
-        </div>
+        </Card>
     );
 }
