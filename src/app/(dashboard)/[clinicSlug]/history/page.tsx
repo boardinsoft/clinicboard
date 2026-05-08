@@ -524,7 +524,7 @@ export default function HistoryPage() {
                             )}
                         </div>
                     }
-                    className="pt-5 pb-4 px-6"
+className="pt-5 pb-4 px-6"
                 >
                     <Tabs value={activeHistoryTab} onValueChange={(v) => setActiveHistoryTab(v as HistoryTab)} className="w-full mt-4">
                         <TabsList className="w-full justify-start gap-0 bg-transparent p-0 h-auto border-0">

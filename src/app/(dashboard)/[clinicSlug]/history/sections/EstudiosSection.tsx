@@ -32,7 +32,7 @@ export default function EstudiosSection({ form, selectedPatient, encounterId, is
                     </div>
                 </div>
                 <CardContent className="p-0">
-                    <div className="p-8 space-y-8">
+                    <div className="p-6 space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <Field>
                                 <div className="flex items-center gap-2 mb-2.5">

@@ -75,7 +75,7 @@ export default function AlergologiaSection({ clinicalData, selectedPatient, form
                         </div>
                     </div>
                 </div>
-                <CardContent className="p-5">
+                <CardContent className="p-6 space-y-5">
                     <div className="flex flex-wrap gap-2">
                         {clinicalData.conditions.length > 0
                             ? clinicalData.conditions.map((c) => (
