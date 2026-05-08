@@ -66,7 +66,7 @@ export default function EvaluacionSection({
                 </div>
             </div>
             <CardContent className="p-0">
-                <div className="p-8 space-y-12">
+                <div className="p-6 space-y-8">
                     <Field>
                         <FieldLabel className="text-xs font-medium text-n-8 mb-2.5">Nota de evolución / Impresión diagnóstica</FieldLabel>
                         <Textarea
@@ -79,7 +79,7 @@ export default function EvaluacionSection({
                     </Field>
                 </div>
 
-                <div className="space-y-6 px-8 pb-6">
+                <div className="space-y-6 px-6 pb-6">
                     <div className="flex justify-between items-center bg-n-2/50 p-4 rounded-lg border border-n-5/30">
                         <div className="flex items-center gap-2">
                             <Stethoscope className="w-4 h-4 text-b-8" />
@@ -163,7 +163,7 @@ export default function EvaluacionSection({
                     </div>
                 </div>
 
-                <div className="px-8 pb-8 space-y-6">
+                <div className="px-6 pb-6 space-y-6">
                     <Field className="pt-4">
                         <div className="flex items-center justify-between mb-2.5">
                             <FieldLabel className="text-xs font-medium text-n-8 m-0">Plan terapéutico e indicaciones</FieldLabel>

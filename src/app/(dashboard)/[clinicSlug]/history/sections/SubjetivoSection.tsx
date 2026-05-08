@@ -79,7 +79,7 @@ export default function SubjetivoSection({
                 </div>
             </div>
             <CardContent className="p-0">
-                <div className="p-8 space-y-10">
+                <div className="p-6 space-y-8">
                     <Field>
                         <FieldLabel className="text-xs font-medium text-n-8 mb-2.5">
                             Tipo de Consulta <span className="text-b-8">*</span>
@@ -154,7 +154,7 @@ export default function SubjetivoSection({
                     </Field>
                 </div>
 
-                <div className="px-8 pb-8">
+                <div className="px-6 pb-6">
                     <Dialog open={isWizardOpen} onOpenChange={(open) => { setIsWizardOpen(open); if (open) setWizardStep(0); }}>
                         <DialogTrigger asChild>
                             <Button type="button" variant="outline" className="w-full h-14 border-dashed border-n-5/30 bg-n-2 hover:bg-n-3 text-n-11 transition-all flex items-center justify-center gap-3 rounded-lg">
@@ -184,7 +184,7 @@ export default function SubjetivoSection({
 
                                 return (
                                     <>
-                                        <DialogHeader className="p-6 pb-4 bg-n-2 border-b border-n-5/30">
+                                        <DialogHeader className="p-5 pb-3 bg-n-2 border-b border-n-5/30">
                                             <DialogTitle className="text-xl font-bold flex items-center gap-2 text-n-11">
                                                 <Activity className="w-5 h-5 text-b-8" />
                                                 {profile.title}
@@ -219,7 +219,7 @@ export default function SubjetivoSection({
                                             </Stepper>
                                         </div>
 
-                                        <div className="flex-1 overflow-y-auto p-6 bg-n-2 min-h-[360px]">
+                                        <div className="flex-1 overflow-y-auto p-5 bg-n-2 min-h-[360px]">
                                             <WizardStepContent
                                                 stepKey={currentStepKey}
                                                 form={form}
@@ -230,7 +230,7 @@ export default function SubjetivoSection({
                                             />
                                         </div>
 
-                                        <div className="p-6 bg-n-1 border-t border-n-5/30 flex flex-row items-center justify-between">
+                                        <div className="p-5 bg-n-1 border-t border-n-5/30 flex flex-row items-center justify-between">
                                             <Button
                                                 type="button"
                                                 variant="ghost"
