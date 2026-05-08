@@ -60,14 +60,14 @@ export default function ObjetivoSection({ form, selectedPatient }: ObjetivoSecti
                         <Activity className="w-5 h-5 text-b-8" />
                     </div>
                     <div>
-                        <h2 className="text-base font-bold text-n-11 tracking-tight">Signos Vitales y Exploración</h2>
+                        <h2 className="text-sm font-bold text-n-11">Signos Vitales y Exploración</h2>
                         <p className="text-xs text-n-8 leading-relaxed mt-0.5">Mediciones fisiológicas e informe del examen físico.</p>
                     </div>
                 </div>
             </div>
             <CardContent className="p-0">
-                <div className="p-8 space-y-10">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6 bg-n-2/50 p-8 rounded-lg border border-n-5/30">
+                <div className="p-6 space-y-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-5 bg-n-2/50 p-6 rounded-lg border border-n-5/30">
                         <VitalInput name="vitals.bpSystolic" label="PA Sistólica (mmHg)" min={60} max={250} register={form.register} disabled={!selectedPatient} />
                         <VitalInput name="vitals.bpDiastolic" label="PA Diastólica (mmHg)" min={40} max={160} register={form.register} disabled={!selectedPatient} />
                         <VitalInput name="vitals.heartRate" label="FC (lpm)" min={30} max={250} register={form.register} disabled={!selectedPatient} />
@@ -79,19 +79,19 @@ export default function ObjetivoSection({ form, selectedPatient }: ObjetivoSecti
                     </div>
                 </div>
 
-                <div className="space-y-6 px-8 pb-8">
+                <div className="space-y-6 px-6 pb-6">
                     <div>
                         <h4 className="text-sm font-semibold text-n-11 mb-1">Examen Físico</h4>
                         <p className="text-xs text-n-8">Registre únicamente los hallazgos positivos (anormales) activando el sistema correspondiente.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                         {PHYSICAL_SYSTEMS.map(sys => (
                             <div key={sys.id} className="p-4 rounded-lg border border-n-5/30 bg-n-2 transition-all">
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-sm font-medium text-n-11/90">{sys.label}</span>
                                     <div className="flex items-center gap-2">
-                                        <span className={`text-[10px] uppercase font-bold tracking-wider ${form.watch(`physicalExam.${sys.id}.normal` as const) ? 'text-n-8' : 'text-amber-500'}`}>
+                                        <span className={`text-[10px] font-semibold ${form.watch(`physicalExam.${sys.id}.normal` as const) ? 'text-n-8' : 'text-amber-500'}`}>
                                             {form.watch(`physicalExam.${sys.id}.normal` as const) ? 'Normal' : 'Anormal'}
                                         </span>
                                         <Controller
