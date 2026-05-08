@@ -601,8 +601,11 @@ export default function HistoryPage() {
             </form>
 
                 {/* ── Sticky Clinical Actions Footer ───────────────────────────────── */}
-                <div className="shrink-0 border-t border-n-5/30 bg-n-1/95 backdrop-blur-sm px-6 py-4">
-                    <div className="flex items-center justify-between gap-4 max-w-7xl mx-auto">
+                <div 
+                    className="fixed bottom-0 left-0 right-0 z-[60] border-t border-n-5/30 bg-n-1/95 backdrop-blur-sm px-6 py-4"
+                    style={{ marginBottom: '0' }}
+                >
+                    <div className="flex items-center justify-between gap-4 w-full max-w-7xl mx-auto">
 
                         {/* Left: Reset action */}
                         {!isReadOnly && (
