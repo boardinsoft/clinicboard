@@ -98,7 +98,7 @@ export default function AddendaSection({
                     {isAddingAddendum && (
                         <Card className="border-amber-200/50 bg-amber-50/50 overflow-hidden shadow-none animate-in zoom-in-95 duration-200">
                             <div className="px-4 py-3 border-b border-amber-200/50 bg-amber-50/80">
-                                <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">Nueva Nota Aclaratoria</span>
+                                <span className="text-xs font-bold text-amber-900">Nueva Nota Aclaratoria</span>
                             </div>
                             <CardContent className="p-4 space-y-4">
                                 <Textarea

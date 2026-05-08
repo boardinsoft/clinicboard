@@ -21,7 +21,7 @@ export default function AntecedentesSection({ form, selectedPatient }: Anteceden
                         <ClipboardList className="w-5 h-5 text-b-8" />
                     </div>
                     <div>
-                        <h2 className="text-base font-bold text-n-11 tracking-tight">Antecedentes</h2>
+                        <h2 className="text-sm font-bold text-n-11">Antecedentes</h2>
                         <p className="text-xs text-n-8 leading-relaxed mt-0.5">AP: personales, quirúrgicos, familiares, hospitalarios, hábitos y medicación actual.</p>
                     </div>
                 </div>

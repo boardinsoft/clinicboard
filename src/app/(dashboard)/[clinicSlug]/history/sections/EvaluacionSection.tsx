@@ -60,7 +60,7 @@ export default function EvaluacionSection({
                         <Stethoscope className="w-5 h-5 text-b-8" />
                     </div>
                     <div>
-                        <h2 className="text-base font-bold text-n-11 tracking-tight">Evaluación, Diagnóstico y Plan</h2>
+                        <h2 className="text-sm font-bold text-n-11">Evaluación, Diagnóstico y Plan</h2>
                         <p className="text-xs text-n-8 leading-relaxed mt-0.5">Conclusión clínica, codificación CIE-10 e indicaciones terapéuticas.</p>
                     </div>
                 </div>
@@ -176,7 +176,7 @@ export default function EvaluacionSection({
                                     toast.success('Kit aplicado', { description: `Se ha insertado el kit: ${kit.label}` });
                                 }
                             }} disabled={!selectedPatient}>
-                                <SelectTrigger className="w-[200px] h-8 text-xs bg-b-8/5 border-n-5/30 text-b-8">
+                                <SelectTrigger className="w-[240px] h-8 text-xs bg-b-8/5 border-n-5/30 text-b-8">
                                     <SelectValue placeholder="Aplicar Kit de Órdenes..." />
                                 </SelectTrigger>
                                 <SelectContent>
