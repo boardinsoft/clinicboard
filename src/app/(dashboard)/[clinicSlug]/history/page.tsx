@@ -527,9 +527,9 @@ export default function HistoryPage() {
                     className="pb-0 pt-5 px-6"
                 />
 
-                <div className="px-6 py-4 border-b border-n-5/30 bg-background">
+                <div className="px-6 py-5 border-b border-n-5/30 bg-background">
                     <Tabs value={activeHistoryTab} onValueChange={(v) => setActiveHistoryTab(v as HistoryTab)} className="w-full">
-                        <TabsList className="w-full justify-start gap-1 bg-transparent p-0 h-auto border-0 rounded-none">
+                        <TabsList className="w-full justify-start gap-2 bg-transparent p-0 h-auto border-0 rounded-none">
                             {HISTORY_TABS.map((tab) => (
                                 <TabsTrigger
                                     key={tab.value}
