@@ -32,7 +32,10 @@ import {
     Save,
     MessageSquare,
     RefreshCw,
-    CheckCircle2
+    CheckCircle2,
+    RotateCcw,
+    FileText,
+    Pencil
 } from 'lucide-react';
 
 const encounterSchema = z.object({
@@ -493,56 +496,25 @@ export default function HistoryPage() {
                         ...(selectedPatient ? [{ label: patientName }] : [])
                     ]}
                     actions={
-                        <div className="flex items-center gap-2.5">
-                            {isReadOnly && (
-                                <Badge variant="pill-warning">
-                                    Finalizado
+                        <div className="flex items-center gap-2">
+                            {isReadOnly ? (
+                                <Badge variant="pill-warning" className="gap-1.5">
+                                    <FileText className="w-3 h-3" />
+                                    Nota Cerrada
                                 </Badge>
+                            ) : (
+                                <>
+                                    {activeEncounterId && (
+                                        <Badge variant="pill-info" className="gap-1.5">
+                                            <Pencil className="w-3 h-3" />
+                                            Borrador
+                                        </Badge>
+                                    )}
+                                </>
                             )}
-                            
-                            {activeEncounterId && !isReadOnly && (
-                                <Button 
-                                    variant="destructive"
-                                    size="sm"
-                                    className="h-8 px-3 font-bold gap-2 shadow-sm"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        if (confirm('¿Desea finalizar este encuentro? Una vez finalizado, la nota clínica será permanente y no podrá editarse directamente.')) {
-                                            handleFinalize();
-                                        }
-                                    }}
-                                    disabled={isSaving}
-                                >
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> Finalizar Acto
-                                </Button>
-                            )}
-                            
-                            <Button 
-                                type="submit"
-                                variant={isReadOnly ? "outline" : "default"}
-                                size="sm"
-                                className={cn(
-                                    "h-8 px-4 font-bold gap-2",
-                                    !isReadOnly && "shadow-sm"
-                                )}
-                                disabled={isSaving || isReadOnly || !selectedPatient}
-                            >
-                                {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                                {isReadOnly ? "Lectura Permanente" : activeEncounterId ? "Actualizar" : "Guardar"}
-                            </Button>
-
-                            <Button 
-                                variant="ghost" 
-                                size="sm"
-                                className="h-8 px-3 font-semibold text-muted-foreground"
-                                onClick={handleReset}
-                                disabled={isSaving || isReadOnly}
-                            >
-                                Limpiar
-                            </Button>
                         </div>
                     }
-                    className="py-6"
+                    className="pb-5 pt-5"
                 />
 
                 <div className="flex-1 overflow-y-auto w-full">
@@ -584,7 +556,7 @@ export default function HistoryPage() {
                         <div className="space-y-8">
 
                             {/* AI Scribe Promo */}
-                            <div className="bg-b-8/5 border border-b-8/20 rounded-xl p-6 flex items-center justify-between">
+                            <div className="bg-b-8/5 border border-b-8/20 rounded-lg p-6 flex items-center justify-between">
                                 <div className="flex items-center gap-4 text-b-8">
                                     <div className="bg-b-8/20 p-3 rounded-full">
                                         <MessageSquare className="w-6 h-6" />
@@ -627,7 +599,75 @@ export default function HistoryPage() {
                     </PageContainer>
                 </div>
             </form>
-        </div>
+
+                {/* ── Sticky Clinical Actions Footer ───────────────────────────────── */}
+                <div className="shrink-0 border-t border-n-5/30 bg-n-1/95 backdrop-blur-sm px-6 py-4">
+                    <div className="flex items-center justify-between gap-4 max-w-7xl mx-auto">
+
+                        {/* Left: Reset action */}
+                        {!isReadOnly && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleReset}
+                                disabled={isSaving || !selectedPatient}
+                                className="gap-2 text-n-8 hover:text-n-11 h-9 px-4"
+                            >
+                                <RotateCcw className="w-4 h-4" />
+                                Reiniciar Nota
+                            </Button>
+                        )}
+
+                        {/* Right: Primary actions */}
+                        <div className="flex items-center gap-3">
+                            {!isReadOnly && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="md"
+                                    onClick={() => form.handleSubmit(onSave as SubmitHandler<EncounterFormValues>)()}
+                                    disabled={isSaving || !selectedPatient}
+                                    className="gap-2 h-10 px-5 border-n-5/30 text-n-11 hover:bg-n-2 shadow-sm"
+                                >
+                                    {isSaving ? (
+                                        <RefreshCw className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Save className="w-4 h-4" />
+                                    )}
+                                    Guardar Borrador
+                                </Button>
+                            )}
+
+                            {!isReadOnly && activeEncounterId && (
+                                <Button
+                                    type="button"
+                                    variant="default"
+                                    size="md"
+                                    className="gap-2 h-10 px-6 shadow-md"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (confirm('¿Firmar y cerrar este acto médico? Una vez finalizado, la nota clínica será permanente y no podrá editarse directamente.')) {
+                                            handleFinalize();
+                                        }
+                                    }}
+                                    disabled={isSaving}
+                                >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    Firmar Acto Médico
+                                </Button>
+                            )}
+
+                            {isReadOnly && (
+                                <span className="text-sm text-n-8 font-medium flex items-center gap-2">
+                                    <FileText className="w-4 h-4" />
+                                    Nota clínica sellada
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
     );
 }
 
