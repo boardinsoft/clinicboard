@@ -13,7 +13,6 @@ import SubjetivoSection from './sections/SubjetivoSection';
 import ObjetivoSection from './sections/ObjetivoSection';
 import EvaluacionSection from './sections/EvaluacionSection';
 import AddendaSection from './sections/AddendaSection';
-import DocumentosSection from './sections/DocumentosSection';
 import AntecedentesSection from './sections/AntecedentesSection';
 import AlergologiaSection from './sections/AlergologiaSection';
 import EstudiosSection from './sections/EstudiosSection';
@@ -181,7 +180,7 @@ const defaultValues: EncounterFormValues = {
     encounterSubcategory: '',
 };
 
-type HistoryTab = 'consulta' | 'antecedentes' | 'alergologia' | 'exploracion' | 'juicio' | 'estudios' | 'cierre';
+type HistoryTab = 'consulta' | 'antecedentes' | 'alergologia' | 'exploracion' | 'juicio' | 'estudios';
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 export default function HistoryPage() {
@@ -493,7 +492,6 @@ export default function HistoryPage() {
         { value: 'exploracion', label: 'Exploración' },
         { value: 'juicio', label: 'Juicio Clínico' },
         { value: 'estudios', label: 'Estudios' },
-        { value: 'cierre', label: 'Cierre' },
     ];
 
     return (
@@ -616,32 +614,9 @@ export default function HistoryPage() {
                                 <EstudiosSection
                                     form={form}
                                     selectedPatient={selectedPatient}
+                                    encounterId={activeEncounterId}
+                                    isReadOnly={isReadOnly}
                                 />
-                            )}
-
-                            {activeHistoryTab === 'cierre' && (
-                                <>
-                                    <DocumentosSection
-                                        encounterId={activeEncounterId}
-                                        isReadOnly={isReadOnly}
-                                    />
-                                    {isReadOnly && activeEncounterId && (
-                                        <div className="mt-8">
-                                            <AddendaSection
-                                                isReadOnly={isReadOnly}
-                                                activeEncounterId={activeEncounterId}
-                                                addenda={addenda}
-                                                isAddingAddendum={isAddingAddendum}
-                                                setIsAddingAddendum={setIsAddingAddendum}
-                                                newAddendumContent={newAddendumContent}
-                                                setNewAddendumContent={setNewAddendumContent}
-                                                isSavingAddendum={isSavingAddendum}
-                                                setIsSavingAddendum={setIsSavingAddendum}
-                                                setAddenda={setAddenda}
-                                            />
-                                        </div>
-                                    )}
-                                </>
                             )}
 
                         </fieldset>
