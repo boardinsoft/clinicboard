@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import Image from "next/image"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -9,13 +10,9 @@ import { signInWithEmail } from "@/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { AlertCircle, Clock, Eye, EyeOff, Loader2, LockIcon, MailIcon } from "lucide-react"
+import { AlertCircle, Clock, Eye, EyeOff, Loader2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-} from "@/components/ui/input-group"
+import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 
 const loginSchema = z.object({
@@ -28,13 +25,12 @@ type LoginFormValues = z.infer<typeof loginSchema>
 const emailErrorId = "email-error"
 const passwordErrorId = "password-error"
 
-import Link from 'next/link';
-
 export default function LoginPage() {
   const [loading, setLoading] = React.useState(false)
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
   const [errorType, setErrorType] = React.useState<string | null>(null)
   const [showPassword, setShowPassword] = React.useState(false)
+  const [rememberMe, setRememberMe] = React.useState(false)
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -72,45 +68,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-svh font-sans">
-      {/* LEFT PANEL — visible solo en desktop */}
-      <div
-        className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center relative p-12 bg-gradient-to-br from-brand-7 to-brand-10"
-      >
-        {/* TODO: reemplazar con <Image fill className="object-cover"> + overlay bg-black/40 cuando llegue la foto */}
-        <Image
-          src="/brand/logo-full-dark.svg"
-          alt="ClinicBoard"
-          width={180}
-          height={48}
-          priority
-        />
-        <p className="absolute bottom-10 left-12 text-sm text-white/80">
-          El expediente que acompaña tu consulta.
-        </p>
-      </div>
-
-      {/* RIGHT PANEL */}
-      <div className="flex flex-1 lg:w-1/2 flex-col items-center justify-center bg-background p-8">
-        <div className="w-full max-w-sm space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {/* Logo mark + heading */}
-          <div className="flex flex-col items-center gap-2 mb-8">
+    <div className="flex min-h-svh items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md">
+        <div className="card-clinic p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex flex-col items-center gap-3 mb-8">
             <Image
               src="/brand/logo-mark.svg"
-              alt="ClinicBoard mark"
-              width={40}
-              height={40}
-              priority
+              alt="ClinicBoard"
+              width={48}
+              height={48}
+              className="text-b-8"
             />
-            <h1 className="text-2xl font-bold tracking-tight">
-              Bienvenido de vuelta
+            <h1 className="text-2xl font-bold tracking-tight text-n-11">
+              Iniciar sesión
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-n-8 text-center">
               Ingresa tus credenciales para acceder al sistema
             </p>
           </div>
 
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" noValidate>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
             {errorMsg && (
               <Alert
                 variant="destructive"
@@ -121,7 +98,7 @@ export default function LoginPage() {
                 ) : (
                   <AlertCircle className="h-4 w-4" />
                 )}
-                <AlertTitle className="text-xs font-bold tracking-wider">
+                <AlertTitle className="text-xs font-bold tracking-wider uppercase">
                   {errorType === "rate_limit" ? "Demasiados intentos" : "Acceso denegado"}
                 </AlertTitle>
                 <AlertDescription className="text-sm opacity-90">
@@ -130,25 +107,22 @@ export default function LoginPage() {
               </Alert>
             )}
 
-            <Field className="space-y-2">
+            <Field className="gap-2">
               <FieldLabel
                 htmlFor="email"
-                className="text-xs font-semibold tracking-wider text-neutral-8 uppercase"
+                className="text-xs font-semibold tracking-wider text-n-8"
               >
                 Correo electrónico
               </FieldLabel>
-              <InputGroup>
-                <Input
-                  {...form.register("email")}
-                  id="email"
-                  type="email"
-                  placeholder="tu@correo.com"
-                  autoComplete="email"
-                  data-slot="input-group-control"
-                  aria-describedby={form.formState.errors.email ? emailErrorId : undefined}
-                  className="flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0"
-                />
-              </InputGroup>
+              <Input
+                {...form.register("email")}
+                id="email"
+                type="email"
+                placeholder="tu@correo.com"
+                autoComplete="email"
+                aria-describedby={form.formState.errors.email ? emailErrorId : undefined}
+                className="h-11 rounded-md border-border bg-background"
+              />
               {form.formState.errors.email && (
                 <FieldError id={emailErrorId} className="text-[11px] font-medium text-destructive">
                   {form.formState.errors.email.message}
@@ -156,35 +130,32 @@ export default function LoginPage() {
               )}
             </Field>
 
-            <Field className="space-y-2">
+            <Field className="gap-2">
               <FieldLabel
                 htmlFor="password"
-                className="text-xs font-semibold tracking-wider text-neutral-8 uppercase"
+                className="text-xs font-semibold tracking-wider text-n-8"
               >
                 Contraseña
               </FieldLabel>
-              <InputGroup>
+              <div className="relative">
                 <Input
                   {...form.register("password")}
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  data-slot="input-group-control"
                   aria-describedby={form.formState.errors.password ? passwordErrorId : undefined}
-                  className="flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0"
+                  className="h-11 rounded-md border-border bg-background pr-10"
                 />
-                <InputGroupAddon align="inline-end">
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="px-3 text-neutral-8 hover:text-foreground transition-colors"
-                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                  >
-                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                </InputGroupAddon>
-              </InputGroup>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 -translate-x-0.5 text-n-8 hover:text-b-8 transition-colors"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
               {form.formState.errors.password && (
                 <FieldError id={passwordErrorId} className="text-[11px] font-medium text-destructive">
                   {form.formState.errors.password.message}
@@ -192,9 +163,31 @@ export default function LoginPage() {
               )}
             </Field>
 
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="remember"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked === true)}
+                />
+                <label
+                  htmlFor="remember"
+                  className="text-sm text-n-8 cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Recuérdame
+                </label>
+              </div>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-b-8 hover:text-b-9 transition-colors"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+
             <Button
               type="submit"
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/20 transition-all duration-300 active:scale-[0.98] h-11"
+              className="w-full bg-b-8 hover:bg-b-9 text-white font-semibold h-11 rounded-md transition-all duration-200 active:scale-[0.98]"
               disabled={loading || !form.formState.isValid}
             >
               {loading ? (
@@ -203,25 +196,27 @@ export default function LoginPage() {
                   Cargando...
                 </>
               ) : (
-                "Ingresar al Panel"
+                "Iniciar sesión"
               )}
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground">
-            ¿No tienes cuenta?{' '}
-            <Link
-              href="/register"
-              className="text-b-8 underline-offset-4 hover:underline font-medium"
-            >
-              Crea tu clínica
-            </Link>
-          </p>
-
-          <p className="text-center text-xs text-muted-foreground/40 pt-4">
-            © 2026 ClinicBoard
-          </p>
+          <div className="mt-6 pt-6 border-t border-border">
+            <p className="text-center text-sm text-n-8">
+              ¿No tienes cuenta?{' '}
+              <Link
+                href="/register"
+                className="text-b-8 font-medium hover:underline"
+              >
+                Crea tu clínica
+              </Link>
+            </p>
+          </div>
         </div>
+
+        <p className="text-center text-xs text-n-8/50 mt-6">
+          © 2026 ClinicBoard
+        </p>
       </div>
     </div>
   )
