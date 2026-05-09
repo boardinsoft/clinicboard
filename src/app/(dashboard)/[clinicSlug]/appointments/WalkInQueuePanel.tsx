@@ -88,7 +88,7 @@ export default function WalkInQueuePanel({
                         <div 
                             key={appointment.id}
                             className={cn(
-                                "group bg-card rounded-xl border border-border/60 p-3 shadow-sm hover:shadow-md dark:hover:shadow-primary/5 transition-all cursor-pointer relative overflow-hidden",
+                                "group bg-card rounded-xl border border-border/60 p-3 hover:shadow-md dark:hover:shadow-primary/5 transition-all cursor-pointer relative overflow-hidden",
                                 index === 0 && "border-primary/30 ring-1 ring-primary/5 shadow-primary/5"
                             )}
                             onClick={() => onSelect(appointment.id)}

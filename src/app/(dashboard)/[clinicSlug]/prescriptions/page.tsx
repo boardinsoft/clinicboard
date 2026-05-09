@@ -86,7 +86,7 @@ export default function PrescriptionsPage() {
                             <Printer className="w-3.5 h-3.5" />
                             Imprimir
                         </Button>
-                        <Button size="sm" className="h-8 px-3 font-bold text-[11px] gap-2 shadow-sm">
+                        <Button size="sm" className="h-8 px-3 font-bold text-[11px] gap-2">
                             <FileText className="w-3.5 h-3.5" />
                             Generar PDF
                         </Button>

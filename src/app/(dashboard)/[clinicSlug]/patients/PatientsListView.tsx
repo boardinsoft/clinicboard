@@ -175,7 +175,7 @@ export default function PatientsListView() {
       <div className="shrink-0 border-b border-border/40 bg-background px-6 py-4">
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
-            <div className="relative flex items-center gap-2 h-8 px-3 bg-n-2 dark:bg-n-3 border border-n-5 dark:border-n-5 rounded-[5px] text-[13px] text-n-9 dark:text-n-10 hover:bg-n-3 dark:hover:bg-n-4 hover:border-n-6 transition-all shadow-sm">
+            <div className="relative flex items-center gap-2 h-8 px-3 bg-n-2 dark:bg-n-3 border border-n-5 dark:border-n-5 rounded-[5px] text-[13px] text-n-9 dark:text-n-10 hover:bg-n-3 dark:hover:bg-n-4 hover:border-n-6 transition-all">
               <Search className="w-4 h-4 shrink-0 text-n-8" strokeWidth={1.8} />
               <input
                 type="text"
@@ -258,7 +258,7 @@ export default function PatientsListView() {
             </div>
           ) : (
             <table className="table-clinic">
-              <thead className="sticky top-0 z-30 shadow-sm">
+              <thead className="sticky top-0 z-30">
                 <tr>
                   <th className="w-12 text-center">
                     <label className="flex items-center justify-center cursor-pointer h-full">

@@ -532,7 +532,7 @@ className="pt-5 pb-4 px-6"
                                 <TabsTrigger
                                     key={tab.value}
                                     value={tab.value}
-                                    className="px-4 py-2 text-xs font-medium rounded-md border border-transparent data-[state=active]:border-n-5/30 data-[state=active]:bg-n-1 data-[state=active]:text-n-11 data-[state=active]:shadow-sm text-n-8 hover:text-n-11 hover:bg-n-2/50 transition-all duration-100"
+                                    className="px-4 py-2 text-xs font-medium rounded-md border border-transparent data-[state=active]:border-n-5/30 data-[state=active]:bg-n-1 data-[state=active]:text-n-11 text-n-8 hover:text-n-11 hover:bg-n-2/50 transition-all duration-100"
                                 >
                                     {tab.label}
                                 </TabsTrigger>

@@ -410,7 +410,7 @@ const displayName =
         <div className="flex items-center gap-4 shrink-0">
           {/* Brand Mark (h-8 for alignment, gap-2) */}
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-[6px] bg-b-8 shadow-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-[6px] bg-b-8">
               <Stethoscope className="w-4 h-4 text-white" strokeWidth={2.2} />
             </div>
             <span className="text-[13px] font-bold tracking-tight text-n-12 select-none">
@@ -578,7 +578,7 @@ const displayName =
           <button
             onClick={() => setIsSearchModalOpen(true)}
             aria-label="Abrir búsqueda global (⌘K)"
-            className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 dark:bg-n-3 border border-n-5 dark:border-n-5 rounded-[5px] text-[13px] text-n-9 dark:text-n-10 hover:bg-n-3 dark:hover:bg-n-4 hover:border-n-6 hover:text-n-11 dark:hover:text-n-11 outline-none transition-all shadow-sm"
+            className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 dark:bg-n-3 border border-n-5 dark:border-n-5 rounded-[5px] text-[13px] text-n-9 dark:text-n-10 hover:bg-n-3 dark:hover:bg-n-4 hover:border-n-6 hover:text-n-11 dark:hover:text-n-11 outline-none transition-all"
           >
             <SearchIcon size={14} strokeWidth={1.8} />
             <span className="flex-1 text-left font-medium">Buscar…</span>
@@ -599,7 +599,7 @@ const displayName =
                 className={cn(
                   'h-8 w-8 transition-all duration-200 relative group/ia',
                   rightPanelOpen
-                    ? "bg-n-2 text-b-8 shadow-sm"
+                    ? "bg-n-2 text-b-8"
                     : "text-n-9 dark:text-n-10 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12"
                 )}
                 aria-label="Asistente IA"
@@ -638,7 +638,7 @@ const displayName =
             <DropdownMenuContent align="end" className="w-64 rounded-lg shadow-2xl border-n-5 p-0 bg-popover overflow-hidden mt-2 dark:shadow-2xl/80">
               {/* Profile Header */}
               <div className="flex gap-3 p-3.5 border-b border-n-4 items-start">
-                <div className="w-10 h-10 rounded-full bg-n-2 dark:bg-n-4 flex items-center justify-center shrink-0 shadow-sm border border-n-3 dark:border-n-5 dark:shadow-sm/50">
+                <div className="w-10 h-10 rounded-full bg-n-2 dark:bg-n-4 flex items-center justify-center shrink-0 border border-n-3 dark:border-n-5">
                   <span className="text-sm font-bold text-n-10 dark:text-n-11">{initials}</span>
                 </div>
                 <div className="flex flex-col min-w-0">
