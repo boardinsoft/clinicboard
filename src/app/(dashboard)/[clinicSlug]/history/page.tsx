@@ -8,7 +8,6 @@ import { getPatients, getPatientClinicalData, updatePatientAnamnesis } from '@/a
 import { saveEncounterDraft, finalizeEncounter, getEncounters } from '@/actions/encounters';
 import type { Patient, Condition, AllergyIntolerance, EncounterWithClinicalNote } from '@/types/database.types';
 import type { Json } from '@/types/database.types';
-import HistoryPatientPanel from './HistoryPatientPanel';
 import SubjetivoSection from './sections/SubjetivoSection';
 import ObjetivoSection from './sections/ObjetivoSection';
 import EvaluacionSection from './sections/EvaluacionSection';
@@ -186,7 +185,7 @@ type HistoryTab = 'consulta' | 'antecedentes' | 'alergologia' | 'exploracion' | 
 export default function HistoryPage() {
     const searchParams = useSearchParams();
     const { tabs, activeTabId, setTabData } = useTabStore();
-    const { setSecondaryPanel, setRightPanelOpen } = useLayoutStore();
+    const { setRightPanelOpen } = useLayoutStore();
 
     const tabId = activeTabId || '/history';
     const currentTab = tabs.find(t => t.id === tabId);
@@ -367,12 +366,7 @@ export default function HistoryPage() {
         }
     };
 
-    useEffect(() => {
-        setSecondaryPanel(
-            <HistoryPatientPanel />,
-            'Historial'
-        );
-    }, [selectedPatient, activeEncounterId, setSecondaryPanel]);
+    // Sidebar is now handled by AppSidebar component
 
     useEffect(() => {
         const pid = searchParams.get('patientId');

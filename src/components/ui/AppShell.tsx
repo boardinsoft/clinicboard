@@ -31,9 +31,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   SidebarProvider,
-} from '@/components/ui/sidebar';
+  Sidebar,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -169,92 +172,6 @@ function SubHeader() {
       )}
       {subHeaderContent !== undefined ? subHeaderContent : <TabBar />}
     </div>
-  );
-}
-
-// ─── IconRail — solo nav de módulos ───────────────────────────────────────────
-function IconRail() {
-  const pathname = usePathname() || '/';
-  const router = useRouter();
-  const { addTab } = useTabStore();
-  const { activeClinic } = useActiveClinic();
-
-  const slug = activeClinic?.slug ?? '';
-
-  const navItems = [
-    { href: `/${slug}/dashboard`, label: 'Tablero', icon: Home },
-    { href: `/${slug}/patients`, label: 'Pacientes', icon: Users },
-    { href: `/${slug}/appointments`, label: 'Citas', icon: Notebook },
-    { href: `/${slug}/history/all`, label: 'Historia', icon: History },
-    { href: `/${slug}/prescriptions`, label: 'Recetas', icon: FileText },
-  ];
-
-  return (
-    <aside
-      className="flex flex-col items-center w-[56px] h-full bg-n-1 shrink-0 z-20 border-r border-border/40 py-[10px]"
-      aria-label="Navegación principal"
-    >
-      <nav className="flex flex-col flex-1 w-full gap-1">
-        {navItems.map((item) => {
-          const isActive =
-            item.href === `/${slug}`
-              ? pathname === `/${slug}`
-              : pathname.startsWith(item.href);
-          return (
-            <Tooltip key={item.href}>
-              <TooltipTrigger asChild>
-                <div className="w-full flex items-center justify-center relative">
-                  {isActive && (
-                    <div className="absolute left-0 w-[3px] h-[18px] bg-b-8 rounded-r-[3px]" />
-                  )}
-                  <button
-                    onClick={() => {
-                      const title = getTabTitle(item.href);
-                      addTab({ title, url: item.href });
-                      router.push(item.href);
-                    }}
-                    className={cn(
-                      'flex h-9 w-9 items-center justify-center rounded-[6px] transition-colors duration-100 relative',
-                      isActive
-                        ? 'text-b-8 bg-b-1 dark:bg-n-3'
-                        : 'text-n-8 hover:bg-n-3 hover:text-n-11'
-                    )}
-                  >
-                    <item.icon size={17} strokeWidth={1.8} />
-                  </button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent
-                side="right"
-                sideOffset={12}
-                className="text-[11px] font-medium bg-n-11 text-n-1 dark:bg-n-4 dark:text-n-10 border-n-10 dark:border-n-6 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100"
-              >
-                {item.label}
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
-      </nav>
-      <div className="pb-4 pt-1 opacity-0 pointer-events-none">
-        <div className="h-9 w-9" />
-      </div>
-    </aside>
-  );
-}
-
-// ─── Secondary Sidebar ────────────────────────────────────────────────────────
-function SecondarySidebar() {
-  const { secondaryPanelContent, secondaryPanelOpen } = useLayoutStore();
-
-  if (!secondaryPanelOpen || !secondaryPanelContent) return null;
-
-  return (
-    <aside
-      className="flex flex-col h-full w-64 bg-n-1 shrink-0 overflow-hidden border-r border-border/40"
-      data-secondary-sidebar
-    >
-      {secondaryPanelContent}
-    </aside>
   );
 }
 
@@ -720,8 +637,7 @@ const displayName =
 
       {/* ══ CUERPO ════════════════════════════════════════════════════════════ */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        <IconRail />
-        <SecondarySidebar />
+        {/* Sidebar is now rendered by Sidebar component in AppShellWrapper */}
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           <SubHeader />
           {/* Global Search Dialog */}
@@ -817,15 +733,17 @@ const displayName =
 export default function AppShellWrapper(props: AppShellProps) {
   return (
     <SidebarProvider
-      defaultOpen={false}
+      defaultOpen={true}
       style={
         {
           '--sidebar-width': '16rem',
           '--sidebar-width-icon': '3.5rem',
-          display: 'contents',
         } as React.CSSProperties
       }
     >
+      <Sidebar side="left" variant="sidebar" collapsible="icon">
+        <AppSidebar />
+      </Sidebar>
       <AppLayout {...props} />
     </SidebarProvider>
   );

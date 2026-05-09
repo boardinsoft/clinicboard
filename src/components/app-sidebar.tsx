@@ -1,262 +1,224 @@
-"use client"
+'use client';
 
 import React from 'react';
-import { ArchiveX, Command, File, Inbox, Send, Trash2, Home, Users, Notebook, History, FileText } from "lucide-react"
-
-import { NavUser } from "@/components/nav-user"
-import { Label } from "@/components/ui/label"
+import { usePathname, useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { useSidebar } from '@/components/ui/sidebar';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
+  Home,
+  Users,
+  Notebook,
+  History,
+  FileText,
+  ChevronRight,
+  UserPlus,
+  CalendarDays,
+  CheckSquare,
+  FileSearch,
+  Pill,
+  PanelLeftClose,
+  type LucideIcon,
+} from 'lucide-react';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
   SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarInput,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar"
-import { Switch } from "@/components/ui/switch"
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from '@/components/ui/sidebar';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
-// This is sample data
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Tablero",
-      url: "/",
-      icon: Home,
-      isActive: true,
-    },
-    {
-      title: "Pacientes",
-      url: "/patients",
-      icon: Users,
-      isActive: false,
-    },
-    {
-      title: "Citas",
-      url: "/appointments",
-      icon: Notebook,
-      isActive: false,
-    },
-    {
-      title: "Historia",
-      url: "/history/all",
-      icon: History,
-      isActive: false,
-    },
-    {
-      title: "Recetas",
-      url: "/prescriptions",
-      icon: FileText,
-      isActive: false,
-    },
-  ],
-  mails: [
-    {
-      name: "William Smith",
-      email: "williamsmith@example.com",
-      subject: "Meeting Tomorrow",
-      date: "09:34 AM",
-      teaser:
-        "Hi team, just a reminder about our meeting tomorrow at 10 AM.\nPlease come prepared with your project updates.",
-    },
-    {
-      name: "Alice Smith",
-      email: "alicesmith@example.com",
-      subject: "Re: Project Update",
-      date: "Yesterday",
-      teaser:
-        "Thanks for the update. The progress looks great so far.\nLet's schedule a call to discuss the next steps.",
-    },
-    {
-      name: "Bob Johnson",
-      email: "bobjohnson@example.com",
-      subject: "Weekend Plans",
-      date: "2 days ago",
-      teaser:
-        "Hey everyone! I'm thinking of organizing a team outing this weekend.\nWould you be interested in a hiking trip or a beach day?",
-    },
-    {
-      name: "Emily Davis",
-      email: "emilydavis@example.com",
-      subject: "Re: Question about Budget",
-      date: "2 days ago",
-      teaser:
-        "I've reviewed the budget numbers you sent over.\nCan we set up a quick call to discuss some potential adjustments?",
-    },
-    {
-      name: "Michael Wilson",
-      email: "michaelwilson@example.com",
-      subject: "Important Announcement",
-      date: "1 week ago",
-      teaser:
-        "Please join us for an all-hands meeting this Friday at 3 PM.\nWe have some exciting news to share about the company's future.",
-    },
-    {
-      name: "Sarah Brown",
-      email: "sarahbrown@example.com",
-      subject: "Re: Feedback on Proposal",
-      date: "1 week ago",
-      teaser:
-        "Thank you for sending over the proposal. I've reviewed it and have some thoughts.\nCould we schedule a meeting to discuss my feedback in detail?",
-    },
-    {
-      name: "David Lee",
-      email: "davidlee@example.com",
-      subject: "New Project Idea",
-      date: "1 week ago",
-      teaser:
-        "I've been brainstorming and came up with an interesting project concept.\nDo you have time this week to discuss its potential impact and feasibility?",
-    },
-    {
-      name: "Olivia Wilson",
-      email: "oliviawilson@example.com",
-      subject: "Vacation Plans",
-      date: "1 week ago",
-      teaser:
-        "Just a heads up that I'll be taking a two-week vacation next month.\nI'll make sure all my projects are up to date before I leave.",
-    },
-    {
-      name: "James Martin",
-      email: "jamesmartin@example.com",
-      subject: "Re: Conference Registration",
-      date: "1 week ago",
-      teaser:
-        "I've completed the registration for the upcoming tech conference.\nLet me know if you need any additional information from my end.",
-    },
-    {
-      name: "Sophia White",
-      email: "sophiawhite@example.com",
-      subject: "Team Dinner",
-      date: "1 week ago",
-      teaser:
-        "To celebrate our recent project success, I'd like to organize a team dinner.\nAre you available next Friday evening? Please let me know your preferences.",
-    },
-  ],
+interface NavItem {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+  items?: {
+    title: string;
+    url: string;
+  }[];
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  // Note: I'm using state to show active item.
-  // IRL you should use the url/router.
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0])
-  const [mails, setMails] = React.useState(data.mails)
-  const { setOpen } = useSidebar()
+const NAV_ITEMS: NavItem[] = [
+  {
+    title: 'Tablero',
+    url: '/dashboard',
+    icon: Home,
+  },
+  {
+    title: 'Pacientes',
+    url: '/patients',
+    icon: Users,
+    items: [
+      { title: 'Todos los pacientes', url: '/patients' },
+      { title: 'Nuevo registro', url: '/patients/new' },
+    ],
+  },
+  {
+    title: 'Citas',
+    url: '/appointments',
+    icon: Notebook,
+    items: [
+      { title: 'Agenda', url: '/appointments' },
+      { title: 'Cola de espera', url: '/appointments?view=queue' },
+    ],
+  },
+  {
+    title: 'Historia',
+    url: '/history/all',
+    icon: History,
+    items: [
+      { title: 'Todas las consultas', url: '/history/all' },
+    ],
+  },
+  {
+    title: 'Recetas',
+    url: '/prescriptions',
+    icon: FileText,
+    items: [
+      { title: 'Todas las recetas', url: '/prescriptions' },
+      { title: 'Recetas activas', url: '/prescriptions?filter=active' },
+    ],
+  },
+];
+
+function getActiveItem(pathname: string): string {
+  for (const item of NAV_ITEMS) {
+    if (item.url === '/dashboard') {
+      if (pathname === '/dashboard' || pathname.endsWith('/dashboard')) {
+        return item.title;
+      }
+    } else if (pathname.includes(item.url.split('?')[0].replace('/dashboard', ''))) {
+      return item.title;
+    }
+  }
+  return 'Tablero';
+}
+
+export function AppSidebar({ ...props }: React.ComponentProps<'div'>) {
+  const pathname = usePathname() || '';
+  const router = useRouter();
+  const { state, toggleSidebar } = useSidebar();
+  const activeItemTitle = getActiveItem(pathname);
+  const isCollapsed = state === 'collapsed';
+
+  const handleNavigation = (url: string) => {
+    if (url.startsWith('/')) {
+      router.push(`/${url.replace(/^\//, '')}`);
+    } else {
+      router.push(url);
+    }
+  };
 
   return (
-    <Sidebar
-      collapsible="icon"
-      className="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row"
+    <div
+      className="flex flex-col h-full"
+      data-sidebar="sidebar"
       {...props}
     >
-      {/* This is the first sidebar */}
-      {/* We disable collapsible and adjust width to icon. */}
-      {/* This will make the sidebar appear as icons. */}
-      <Sidebar
-        collapsible="none"
-        className="!w-[calc(var(--sidebar-width-icon)_+_1px)] border-r py-[10px]"
-      >
-        <SidebarHeader>
+      {/* Navigation */}
+      <div className="flex-1 overflow-y-auto py-2" style={{ color: 'var(--sidebar-foreground)' }}>
+        <SidebarGroup className="px-2">
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
-                <a href="#">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <Command className="size-4" strokeWidth={1.8} />
-                  </div>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Acme Inc</span>
-                    <span className="truncate text-xs">Enterprise</span>
-                  </div>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent className="px-1.5 md:px-0">
-              <SidebarMenu className="gap-1">
-                {data.navMain.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      tooltip={{
-                        children: item.title,
-                        hidden: false,
-                      }}
-                      onClick={() => {
-                        setActiveItem(item)
-                        const mail = data.mails.sort(() => Math.random() - 0.5)
-                        setMails(
-                          mail.slice(
-                            0,
-                            Math.max(5, Math.floor(Math.random() * 10) + 1)
-                          )
-                        )
-                        setOpen(true)
-                      }}
-                      isActive={activeItem?.title === item.title}
-                      className="px-2.5 md:px-2"
-                    >
-                      <item.icon strokeWidth={1.8} />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-        <SidebarFooter>
-          <NavUser user={data.user} />
-        </SidebarFooter>
-      </Sidebar>
+            {NAV_ITEMS.map((item) => {
+              const isActive = item.title === activeItemTitle;
+              const hasSubItems = item.items && item.items.length > 0;
 
-      {/* This is the second sidebar */}
-      {/* We disable collapsible and let it fill remaining space */}
-      <Sidebar collapsible="none" className="hidden flex-1 md:flex">
-        <SidebarHeader className="gap-3.5 border-b p-4">
-          <div className="flex w-full items-center justify-between">
-            <div className="text-base font-medium text-foreground">
-              {activeItem?.title}
-            </div>
-            <Label className="flex items-center gap-2 text-sm">
-              <span>Unreads</span>
-              <Switch className="shadow-none" />
-            </Label>
-          </div>
-          <SidebarInput placeholder="Type to search..." />
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup className="px-0">
-            <SidebarGroupContent>
-              {mails.map((mail) => (
-                <a
-                  href="#"
-                  key={mail.email}
-                  className="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              return (
+                <Collapsible
+                  key={item.title}
+                  asChild
+                  defaultOpen={isActive && hasSubItems}
+                  className="group/collapsible"
                 >
-                  <div className="flex w-full items-center gap-2">
-                    <span>{mail.name}</span>{" "}
-                    <span className="ml-auto text-xs">{mail.date}</span>
-                  </div>
-                  <span className="font-medium">{mail.subject}</span>
-                  <span className="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
-                    {mail.teaser}
-                  </span>
-                </a>
-              ))}
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-    </Sidebar>
-  )
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        tooltip={item.title}
+                        isActive={isActive}
+                        onClick={() => !hasSubItems && handleNavigation(item.url)}
+                        className={cn(
+                          'w-full',
+                          hasSubItems && 'cursor-pointer'
+                        )}
+                      >
+                        <item.icon size={18} strokeWidth={1.8} />
+                        <span className="truncate">{item.title}</span>
+                        {hasSubItems && (
+                          <ChevronRight className="ml-auto transition-transform duration-200 size-4 group-data-[state=open]/collapsible:rotate-90" />
+                        )}
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    {hasSubItems && (
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {item.items?.map((subItem) => {
+                            const isSubActive = pathname === subItem.url || (subItem.url.includes('?') && pathname.startsWith(subItem.url.split('?')[0]));
+                            return (
+                              <SidebarMenuSubItem key={subItem.title}>
+                                <SidebarMenuSubButton
+                                  isActive={isSubActive}
+                                  onClick={() => handleNavigation(subItem.url)}
+                                >
+                                  <span>{subItem.title}</span>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    )}
+                  </SidebarMenuItem>
+                </Collapsible>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+      </div>
+
+      {/* Collapse button */}
+      <div
+        className="p-2 shrink-0"
+        style={{ borderTop: '1px solid var(--sidebar-border)' }}
+      >
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <button
+              onClick={toggleSidebar}
+              className="flex items-center gap-2 w-full h-9 px-3 rounded-[6px] transition-colors duration-100 hover:bg-sidebar-accent group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
+              style={{ color: 'var(--sidebar-foreground)' }}
+              aria-label={isCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+            >
+              {isCollapsed ? (
+                <PanelLeftClose size={17} strokeWidth={1.8} />
+              ) : (
+                <>
+                  <ChevronRight size={17} strokeWidth={1.8} className="rotate-180" />
+                  <span className="text-sm transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0">Colapsar</span>
+                </>
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="right"
+            sideOffset={12}
+            className="text-[11px] font-medium bg-n-11 text-n-1 dark:bg-n-4 dark:text-n-10 border-n-10 dark:border-n-6 rounded-[5px] shadow-xl"
+          >
+            {isCollapsed ? 'Expandir' : 'Colapsar'}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </div>
+  );
 }
