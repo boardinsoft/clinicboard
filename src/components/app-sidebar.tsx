@@ -129,7 +129,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<'div'>) {
     >
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto" style={{ color: 'var(--sidebar-foreground)' }}>
-        <SidebarGroup className="px-2">
+        <SidebarGroup className="px-2 -mt-[9px]">
           <SidebarMenu>
             {NAV_ITEMS.map((item) => {
               const isActive = item.title === activeItemTitle;
