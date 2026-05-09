@@ -1,6 +1,7 @@
 'use client';
 
 import React, { ReactNode, useState, useEffect, Suspense } from 'react';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { signOut } from '@/actions/auth';
@@ -55,7 +56,7 @@ import {
   Moon,
   Sun,
   LogOut,
-  Stethoscope,
+  
   Search as SearchIcon,
   PanelLeft,
   Sparkles,
@@ -325,14 +326,15 @@ const displayName =
 
         {/* ── SECCIÓN IZQUIERDA: Contexto (Macro-gap: 4) ── */}
         <div className="flex items-center gap-4 shrink-0">
-          {/* Brand Mark (h-8 for alignment, gap-2) */}
+          {/* Brand Mark (logo icon only) */}
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-[6px] bg-b-8">
-              <Stethoscope className="w-4 h-4 text-white" strokeWidth={2.2} />
-            </div>
-            <span className="text-[13px] font-bold tracking-tight text-n-12 select-none">
-              ClinicBoard
-            </span>
+            <Image
+              src="/brand/logo-mark.svg"
+              alt="ClinicBoard"
+              width={20}
+              height={20}
+              className="rounded-[4px]"
+            />
           </div>
 
           <div className="w-px h-4 bg-n-5" />

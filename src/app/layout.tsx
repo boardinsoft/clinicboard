@@ -28,6 +28,10 @@ export const metadata: Metadata = {
     'citas médicas',
     'recetas digitales',
   ],
+  icons: {
+    icon: '/brand/favicon.svg',
+    apple: '/brand/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
