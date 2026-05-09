@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClinicBoard — Dark Mode Audit Report</title>
+  <style>
+    :root {
+      --n-1: #fbfcfd;
+      --n-2: #f5f7fa;
+      --n-3: #eef1f5;
+      --n-4: #e4e8ee;
+      --n-5: #d7dde5;
+      --n-12: #0f141e;
+      --b-8: #0ca488;
+      --s-success: #0ca488;
+      --s-warning: #c98618;
+      --s-danger: #d24848;
+      --s-info: #2f7cf6;
+    }
+
+    .dark {
+      --n-1: #090d13;
+      --n-2: #111318;
+      --n-3: #181b23;
+      --n-4: #1e222b;
+      --n-5: #262a36;
+      --n-6: #2e3340;
+      --n-7: #3d4250;
+      --n-8: #5a6178;
+      --n-9: #7a8496;
+      --n-10: #8a97ab;
+      --n-11: #9faab9;
+      --n-12: #c0cad6;
+      --b-8: #1ac496;
+      --b-9: #16b085;
+      --s-success: #1ac496;
+      --s-warning: #f59e0b;
+      --s-danger: #ef4444;
+      --s-info: #4a9eff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f7fa;
+      color: #222938;
+      line-height: 1.6;
+      padding: 2rem;
+    }
+
+    .dark body {
+      background: #090d13;
+      color: #c0cad6;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    header {
+      background: linear-gradient(135deg, #0ca488 0%, #086f5c 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .dark header {
+      background: linear-gradient(135deg, #1ac496 0%, #086f5c 100%);
+    }
+
+    h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .subtitle { opacity: 0.9; font-size: 0.95rem; }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e4e8ee;
+    }
+
+    .dark h2 { border-bottom-color: #262a36; }
+
+    h3 { font-size: 1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
+
+    .card {
+      background: white;
+      border: 1px solid #e4e8ee;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .dark .card {
+      background: #111318;
+      border-color: #262a36;
+    }
+
+    .critical { border-left: 4px solid #ef4444; }
+    .warning { border-left: 4px solid #f59e0b; }
+    .good { border-left: 4px solid #0ca488; }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: #f5f7fa;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+    }
+
+    .dark .checklist-item { background: #181b23; }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #0ca488;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .checklist-item label {
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .checklist-item .tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .tag-critical { background: #fef2f2; color: #dc2626; }
+    .dark .tag-critical { background: rgba(239,68,68,0.15); color: #f87171; }
+
+    .tag-warning { background: #fffbeb; color: #d97706; }
+    .dark .tag-warning { background: rgba(245,158,11,0.15); color: #fbbf24; }
+
+    .tag-good { background: #f0fdf4; color: #16a34a; }
+    .dark .tag-good { background: rgba(31,212,168,0.15); color: #4ade80; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.875rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.75rem;
+      border-bottom: 1px solid #e4e8ee;
+    }
+
+    .dark th, .dark td { border-bottom-color: #262a36; }
+
+    th { font-weight: 600; background: #f5f7fa; }
+    .dark th { background: #181b23; }
+
+    code {
+      font-family: 'Fira Code', 'SF Mono', Monaco, monospace;
+      background: #eef1f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.8em;
+    }
+
+    .dark code { background: #1e222b; }
+
+    .color-swatch {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .code-block {
+      background: #1e222b;
+      color: #c0cad6;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      margin: 1rem 0;
+    }
+
+    .dark .code-block { background: #090d13; }
+
+    .diff-removed { color: #f87171; }
+    .diff-added { color: #4ade80; }
+    .diff-comment { color: #888888; }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e4e8ee;
+      text-align: center;
+      font-size: 0.875rem;
+      color: #7f8a9b;
+    }
+
+    .dark footer { border-top-color: #262a36; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      background: #0ca488;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover { background: #0a8c74; }
+
+    .btn-secondary {
+      background: transparent;
+      color: #0ca488;
+      border: 1px solid #0ca488;
+    }
+
+    .dark .btn-secondary { color: #1ac496; border-color: #1ac496; }
+    .dark .btn-secondary:hover { background: rgba(26,196,150,0.1); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔬 ClinicBoard Dark Mode Audit</h1>
+      <p class="subtitle">Informe de auditoría UI/UX y Accesibilidad — Inspirado en Supabase Dark</p>
+      <p style="margin-top: 0.75rem; opacity: 0.8; font-size: 0.8rem;">
+        Rama: <code style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px;">dark-mode-audit-report</code>
+      </p>
+    </header>
+
+    <!-- EJECUTIVE SUMMARY -->
+    <section class="card critical">
+      <h2 style="margin-top: 0; border: none; color: #dc2626;">🚨 Hallazgos Críticos</h2>
+      <ul style="margin-left: 1.25rem; margin-top: 0.75rem;">
+        <li style="margin-bottom: 0.5rem;"><strong>Focus visible eliminado:</strong> WCAG violation — usuarios de teclado no pueden ver el indicador de foco</li>
+        <li style="margin-bottom: 0.5rem;"><strong>Tinte azul en escala neutral:</strong> n-1 a n-6 tienen subtono frío azulado</li>
+        <li><strong>Sin <code>prefers-color-scheme</code>:</strong> No detecta preferencia del SO</li>
+      </ul>
+    </section>
+
+    <!-- 1. COLORES Y TOKENS -->
+    <section>
+      <h2>1. Colores y Tokens</h2>
+
+      <section class="card">
+        <h3>1.1 Paleta de Colores — Dark Mode Sugerido</h3>
+        <p style="margin-bottom: 1rem; font-size: 0.875rem; color: #7f8a9b;">
+          Inspiración: Supabase Dark (#0f0f0f base) + ClinicBoard Clinical Teal
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Valor Actual</th>
+              <th>Problema</th>
+              <th>Valor Sugerido</th>
+              <th>Preview</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>--n-1</code></td>
+              <td><code style="color:#f87171">#0b0f15</code></td>
+              <td>Tinte azul oscuro</td>
+              <td><code style="color:#4ade80">#090d13</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#090d13"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--n-2</code></td>
+              <td><code style="color:#f87171">#11161f</code></td>
+              <td>Tinte azul</td>
+              <td><code style="color:#4ade80">#111318</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#111318"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--n-3</code></td>
+              <td><code style="color:#f87171">#161c27</code></td>
+              <td>Azul frío</td>
+              <td><code style="color:#4ade80">#181b23</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#181b23"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--n-4</code></td>
+              <td><code style="color:#f87171">#1c2330</code></td>
+              <td>Azul frío</td>
+              <td><code style="color:#4ade80">#1e222b</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#1e222b"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--n-5</code></td>
+              <td><code style="color:#f87171">#232b3a</code></td>
+              <td>Azul frío</td>
+              <td><code style="color:#4ade80">#262a36</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#262a36"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--n-6</code></td>
+              <td><code style="color:#f87171">#2c3648</code></td>
+              <td>Azul frío</td>
+              <td><code style="color:#4ade80">#2e3340</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#2e3340"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--n-7</code></td>
+              <td><code style="color:#fbbf24">#3a4558</code></td>
+              <td>Ligero azul</td>
+              <td><code style="color:#4ade80">#3d4250</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#3d4250"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--n-8</code></td>
+              <td><code style="color:#4ade80">#596376</code></td>
+              <td>✓ Correcto</td>
+              <td><code style="color:#4ade80">#5a6178</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#5a6178"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--n-9</code></td>
+              <td><code style="color:#4ade80">#7a8496</code></td>
+              <td>✓ Correcto</td>
+              <td><code style="color:#4ade80">#7a8496</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#7a8496"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--n-10</code></td>
+              <td><code style="color:#4ade80">#8a97ab</code></td>
+              <td>✓ Correcto</td>
+              <td><code style="color:#4ade80">#8a97ab</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#8a97ab"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--n-11</code></td>
+              <td><code style="color:#4ade80">#9faab9</code></td>
+              <td>✓ Correcto</td>
+              <td><code style="color:#4ade80">#9faab9</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#9faab9"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--n-12</code></td>
+              <td><code style="color:#fbbf24">#b8c4d0</code></td>
+              <td>Podría ser más claro</td>
+              <td><code style="color:#4ade80">#c0cad6</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#c0cad6"></div></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h3>1.2 Escala Brand — Dark Mode</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Actual</th>
+              <th>Sugerido</th>
+              <th>Preview</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>--b-8</code></td>
+              <td><code style="color:#4ade80">#1fd4a8</code></td>
+              <td><code style="color:#fbbf24">#1ac496</code> (desaturar 5%)</td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#1ac496"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--b-9</code></td>
+              <td><code style="color:#4ade80">#1ac496</code></td>
+              <td><code style="color:#fbbf24">#16b085</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#16b085"></div></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card warning">
+        <h3>1.3 Semantic Colors — Dark Mode</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Actual</th>
+              <th>Problema</th>
+              <th>Sugerido</th>
+              <th>Preview</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>--s-info</code></td>
+              <td><code style="color:#f87171">#60a5fa</code></td>
+              <td>Azul puro — no clínico</td>
+              <td><code style="color:#4ade80">#4a9eff</code> (teal-ish blue)</td>
+              <td><div class="color-swatch"><div class="swatch" style="background:#4a9eff"></div></div></td>
+            </tr>
+            <tr>
+              <td><code>--s-info-bg</code></td>
+              <td><code style="color:#f87171">rgba(96,165,250,0.12)</code></td>
+              <td>Depende de s-info</td>
+              <td><code style="color:#4ade80">rgba(74,158,255,0.12)</code></td>
+              <td><div class="color-swatch"><div class="swatch" style="background:rgba(74,158,255,0.3)"></div></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <!-- 2. CONSIDERACIONES UI/UX -->
+    <section>
+      <h2>2. Consideraciones de UI/UX</h2>
+
+      <section class="card good">
+        <h3>2.1 Reducción de Fatiga Visual — Estado Actual</h3>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-contrast" checked>
+          <label for="chk-contrast">
+            <strong>Contraste extremo evitado</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              No se usa blanco puro (#FFFFFF) sobre negro puro — se usan grises oscuros y blancos rotos ✓
+            </p>
+          </label>
+          <span class="tag tag-good">OK</span>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-desaturate">
+          <label for="chk-desaturate">
+            <strong>Desaturación de colores</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              El brand teal (#1fd4a8) puede vibrar en dark mode. Sugerencia: desaturar 5-10% para reducir fatiga.
+            </p>
+          </label>
+          <span class="tag tag-warning">Pendiente</span>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-luminance">
+          <label for="chk-luminance">
+            <strong>Luminancia adecuada</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              La diferencia entre n-11 y n-12 (~10%) puede ser difícil de percibir. Considerar ampliar a ~15%.
+            </p>
+          </label>
+          <span class="tag tag-warning">Pendiente</span>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-depth" checked>
+          <label for="chk-depth">
+            <strong>Profundidad con capas</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              La escala n-1 → n-4 crea jerarquía de elevación clara ✓
+            </p>
+          </label>
+          <span class="tag tag-good">OK</span>
+        </div>
+      </section>
+
+      <section class="card warning">
+        <h3>2.2 Consistencia y Jerarquía — Estado Actual</h3>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-hierarchy">
+          <label for="chk-hierarchy">
+            <strong>Jerarquía visual clara</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              Inconsistencia: <code>bg-card</code> = n-2, pero ClinicBoard usa <code>bg-n-1</code> en varios componentes.
+              Unificar a una sola superficie por contexto.
+            </p>
+          </label>
+          <span class="tag tag-warning">Pendiente</span>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-shadows">
+          <label for="chk-shadows">
+            <strong>Sombras en dark mode</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              141+ usages de shadows. En dark mode deberían ser más sutiles o usar efecto "hundido" (inset).
+              Shadows currently use black which may look harsh.
+            </p>
+          </label>
+          <span class="tag tag-warning">Audit</span>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-interactive">
+          <label for="chk-interactive">
+            <strong>Estados interactivos</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              393+ hover states hardcodeados. Auditar consistencia de <code>hover:bg-n-*</code> y <code>dark:hover:bg-n-*</code>.
+            </p>
+          </label>
+          <span class="tag tag-warning">Audit</span>
+        </div>
+      </section>
+    </section>
+
+    <!-- 3. ACCESIBILIDAD -->
+    <section>
+      <h2>3. Accesibilidad (WCAG AA/AAA)</h2>
+
+      <section class="card critical">
+        <h3>3.1 Contraste — Estado Actual</h3>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-focus-ring" checked>
+          <label for="chk-focus-ring">
+            <strong style="color: #dc2626;">⚠️ Focus rings ELIMINADOS</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem; font-family: monospace; background: #1e222b; padding: 0.5rem; border-radius: 4px;">
+              globals.css:169-172<br>
+              <span style="color: #f87171;">.dark :focus-visible {</span><br>
+              <span style="color: #f87171;">  outline: none;</span><br>
+              <span style="color: #f87171;">  box-shadow: none;</span><br>
+              <span style="color: #f87171;">}</span>
+            </p>
+            <p style="font-size: 0.8rem; color: #dc2626; margin-top: 0.5rem;">
+              🔴 VIOLACIÓN WCAG 2.1 SC 2.4.7 — Usuarios de teclado no pueden ver el indicador de foco
+            </p>
+          </label>
+          <span class="tag tag-critical">CRÍTICO</span>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-contrast-45">
+          <label for="chk-contrast-45">
+            <strong>Contraste 4.5:1 (texto regular)</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              n-11 sobre n-1: ~7.5:1 ✓ — n-9 sobre n-2: ~3.2:1 ✗ necesita ajuste
+            </p>
+          </label>
+          <span class="tag tag-warning">Revisar</span>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-focus-keyboard">
+          <label for="chk-focus-keyboard">
+            <strong>Estados de enfoque para teclado</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              Restaurar focus-visible con ring teal (b-8) de 2px y suficiente contraste.
+            </p>
+          </label>
+          <span class="tag tag-warning">Pendiente</span>
+        </div>
+      </section>
+
+      <section class="card good">
+        <h3>3.2 Legibilidad</h3>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-spacing" checked>
+          <label for="chk-spacing">
+            <strong>Espaciado y tamaño de fuente</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              body line-height: 1.55 — tamaño base 15px ✓
+            </p>
+          </label>
+          <span class="tag tag-good">OK</span>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-halo">
+          <label for="chk-halo">
+            <strong>Efecto halo / texto invertido</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              n-12 (#b8c4d0) sobre fondos muy oscuros puede generar halo en pantallas IPS.
+              Aclarar a #c0cad6 mitiga parcialmente.
+            </p>
+          </label>
+          <span class="tag tag-warning">Mitigado</span>
+        </div>
+      </section>
+
+      <section class="card good">
+        <h3>3.3 Uso de Color</h3>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-color-alone">
+          <label for="chk-color-alone">
+            <strong>Color no es único medio</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              Badges usan punto <code>::before</code> + color + texto como backup ✓
+            </p>
+          </label>
+          <span class="tag tag-good">OK</span>
+        </div>
+      </section>
+
+      <section class="card critical">
+        <h3>3.4 Preferencias del Usuario</h3>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-prefers">
+          <label for="chk-prefers">
+            <strong style="color: #dc2626;">❌ prefers-color-scheme NO implementado</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              El tema solo usa <code>class: ['dark']</code> en Tailwind. No hay <code>@media (prefers-color-scheme: dark)</code>.
+              Los usuarios del sistema operativo que prefieren dark mode no son detectados automáticamente.
+            </p>
+          </label>
+          <span class="tag tag-critical">CRÍTICO</span>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="chk-toggle" checked>
+          <label for="chk-toggle">
+            <strong>Toggle manual implementado</strong>
+            <p style="font-size: 0.8rem; color: #7f8a9b; margin-top: 0.25rem;">
+              AppShell.tsx:680 tiene theme toggle que persiste en localStorage ✓
+            </p>
+          </label>
+          <span class="tag tag-good">OK</span>
+        </div>
+      </section>
+    </section>
+
+    <!-- PLAN DE IMPLEMENTACIÓN -->
+    <section>
+      <h2>4. Plan de Implementación</h2>
+
+      <section class="card">
+        <h3>4.1 CSS — globals.css Dark Mode Overrides</h3>
+        <p style="margin-bottom: 1rem; font-size: 0.875rem; color: #7f8a9b;">
+          Reemplazar las líneas 97-158 de <code>src/app/globals.css</code> con:
+        </p>
+        <div class="code-block">
+<span class="diff-comment">/* Reemplazar bloque .dark existente (líneas 97-158) */</span>
+<span class="diff-removed">  .dark {</span>
+<span class="diff-removed">    /* ── Escala Neutra (Slate Frío - Dark Overrides) ── */</span>
+<span class="diff-removed">    --n-1:  #0b0f15;   /* page bg */</span>
+<span class="diff-removed">    --n-2:  #11161f;   /* surface-75 */</span>
+<span class="diff-removed">    --n-3:  #161c27;   /* surface-100 */</span>
+<span class="diff-removed">    --n-4:  #1c2330;   /* surface-200 */</span>
+<span class="diff-removed">    --n-5:  #232b3a;   /* border-muted */</span>
+<span class="diff-removed">    --n-6:  #2c3648;   /* border-default */</span>
+<span class="diff-removed">    --n-7:  #3a4558;   /* border-strong */</span>
+<span class="diff-removed">    --n-8:  #596376;   /* muted text */</span>
+<span class="diff-removed">    --n-9:  #7a8496;   /* secondary text */</span>
+<span class="diff-removed">    --n-10: #8a97ab;   /* strong text (reducido) */</span>
+<span class="diff-removed">    --n-11: #9faab9;   /* heading (reducido de #cbd2de) */</span>
+<span class="diff-removed">    --n-12: #b8c4d0;   /* ink (reducido de #eef1f5) */</span>
+<span class="diff-removed">    /* ── Brand Dark ── */</span>
+<span class="diff-removed">    --b-8:  #1fd4a8;</span>
+<span class="diff-removed">    --b-9:  #1ac496;</span>
+<span class="diff-removed">    /* ── Semantic Colors Dark ── */</span>
+<span class="diff-removed">    --s-info:        #60a5fa;</span>
+<span class="diff-removed">  }</span>
+
+<span class="diff-added">  .dark {</span>
+<span class="diff-added">    /* ── Escala Neutra (Gris Cálido - Dark) ── */</span>
+<span class="diff-added">    /* Inspirado en Supabase Dark: #0f0f0f base */</span>
+<span class="diff-added">    --n-1:  #090d13;   /* page bg - negro cálido sin tinte */</span>
+<span class="diff-added">    --n-2:  #111318;   /* surface-75 */</span>
+<span class="diff-added">    --n-3:  #181b23;   /* surface-100 */</span>
+<span class="diff-added">    --n-4:  #1e222b;   /* surface-200 */</span>
+<span class="diff-added">    --n-5:  #262a36;   /* border-muted */</span>
+<span class="diff-added">    --n-6:  #2e3340;   /* border-default */</span>
+<span class="diff-added">    --n-7:  #3d4250;   /* border-strong */</span>
+<span class="diff-added">    --n-8:  #5a6178;   /* muted text */</span>
+<span class="diff-added">    --n-9:  #7a8496;   /* secondary text */</span>
+<span class="diff-added">    --n-10: #8a97ab;   /* strong text */</span>
+<span class="diff-added">    --n-11: #9faab9;   /* heading */</span>
+<span class="diff-added">    --n-12: #c0cad6;   /* ink */</span>
+<span class="diff-added"></span>
+<span class="diff-added">    /* ── Brand Dark (desaturado 5%) ── */</span>
+<span class="diff-added">    --b-8:  #1ac496;</span>
+<span class="diff-added">    --b-9:  #16b085;</span>
+<span class="diff-added"></span>
+<span class="diff-added">    /* ── Semantic Colors Dark ── */</span>
+<span class="diff-added">    --s-success:     #1ac496;</span>
+<span class="diff-added">    --s-success-bg:   rgba(26, 196, 150, 0.12);</span>
+<span class="diff-added">    --s-success-br:   rgba(26, 196, 150, 0.3);</span>
+<span class="diff-added">    --s-warning:      #f59e0b;</span>
+<span class="diff-added">    --s-warning-bg:   rgba(245, 158, 11, 0.12);</span>
+<span class="diff-added">    --s-warning-br:   rgba(245, 158, 11, 0.3);</span>
+<span class="diff-added">    --s-danger:       #ef4444;</span>
+<span class="diff-added">    --s-danger-bg:    rgba(239, 68, 68, 0.12);</span>
+<span class="diff-added">    --s-danger-br:    rgba(239, 68, 68, 0.3);</span>
+<span class="diff-added">    --s-info:         #4a9eff;   /* teal-ish blue en lugar de azul puro */</span>
+<span class="diff-added">    --s-info-bg:      rgba(74, 158, 255, 0.12);</span>
+<span class="diff-added">    --s-info-br:      rgba(74, 158, 255, 0.3);</span>
+<span class="diff-added">    --s-neutral:      #9ca3af;</span>
+<span class="diff-added">    --s-neutral-bg:   rgba(156, 163, 175, 0.12);</span>
+<span class="diff-added">    --s-neutral-br:   rgba(156, 163, 175, 0.3);</span>
+<span class="diff-added">  }</span>
+        </div>
+      </section>
+
+      <section class="card critical">
+        <h3>4.2 FOCUS VISIBLE — Restaurar Accesibilidad</h3>
+        <p style="margin-bottom: 1rem; font-size: 0.875rem; color: #7f8a9b;">
+          <strong style="color: #dc2626;">CRÍTICO:</strong> Reemplazar líneas 164-172 de <code>globals.css</code>:
+        </p>
+        <div class="code-block">
+<span class="diff-removed">  /* ── Neutralizar focus ring del navegador ── */</span>
+<span class="diff-removed">  :focus-visible {</span>
+<span class="diff-removed">    outline: none;</span>
+<span class="diff-removed">    box-shadow: none;</span>
+<span class="diff-removed">  }</span>
+<span class="diff-removed">  .dark :focus-visible {</span>
+<span class="diff-removed">    outline: none;</span>
+<span class="diff-removed">    box-shadow: none;</span>
+<span class="diff-removed">  }</span>
+
+<span class="diff-added">  /* ── Focus ring accesible (WCAG 2.4.7) ── */</span>
+<span class="diff-added">  :focus-visible {</span>
+<span class="diff-added">    outline: 2px solid var(--b-8);</span>
+<span class="diff-added">    outline-offset: 2px;</span>
+<span class="diff-added">  }</span>
+<span class="diff-added"></span>
+<span class="diff-added">  /* Componentes con ring personalizado mantienen su estilo */</span>
+<span class="diff-added">  .dark :focus-visible {</span>
+<span class="diff-added">    outline: 2px solid var(--b-8);</span>
+<span class="diff-added">    outline-offset: 2px;</span>
+<span class="diff-added">    box-shadow: 0 0 0 4px rgba(26, 196, 150, 0.2);  /* Glow sutil */</span>
+<span class="diff-added">  }</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>4.3 prefers-color-scheme — Detección Automática</h3>
+        <p style="margin-bottom: 1rem; font-size: 0.875rem; color: #7f8a9b;">
+          Agregar al final del bloque <code>:root</code> en <code>globals.css</code>:
+        </p>
+        <div class="code-block">
+<span class="diff-added">  /* ── Detectar preferencia del sistema operativo ── */</span>
+<span class="diff-added">  @media (prefers-color-scheme: dark) {</span>
+<span class="diff-added">    :root:not(.light-only) {</span>
+<span class="diff-added">      color-scheme: dark;</span>
+<span class="diff-added">    }</span>
+<span class="diff-added">  }</span>
+        </div>
+        <p style="margin-top: 1rem; font-size: 0.8rem; color: #7f8a9b;">
+          <strong>Nota:</strong> El theme provider actual (next-themes) maneja esto automáticamente cuando usa
+          <code>attribute: 'class'</code>. Verificar que no haya conflicto si se usa class + media query.
+        </p>
+      </section>
+
+      <section class="card">
+        <h3>4.4 Componentes Hardcodeados — Auditoría Pendiente</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Archivo</th>
+              <th>Patrón Problemático</th>
+              <th>Cantidad</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PatientDetailView.tsx</td>
+              <td><code>bg-blue-900/30</code></td>
+              <td>1</td>
+              <td>Reemplazar con <code>bg-n-5/30</code></td>
+            </tr>
+            <tr>
+              <td>PatientForm.tsx</td>
+              <td><code>bg-blue-100</code>, <code>dark:bg-blue-900/30</code></td>
+              <td>2</td>
+              <td>Usar tokens n-*</td>
+            </tr>
+            <tr>
+              <td>AppointmentDetailSheet.tsx</td>
+              <td><code>blue-*</code> hardcoded</td>
+              <td>4</td>
+              <td>Reemplazar con semantic colors</td>
+            </tr>
+            <tr>
+              <td>WalkInQueuePanel.tsx</td>
+              <td><code>orange-600</code></td>
+              <td>1</td>
+              <td>Usar <code>--s-warning</code></td>
+            </tr>
+            <tr>
+              <td>NewWalkInEncounterDialog.tsx</td>
+              <td><code>shadow-teal-600/20</code></td>
+              <td>1</td>
+              <td>Usar CSS variable</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+
+    <!-- CHECKLIST DE IMPLEMENTACIÓN -->
+    <section>
+      <h2>5. Checklist de Implementación</h2>
+
+      <section class="card">
+        <h3>High Priority</h3>
+        <div class="checklist-item">
+          <input type="checkbox" id="impl-1">
+          <label for="impl-1">Restaurar focus-visible en dark mode (WCAG violation)</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="impl-2">
+          <label for="impl-2">Ajustar escala neutral n-1 a n-7 eliminando tinte azul</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="impl-3">
+          <label for="impl-3">Cambiar --s-info de azul puro a tono clínico</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="impl-4">
+          <label for="impl-4">Implementar prefers-color-scheme o verificar next-themes</label>
+        </div>
+
+        <h3 style="margin-top: 1.5rem;">Medium Priority</h3>
+        <div class="checklist-item">
+          <input type="checkbox" id="impl-5">
+          <label for="impl-5">Desaturar brand teal en dark mode (5%)</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="impl-6">
+          <label for="impl-6">Aclarar n-12 a #c0cad6 para mejor legibilidad</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="impl-7">
+          <label for="impl-7">Auditar 393+ hover states hardcodeados</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="impl-8">
+          <label for="impl-8">Reemplazar blue-* hardcoded en componentes</label>
+        </div>
+
+        <h3 style="margin-top: 1.5rem;">Low Priority</h3>
+        <div class="checklist-item">
+          <input type="checkbox" id="impl-9">
+          <label for="impl-9">Evaluar sombras en dark mode (efecto hundido vs elevación)</label>
+        </div>
+        <div class="checklist-item">
+          <input type="checkbox" id="impl-10">
+          <label for="impl-10">Migrar colores a OKLCH para control de luminancia</label>
+        </div>
+      </section>
+    </section>
+
+    <footer>
+      <p>ClinicBoard Dark Mode Audit Report — Generado el 8 de mayo de 2026</p>
+      <p style="margin-top: 0.5rem;">
+        Rama: <code>dark-mode-audit-report</code> |
+        Inspirado en <a href="#" style="color: #0ca488;">Supabase Dark</a> +
+        <a href="#" style="color: #0ca488;">ClinicBoard Design System</a>
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    // Guardar estado de checkboxes en localStorage
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const savedState = JSON.parse(localStorage.getItem('darkModeAuditState') || '{}');
+
+    checkboxes.forEach(cb => {
+      if (savedState[cb.id]) cb.checked = true;
+
+      cb.addEventListener('change', () => {
+        savedState[cb.id] = cb.checked;
+        localStorage.setItem('darkModeAuditState', JSON.stringify(savedState));
+      });
+    });
+
+    // Toggle dark preview
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      document.body.classList.add('dark');
+    }
+  </script>
+</body>
+</html>
