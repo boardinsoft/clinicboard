@@ -120,12 +120,12 @@ export default function WalkInQueuePanel({
                                             {format(new Date(appointment.start_time), 'hh:mm a')}
                                         </div>
                                         {appointment.status === 'booked' && (
-                                            <Badge variant="outline" className="text-[9px] bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50 font-bold py-0 leading-none h-4">
+                                            <Badge variant="outline" className="text-[9px] bg-s-warning-bg/50 text-s-warning dark:bg-s-warning/20 border-s-warning-br font-bold py-0 leading-none h-4">
                                                 PEND. LLEGADA
                                             </Badge>
                                         )}
                                         {appointment.status === 'arrived' && (
-                                            <Badge variant="outline" className="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50 font-bold py-0 leading-none h-4">
+                                            <Badge variant="outline" className="text-[9px] bg-s-success-bg/50 text-s-success dark:bg-s-success/20 border-s-success-br font-bold py-0 leading-none h-4">
                                                 EN SALA
                                             </Badge>
                                         )}

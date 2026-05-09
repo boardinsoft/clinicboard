@@ -129,7 +129,7 @@ export default function NewWalkInEncounterDialog({
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 mb-2">
+                        <div className="w-10 h-10 rounded-full bg-b-1 flex items-center justify-center text-b-8 mb-2">
                             <Stethoscope className="w-5 h-5" />
                         </div>
                         <DialogTitle className="text-xl font-bold">Nueva Consulta sin Cita</DialogTitle>
@@ -204,7 +204,7 @@ export default function NewWalkInEncounterDialog({
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="h-9 px-8 bg-teal-600 hover:bg-teal-700 shadow-lg shadow-teal-600/20"
+                                    className="h-9 px-8 bg-b-8 hover:bg-b-9 shadow-lg shadow-b-8/20"
                                 >
                                     {isSubmitting ? (
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

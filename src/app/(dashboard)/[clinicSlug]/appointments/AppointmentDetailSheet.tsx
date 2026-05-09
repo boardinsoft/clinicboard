@@ -83,13 +83,13 @@ interface AppointmentDetailSheetProps {
 }
 
 const STATUS_CONFIG: Record<AppointmentStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; color: string }> = {
-    proposed: { label: 'Propuesta', variant: 'outline', color: 'text-slate-500' },
-    pending: { label: 'Pendiente', variant: 'outline', color: 'text-amber-500' },
-    booked: { label: 'Confirmada', variant: 'secondary', color: 'text-blue-600 bg-blue-50' },
-    arrived: { label: 'En Espera', variant: 'default', color: 'bg-orange-500' },
-    fulfilled: { label: 'Completada', variant: 'secondary', color: 'text-emerald-700 bg-emerald-50' },
+    proposed: { label: 'Propuesta', variant: 'outline', color: 'text-n-8' },
+    pending: { label: 'Pendiente', variant: 'outline', color: 'text-s-warning' },
+    booked: { label: 'Confirmada', variant: 'secondary', color: 'text-b-8 bg-b-1/30' },
+    arrived: { label: 'En Espera', variant: 'default', color: 'bg-s-warning' },
+    fulfilled: { label: 'Completada', variant: 'secondary', color: 'text-s-success bg-s-success-bg' },
     cancelled: { label: 'Cancelada', variant: 'destructive', color: '' },
-    noshow: { label: 'No asistió', variant: 'outline', color: 'text-red-400' },
+    noshow: { label: 'No asistió', variant: 'outline', color: 'text-destructive' },
 };
 
 export default function AppointmentDetailSheet({
@@ -276,7 +276,7 @@ export default function AppointmentDetailSheet({
                             )}
                         </div>
                         {appointment.status === 'arrived' && (
-                            <Badge variant="outline" className="text-[10px] font-mono border-orange-200 text-orange-600 ml-2">
+                            <Badge variant="outline" className="text-[10px] font-mono border-s-warning-br text-s-warning ml-2">
                                 {formatRelativeTime(appointment.updated_at)}
                             </Badge>
                         )}
@@ -312,12 +312,12 @@ export default function AppointmentDetailSheet({
 
                         {/* Expiration warning section */}
                         {showExpirationWarning && !rescheduleMode && (
-                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+                            <div className="bg-s-warning-bg border border-s-warning-br rounded-xl p-4 space-y-3">
                                 <div className="flex items-start gap-3">
-                                    <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                                    <AlertCircle className="w-5 h-5 text-s-warning shrink-0 mt-0.5" />
                                     <div className="space-y-1">
-                                        <p className="text-sm font-bold text-amber-900">Esta cita ya pasó su horario</p>
-                                        <p className="text-xs text-amber-700 leading-tight">
+                                        <p className="text-sm font-bold text-s-warning">Esta cita ya pasó su horario</p>
+                                        <p className="text-xs text-n-11 leading-tight">
                                             La cita estaba programada para un momento en el pasado y no fue procesada.
                                             Sugerimos reprogramarla o marcar la inasistencia.
                                         </p>
@@ -327,7 +327,7 @@ export default function AppointmentDetailSheet({
                                     <Button 
                                         size="sm" 
                                         variant="outline" 
-                                        className="h-8 text-xs bg-white border-amber-300 hover:bg-amber-100 text-amber-800"
+                                        className="h-8 text-xs bg-background border-s-warning-br hover:bg-s-warning-bg/50 text-s-warning"
                                         onClick={() => setRescheduleMode(true)}
                                     >
                                         <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
@@ -337,7 +337,7 @@ export default function AppointmentDetailSheet({
                                         <Button 
                                             size="sm" 
                                             variant="outline" 
-                                            className="h-8 text-xs bg-white border-red-200 hover:bg-red-50 text-red-700"
+                                            className="h-8 text-xs bg-background border-s-danger-br hover:bg-s-danger-bg/50 text-s-danger"
                                             onClick={() => handleAction(markNoShow, 'Paciente registrado como inasistente')}
                                         >
                                             Marcar Inasistencia
@@ -397,11 +397,11 @@ export default function AppointmentDetailSheet({
 
                             {appointment.status === 'cancelled' && appointment.cancellation_reason && (
                                 <div className="space-y-2 pt-2">
-                                    <div className="flex items-center gap-2 text-xs font-bold text-red-700 uppercase opacity-90">
+                                    <div className="flex items-center gap-2 text-xs font-bold text-s-danger uppercase opacity-90">
                                         <XCircle className="w-3 h-3" />
                                         Motivo de Cancelación
                                     </div>
-                                    <div className="bg-red-50 p-3 rounded-lg text-sm text-red-900 leading-relaxed italic border-l-2 border-red-300">
+                                    <div className="bg-s-danger-bg p-3 rounded-lg text-sm text-s-danger leading-relaxed italic border-l-2 border-s-danger-br">
                                         &quot;{appointment.cancellation_reason}&quot;
                                     </div>
                                 </div>
@@ -429,7 +429,7 @@ export default function AppointmentDetailSheet({
                             <>
                                 {!isEligibleForNoShow(appointment.end_time) && (
                                     <Button 
-                                        className="w-full gap-2 shadow-lg shadow-blue-500/10" 
+                                        className="w-full gap-2 shadow-lg shadow-b-8/20"
                                         onClick={() => handleAction(confirmAppointment, 'Cita confirmada correctamente')}
                                         disabled={isPending}
                                     >
@@ -440,7 +440,7 @@ export default function AppointmentDetailSheet({
                                 <div className="grid grid-cols-2 gap-2">
                                     <Button 
                                         variant="outline" 
-                                        className="w-full text-blue-600 hover:bg-blue-50 border-blue-100"
+                                        className="w-full text-b-8 hover:bg-b-1/30 border-b-8/30"
                                         onClick={() => setRescheduleMode(true)}
                                         disabled={isPending}
                                     >
@@ -465,7 +465,7 @@ export default function AppointmentDetailSheet({
                             <>
                                 {isWithinCheckinWindow(appointment.start_time, appointment.end_time).allowed ? (
                                     <Button 
-                                        className="w-full gap-2 bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/10"
+                                        className="w-full gap-2 bg-s-warning hover:bg-s-warning/90 shadow-lg shadow-s-warning/10"
                                         onClick={() => handleAction(markArrived, 'Paciente marcado como llegó')}
                                         disabled={isPending}
                                     >
@@ -473,8 +473,8 @@ export default function AppointmentDetailSheet({
                                         Marcar Llegada / En Sala
                                     </Button>
                                 ) : isWithinCheckinWindow(appointment.start_time, appointment.end_time).reason === 'early' ? (
-                                    <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-center">
-                                        <p className="text-[11px] font-semibold text-blue-700 uppercase tracking-tight">
+                                    <div className="p-3 bg-b-1/20 border border-b-2/30 rounded-xl text-center">
+                                        <p className="text-[11px] font-semibold text-b-8 uppercase tracking-tight">
                                             Llegada disponible en {formatDuration(isWithinCheckinWindow(appointment.start_time, appointment.end_time).minutesUntilOpen ?? 0)}
                                         </p>
                                     </div>
@@ -483,7 +483,7 @@ export default function AppointmentDetailSheet({
                                 <div className="grid grid-cols-2 gap-2">
                                     <Button 
                                         variant="outline" 
-                                        className="w-full text-blue-600 hover:bg-blue-50 border-blue-100"
+                                        className="w-full text-b-8 hover:bg-b-1/30 border-b-8/30"
                                         onClick={() => setRescheduleMode(true)}
                                         disabled={isPending}
                                     >
@@ -493,7 +493,7 @@ export default function AppointmentDetailSheet({
                                     {isEligibleForNoShow(appointment.end_time) && (
                                         <Button 
                                             variant="outline" 
-                                            className="w-full border-red-100 bg-red-50 text-red-600 border-red-200"
+                                            className="w-full border-s-danger-br bg-s-danger-bg/50 text-s-danger"
                                             onClick={() => handleAction(markNoShow, 'Paciente marcado como no asistió')}
                                             disabled={isPending}
                                         >
@@ -518,12 +518,12 @@ export default function AppointmentDetailSheet({
                         {appointment.status === 'arrived' && (
                             <>
                                 {checkIsPastAppointment(appointment.start_time) ? (
-                                    <div className="rounded-md bg-amber-50 border border-amber-200 p-3">
+                                    <div className="rounded-md bg-s-warning-bg border border-s-warning-br p-3">
                                         <div className="flex gap-2">
-                                            <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+                                            <AlertTriangle className="h-5 w-5 text-s-warning flex-shrink-0" />
                                             <div className="text-sm">
-                                                <p className="font-medium text-amber-900">Cita con horario pasado</p>
-                                                <p className="text-amber-700 mt-1">
+                                                <p className="font-medium text-s-warning">Cita con horario pasado</p>
+                                                <p className="text-n-11 mt-1">
                                                     Esta cita debe ser reprogramada antes de iniciar la consulta.
                                                 </p>
                                             </div>
@@ -544,8 +544,8 @@ export default function AppointmentDetailSheet({
 
                         {/* 4. Terminal States (Fulfilled / Cancelled / NoShow) -> Read Only Actions */}
                         {appointment.status === 'fulfilled' && (
-                            <div className="flex flex-col items-center gap-3 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-                                <div className="flex items-center gap-2 text-emerald-700 font-bold">
+                            <div className="flex flex-col items-center gap-3 p-4 bg-s-success-bg rounded-xl border border-s-success-br">
+                                <div className="flex items-center gap-2 text-s-success font-bold">
                                     <CheckCircle2 className="w-5 h-5" />
                                     Atención Completada
                                 </div>

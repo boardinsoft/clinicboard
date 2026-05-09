@@ -285,7 +285,7 @@ export default function PrescriptionsPage() {
                                                 <span className="font-medium italic mono">{item.duration}</span>
                                             </div>
                                             {item.instructions && (
-                                                <div className="mt-2 text-[11px] font-medium text-black/70 bg-amber-50/50 p-1.5 rounded border border-amber-200/30 ml-5">
+                                                <div className="mt-2 text-[11px] font-medium bg-s-warning-bg/50 text-s-warning p-1.5 rounded border border-s-warning-br/30 ml-5">
                                                     Indicación: {item.instructions}
                                                 </div>
                                             )}

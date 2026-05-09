@@ -131,7 +131,7 @@ export const OnboardingStepClinic = forwardRef<OnboardingStepClinicRef, Onboardi
                 return <Loader2 className="w-4 h-4 text-n-8 animate-spin" />;
             }
             if (availabilityStatus === 'available') {
-                return <CheckCircle2 className="w-4 h-4 text-emerald-600" />;
+                return <CheckCircle2 className="w-4 h-4 text-s-success" />;
             }
             if (availabilityStatus === 'unavailable') {
                 return <CheckCircle2 className="w-4 h-4 text-destructive" />;

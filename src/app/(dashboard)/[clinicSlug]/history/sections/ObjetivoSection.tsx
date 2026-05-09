@@ -91,7 +91,7 @@ export default function ObjetivoSection({ form, selectedPatient }: ObjetivoSecti
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-sm font-medium text-n-11/90">{sys.label}</span>
                                     <div className="flex items-center gap-2">
-                                        <span className={`text-[10px] font-semibold ${form.watch(`physicalExam.${sys.id}.normal` as const) ? 'text-n-8' : 'text-amber-500'}`}>
+                                        <span className={`text-[10px] font-semibold ${form.watch(`physicalExam.${sys.id}.normal` as const) ? 'text-n-8' : 'text-s-warning'}`}>
                                             {form.watch(`physicalExam.${sys.id}.normal` as const) ? 'Normal' : 'Anormal'}
                                         </span>
                                         <Controller
@@ -102,7 +102,7 @@ export default function ObjetivoSection({ form, selectedPatient }: ObjetivoSecti
                                                     checked={!field.value}
                                                     onCheckedChange={(checked) => field.onChange(!checked)}
                                                     disabled={!selectedPatient}
-                                                    className={field.value ? '' : 'bg-amber-500'}
+                                                    className={field.value ? '' : 'bg-s-warning'}
                                                 />
                                             )}
                                         />

@@ -78,8 +78,8 @@ function getGenderLabel(gender: string): string {
 
 function getAvatarColor(gender: string): string {
     switch (gender) {
-        case "female": return "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400"
-        case "male": return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+        case "female": return "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
+        case "male": return "bg-n-5/30 text-n-11 dark:bg-n-5 dark:text-n-11"
         default: return "bg-n-3 text-n-11 dark:bg-n-5 dark:text-n-10"
     }
 }

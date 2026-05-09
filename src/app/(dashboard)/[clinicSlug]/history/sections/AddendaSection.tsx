@@ -75,10 +75,10 @@ export default function AddendaSection({
                 <div className="flex-1 h-px bg-n-5/40" />
             </div>
             <div className="space-y-6">
-                <Alert className="bg-amber-50/80 border-amber-200/50 text-amber-900">
-                    <Shield className="w-4 h-4 text-amber-500" />
-                    <AlertTitle className="text-sm font-bold text-amber-900">Registro Permanente</AlertTitle>
-                    <AlertDescription className="text-xs text-amber-800">
+                <Alert className="bg-s-warning-bg/80 border-s-warning-br text-s-warning">
+                    <Shield className="w-4 h-4 text-s-warning" />
+                    <AlertTitle className="text-sm font-bold text-s-warning">Registro Permanente</AlertTitle>
+                    <AlertDescription className="text-xs text-n-11">
                         Este acto médico ha sido finalizado y firmado. No es posible editar la nota original, pero puede añadir aclaraciones o información complementaria mediante una <b>Addenda</b>.
                     </AlertDescription>
                 </Alert>
@@ -96,20 +96,20 @@ export default function AddendaSection({
                     </div>
 
                     {isAddingAddendum && (
-                        <Card className="border-amber-200/50 bg-amber-50/50 overflow-hidden shadow-none animate-in zoom-in-95 duration-200">
-                            <div className="px-4 py-3 border-b border-amber-200/50 bg-amber-50/80">
-                                <span className="text-xs font-bold text-amber-900">Nueva Nota Aclaratoria</span>
+                        <Card className="border-s-warning-br bg-s-warning-bg/50 overflow-hidden shadow-none animate-in zoom-in-95 duration-200">
+                            <div className="px-4 py-3 border-b border-s-warning-br bg-s-warning-bg/80">
+                                <span className="text-xs font-bold text-s-warning">Nueva Nota Aclaratoria</span>
                             </div>
                             <CardContent className="p-4 space-y-4">
                                 <Textarea
                                     value={newAddendumContent}
                                     onChange={(e) => setNewAddendumContent(e.target.value)}
                                     placeholder="Escriba la información complementaria aquí..."
-                                    className="resize-none min-h-[120px] bg-n-1 border-n-5/30 focus:ring-amber-500/20"
+                                    className="resize-none min-h-[120px] bg-n-1 border-n-5/30 focus:ring-s-warning/20"
                                 />
                                 <div className="flex justify-end gap-2">
                                     <Button variant="ghost" size="sm" onClick={() => setIsAddingAddendum(false)} disabled={isSavingAddendum} className="text-n-8 hover:text-n-11">Cancelar</Button>
-                                    <Button size="sm" onClick={handleAddAddendum} disabled={isSavingAddendum || !newAddendumContent.trim()} className="bg-amber-600 hover:bg-amber-700 text-white gap-2">
+                                    <Button size="sm" onClick={handleAddAddendum} disabled={isSavingAddendum || !newAddendumContent.trim()} className="bg-s-warning hover:bg-s-warning/90 text-white gap-2">
                                         {isSavingAddendum ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                         Guardar Addenda
                                     </Button>

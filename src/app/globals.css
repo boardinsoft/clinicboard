@@ -95,31 +95,30 @@
   }
 
   .dark {
-    /* ── Escala Neutra (Slate Frío - Dark Overrides) ── */
-    /* Contraste reducido para minimizar fatiga visual */
-    --n-1:  #0b0f15;   /* page bg */
-    --n-2:  #11161f;   /* surface-75 */
-    --n-3:  #161c27;   /* surface-100 */
-    --n-4:  #1c2330;   /* surface-200 */
-    --n-5:  #232b3a;   /* border-muted */
-    --n-6:  #2c3648;   /* border-default */
-    --n-7:  #3a4558;   /* border-strong */
-    --n-8:  #596376;   /* muted text */
-    --n-9:  #7a8496;   /* secondary text */
-    --n-10: #8a97ab;   /* strong text (reducido) */
-    --n-11: #9faab9;   /* heading (reducido de #cbd2de) */
-    --n-12: #b8c4d0;   /* ink (reducido de #eef1f5) */
+    /* ── Escala Neutra (Gris Cálido - Dark) ── */
+    /* Opción C: Prioridad Accesibilidad - WCAG AA */
+    --n-1:  #0f0f0f;   /* page bg - negro cálido */
+    --n-2:  #1a1a1a;   /* surface-75 - cards */
+    --n-3:  #262626;   /* surface-100 - elevated (mayor distinción) */
+    --n-4:  #222222;   /* dividers sutiles - Supabase-like */
+    --n-5:  #2a2a2a;   /* border-muted */
+    --n-6:  #3a3a3a;   /* border-default */
+    --n-7:  #4a4a4a;   /* border-strong */
+    --n-8:  #666666;   /* muted text */
+    --n-9:  #999999;   /* secondary text (WCAG: 4.5:1 sobre #0f0f0f) */
+    --n-10: #bbbbbb;   /* strong text */
+    --n-11: #d8d8d8;   /* heading */
+    --n-12: #f5f5f5;   /* ink */
 
-    /* ── Brand Dark ── */
-    --b-8:  #1fd4a8;
-    --b-9:  #1ac496;
+    /* ── Brand Dark (Teal Clínico) ── */
+    --b-8:  #1ac496;   /* primary action */
+    --b-9:  #16b085;   /* primary hover */
 
     /* ── Semantic Colors Dark ── */
-    /* Opacidad reducida para reducir fatiga visual */
-    --s-success:     #1fd4a8;  --s-success-bg:  rgba(31, 212, 168, 0.12);  --s-success-br:  rgba(31, 212, 168, 0.3);
+    --s-success:     #1ac496;  --s-success-bg:  rgba(26, 196, 150, 0.12);  --s-success-br:  rgba(26, 196, 150, 0.3);
     --s-warning:     #f59e0b;  --s-warning-bg:  rgba(245, 158, 11, 0.12);  --s-warning-br:  rgba(245, 158, 11, 0.3);
     --s-danger:      #ef4444;  --s-danger-bg:   rgba(239, 68, 68, 0.12);   --s-danger-br:   rgba(239, 68, 68, 0.3);
-    --s-info:        #60a5fa;  --s-info-bg:     rgba(96, 165, 250, 0.12);  --s-info-br:     rgba(96, 165, 250, 0.3);
+    --s-info:        #4a9eff;  --s-info-bg:     rgba(74, 158, 255, 0.12);  --s-info-br:     rgba(74, 158, 255, 0.3);   /* teal-ish blue */
     --s-neutral:     #9ca3af;  --s-neutral-bg:  rgba(156, 163, 175, 0.12); --s-neutral-br:  rgba(156, 163, 175, 0.3);
 
     /* ── Alias de Aplicación Dark ── */
@@ -152,7 +151,7 @@
     --sidebar-foreground:      var(--n-10);
     --sidebar-primary:         var(--b-8);
     --sidebar-primary-foreground: #03271f;
-    --sidebar-accent:          var(--n-2);
+    --sidebar-accent:          var(--n-3);
     --sidebar-accent-foreground: var(--n-12);
     --sidebar-border:          var(--n-5);
   }
@@ -161,14 +160,16 @@
     @apply border-border;
   }
 
-  /* ── Neutralizar focus ring del navegador ── */
+  /* ── Focus ring accesible (WCAG 2.4.7) ── */
   :focus-visible {
-    outline: none;
-    box-shadow: none;
+    outline: 2px solid var(--b-8);
+    outline-offset: 2px;
   }
+
   .dark :focus-visible {
-    outline: none;
-    box-shadow: none;
+    outline: 2px solid var(--b-8);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(26, 196, 150, 0.15);
   }
   /* ── Hover sutil universal para dark mode ── */
   .dark *:hover:not([disabled]):not(.no-hover) {
