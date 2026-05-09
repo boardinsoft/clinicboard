@@ -70,7 +70,7 @@ export function AppointmentPicker({
             </div>
             <div className="relative w-full sm:w-[200px] bg-muted/5">
                 <div className="flex flex-col h-[320px]">
-                    <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b px-4 py-2.5">
+                    <div className="sticky top-0 z-10 bg-n-2/80 backdrop-blur-sm border-b px-4 py-2.5 dark:bg-n-2/80">
                         <p className="text-center font-bold text-xs uppercase tracking-wider text-muted-foreground">
                             Horarios
                         </p>

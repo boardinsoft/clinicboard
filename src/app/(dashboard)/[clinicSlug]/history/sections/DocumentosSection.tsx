@@ -261,7 +261,7 @@ export default function DocumentosSection({ encounterId, isReadOnly }: Documento
             )}
 
             {isDragging && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-n-1/80 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-n-2/80 backdrop-blur-sm dark:bg-n-2/80">
                     <div className="flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-b-8 border-dashed bg-n-1">
                         <Upload className="w-10 h-10 text-b-8" />
                         <span className="font-bold text-sm text-b-8">Cargar archivos</span>

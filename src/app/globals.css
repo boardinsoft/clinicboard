@@ -450,6 +450,37 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+  /* ── Custom Scrollbar — Supabase-inspired minimal ── */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--n-5);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--n-7);
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: var(--n-6);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: var(--n-7);
+  }
+
+  /* ── Firefox scrollbar ── */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--n-5) transparent;
+  }
+  .dark * {
+    scrollbar-color: var(--n-6) transparent;
+  }
+
   .clinic-change-overlay {
     @apply fixed inset-0 z-[100] flex items-center justify-center;
     background-color: rgba(0, 0, 0, 0.7);

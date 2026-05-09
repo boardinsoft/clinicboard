@@ -622,7 +622,7 @@ className="pt-5 pb-4 px-6"
                 </div>
             </form>
 
-            <div className="fixed bottom-0 left-0 right-0 z-[60] border-t border-n-5/30 bg-n-1/95 backdrop-blur-sm px-6 py-4">
+            <div className="fixed bottom-0 left-0 right-0 z-[60] border-t border-n-5/30 bg-n-2/95 backdrop-blur-sm px-6 py-4 dark:bg-n-2/95">
                 <div className="flex items-center justify-between gap-4 w-full max-w-7xl mx-auto">
 
                     {!isReadOnly && (

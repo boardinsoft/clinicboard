@@ -26,7 +26,7 @@ const SelectTrigger = React.forwardRef<
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className="h-4 w-4 text-muted-foreground" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ))
@@ -118,7 +118,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-b-2 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:text-b-8 hover:bg-b-2 transition-colors",
+      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-b-2 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:text-b-8 hover:bg-b-2 dark:hover:bg-n-4 transition-colors",
       className
     )}
     {...props}
