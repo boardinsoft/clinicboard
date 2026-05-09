@@ -449,7 +449,7 @@ export default function AppointmentDetailSheet({
                                     </Button>
                                     <Button 
                                         variant="outline" 
-                                        className="w-full text-destructive hover:bg-destructive/10 border-destructive/20"
+                                        className="w-full text-s-danger hover:bg-s-danger/10 border-s-danger/20"
                                         onClick={() => setShowCancelAlert(true)}
                                         disabled={isPending}
                                     >
@@ -504,7 +504,7 @@ export default function AppointmentDetailSheet({
                                 </div>
                                 <Button 
                                     variant="outline" 
-                                    className="w-full text-destructive hover:bg-destructive/10 border-destructive/20"
+                                    className="w-full text-s-danger hover:bg-s-danger/10 border-s-danger/20"
                                     onClick={() => setShowCancelAlert(true)}
                                     disabled={isPending}
                                 >

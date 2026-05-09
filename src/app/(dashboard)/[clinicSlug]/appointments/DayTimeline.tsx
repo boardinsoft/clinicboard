@@ -237,7 +237,7 @@ export default function DayTimeline({ appointments, onEventClick, onRefresh }: D
                     <div className="space-y-3">
                         {isNowInView && (
                             <div className="sticky top-0 z-30 flex items-center gap-2 mb-4">
-                                <div className="w-2.5 h-2.5 rounded-full bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-destructive shadow-[0_0_8px_var(--s-danger)]" />
                                 <span className="text-[10px] font-bold text-destructive tracking-wide bg-destructive/10 px-2 py-0.5 rounded-full">
                                     AHORA · {nowHour.toString().padStart(2, '0')}:{nowMinutes.toString().padStart(2, '0')}
                                 </span>

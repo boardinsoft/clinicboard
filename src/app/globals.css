@@ -92,6 +92,14 @@
     --sidebar-accent-foreground: var(--n-11);
     --sidebar-border:          var(--n-5);
     --sidebar-ring:            var(--b-8);
+
+    /* ── Shadows ── */
+    --shadow-subtle:   0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm:       0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md:       0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg:       0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl:       0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-2xl:      0 25px 50px -12px rgb(0 0 0 / 0.25);
   }
 
   .dark {
@@ -154,6 +162,14 @@
     --sidebar-accent:          var(--n-3);
     --sidebar-accent-foreground: var(--n-12);
     --sidebar-border:          var(--n-5);
+
+    /* ── Shadows (Dark Mode - opacity reducida) ── */
+    --shadow-subtle:   0 1px 2px 0 rgb(0 0 0 / 0.2);
+    --shadow-sm:       0 1px 3px 0 rgb(0 0 0 / 0.25), 0 1px 2px -1px rgb(0 0 0 / 0.25);
+    --shadow-md:       0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-lg:       0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.35);
+    --shadow-xl:       0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    --shadow-2xl:      0 25px 50px -12px rgb(0 0 0 / 0.5);
   }
 
   * {
@@ -171,6 +187,18 @@
     outline-offset: 2px;
     box-shadow: 0 0 0 4px rgba(26, 196, 150, 0.15);
   }
+
+  /* ── Selection color — Supabase-inspired ── */
+  ::selection {
+    background-color: var(--b-3);
+    color: var(--b-12);
+  }
+
+  .dark ::selection {
+    background-color: rgba(26, 196, 150, 0.25);
+    color: var(--n-1);
+  }
+
   /* ── Hover sutil universal para dark mode ── */
   .dark *:hover:not([disabled]):not(.no-hover) {
     transition: all 0.15s ease;

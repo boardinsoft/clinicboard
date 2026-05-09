@@ -15,11 +15,11 @@ const badgeVariants = cva(
       variant: {
         // ── Square (CIE-10, Categorías) ──
         default:
-          "rounded-md border border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80 px-2 py-0.5 text-[11px] font-medium",
+          "rounded-md border border-transparent bg-primary text-primary-foreground hover:bg-primary/80 px-2 py-0.5 text-[11px] font-medium",
         secondary:
           "rounded-md border border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 px-2 py-0.5 text-[11px] font-medium",
         destructive:
-          "rounded-md border border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80 px-2 py-0.5 text-[11px] font-medium",
+          "rounded-md border border-transparent bg-s-danger text-white hover:bg-s-danger/80 px-2 py-0.5 text-[11px] font-medium",
         outline:
           "rounded-md border border-border text-foreground bg-transparent px-2 py-0.5 text-[11px] font-medium",
 

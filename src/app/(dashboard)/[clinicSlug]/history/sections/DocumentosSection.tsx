@@ -129,7 +129,7 @@ function DocumentSectionCard({
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-5 w-5 rounded-md hover:bg-destructive/10 text-destructive"
+                                            className="h-5 w-5 rounded-md hover:bg-s-danger/10 text-s-danger"
                                         >
                                             <Trash2 className="w-3 h-3" />
                                         </Button>

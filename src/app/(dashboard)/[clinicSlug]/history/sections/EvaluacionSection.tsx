@@ -151,7 +151,7 @@ export default function EvaluacionSection({
                                         type="button"
                                         variant="ghost"
                                         size="icon"
-                                        className="text-n-8 hover:text-destructive hover:bg-destructive/10 h-10 w-10 shrink-0 rounded-lg"
+                                        className="text-n-8 hover:text-s-danger hover:bg-s-danger/10 h-10 w-10 shrink-0 rounded-lg"
                                         onClick={() => removeDiagnosis(index)}
                                         title="Quitar"
                                     >

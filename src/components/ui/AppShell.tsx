@@ -439,7 +439,7 @@ const displayName =
                 <ChevronsUpDown size={12} className="text-n-8 dark:text-n-9 ml-0.5" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-60 rounded-lg shadow-lg border-n-5 p-1 bg-popover">
+            <DropdownMenuContent align="start" className="w-60 rounded-lg shadow-lg border-n-5 p-1 bg-popover dark:shadow-lg/80">
               <div className="px-3 py-2 border-b border-n-4">
                 <h4 className="text-[10px] uppercase tracking-wider text-n-9 dark:text-n-10 font-bold">Clínicas Vinculadas</h4>
               </div>
@@ -494,7 +494,7 @@ const displayName =
                 <ChevronDown size={12} className="text-n-9 dark:text-n-10 ml-0.5" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="w-[320px] rounded-lg shadow-2xl border-n-5 p-0 bg-popover overflow-hidden mt-2">
+            <DropdownMenuContent align="center" className="w-[320px] rounded-lg shadow-2xl border-n-5 p-0 bg-popover overflow-hidden mt-2 dark:shadow-2xl/80">
               <div className="flex items-center justify-between px-3.5 py-3 border-b border-n-4">
                 <h3 className="text-[11px] font-semibold text-n-10 dark:text-n-11 uppercase tracking-wider">Recursos conectados</h3>
                 <button className="text-[11px] font-medium text-n-9 dark:text-n-10 hover:text-n-11 dark:hover:text-n-12 transition-colors">+ Agregar</button>
@@ -599,8 +599,8 @@ const displayName =
                 className={cn(
                   'h-8 w-8 transition-all duration-200 relative group/ia',
                   rightPanelOpen
-                    ? "bg-b-1 text-b-8 shadow-sm"
-                    : "text-n-9 dark:text-n-10 hover:bg-b-8/10 hover:text-b-8"
+                    ? "bg-n-2 text-b-8 shadow-sm"
+                    : "text-n-9 dark:text-n-10 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12"
                 )}
                 aria-label="Asistente IA"
               >
@@ -611,7 +611,7 @@ const displayName =
                 />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={12} className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100">
+            <TooltipContent side="bottom" sideOffset={12} className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100 dark:shadow-xl/80">
               Asistente IA
             </TooltipContent>
           </Tooltip>
@@ -619,7 +619,7 @@ const displayName =
 
           {/* Upgrade Plan CTA */}
           <button
-            className="inline-flex items-center justify-center px-3 h-8 text-[12px] font-semibold text-n-1 dark:text-n-1 bg-b-8 border border-b-9 rounded-[5px] hover:bg-b-7 dark:hover:bg-b-6 active:scale-95 transition-all tracking-tight whitespace-nowrap shadow-sm hover:shadow-md"
+            className="inline-flex items-center justify-center px-3 h-8 text-[12px] font-semibold text-n-1 dark:text-n-1 bg-b-8 border border-b-9 rounded-[5px] hover:bg-b-7 dark:hover:bg-b-6 active:scale-95 transition-all tracking-tight whitespace-nowrap shadow-sm hover:shadow-md dark:shadow-sm/50 dark:hover:shadow-md/50"
           >
             Actualizar
           </button>
@@ -629,16 +629,16 @@ const displayName =
           {/* Avatar Menu Trigger */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center justify-center w-7 h-7 rounded-full bg-n-3 border-[1.5px] border-n-4 dark:bg-n-5 dark:border-n-6 shadow-[0_0_0_1px_var(--n-5)] dark:shadow-[0_0_0_1px_var(--n-6)] hover:shadow-[0_0_0_1px_var(--n-6),0_2px_8px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_0_0_1px_var(--n-7),0_2px_8px_rgba(0,0,0,0.2)] transition-all outline-none">
+              <button className="flex items-center justify-center w-7 h-7 rounded-full bg-n-3 border-[1.5px] border-n-4 dark:bg-n-5 dark:border-n-6 shadow-[0_0_0_1px_var(--n-5)] dark:shadow-[0_0_0_1px_var(--n-6)] hover:shadow-[0_0_0_1px_var(--n-6),0_2px_8px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_0_0_1px_var(--n-7),0_2px_8px_rgba(0,0,0,0.25)] transition-all outline-none">
                 <span className="text-[10px] font-bold text-n-11 dark:text-n-12 leading-none">
                   {initials}
                 </span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 rounded-lg shadow-2xl border-n-5 p-0 bg-popover overflow-hidden mt-2">
+            <DropdownMenuContent align="end" className="w-64 rounded-lg shadow-2xl border-n-5 p-0 bg-popover overflow-hidden mt-2 dark:shadow-2xl/80">
               {/* Profile Header */}
               <div className="flex gap-3 p-3.5 border-b border-n-4 items-start">
-                <div className="w-10 h-10 rounded-full bg-n-2 dark:bg-n-4 flex items-center justify-center shrink-0 shadow-sm border border-n-3 dark:border-n-5">
+                <div className="w-10 h-10 rounded-full bg-n-2 dark:bg-n-4 flex items-center justify-center shrink-0 shadow-sm border border-n-3 dark:border-n-5 dark:shadow-sm/50">
                   <span className="text-sm font-bold text-n-10 dark:text-n-11">{initials}</span>
                 </div>
                 <div className="flex flex-col min-w-0">
@@ -726,7 +726,7 @@ const displayName =
           <SubHeader />
           {/* Global Search Dialog */}
           <Dialog open={isSearchModalOpen} onOpenChange={setIsSearchModalOpen}>
-            <DialogContent className="sm:max-w-xl top-[18%] w-full rounded-xl shadow-2xl p-0 overflow-hidden border-n-5 bg-popover">
+            <DialogContent className="sm:max-w-xl top-[18%] w-full rounded-xl shadow-2xl p-0 overflow-hidden border-n-5 bg-popover dark:shadow-2xl/80">
               <div className="flex items-center border-b border-n-5 px-3 py-2 bg-n-2/50">
                 <SearchIcon className="mr-2 h-4 w-4 shrink-0 text-n-8" strokeWidth={1.8} />
                 <Input
