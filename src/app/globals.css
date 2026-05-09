@@ -280,14 +280,14 @@
     border-color: color-mix(in oklch, var(--s-success-br), #000000 20%);
   }
   .dark .pill-success {
-    background-color: var(--s-success);
-    border-color: var(--s-success);
-    color: #ffffff;
+    background-color: rgba(26, 196, 150, 0.15);
+    border-color: rgba(26, 196, 150, 0.3);
+    color: #1ac496;
   }
   .dark .pill-success:hover {
-    background-color: var(--s-success-bg);
-    border-color: var(--s-success-br);
-    color: var(--s-success);
+    background-color: rgba(26, 196, 150, 0.25);
+    border-color: rgba(26, 196, 150, 0.4);
+    color: #1ac496;
   }
   .pill-success::before { background-color: var(--s-success); }
 
@@ -302,14 +302,14 @@
     border-color: color-mix(in oklch, var(--s-warning-br), #000000 25%);
   }
   .dark .pill-warning {
-    background-color: var(--s-warning);
-    border-color: var(--s-warning);
-    color: #ffffff;
+    background-color: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
   }
   .dark .pill-warning:hover {
-    background-color: var(--s-warning-bg);
-    border-color: var(--s-warning-br);
-    color: var(--s-warning);
+    background-color: rgba(245, 158, 11, 0.25);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #f59e0b;
   }
   .pill-warning::before { background-color: var(--s-warning); }
 
@@ -324,14 +324,14 @@
     border-color: color-mix(in oklch, var(--s-danger-br), #000000 25%);
   }
   .dark .pill-danger {
-    background-color: var(--s-danger);
-    border-color: var(--s-danger);
-    color: #ffffff;
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
   }
   .dark .pill-danger:hover {
-    background-color: var(--s-danger-bg);
-    border-color: var(--s-danger-br);
-    color: var(--s-danger);
+    background-color: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
   }
   .pill-danger::before { background-color: var(--s-danger); }
 
@@ -346,14 +346,14 @@
     border-color: color-mix(in oklch, var(--s-info-br), #000000 25%);
   }
   .dark .pill-info {
-    background-color: var(--s-info);
-    border-color: var(--s-info);
-    color: #ffffff;
+    background-color: rgba(74, 158, 255, 0.15);
+    border-color: rgba(74, 158, 255, 0.3);
+    color: #4a9eff;
   }
   .dark .pill-info:hover {
-    background-color: var(--s-info-bg);
-    border-color: var(--s-info-br);
-    color: var(--s-info);
+    background-color: rgba(74, 158, 255, 0.25);
+    border-color: rgba(74, 158, 255, 0.4);
+    color: #4a9eff;
   }
   .pill-info::before { background-color: var(--s-info); }
 
@@ -368,14 +368,14 @@
     border-color: color-mix(in oklch, var(--border), #000000 15%);
   }
   .dark .pill-neutral {
-    background-color: var(--s-neutral);
-    border-color: var(--s-neutral);
-    color: #ffffff;
+    background-color: rgba(156, 163, 175, 0.15);
+    border-color: rgba(156, 163, 175, 0.3);
+    color: #9ca3af;
   }
   .dark .pill-neutral:hover {
-    background-color: var(--s-neutral-bg);
-    border-color: var(--s-neutral-br);
-    color: var(--s-neutral);
+    background-color: rgba(156, 163, 175, 0.25);
+    border-color: rgba(156, 163, 175, 0.4);
+    color: #9ca3af;
   }
   .pill-neutral::before { background-color: color-mix(in oklch, var(--muted-foreground), transparent 60%); }
 
