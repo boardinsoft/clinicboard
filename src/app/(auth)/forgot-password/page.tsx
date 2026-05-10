@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
                 Revisa tu correo
               </h1>
               <p className="text-sm text-n-8 text-center">
-                Si existe una cuenta con ese correo, recibirás un enlace para restablecer tu contraseña.
+                Si el correo está registrado, te enviaremos un enlace para restablecer tu contraseña.
               </p>
             </div>
 

@@ -19,10 +19,10 @@ const passwordSchema = z
     .string()
     .min(1, "La contraseña es requerida")
     .min(8, "Mínimo 8 caracteres")
-    .regex(/[A-Z]/, "Al menos una mayúscula")
-    .regex(/[a-z]/, "Al menos una minúscula")
-    .regex(/[0-9]/, "Al menos un número")
-    .regex(/[^A-Za-z0-9]/, "Al menos un carácter especial")
+    .regex(/[A-Z]/, "1 mayúscula")
+    .regex(/[a-z]/, "1 minúscula")
+    .regex(/[0-9]/, "1 número")
+    .regex(/[^A-Za-z0-9]/, "1 símbolo")
 
 const registerSchema = z.object({
     username: z.string().min(3, "Mínimo 3 caracteres").max(20, "Máximo 20 caracteres"),
@@ -111,7 +111,7 @@ export default function RegisterPage() {
                             Crea tu cuenta
                         </h1>
                         <p className="text-sm text-n-8 text-center">
-                            Registra tu clínica y conecta con la comunidad médica
+                            Gestiona tu consultorio sin papel y sin complicaciones
                         </p>
                     </div>
 
@@ -152,7 +152,7 @@ export default function RegisterPage() {
                                 htmlFor="username"
                                 className="text-xs font-semibold tracking-wider text-n-8"
                             >
-                                Nombre de usuario
+                                Nombre de tu consultorio
                             </FieldLabel>
                             <Input
                                 {...form.register("username")}

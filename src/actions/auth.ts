@@ -11,7 +11,7 @@ export async function signInWithEmail(formData: FormData) {
 
     if (!email || !password) {
         logger.warn('Intento de login sin credenciales completas');
-        return { error: 'Por favor, ingrese correo y contraseña' };
+        return { error: 'Por favor, ingresa correo y contraseña' };
     }
 
     try {
@@ -139,7 +139,7 @@ export async function registerUser(email: string, password: string) {
 
         return {
             success: true,
-            message: 'Se envío un enlace de confirmación a tu correo. Por favor, verifica tu bandeja de entrada.',
+            message: 'Se envió un enlace de confirmación a tu correo. Por favor, verifica tu bandeja de entrada.',
             userId: data.user?.id
         };
     } catch (error) {

@@ -83,7 +83,7 @@ export default function LoginPage() {
               Iniciar sesión
             </h1>
             <p className="text-sm text-n-8 text-center">
-              Ingresa tus credenciales para acceder al sistema
+              Ingresa tu correo y contraseña para entrar a tu consultorio
             </p>
           </div>
 
@@ -208,7 +208,7 @@ export default function LoginPage() {
                 href="/register"
                 className="text-b-8 font-medium hover:underline"
               >
-                Crea tu clínica
+                Regístra tu consultorio
               </Link>
             </p>
           </div>
