@@ -144,7 +144,7 @@ export default function OnboardingPage() {
                             variant="default"
                             className="w-full"
                         >
-                            Ir al Dashboard
+                            Ir al Tablero
                         </Button>
                         <p className="text-xs text-n-8 text-center">
                             ¿No tienes clínica?{' '}
@@ -181,7 +181,7 @@ export default function OnboardingPage() {
                             variant="default"
                             className="w-full"
                         >
-                            Ir al Dashboard
+                            Ir al Tablero
                         </Button>
                         <p className="text-xs text-n-8 text-center">
                             ¿Necesitas más clínicas?{' '}

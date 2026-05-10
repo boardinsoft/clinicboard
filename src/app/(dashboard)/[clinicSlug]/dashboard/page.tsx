@@ -327,7 +327,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-n-8">Pendientes</p>
-                    <p className="text-sm font-semibold text-n-12">3 recetas por signer</p>
+                    <p className="text-sm font-semibold text-n-12">3 recetas por firmar</p>
                   </div>
                 </div>
               </CardContent>

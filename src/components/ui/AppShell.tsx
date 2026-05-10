@@ -487,7 +487,7 @@ const displayName =
           
           {/* Feedback (px-3) */}
           <button className="px-3 py-1.5 text-[13px] font-medium text-n-11 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 dark:hover:text-n-12 rounded-[5px] transition-all">
-            Feedback
+            Comentarios
           </button>
 
           {/* Ayuda */}
@@ -540,7 +540,7 @@ const displayName =
           <button
             className="inline-flex items-center justify-center px-3 h-8 text-[12px] font-semibold text-n-1 dark:text-n-1 bg-b-8 border border-b-9 rounded-[5px] hover:bg-b-7 dark:hover:bg-b-6 active:scale-95 transition-all tracking-tight whitespace-nowrap shadow-sm hover:shadow-md dark:shadow-sm/50 dark:hover:shadow-md/50"
           >
-            Actualizar
+            Actualizar a Pro
           </button>
 
           <div className="w-px h-5 bg-n-5 mx-2" />
@@ -629,7 +629,7 @@ const displayName =
                   className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] font-semibold text-n-10 dark:text-n-11 hover:bg-n-3 dark:hover:bg-n-2 hover:text-n-12 cursor-pointer transition-colors"
                 >
                   <LogOut size={16} className="text-n-8" strokeWidth={1.8} />
-                  <span>Cerrar Sesión</span>
+                  <span>Cerrar sesión</span>
                 </DropdownMenuItem>
               </div>
             </DropdownMenuContent>
@@ -649,7 +649,7 @@ const displayName =
                 <SearchIcon className="mr-2 h-4 w-4 shrink-0 text-n-8" strokeWidth={1.8} />
                 <Input
                   className="flex h-11 w-full bg-transparent py-3 text-sm outline-none border-0 focus-visible:ring-0 placeholder:text-n-8"
-                  placeholder="Pacientes, citas, historias, acciones..."
+                  placeholder="Pacientes, citas, recetas..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
