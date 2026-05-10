@@ -151,3 +151,52 @@ export async function registerUser(email: string, password: string) {
         return { error: 'Error inesperado. Por favor, intenta nuevamente.' };
     }
 }
+
+export async function forgotPassword(email: string) {
+    if (!email) {
+        logger.warn('Intento de recuperación sin email');
+        return { error: 'Por favor, ingresa tu correo electrónico' };
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return { error: 'Por favor, ingresa un correo electrónico válido' };
+    }
+
+    try {
+        const supabase = await createServerSupabaseClient();
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email.toLowerCase(), {
+            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback?next=/reset-password`,
+        });
+
+        if (error) {
+            logger.security('Error en solicitud de reset de contraseña', {
+                email,
+                errorCode: error.message,
+                errorStatus: error.status,
+            });
+
+            if (error.status === 429 || error.message?.toLowerCase().includes('rate limit')) {
+                return {
+                    error: 'Demasiadas solicitudes. Por favor, espera unos minutos antes de intentar nuevamente.',
+                    errorType: 'rate_limit'
+                };
+            }
+
+            return { error: 'No se pudo procesar tu solicitud. Por favor, intenta nuevamente.' };
+        }
+
+        logger.info('Solicitud de reset de contraseña', { email });
+
+        return { success: true };
+
+    } catch (error) {
+        if (error && typeof error === 'object' && 'digest' in error) {
+            throw error;
+        }
+
+        logger.error('Error en forgotPassword', error);
+        return { error: 'Error inesperado. Por favor, intenta nuevamente.' };
+    }
+}
