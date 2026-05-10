@@ -26,8 +26,8 @@ const passwordSchema = z
     .regex(/[^A-Za-z0-9]/, "1 símbolo")
 
 const registerSchema = z.object({
-    username: z.string().min(3, "Mínimo 3 caracteres").max(20, "Máximo 20 caracteres"),
-    email: z.string().email("Por favor ingresa un correo electrónico válido"),
+    username: z.string().min(3, "El nombre debe tener al menos 3 caracteres").max(20, "El nombre no puede exceder 20 caracteres"),
+    email: z.string().email("Ingresa un correo válido"),
     password: passwordSchema,
     confirmPassword: z.string(),
     privacyAccepted: z.boolean().refine((val) => val === true, {
@@ -128,7 +128,7 @@ export default function RegisterPage() {
                                     <AlertCircle className="h-4 w-4" />
                                 )}
                                 <AlertTitle className="text-xs font-bold tracking-wider uppercase">
-                                    {errorType === "rate_limit" ? "Demasiados intentos" : "Error de registro"}
+                                    {errorType === "rate_limit" ? "Demasiados intentos" : "No se pudo crear la cuenta"}
                                 </AlertTitle>
                                 <AlertDescription className="text-sm opacity-90">
                                     {errorMsg}
@@ -302,7 +302,7 @@ export default function RegisterPage() {
                             {loading ? (
                                 <>
                                     <Loader2 className="mr-2 size-4 animate-spin" />
-                                    Creando cuenta...
+                                    Creando tu cuenta...
                                 </>
                             ) : (
                                 "Crear cuenta"

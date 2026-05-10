@@ -16,8 +16,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 
 const loginSchema = z.object({
-  email: z.string().email("Por favor ingresa un correo electrónico válido."),
-  password: z.string().min(1, "La contraseña es requerida."),
+  email: z.string().email("Ingresa un correo válido"),
+  password: z.string().min(1, "La contraseña no puede estar vacía"),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
@@ -99,7 +99,7 @@ export default function LoginPage() {
                   <AlertCircle className="h-4 w-4" />
                 )}
                 <AlertTitle className="text-xs font-bold tracking-wider uppercase">
-                  {errorType === "rate_limit" ? "Demasiados intentos" : "Acceso denegado"}
+                  {errorType === "rate_limit" ? "Demasiados intentos" : "No pudimos iniciar sesión"}
                 </AlertTitle>
                 <AlertDescription className="text-sm opacity-90">
                   {errorMsg}
@@ -193,7 +193,7 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
-                  Cargando...
+                  Un momento...
                 </>
               ) : (
                 "Iniciar sesión"

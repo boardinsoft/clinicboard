@@ -19,7 +19,7 @@ export default function VerifyEmailPage() {
 
     async function handleResend() {
         if (!email) {
-            setErrorMsg('No se encontró el correo electrónico.');
+            setErrorMsg('No tenemos el correo. Solicita otro enlace.');
             setStatus('error');
             return;
         }
@@ -78,7 +78,7 @@ export default function VerifyEmailPage() {
                                 <AlertCircle className="h-4 w-4" />
                             )}
                             <AlertTitle className="text-xs font-bold tracking-wider uppercase">
-                                {errorType === 'rate_limit' ? 'Demasiadas solicitudes' : 'Error'}
+                                {errorType === 'rate_limit' ? 'Demasiadas solicitudes' : 'No se pudo reenviar'}
                             </AlertTitle>
                             <AlertDescription className="text-sm opacity-90">
                                 {errorMsg}
