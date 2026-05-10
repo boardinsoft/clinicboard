@@ -1,5 +1,0 @@
-fastapi
-mangum
-pydantic
-python-dotenv
-cryptography
