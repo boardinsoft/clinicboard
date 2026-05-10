@@ -23,7 +23,7 @@ export default async function ClinicSlugLayout({ children, params }: ClinicSlugL
     }
 
     if (!user.email_confirmed_at) {
-        redirect('/login?reason=email_unconfirmed');
+        redirect(`/verify-email?email=${encodeURIComponent(user.email || '')}`);
     }
 
     const { data: practitioner } = await supabase

@@ -5,7 +5,7 @@ import { forwardRef, useImperativeHandle } from 'react';
 import { CheckCircle2, Building2, MapPin, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import type { OnboardingStepData } from './OnboardingDialog';
+import type { OnboardingStepData } from '@/components/onboarding';
 
 export interface OnboardingStepCompleteRef {
     triggerSubmit: () => void;

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, ShieldAlert } from 'lucide-react';
-import { OnboardingDialog, type OnboardingStepData } from '@/components/onboarding';
+import { OnboardingFeed, type OnboardingStepData } from '@/components/onboarding';
 import { createClinicAsAdmin, getOnboardingStatus } from '@/actions/onboarding';
 import { createClient } from '@/lib/supabase/client';
 import { loadOnboardingState, clearOnboardingState } from '@/lib/schemas/onboarding';
@@ -17,7 +17,6 @@ export default function OnboardingPage() {
     const [pageState, setPageState] = React.useState<OnboardingPageState>('loading');
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
     const [userId, setUserId] = React.useState<string | null>(null);
-    const [dialogOpen, setDialogOpen] = React.useState(false);
     const [savedState, setSavedState] = React.useState<Partial<OnboardingStepData> | null>(null);
 
     React.useEffect(() => {
@@ -77,7 +76,6 @@ export default function OnboardingPage() {
                 }
 
                 setPageState('ready');
-                setDialogOpen(true);
             } catch (err) {
                 console.error('Auth check error:', err);
                 setErrorMessage('Error al verificar sesión. Intenta de nuevo.');
@@ -134,7 +132,7 @@ export default function OnboardingPage() {
     if (pageState === 'auth_error') {
         return (
             <div className="min-h-svh bg-n-1 flex items-center justify-center p-4">
-                <div className="w-full max-w-md bg-background rounded-lg border shadow-xl p-6">
+                <div className="w-full max-w-md bg-background rounded-lg border border-n-5 p-6">
                     <Alert variant="destructive" className="mb-4">
                         <AlertCircle className="h-4 w-4" />
                         <AlertTitle className="text-xs font-bold tracking-wider">ERROR</AlertTitle>
@@ -167,7 +165,7 @@ export default function OnboardingPage() {
     if (pageState === 'clinic_limit_reached') {
         return (
             <div className="min-h-svh bg-n-1 flex items-center justify-center p-4">
-                <div className="w-full max-w-md bg-background rounded-lg border shadow-xl p-6">
+                <div className="w-full max-w-md bg-background rounded-lg border border-n-5 p-6">
                     <div className="flex flex-col items-center text-center mb-4">
                         <div className="w-12 h-12 bg-n-3 rounded-full flex items-center justify-center mb-3">
                             <ShieldAlert className="h-6 w-6 text-n-8" />
@@ -201,20 +199,10 @@ export default function OnboardingPage() {
     }
 
     return (
-        <div className="min-h-svh bg-n-1">
-            <OnboardingDialog
-                open={dialogOpen}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        router.push('/login?reason=onboarding_incomplete');
-                    } else {
-                        setDialogOpen(true);
-                    }
-                }}
-                userId={userId}
-                initialData={savedState || undefined}
-                onComplete={handleComplete}
-            />
-        </div>
+        <OnboardingFeed
+            userId={userId}
+            initialData={savedState || undefined}
+            onComplete={handleComplete}
+        />
     );
 }

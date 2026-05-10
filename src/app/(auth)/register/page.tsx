@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -44,10 +45,10 @@ const passwordErrorId = "password-error"
 const usernameErrorId = "username-error"
 
 export default function RegisterPage() {
+    const router = useRouter()
     const [loading, setLoading] = React.useState(false)
     const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
     const [errorType, setErrorType] = React.useState<string | null>(null)
-    const [successMsg, setSuccessMsg] = React.useState<string | null>(null)
     const [showPassword, setShowPassword] = React.useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
     const [rememberMe, setRememberMe] = React.useState(false)
@@ -77,21 +78,21 @@ export default function RegisterPage() {
         setLoading(true)
         setErrorMsg(null)
         setErrorType(null)
-        setSuccessMsg(null)
 
         const result = await registerUser(values.email, values.password)
 
         if (result?.error) {
             setErrorMsg(result.error)
-            setErrorType((result as any).errorType || null)
+            setErrorType(null)
             setLoading(false)
             return
         }
 
         if (result?.success) {
-            setSuccessMsg(result.message || "Revisa tu correo para confirmar tu cuenta")
-            form.reset()
+            const emailToRedirect = result.email || values.email
             setLoading(false)
+            router.push(`/verify-email?email=${encodeURIComponent(emailToRedirect)}`)
+            return
         }
     }
 
@@ -131,18 +132,6 @@ export default function RegisterPage() {
                                 </AlertTitle>
                                 <AlertDescription className="text-sm opacity-90">
                                     {errorMsg}
-                                </AlertDescription>
-                            </Alert>
-                        )}
-
-                        {successMsg && (
-                            <Alert className="bg-success/5 border-success/20 text-success animate-in fade-in slide-in-from-top-1">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertTitle className="text-xs font-bold tracking-wider uppercase">
-                                    Cuenta creada
-                                </AlertTitle>
-                                <AlertDescription className="text-sm opacity-90">
-                                    {successMsg}
                                 </AlertDescription>
                             </Alert>
                         )}

@@ -116,7 +116,7 @@ export async function registerUser(email: string, password: string) {
             email: email.toLowerCase(),
             password,
             options: {
-                emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/onboarding`,
+                emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback?next=/onboarding`,
                 data: {
                     registered_at: new Date().toISOString(),
                 }
@@ -140,7 +140,8 @@ export async function registerUser(email: string, password: string) {
         return {
             success: true,
             message: 'Se envió un enlace de confirmación a tu correo. Por favor, verifica tu bandeja de entrada.',
-            userId: data.user?.id
+            userId: data.user?.id,
+            email,
         };
     } catch (error) {
         if (error && typeof error === 'object' && 'digest' in error) {
@@ -197,6 +198,59 @@ export async function forgotPassword(email: string) {
         }
 
         logger.error('Error en forgotPassword', error);
+        return { error: 'Error inesperado. Por favor, intenta nuevamente.' };
+    }
+}
+
+export async function resendConfirmationEmail(email: string) {
+    if (!email) {
+        logger.warn('Intento de reenvío sin email');
+        return { error: 'Por favor, ingresa tu correo electrónico' };
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return { error: 'Por favor, ingresa un correo electrónico válido' };
+    }
+
+    try {
+        const supabase = await createServerSupabaseClient();
+
+        const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email: email.toLowerCase(),
+            options: {
+                emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback?next=/onboarding`,
+            }
+        });
+
+        if (error) {
+            logger.security('Error al reenviar email de confirmación', {
+                email,
+                errorCode: error.message,
+                errorStatus: error.status,
+            });
+
+            if (error.status === 429 || error.message?.toLowerCase().includes('rate limit')) {
+                return {
+                    error: 'Demasiadas solicitudes. Por favor, espera unos minutos antes de intentar nuevamente.',
+                    errorType: 'rate_limit'
+                };
+            }
+
+            return { error: 'No se pudo reenviar el enlace. Por favor, intenta nuevamente.' };
+        }
+
+        logger.info('Email de confirmación reenviado', { email });
+
+        return { success: true };
+
+    } catch (error) {
+        if (error && typeof error === 'object' && 'digest' in error) {
+            throw error;
+        }
+
+        logger.error('Error en resendConfirmationEmail', error);
         return { error: 'Error inesperado. Por favor, intenta nuevamente.' };
     }
 }

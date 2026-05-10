@@ -64,7 +64,8 @@ export async function proxy(request: NextRequest) {
         request.nextUrl.pathname.startsWith('/register') ||
         request.nextUrl.pathname.startsWith('/onboarding') ||
         request.nextUrl.pathname.startsWith('/forgot-password') ||
-        request.nextUrl.pathname.startsWith('/reset-password');
+        request.nextUrl.pathname.startsWith('/reset-password') ||
+        request.nextUrl.pathname.startsWith('/verify-email');
 
     // === SESSION TIMEOUT CHECK ===
     // Verificar timeout de inactividad (10 minutos) para usuarios autenticados

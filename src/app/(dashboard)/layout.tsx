@@ -17,7 +17,7 @@ export default async function DashboardLayout({
     }
 
     if (!user.email_confirmed_at) {
-        redirect('/login?reason=email_unconfirmed');
+        redirect(`/verify-email?email=${encodeURIComponent(user.email || '')}`);
     }
 
     return <>{children}</>;
