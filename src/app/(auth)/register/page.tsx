@@ -1,242 +1,260 @@
-'use client';
+"use client"
 
-import * as React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { Loader2, MailIcon, LockIcon, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { registerUser } from '@/actions/auth';
-import { Button } from '@/components/ui/button';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import { InputGroup, InputGroupAddon } from '@/components/ui/input-group';
-import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PasswordStrengthIndicator } from '@/components/ui/password-strength-indicator';
+import * as React from "react"
+import Link from "next/link"
+import Image from "next/image"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { registerUser } from "@/actions/auth"
+import { Button } from "@/components/ui/button"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { AlertCircle, Clock, Eye, EyeOff, Loader2 } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Checkbox } from "@/components/ui/checkbox"
+import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator"
 
 const passwordSchema = z
     .string()
-    .min(1, 'La contraseña es requerida')
-    .min(8, 'Mínimo 8 caracteres')
-    .regex(/[A-Z]/, 'Al menos una mayúscula')
-    .regex(/[a-z]/, 'Al menos una minúscula')
-    .regex(/[0-9]/, 'Al menos un número')
-    .regex(/[^A-Za-z0-9]/, 'Al menos un carácter especial');
+    .min(1, "La contraseña es requerida")
+    .min(8, "Mínimo 8 caracteres")
+    .regex(/[A-Z]/, "Al menos una mayúscula")
+    .regex(/[a-z]/, "Al menos una minúscula")
+    .regex(/[0-9]/, "Al menos un número")
+    .regex(/[^A-Za-z0-9]/, "Al menos un carácter especial")
 
 const registerSchema = z.object({
-    email: z.string().email('Por favor ingresa un correo electrónico válido'),
+    username: z.string().min(3, "Mínimo 3 caracteres").max(20, "Máximo 20 caracteres"),
+    email: z.string().email("Por favor ingresa un correo electrónico válido"),
     password: passwordSchema,
     confirmPassword: z.string(),
+    privacyAccepted: z.boolean().refine((val) => val === true, {
+        message: "Debes aceptar la política de privacidad",
+    }),
 }).refine((data) => data.password === data.confirmPassword, {
-    message: 'Las contraseñas no coinciden',
-    path: ['confirmPassword'],
-});
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+})
 
-type RegisterFormValues = z.infer<typeof registerSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>
+
+const emailErrorId = "email-error"
+const passwordErrorId = "password-error"
+const usernameErrorId = "username-error"
 
 export default function RegisterPage() {
-    const router = useRouter();
-    const [loading, setLoading] = React.useState(false);
-    const [showPassword, setShowPassword] = React.useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-    const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
-    const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
+    const [loading, setLoading] = React.useState(false)
+    const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
+    const [errorType, setErrorType] = React.useState<string | null>(null)
+    const [successMsg, setSuccessMsg] = React.useState<string | null>(null)
+    const [showPassword, setShowPassword] = React.useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
+    const [rememberMe, setRememberMe] = React.useState(false)
 
     const form = useForm<RegisterFormValues>({
         resolver: zodResolver(registerSchema),
         defaultValues: {
-            email: '',
-            password: '',
-            confirmPassword: '',
+            username: "",
+            email: "",
+            password: "",
+            confirmPassword: "",
+            privacyAccepted: false,
         },
-    });
+    })
 
     React.useEffect(() => {
         const subscription = form.watch((_, { name }) => {
-            if (name === 'email') {
-                form.setValue('password', '', { shouldValidate: false });
-                form.setValue('confirmPassword', '', { shouldValidate: false });
+            if (name === "email") {
+                form.setValue("password", "", { shouldValidate: false })
+                form.setValue("confirmPassword", "", { shouldValidate: false })
             }
-        });
-        return () => subscription.unsubscribe();
-    }, [form]);
+        })
+        return () => subscription.unsubscribe()
+    }, [form])
 
     async function onSubmit(values: RegisterFormValues) {
-        setLoading(true);
-        setErrorMsg(null);
-        setSuccessMsg(null);
+        setLoading(true)
+        setErrorMsg(null)
+        setErrorType(null)
+        setSuccessMsg(null)
 
-        const result = await registerUser(values.email, values.password);
+        const result = await registerUser(values.email, values.password)
 
         if (result?.error) {
-            setErrorMsg(result.error);
-            setLoading(false);
-            return;
+            setErrorMsg(result.error)
+            setErrorType((result as any).errorType || null)
+            setLoading(false)
+            return
         }
 
         if (result?.success) {
-            setSuccessMsg(result.message || 'Revisa tu correo para confirmar tu cuenta');
-            form.reset();
-            setLoading(false);
+            setSuccessMsg(result.message || "Revisa tu correo para confirmar tu cuenta")
+            form.reset()
+            setLoading(false)
         }
     }
 
     return (
-        <div className="flex min-h-svh font-sans">
-            {/* LEFT PANEL */}
-            <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center relative p-12 bg-gradient-to-br from-brand-7 to-brand-10">
-                <Image
-                    src="/brand/logo-full-dark.svg"
-                    alt="ClinicBoard"
-                    width={180}
-                    height={48}
-                    priority
-                />
-                <p className="absolute bottom-10 left-12 text-sm text-white/80">
-                    El expediente que acompaña tu consulta.
-                </p>
-            </div>
-
-            {/* RIGHT PANEL */}
-            <div className="flex flex-1 lg:w-1/2 flex-col items-center justify-center bg-background p-8">
-                <div className="w-full max-w-sm space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {/* Logo + Heading */}
-                    <div className="flex flex-col items-center gap-2 mb-8">
+        <div className="flex min-h-svh items-center justify-center bg-background p-4">
+            <div className="w-full max-w-md">
+                <div className="card-clinic p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex flex-col items-center gap-3 mb-8">
                         <Image
                             src="/brand/logo-mark.svg"
-                            alt="ClinicBoard mark"
-                            width={40}
-                            height={40}
-                            priority
+                            alt="ClinicBoard"
+                            width={48}
+                            height={48}
+                            className="text-b-8"
                         />
-                        <h1 className="text-2xl font-bold tracking-tight">
+                        <h1 className="text-2xl font-bold tracking-tight text-n-11">
                             Crea tu cuenta
                         </h1>
-                        <p className="text-sm text-muted-foreground text-center">
-                            Registra tu clínica y comienza a gestionar<br />tu consultorio médico
+                        <p className="text-sm text-n-8 text-center">
+                            Registra tu clínica y conecta con la comunidad médica
                         </p>
                     </div>
 
-                    {/* Success Message */}
-                    {successMsg && (
-                        <Alert className="bg-success/5 border-success/20 text-success animate-in fade-in slide-in-from-top-1">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <AlertTitle className="text-xs font-bold tracking-wider">CUENTA CREADA</AlertTitle>
-                            <AlertDescription className="text-sm opacity-90">
-                                {successMsg}
-                            </AlertDescription>
-                        </Alert>
-                    )}
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+                        {errorMsg && (
+                            <Alert
+                                variant="destructive"
+                                className="bg-destructive/5 border-destructive/20 text-destructive animate-in fade-in slide-in-from-top-1"
+                            >
+                                {errorType === "rate_limit" ? (
+                                    <Clock className="h-4 w-4" />
+                                ) : (
+                                    <AlertCircle className="h-4 w-4" />
+                                )}
+                                <AlertTitle className="text-xs font-bold tracking-wider uppercase">
+                                    {errorType === "rate_limit" ? "Demasiados intentos" : "Error de registro"}
+                                </AlertTitle>
+                                <AlertDescription className="text-sm opacity-90">
+                                    {errorMsg}
+                                </AlertDescription>
+                            </Alert>
+                        )}
 
-                    {/* Error Message */}
-                    {errorMsg && (
-                        <Alert
-                            variant="destructive"
-                            className="bg-destructive/5 border-destructive/20 text-destructive animate-in fade-in slide-in-from-top-1"
-                        >
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertTitle className="text-xs font-bold tracking-wider">ERROR</AlertTitle>
-                            <AlertDescription className="text-sm opacity-90">
-                                {errorMsg}
-                            </AlertDescription>
-                        </Alert>
-                    )}
+                        {successMsg && (
+                            <Alert className="bg-success/5 border-success/20 text-success animate-in fade-in slide-in-from-top-1">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertTitle className="text-xs font-bold tracking-wider uppercase">
+                                    Cuenta creada
+                                </AlertTitle>
+                                <AlertDescription className="text-sm opacity-90">
+                                    {successMsg}
+                                </AlertDescription>
+                            </Alert>
+                        )}
 
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
-                        {/* Email Field */}
-                        <Field className="space-y-2">
+                        <Field className="gap-2">
+                            <FieldLabel
+                                htmlFor="username"
+                                className="text-xs font-semibold tracking-wider text-n-8"
+                            >
+                                Nombre de usuario
+                            </FieldLabel>
+                            <Input
+                                {...form.register("username")}
+                                id="username"
+                                type="text"
+                                placeholder="dr.garcia_clinica"
+                                autoComplete="username"
+                                aria-describedby={form.formState.errors.username ? usernameErrorId : undefined}
+                                className="h-11 rounded-md border-border bg-background"
+                            />
+                            {form.formState.errors.username && (
+                                <FieldError id={usernameErrorId} className="text-[11px] font-medium text-destructive">
+                                    {form.formState.errors.username.message}
+                                </FieldError>
+                            )}
+                        </Field>
+
+                        <Field className="gap-2">
                             <FieldLabel
                                 htmlFor="email"
-                                className="text-xs font-semibold tracking-wider text-neutral-8 uppercase"
+                                className="text-xs font-semibold tracking-wider text-n-8"
                             >
                                 Correo electrónico
                             </FieldLabel>
-                            <InputGroup>
-                                <Input
-                                    {...form.register('email')}
-                                    id="email"
-                                    type="email"
-                                    placeholder="tu@correo.com"
-                                    autoComplete="email"
-                                    className="flex-1"
-                                />
-                            </InputGroup>
+                            <Input
+                                {...form.register("email")}
+                                id="email"
+                                type="email"
+                                placeholder="tu@correo.com"
+                                autoComplete="email"
+                                aria-describedby={form.formState.errors.email ? emailErrorId : undefined}
+                                className="h-11 rounded-md border-border bg-background"
+                            />
                             {form.formState.errors.email && (
-                                <FieldError className="text-[11px] font-medium text-destructive">
+                                <FieldError id={emailErrorId} className="text-[11px] font-medium text-destructive">
                                     {form.formState.errors.email.message}
                                 </FieldError>
                             )}
                         </Field>
 
-                        {/* Password Field */}
-                        <Field className="space-y-2">
+                        <Field className="gap-2">
                             <FieldLabel
                                 htmlFor="password"
-                                className="text-xs font-semibold tracking-wider text-neutral-8 uppercase"
+                                className="text-xs font-semibold tracking-wider text-n-8"
                             >
                                 Contraseña
                             </FieldLabel>
-                            <InputGroup>
+                            <div className="relative">
                                 <Input
-                                    {...form.register('password')}
+                                    {...form.register("password")}
                                     id="password"
-                                    type={showPassword ? 'text' : 'password'}
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="Mínimo 8 caracteres"
                                     autoComplete="new-password"
-                                    className="flex-1"
+                                    aria-describedby={form.formState.errors.password ? passwordErrorId : undefined}
+                                    className="h-11 rounded-md border-border bg-background pr-10"
                                 />
-                                <InputGroupAddon align="inline-end">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword((v) => !v)}
-                                        className="px-3 text-neutral-8 hover:text-foreground transition-colors"
-                                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                                    >
-                                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                                    </button>
-                                </InputGroupAddon>
-                            </InputGroup>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((v) => !v)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 -translate-x-0.5 text-n-8 hover:text-b-8 transition-colors"
+                                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                >
+                                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                </button>
+                            </div>
                             {form.formState.errors.password && (
-                                <FieldError className="text-[11px] font-medium text-destructive">
+                                <FieldError id={passwordErrorId} className="text-[11px] font-medium text-destructive">
                                     {form.formState.errors.password.message}
                                 </FieldError>
                             )}
                             <PasswordStrengthIndicator
-                                password={form.watch('password') || ''}
+                                password={form.watch("password") || ""}
                                 className="mt-3"
                             />
                         </Field>
 
-                        {/* Confirm Password Field */}
-                        <Field className="space-y-2">
+                        <Field className="gap-2">
                             <FieldLabel
                                 htmlFor="confirmPassword"
-                                className="text-xs font-semibold tracking-wider text-neutral-8 uppercase"
+                                className="text-xs font-semibold tracking-wider text-n-8"
                             >
                                 Confirmar contraseña
                             </FieldLabel>
-                            <InputGroup>
+                            <div className="relative">
                                 <Input
-                                    {...form.register('confirmPassword')}
+                                    {...form.register("confirmPassword")}
                                     id="confirmPassword"
-                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    type={showConfirmPassword ? "text" : "password"}
                                     placeholder="Repite la contraseña"
                                     autoComplete="new-password"
-                                    className="flex-1"
+                                    className="h-11 rounded-md border-border bg-background pr-10"
                                 />
-                                <InputGroupAddon align="inline-end">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowConfirmPassword((v) => !v)}
-                                        className="px-3 text-neutral-8 hover:text-foreground transition-colors"
-                                        aria-label={showConfirmPassword ? 'Ocultar' : 'Mostrar'}
-                                    >
-                                        {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                                    </button>
-                                </InputGroupAddon>
-                            </InputGroup>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword((v) => !v)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 -translate-x-0.5 text-n-8 hover:text-b-8 transition-colors"
+                                    aria-label={showConfirmPassword ? "Ocultar" : "Mostrar"}
+                                >
+                                    {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                </button>
+                            </div>
                             {form.formState.errors.confirmPassword && (
                                 <FieldError className="text-[11px] font-medium text-destructive">
                                     {form.formState.errors.confirmPassword.message}
@@ -244,9 +262,52 @@ export default function RegisterPage() {
                             )}
                         </Field>
 
+                        <div className="flex items-start gap-2.5 pt-1">
+                            <Checkbox
+                                id="privacy"
+                                checked={form.watch("privacyAccepted")}
+                                onCheckedChange={(val) => {
+                                    form.setValue("privacyAccepted", !!val, { shouldValidate: true })
+                                }}
+                                className="mt-0.5"
+                            />
+                            <label
+                                htmlFor="privacy"
+                                className="text-sm text-n-8 leading-relaxed cursor-pointer"
+                            >
+                                Acepto la{" "}
+                                <Link
+                                    href="#"
+                                    className="text-b-8 hover:underline"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    política de privacidad
+                                </Link>
+                            </label>
+                        </div>
+                        {form.formState.errors.privacyAccepted && (
+                            <FieldError className="text-[11px] font-medium text-destructive -mt-2">
+                                {form.formState.errors.privacyAccepted.message}
+                            </FieldError>
+                        )}
+
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="remember"
+                                checked={rememberMe}
+                                onCheckedChange={(checked) => setRememberMe(checked === true)}
+                            />
+                            <label
+                                htmlFor="remember"
+                                className="text-sm text-n-8 cursor-pointer"
+                            >
+                                Recuérdame
+                            </label>
+                        </div>
+
                         <Button
                             type="submit"
-                            className="w-full bg-b-8 hover:bg-b-9 text-white font-semibold transition-all duration-300 active:scale-[0.98] h-11"
+                            className="w-full bg-b-8 hover:bg-b-9 text-white font-semibold h-11 rounded-md transition-all duration-200 active:scale-[0.98]"
                             disabled={loading || !form.formState.isValid}
                         >
                             {loading ? (
@@ -255,26 +316,28 @@ export default function RegisterPage() {
                                     Creando cuenta...
                                 </>
                             ) : (
-                                'Crear cuenta'
+                                "Crear cuenta"
                             )}
                         </Button>
                     </form>
 
-                    <p className="text-center text-sm text-muted-foreground">
-                        ¿Ya tienes cuenta?{' '}
-                        <Link
-                            href="/login"
-                            className="text-b-8 underline-offset-4 hover:underline font-medium"
-                        >
-                            Inicia sesión
-                        </Link>
-                    </p>
-
-                    <p className="text-center text-xs text-muted-foreground/40 pt-4">
-                        © 2026 ClinicBoard
-                    </p>
+                    <div className="mt-6 pt-6 border-t border-border">
+                        <p className="text-center text-sm text-n-8">
+                            ¿Ya tienes cuenta?{" "}
+                            <Link
+                                href="/login"
+                                className="text-b-8 font-medium hover:underline"
+                            >
+                                Inicia sesión
+                            </Link>
+                        </p>
+                    </div>
                 </div>
+
+                <p className="text-center text-xs text-n-8/50 mt-6">
+                    © 2026 ClinicBoard
+                </p>
             </div>
         </div>
-    );
+    )
 }
