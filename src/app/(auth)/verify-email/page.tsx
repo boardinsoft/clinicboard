@@ -78,7 +78,7 @@ export default function VerifyEmailPage() {
                                 <AlertCircle className="h-4 w-4" />
                             )}
                             <AlertTitle className="text-xs font-bold tracking-wider uppercase">
-                                {errorType === 'rate_limit' ? 'Demasiadas solicitudes' : 'No se pudo reenviar'}
+                                {errorType === 'rate_limit' ? 'Reenvío bloqueado' : 'No se pudo reenviar'}
                             </AlertTitle>
                             <AlertDescription className="text-sm opacity-90">
                                 {errorMsg}

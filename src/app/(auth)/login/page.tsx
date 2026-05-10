@@ -99,7 +99,7 @@ export default function LoginPage() {
                   <AlertCircle className="h-4 w-4" />
                 )}
                 <AlertTitle className="text-xs font-bold tracking-wider uppercase">
-                  {errorType === "rate_limit" ? "Demasiados intentos" : "No pudimos iniciar sesión"}
+                  {errorType === "rate_limit" ? "Sesión bloqueada" : "No pudimos iniciar sesión"}
                 </AlertTitle>
                 <AlertDescription className="text-sm opacity-90">
                   {errorMsg}

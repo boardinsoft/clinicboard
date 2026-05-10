@@ -128,7 +128,7 @@ export default function RegisterPage() {
                                     <AlertCircle className="h-4 w-4" />
                                 )}
                                 <AlertTitle className="text-xs font-bold tracking-wider uppercase">
-                                    {errorType === "rate_limit" ? "Demasiados intentos" : "No se pudo crear la cuenta"}
+                                    {errorType === "rate_limit" ? "Registro bloqueado" : "No se pudo crear la cuenta"}
                                 </AlertTitle>
                                 <AlertDescription className="text-sm opacity-90">
                                     {errorMsg}
