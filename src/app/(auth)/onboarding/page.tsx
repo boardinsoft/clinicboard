@@ -32,7 +32,7 @@ export default function OnboardingPage() {
                 }
 
                 if (!user.email_confirmed_at) {
-                    setErrorMessage('Por favor, confirma tu correo electrónico antes de continuar.');
+                    setErrorMessage('Confirma tu correo electrónico antes de continuar.');
                     setPageState('auth_error');
                     return;
                 }
@@ -61,7 +61,7 @@ export default function OnboardingPage() {
                 }
 
                 if (clinicCount === 1) {
-                    setErrorMessage('Ya tienes una clínica. Ve al dashboard para gestionarla.');
+                    setErrorMessage('Ya tienes una clínica. Ve al Tablero para gestionarla.');
                     setPageState('clinic_limit_reached');
                     return;
                 }
@@ -87,7 +87,7 @@ export default function OnboardingPage() {
 
     const handleComplete = async (data: OnboardingStepData) => {
         if (!data.profile || !data.clinic || !data.userId) {
-            throw new Error('Falta información. Por favor, completa todos los pasos.');
+            throw new Error('Falta información. Completa todos los pasos.');
         }
 
         const result = await createClinicAsAdmin({
@@ -135,7 +135,7 @@ export default function OnboardingPage() {
                 <div className="w-full max-w-md bg-background rounded-lg border border-n-5 p-6">
                     <Alert variant="destructive" className="mb-4">
                         <AlertCircle className="h-4 w-4" />
-                        <AlertTitle className="text-xs font-bold tracking-wider">ERROR</AlertTitle>
+                        <AlertTitle className="text-xs font-bold tracking-wider">No se pudo continuar</AlertTitle>
                         <AlertDescription className="text-sm opacity-90">{errorMessage}</AlertDescription>
                     </Alert>
                     <div className="flex flex-col gap-2">

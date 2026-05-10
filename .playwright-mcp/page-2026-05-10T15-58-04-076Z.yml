@@ -1,0 +1,20 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - img [ref=e5]
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - img [ref=e12]
+          - generic [ref=e20]: shadcn/studio
+        - generic [ref=e21]:
+          - generic [ref=e22]: Verify your email
+          - generic [ref=e23]: "An activation link has been sent to your email address: hello@example.com. Please check your inbox and click on the link to complete the activation process."
+      - generic [ref=e25]:
+        - link "Skip for now" [ref=e26] [cursor=pointer]:
+          - /url: "#"
+        - paragraph [ref=e27]:
+          - text: Didn't get the mail?
+          - link "Resend" [ref=e28] [cursor=pointer]:
+            - /url: "#"
+  - region "Notifications alt+T"
+  - alert [ref=e29]

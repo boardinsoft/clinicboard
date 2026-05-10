@@ -1,0 +1,63 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e6]:
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - heading "Tell us about yourself" [level=1] [ref=e11]
+        - paragraph [ref=e12]: A few quick questions to personalize your experience.
+      - generic [ref=e13]:
+        - button "Next" [ref=e14] [cursor=pointer]
+        - generic [ref=e15]:
+          - button "Go to step 1" [ref=e16] [cursor=pointer]
+          - button "Go to step 2" [ref=e17] [cursor=pointer]
+          - button "Go to step 3" [ref=e18] [cursor=pointer]
+          - button "Go to step 4" [ref=e19] [cursor=pointer]
+          - button "Go to step 5" [ref=e20] [cursor=pointer]
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e26]: JD
+        - generic [ref=e27]:
+          - textbox "Employee name" [ref=e28]
+          - textbox "Designation" [ref=e29]
+          - textbox "employee@mail.com" [ref=e30]
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - generic [ref=e33]: Division
+          - textbox "Division" [ref=e34]:
+            - /placeholder: e.g. Sales
+        - generic [ref=e35]:
+          - generic [ref=e36]: Gender
+          - combobox "Gender" [ref=e37] [cursor=pointer]:
+            - generic: Select a gender
+            - img
+        - generic [ref=e38]:
+          - generic [ref=e39]: Age
+          - spinbutton "Age" [ref=e40]
+        - generic [ref=e41]:
+          - generic [ref=e42]: City
+          - textbox "City" [ref=e43]:
+            - /placeholder: e.g. New York
+        - generic [ref=e44]:
+          - generic [ref=e45]: Employee ID
+          - textbox "Employee ID" [ref=e46]:
+            - /placeholder: e.g. EMP-254875269-54214
+        - generic [ref=e47]:
+          - generic [ref=e48]: Address
+          - textbox "Address" [ref=e49]:
+            - /placeholder: e.g. 123 Main St, City, Country
+        - generic [ref=e50]:
+          - generic [ref=e51]: Phone Number
+          - textbox "Phone Number" [ref=e52]:
+            - /placeholder: e.g. 9868666480
+        - generic [ref=e53]:
+          - generic [ref=e54]: Joining Date
+          - button "Joining Date" [ref=e55] [cursor=pointer]:
+            - text: 5/10/2026
+            - img
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - text: Description
+            - generic [ref=e58]: (optional)
+          - textbox "Description (optional)" [ref=e59]:
+            - /placeholder: What does your team work on?
+  - region "Notifications alt+T"
+  - alert [ref=e60]

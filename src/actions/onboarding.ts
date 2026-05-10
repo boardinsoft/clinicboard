@@ -18,7 +18,7 @@ export async function createClinicAsAdmin(input: CreateClinicAsAdminInput) {
         // Verify user owns this session
         const { data: { user } } = await supabase.auth.getUser();
         if (!user || user.id !== input.userId) {
-            return { error: 'Sesión inválida. Por favor, inicia sesión nuevamente.' };
+            return { error: 'Sesión inválida. Inicia sesión nuevamente.' };
         }
 
         // Check if user already has a practitioner profile
@@ -48,7 +48,7 @@ export async function createClinicAsAdmin(input: CreateClinicAsAdminInput) {
                 .eq('role', 'admin');
 
             if (existingLinks && existingLinks.length > 0) {
-                return { error: 'Ya tienes una clínica. Ve al dashboard.' };
+                return { error: 'Ya tienes una clínica. Ve al Tablero.' };
             }
         }
 
@@ -65,7 +65,7 @@ export async function createClinicAsAdmin(input: CreateClinicAsAdminInput) {
             .single();
 
         if (existingClinic) {
-            return { error: 'Este nombre de clínica ya está en uso. Por favor, elige otro nombre.' };
+            return { error: 'Este nombre de clínica ya está en uso. Elige otro nombre.' };
         }
 
         // Create practitioner
@@ -125,7 +125,7 @@ export async function createClinicAsAdmin(input: CreateClinicAsAdminInput) {
 
         if (clinicError) {
             logger.error('Error creating clinic', clinicError);
-            return { error: 'Error al crear la clínica. Por favor, intenta nuevamente.' };
+            return { error: 'Error al crear la clínica. Intenta nuevamente.' };
         }
 
         // Link practitioner to clinic as admin
@@ -156,9 +156,8 @@ export async function createClinicAsAdmin(input: CreateClinicAsAdminInput) {
 
         if (linkError) {
             logger.error('Error linking practitioner to clinic', linkError);
-            // Rollback: delete clinic
             await supabase.from('clinics').delete().eq('id', newClinic.id);
-            return { error: 'Error al vincularte a la clínica. Por favor, intenta nuevamente.' };
+            return { error: 'Error al vincularte a la clínica. Intenta nuevamente.' };
         }
 
         // Update clinic with owner reference
@@ -187,7 +186,7 @@ export async function createClinicAsAdmin(input: CreateClinicAsAdminInput) {
         };
     } catch (error) {
         logger.error('Error en createClinicAsAdmin', error);
-        return { error: 'Error inesperado. Por favor, intenta nuevamente.' };
+        return { error: 'Error inesperado. Intenta nuevamente.' };
     }
 }
 

@@ -92,7 +92,7 @@ export const OnboardingStepComplete = forwardRef<OnboardingStepCompleteRef, Onbo
                         <div>
                             <p className="text-[13px] font-medium text-b-8">Invita a tu equipo</p>
                             <p className="text-[12px] text-n-8">
-                                Después de entrar, puedes invitar doctores y recepcionistas a tu clínica.
+                                Cuando entres al Tablero, puedes invitar doctores y recepcionistas a tu clínica.
                             </p>
                         </div>
                     </div>

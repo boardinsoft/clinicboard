@@ -1,0 +1,83 @@
+[    2401ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rD (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:35063)
+    at oq (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:84567)
+    at ik (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:114683)
+    at https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:110731
+    at iu (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:110832)
+    at iX (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:132935)
+    at w (https://shadcnstudio.com/_next/static/chunks/82946-13d464593965c629.js:1:11556)
+    at f (https://shadcnstudio.com/_next/static/chunks/95193-83f34abab814f034.js:1:107463)
+    at p (https://shadcnstudio.com/_next/static/chunks/95193-83f34abab814f034.js:1:107670)
+[    2283ms] [WARNING] Color conversion error: Error: unknown format: oklch(0.708 0 0);
+    at new M (https://shadcnstudio.com/_next/static/chunks/14414-1e9330158359ebf1.js:1:3108)
+    at N (https://shadcnstudio.com/_next/static/chunks/14414-1e9330158359ebf1.js:1:3270)
+    at o (https://shadcnstudio.com/_next/static/chunks/6926-d13b4c863d7321ca.js:1:13430)
+    at https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:74074
+    at Array.forEach (<anonymous>)
+    at m (https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:73999)
+    at https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:74533
+    at o1 (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:88958)
+    at uE (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:104850)
+    at ux (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:104734) @ https://shadcnstudio.com/_next/static/chunks/6926-d13b4c863d7321ca.js:0
+[    2744ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rD (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:35063)
+    at oq (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:84567)
+    at ik (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:114683)
+    at https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:110731
+    at iu (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:110832)
+    at iX (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:132935)
+    at MessagePort.w (https://shadcnstudio.com/_next/static/chunks/82946-13d464593965c629.js:1:11556)
+[    2756ms] [WARNING] Color conversion error: Error: unknown format: oklch(0.708 0 0);
+    at new M (https://shadcnstudio.com/_next/static/chunks/14414-1e9330158359ebf1.js:1:3108)
+    at N (https://shadcnstudio.com/_next/static/chunks/14414-1e9330158359ebf1.js:1:3270)
+    at o (https://shadcnstudio.com/_next/static/chunks/15965-50294773244630e7.js:1:41446)
+    at https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:74074
+    at Array.forEach (<anonymous>)
+    at m (https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:73999)
+    at https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:74533
+    at o1 (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:88958)
+    at uE (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:104850)
+    at ux (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:104734) @ https://shadcnstudio.com/_next/static/chunks/15965-50294773244630e7.js:0
+[    2780ms] [LOG] DataFast: pageview tracked successfully @ https://shadcnstudio.com/js/script.js:0
+[    2796ms] [WARNING] DataFast: Tracking disabled inside an iframe @ https://shadcnstudio.com/js/script.js:0
+[    2858ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rD (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:35063)
+    at oq (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:84567)
+    at ik (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:114683)
+    at https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:110731
+    at iu (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:110832)
+    at iX (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:132935)
+    at MessagePort.w (https://shadcnstudio.com/_next/static/chunks/82946-13d464593965c629.js:1:11556)
+[    2883ms] [WARNING] Color conversion error: Error: unknown format: oklch(0.708 0 0);
+    at new M (https://shadcnstudio.com/_next/static/chunks/14414-1e9330158359ebf1.js:1:3108)
+    at N (https://shadcnstudio.com/_next/static/chunks/14414-1e9330158359ebf1.js:1:3270)
+    at o (https://shadcnstudio.com/_next/static/chunks/15965-50294773244630e7.js:1:41446)
+    at https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:74074
+    at Array.forEach (<anonymous>)
+    at m (https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:73999)
+    at https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:74533
+    at o1 (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:88958)
+    at uE (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:104850)
+    at ux (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:104734) @ https://shadcnstudio.com/_next/static/chunks/15965-50294773244630e7.js:0
+[    3005ms] Error: Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at rD (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:35063)
+    at oq (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:84567)
+    at ik (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:114683)
+    at https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:110731
+    at iu (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:110832)
+    at iX (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:132935)
+    at MessagePort.w (https://shadcnstudio.com/_next/static/chunks/82946-13d464593965c629.js:1:11556)
+[    2963ms] [WARNING] Color conversion error: Error: unknown format: oklch(0.708 0 0);
+    at new M (https://shadcnstudio.com/_next/static/chunks/14414-1e9330158359ebf1.js:1:3108)
+    at N (https://shadcnstudio.com/_next/static/chunks/14414-1e9330158359ebf1.js:1:3270)
+    at o (https://shadcnstudio.com/_next/static/chunks/15965-50294773244630e7.js:1:41446)
+    at https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:74074
+    at Array.forEach (<anonymous>)
+    at m (https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:73999)
+    at https://shadcnstudio.com/_next/static/chunks/app/(front)/page-c780f8e1d7aa176b.js:1:74533
+    at o1 (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:88958)
+    at uE (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:104850)
+    at ux (https://shadcnstudio.com/_next/static/chunks/57706a6b-aae8efd674b824dc.js:1:104734) @ https://shadcnstudio.com/_next/static/chunks/15965-50294773244630e7.js:0
+[    3090ms] [WARNING] DataFast: Tracking disabled inside an iframe @ https://shadcnstudio.com/js/script.js:0
+[    3276ms] [WARNING] DataFast: Tracking disabled inside an iframe @ https://shadcnstudio.com/js/script.js:0
+[    3501ms] [LOG] shadcn/studio SITE:GTM Worked! @ :0

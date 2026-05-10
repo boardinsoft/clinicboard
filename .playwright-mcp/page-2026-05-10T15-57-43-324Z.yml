@@ -1,0 +1,1265 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: "🥳 New: All-new shadcn/ui design system with Figma Slots and new components."
+      - link "Visit changelog" [ref=e6] [cursor=pointer]:
+        - /url: /changelog?tab=pro-changelog
+        - text: Visit changelog
+        - img
+    - button [ref=e7] [cursor=pointer]:
+      - img
+  - generic [ref=e9]:
+    - banner [ref=e10]:
+      - generic [ref=e12]:
+        - link "shadcn/studio" [ref=e13] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e14]:
+            - img [ref=e15]
+            - generic [ref=e23]: shadcn/studio
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - button "Menu" [ref=e27] [cursor=pointer]:
+              - img
+              - generic [ref=e28]: Menu
+            - button "Search" [ref=e29] [cursor=pointer]:
+              - img
+              - generic [ref=e30]: Search
+            - generic [ref=e31]:
+              - heading "Search..." [level=2] [ref=e32]
+              - paragraph [ref=e33]: Search for docs, blocks, components, and more.
+            - button "Toggle Theme" [ref=e34] [cursor=pointer]:
+              - img
+              - generic [ref=e35]: Toggle Theme
+            - button "Theme customizer" [ref=e37] [cursor=pointer]:
+              - img [ref=e38]
+          - generic [ref=e44]:
+            - link "Github" [ref=e45] [cursor=pointer]:
+              - /url: https://github.com/shadcnstudio/shadcn-studio
+              - img [ref=e46]
+              - generic [ref=e49]: Github
+            - link "X" [ref=e50] [cursor=pointer]:
+              - /url: https://x.com/ShadcnStudio
+              - img [ref=e51]
+              - generic [ref=e53]: X
+            - link "Discord" [ref=e54] [cursor=pointer]:
+              - /url: https://discord.com/invite/kBHkY7DekX
+              - img [ref=e55]
+              - generic [ref=e62]: Discord
+          - generic [ref=e63]:
+            - link "Sign in" [ref=e64] [cursor=pointer]:
+              - /url: /auth/login
+            - link "Get all access" [ref=e65] [cursor=pointer]:
+              - /url: /#pricing
+              - text: Get all access
+              - img
+    - main [ref=e66]:
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - navigation "breadcrumb" [ref=e71]:
+                - list [ref=e72]:
+                  - listitem [ref=e73]:
+                    - link "Home" [ref=e74] [cursor=pointer]:
+                      - /url: /
+                  - listitem [ref=e75]:
+                    - img [ref=e76]
+                  - listitem [ref=e78]:
+                    - link "Blocks" [ref=e79] [cursor=pointer]:
+                      - /url: /blocks
+                  - listitem [ref=e80]:
+                    - img [ref=e81]
+                  - listitem [ref=e83]:
+                    - link "Marketing UI" [ref=e84] [cursor=pointer]:
+                      - /url: /blocks#marketing-ui
+                  - listitem [ref=e85]:
+                    - img [ref=e86]
+                  - listitem [ref=e88]:
+                    - link "Verify Email" [disabled] [ref=e89]
+              - heading "Shadcn Verify Email" [level=1] [ref=e90]
+              - paragraph [ref=e91]: Design a clean, responsive email verification UI with Shadcn Email Verification. Perfect for user authentication and seamless account setup.
+              - generic [ref=e92]:
+                - link "Get Figma File" [ref=e93] [cursor=pointer]:
+                  - /url: /figma
+                  - generic [ref=e94]:
+                    - img
+                    - text: Get Figma File
+                - link "Get all access" [ref=e95] [cursor=pointer]:
+                  - /url: /#pricing
+                  - text: Get all access
+                  - img
+            - img "Shadcn Blocks" [ref=e97]
+          - generic [ref=e99]:
+            - generic [ref=e100]:
+              - button "All Blocks" [ref=e102] [cursor=pointer]:
+                - img
+                - text: All Blocks
+              - generic [ref=e104]:
+                - generic:
+                  - img
+                  - generic: Search Blocks
+                - searchbox "Search Blocks..." [ref=e105]
+            - generic [ref=e106]:
+              - generic [ref=e107]:
+                - generic [ref=e108]: Sort by
+                - combobox [ref=e109] [cursor=pointer]:
+                  - generic:
+                    - img
+                    - text: Popularity
+                  - img
+              - generic [ref=e110]:
+                - generic [ref=e111]: Filter by Price
+                - combobox [ref=e112] [cursor=pointer]:
+                  - generic: All
+                  - img
+          - generic [ref=e114]:
+            - generic [ref=e115]:
+              - generic [ref=e116]:
+                - paragraph [ref=e117]: All Blocks
+                - img "Close sidebar" [ref=e118]
+              - generic [ref=e121]:
+                - textbox "Search for blocks" [ref=e122]
+                - generic:
+                  - img
+            - list [ref=e124]:
+              - listitem [ref=e126]:
+                - button "Marketing UI Blocks" [expanded] [ref=e127] [cursor=pointer]:
+                  - generic [ref=e128]:
+                    - img [ref=e129]
+                    - generic [ref=e133]: Marketing UI Blocks
+                  - img [ref=e134]
+                - list [ref=e137]:
+                  - listitem [ref=e138]:
+                    - link "Hero Section +30 41" [ref=e139] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/hero-section
+                      - text: Hero Section
+                      - generic [ref=e140]: "+30"
+                      - generic [ref=e141]: "41"
+                  - listitem [ref=e142]:
+                    - link "Features Section +19 29" [ref=e143] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/features-section
+                      - text: Features Section
+                      - generic [ref=e144]: "+19"
+                      - generic [ref=e145]: "29"
+                  - listitem [ref=e146]:
+                    - link "Pricing Component 20" [ref=e147] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/pricing-component
+                      - text: Pricing Component
+                      - generic [ref=e148]: "20"
+                  - listitem [ref=e149]:
+                    - link "Testimonials Component +15 24" [ref=e150] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/testimonials-component
+                      - text: Testimonials Component
+                      - generic [ref=e151]: "+15"
+                      - generic [ref=e152]: "24"
+                  - listitem [ref=e153]:
+                    - link "Social Proof +2 11" [ref=e154] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/social-proof
+                      - text: Social Proof
+                      - generic [ref=e155]: "+2"
+                      - generic [ref=e156]: "11"
+                  - listitem [ref=e157]:
+                    - link "Portfolio +8 18" [ref=e158] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/portfolio
+                      - text: Portfolio
+                      - generic [ref=e159]: "+8"
+                      - generic [ref=e160]: "18"
+                  - listitem [ref=e161]:
+                    - link "Team Section +11 20" [ref=e162] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/team-section
+                      - text: Team Section
+                      - generic [ref=e163]: "+11"
+                      - generic [ref=e164]: "20"
+                  - listitem [ref=e165]:
+                    - link "CTA Section +5 14" [ref=e166] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/cta-section
+                      - text: CTA Section
+                      - generic [ref=e167]: "+5"
+                      - generic [ref=e168]: "14"
+                  - listitem [ref=e169]:
+                    - link "Logo Cloud 9" [ref=e170] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/logo-cloud
+                      - text: Logo Cloud
+                      - generic [ref=e171]: "9"
+                  - listitem [ref=e172]:
+                    - link "FAQ Component +8 19" [ref=e173] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/faq-component
+                      - text: FAQ Component
+                      - generic [ref=e174]: "+8"
+                      - generic [ref=e175]: "19"
+                  - listitem [ref=e176]:
+                    - link "Gallery Component 10" [ref=e177] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/gallery-component
+                      - text: Gallery Component
+                      - generic [ref=e178]: "10"
+                  - listitem [ref=e179]:
+                    - link "Blog Component +7 17" [ref=e180] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/blog-component
+                      - text: Blog Component
+                      - generic [ref=e181]: "+7"
+                      - generic [ref=e182]: "17"
+                  - listitem [ref=e183]:
+                    - link "About Us Page +14 24" [ref=e184] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/about-us-page
+                      - text: About Us Page
+                      - generic [ref=e185]: "+14"
+                      - generic [ref=e186]: "24"
+                  - listitem [ref=e187]:
+                    - link "Contact Us Page +6 16" [ref=e188] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/contact-us-page
+                      - text: Contact Us Page
+                      - generic [ref=e189]: "+6"
+                      - generic [ref=e190]: "16"
+                  - listitem [ref=e191]:
+                    - link "Download New 6" [ref=e192] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/download
+                      - text: Download
+                      - generic [ref=e193]: New
+                      - generic [ref=e194]: "6"
+                  - listitem [ref=e195]:
+                    - link "Timeline Component New 5" [ref=e196] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/timeline-component
+                      - text: Timeline Component
+                      - generic [ref=e197]: New
+                      - generic [ref=e198]: "5"
+                  - listitem [ref=e199]:
+                    - link "Navbar Component 14" [ref=e200] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/navbar-component
+                      - text: Navbar Component
+                      - generic [ref=e201]: "14"
+                  - listitem [ref=e202]:
+                    - link "Footer Component +4 9" [ref=e203] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/footer-component
+                      - text: Footer Component
+                      - generic [ref=e204]: "+4"
+                      - generic [ref=e205]: "9"
+                  - listitem [ref=e206]:
+                    - link "Login Page 5" [ref=e207] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/login-page
+                      - text: Login Page
+                      - generic [ref=e208]: "5"
+                  - listitem [ref=e209]:
+                    - link "Register 5" [ref=e210] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/register
+                      - text: Register
+                      - generic [ref=e211]: "5"
+                  - listitem [ref=e212]:
+                    - link "Forgot Password 5" [ref=e213] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/forgot-password
+                      - text: Forgot Password
+                      - generic [ref=e214]: "5"
+                  - listitem [ref=e215]:
+                    - link "Reset Password 5" [ref=e216] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/reset-password
+                      - text: Reset Password
+                      - generic [ref=e217]: "5"
+                  - listitem [ref=e218]:
+                    - link "Verify Email 5" [ref=e219] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/verify-email
+                      - text: Verify Email
+                      - generic [ref=e220]: "5"
+                  - listitem [ref=e221]:
+                    - link "Two Factor Authentication 5" [ref=e222] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/two-factor-authentication
+                      - text: Two Factor Authentication
+                      - generic [ref=e223]: "5"
+                  - listitem [ref=e224]:
+                    - link "App Integration +1 10" [ref=e225] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/app-integration
+                      - text: App Integration
+                      - generic [ref=e226]: "+1"
+                      - generic [ref=e227]: "10"
+                  - listitem [ref=e228]:
+                    - link "Cookies Consent 3" [ref=e229] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/cookies-consent
+                      - text: Cookies Consent
+                      - generic [ref=e230]: "3"
+                  - listitem [ref=e231]:
+                    - link "Compare +6 7" [ref=e232] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/compare
+                      - text: Compare
+                      - generic [ref=e233]: "+6"
+                      - generic [ref=e234]: "7"
+                  - listitem [ref=e235]:
+                    - link "Error Page 4" [ref=e236] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/error-page
+                      - text: Error Page
+                      - generic [ref=e237]: "4"
+                  - listitem [ref=e238]:
+                    - link "User Schedule New 2" [ref=e239] [cursor=pointer]:
+                      - /url: /blocks/marketing-ui/user-schedule
+                      - text: User Schedule
+                      - generic [ref=e240]: New
+                      - generic [ref=e241]: "2"
+              - listitem [ref=e243]:
+                - button "Dashboard & App Blocks" [expanded] [ref=e244] [cursor=pointer]:
+                  - generic [ref=e245]:
+                    - img [ref=e246]
+                    - generic [ref=e251]: Dashboard & App Blocks
+                  - img [ref=e252]
+                - list [ref=e255]:
+                  - listitem [ref=e256]:
+                    - link "Dashboard Shell 9" [ref=e257] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/dashboard-shell
+                      - text: Dashboard Shell
+                      - generic [ref=e258]: "9"
+                  - listitem [ref=e259]:
+                    - link "Application Shell 18" [ref=e260] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/application-shell
+                      - text: Application Shell
+                      - generic [ref=e261]: "18"
+                  - listitem [ref=e262]:
+                    - link "Charts Component +12 56" [ref=e263] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/charts-component
+                      - text: Charts Component
+                      - generic [ref=e264]: "+12"
+                      - generic [ref=e265]: "56"
+                  - listitem [ref=e266]:
+                    - link "Widgets Component +1 20" [ref=e267] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/widgets-component
+                      - text: Widgets Component
+                      - generic [ref=e268]: "+1"
+                      - generic [ref=e269]: "20"
+                  - listitem [ref=e270]:
+                    - link "Statistics Component +11 22" [ref=e271] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/statistics-component
+                      - text: Statistics Component
+                      - generic [ref=e272]: "+11"
+                      - generic [ref=e273]: "22"
+                  - listitem [ref=e274]:
+                    - link "Dashboard Dialog +6 26" [ref=e275] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/dashboard-dialog
+                      - text: Dashboard Dialog
+                      - generic [ref=e276]: "+6"
+                      - generic [ref=e277]: "26"
+                  - listitem [ref=e278]:
+                    - link "Dashboard Dropdown 23" [ref=e279] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/dashboard-dropdown
+                      - text: Dashboard Dropdown
+                      - generic [ref=e280]: "23"
+                  - listitem [ref=e281]:
+                    - link "Multi Step Form 3" [ref=e282] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/multi-step-form
+                      - text: Multi Step Form
+                      - generic [ref=e283]: "3"
+                  - listitem [ref=e284]:
+                    - link "Dashboard Sidebar 11" [ref=e285] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/dashboard-sidebar
+                      - text: Dashboard Sidebar
+                      - generic [ref=e286]: "11"
+                  - listitem [ref=e287]:
+                    - link "Dashboard Header 18" [ref=e288] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/dashboard-header
+                      - text: Dashboard Header
+                      - generic [ref=e289]: "18"
+                  - listitem [ref=e290]:
+                    - link "Dashboard Footer 10" [ref=e291] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/dashboard-footer
+                      - text: Dashboard Footer
+                      - generic [ref=e292]: "10"
+                  - listitem [ref=e293]:
+                    - link "Card Nav New 6" [ref=e294] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/card-nav
+                      - text: Card Nav
+                      - generic [ref=e295]: New
+                      - generic [ref=e296]: "6"
+                  - listitem [ref=e297]:
+                    - link "Form Layout New 9" [ref=e298] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/form-layout
+                      - text: Form Layout
+                      - generic [ref=e299]: New
+                      - generic [ref=e300]: "9"
+                  - listitem [ref=e301]:
+                    - link "Account Settings New 7" [ref=e302] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/account-settings
+                      - text: Account Settings
+                      - generic [ref=e303]: New
+                      - generic [ref=e304]: "7"
+                  - listitem [ref=e305]:
+                    - link "File Upload New 7" [ref=e306] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/file-upload
+                      - text: File Upload
+                      - generic [ref=e307]: New
+                      - generic [ref=e308]: "7"
+                  - listitem [ref=e309]:
+                    - link "Onboarding Feed New 5" [ref=e310] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/onboarding-feed
+                      - text: Onboarding Feed
+                      - generic [ref=e311]: New
+                      - generic [ref=e312]: "5"
+                  - listitem [ref=e313]:
+                    - link "Empty State New 8" [ref=e314] [cursor=pointer]:
+                      - /url: /blocks/dashboard-and-application/empty-state
+                      - text: Empty State
+                      - generic [ref=e315]: New
+                      - generic [ref=e316]: "8"
+              - listitem [ref=e318]:
+                - button "eCommerce UI Blocks" [expanded] [ref=e319] [cursor=pointer]:
+                  - generic [ref=e320]:
+                    - img [ref=e321]
+                    - generic [ref=e325]: eCommerce UI Blocks
+                  - img [ref=e326]
+                - list [ref=e329]:
+                  - listitem [ref=e330]:
+                    - link "Product Overview 9" [ref=e331] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/product-overview
+                      - text: Product Overview
+                      - generic [ref=e332]: "9"
+                  - listitem [ref=e333]:
+                    - link "Product Quick View 5" [ref=e334] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/product-quick-view
+                      - text: Product Quick View
+                      - generic [ref=e335]: "5"
+                  - listitem [ref=e336]:
+                    - link "Product Category 12" [ref=e337] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/product-category
+                      - text: Product Category
+                      - generic [ref=e338]: "12"
+                  - listitem [ref=e339]:
+                    - link "Product List 9" [ref=e340] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/product-list
+                      - text: Product List
+                      - generic [ref=e341]: "9"
+                  - listitem [ref=e342]:
+                    - link "Shopping Cart 4" [ref=e343] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/shopping-cart
+                      - text: Shopping Cart
+                      - generic [ref=e344]: "4"
+                  - listitem [ref=e345]:
+                    - link "Offer Modal 5" [ref=e346] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/offer-modal
+                      - text: Offer Modal
+                      - generic [ref=e347]: "5"
+                  - listitem [ref=e348]:
+                    - link "Checkout Page 4" [ref=e349] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/checkout-page
+                      - text: Checkout Page
+                      - generic [ref=e350]: "4"
+                  - listitem [ref=e351]:
+                    - link "Product Reviews 5" [ref=e352] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/product-reviews
+                      - text: Product Reviews
+                      - generic [ref=e353]: "5"
+                  - listitem [ref=e354]:
+                    - link "Order Summary 5" [ref=e355] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/order-summary
+                      - text: Order Summary
+                      - generic [ref=e356]: "5"
+                  - listitem [ref=e357]:
+                    - link "Category Filter 6" [ref=e358] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/category-filter
+                      - text: Category Filter
+                      - generic [ref=e359]: "6"
+                  - listitem [ref=e360]:
+                    - link "Mega Footer 5" [ref=e361] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/mega-footer
+                      - text: Mega Footer
+                      - generic [ref=e362]: "5"
+                  - listitem [ref=e363]:
+                    - link "Gift Card New 3" [ref=e364] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/gift-card
+                      - text: Gift Card
+                      - generic [ref=e365]: New
+                      - generic [ref=e366]: "3"
+                  - listitem [ref=e367]:
+                    - link "Announcement Banner New 12" [ref=e368] [cursor=pointer]:
+                      - /url: /blocks/ecommerce/announcement-banner
+                      - text: Announcement Banner
+                      - generic [ref=e369]: New
+                      - generic [ref=e370]: "12"
+              - listitem [ref=e372]:
+                - button "Datatable UI Blocks" [expanded] [ref=e373] [cursor=pointer]:
+                  - generic [ref=e374]:
+                    - img [ref=e375]
+                    - generic [ref=e377]: Datatable UI Blocks
+                  - img [ref=e378]
+                - list [ref=e381]:
+                  - listitem [ref=e382]:
+                    - link "Datatable Component 7" [ref=e383] [cursor=pointer]:
+                      - /url: /blocks/datatable/datatable-component
+                      - text: Datatable Component
+                      - generic [ref=e384]: "7"
+              - listitem [ref=e386]:
+                - button "Bento Grid UI Blocks" [expanded] [ref=e387] [cursor=pointer]:
+                  - generic [ref=e388]:
+                    - img [ref=e389]
+                    - generic [ref=e393]: Bento Grid UI Blocks
+                  - img [ref=e394]
+                - list [ref=e397]:
+                  - listitem [ref=e398]:
+                    - link "Bento Grid +17 24" [ref=e399] [cursor=pointer]:
+                      - /url: /blocks/bento-grid/bento-grid
+                      - text: Bento Grid
+                      - generic [ref=e400]: "+17"
+                      - generic [ref=e401]: "24"
+              - listitem [ref=e403]:
+                - button "Free Blocks" [expanded] [ref=e404] [cursor=pointer]:
+                  - generic [ref=e405]:
+                    - img [ref=e406]
+                    - generic [ref=e410]: Free Blocks
+                  - img [ref=e411]
+                - list [ref=e414]:
+                  - listitem [ref=e415]:
+                    - link "Free +12 57" [ref=e416] [cursor=pointer]:
+                      - /url: /blocks/free
+                      - text: Free
+                      - generic [ref=e417]: "+12"
+                      - generic [ref=e418]: "57"
+          - generic [ref=e420]:
+            - generic [ref=e421]:
+              - generic [ref=e422]:
+                - generic [ref=e423]:
+                  - generic [ref=e424]:
+                    - heading "Verify Email 1" [level=2] [ref=e425]:
+                      - link "Verify Email 1" [ref=e426] [cursor=pointer]:
+                        - /url: "#verify-email-1"
+                    - generic [ref=e427]: Free
+                  - paragraph [ref=e428]: This Shadcn verify email block displays a centered card layout with a logo header, email verification message, activation link instructions, and options to skip or resend for confirmation.
+                - link "Preview in Figma" [ref=e429] [cursor=pointer]:
+                  - /url: https://www.figma.com/design/N1Be7W5xCHcpdgjcjyoZs3/shadcn-studio-figma-uikit-pro-nova-preview?node-id=17120-21879&t=bgqkXpBCXNsSTXi4-11
+                  - img
+                  - text: Preview in Figma
+                  - img
+              - generic [ref=e431]:
+                - generic [ref=e432]:
+                  - generic [ref=e433]:
+                    - tablist [ref=e434]:
+                      - tab "Preview" [selected] [ref=e435] [cursor=pointer]:
+                        - img
+                        - text: Preview
+                      - tab "Code" [ref=e436] [cursor=pointer]:
+                        - img
+                        - text: Code
+                    - button "Copy Prompt" [ref=e437] [cursor=pointer]:
+                      - img
+                      - generic [ref=e438]: Copy Prompt
+                    - button [ref=e439] [cursor=pointer]:
+                      - img
+                  - generic [ref=e440]:
+                    - button "Toggle Theme" [ref=e441] [cursor=pointer]:
+                      - img
+                      - generic [ref=e442]: Toggle Theme
+                    - generic [ref=e443]:
+                      - button "Theme Generator" [ref=e444] [cursor=pointer]:
+                        - img
+                        - generic [ref=e445]: Theme Generator
+                      - button [ref=e446] [cursor=pointer]:
+                        - img
+                  - generic [ref=e447]:
+                    - generic [ref=e448]:
+                      - group [ref=e449]:
+                        - radio "Desktop" [checked] [ref=e450] [cursor=pointer]:
+                          - img
+                          - generic [ref=e451]: Desktop
+                        - radio "Tablet" [ref=e452] [cursor=pointer]:
+                          - img
+                          - generic [ref=e453]: Tablet
+                        - radio "Mobile" [ref=e454] [cursor=pointer]:
+                          - img
+                          - generic [ref=e455]: Mobile
+                      - link "Open in New Tab" [ref=e456] [cursor=pointer]:
+                        - /url: /preview/marketing-ui/verify-email/verify-email-01
+                        - img
+                        - generic [ref=e457]: Open in New Tab
+                    - generic [ref=e458]:
+                      - button "npx shadcn add verify-email-01" [ref=e459] [cursor=pointer]:
+                        - img
+                        - generic [ref=e460]: npx shadcn add verify-email-01
+                      - button [ref=e461] [cursor=pointer]:
+                        - img
+                    - link "Open in v0" [ref=e463] [cursor=pointer]:
+                      - /url: https://v0.dev/chat/api/open?url=https%3A%2F%2Fshadcnstudio.com%2Fr%2Fblocks%2Fverify-email-01.json&title=verify-email-01
+                      - img
+                      - generic [ref=e464]: Open in v0
+                - iframe [ref=e467]:
+                  - generic [active] [ref=f6e1]:
+                    - generic [ref=f6e3]:
+                      - img [ref=f6e5]
+                      - generic [ref=f6e9]:
+                        - generic [ref=f6e10]:
+                          - generic [ref=f6e11]:
+                            - img [ref=f6e12]
+                            - generic [ref=f6e20]: shadcn/studio
+                          - generic [ref=f6e21]:
+                            - generic [ref=f6e22]: Verify your email
+                            - generic [ref=f6e23]: "An activation link has been sent to your email address: hello@example.com. Please check your inbox and click on the link to complete the activation process."
+                        - generic [ref=f6e25]:
+                          - link "Skip for now" [ref=f6e26] [cursor=pointer]:
+                            - /url: "#"
+                          - paragraph [ref=f6e27]:
+                            - text: Didn't get the mail?
+                            - link "Resend" [ref=f6e28] [cursor=pointer]:
+                              - /url: "#"
+                    - region "Notifications alt+T"
+                    - alert [ref=f6e29]
+            - generic [ref=e469]:
+              - generic [ref=e470]:
+                - generic [ref=e471]:
+                  - generic [ref=e472]:
+                    - heading "Verify Email 2" [level=2] [ref=e473]:
+                      - link "Verify Email 2" [ref=e474] [cursor=pointer]:
+                        - /url: "#verify-email-2"
+                    - generic [ref=e475]: Basic
+                  - paragraph [ref=e476]: This shadcn verify email block displays a two-column layout with an animated dashboard preview, streamlined email verification card, and back-to-website navigation.
+                - link "Preview in Figma" [ref=e477] [cursor=pointer]:
+                  - /url: https://www.figma.com/design/N1Be7W5xCHcpdgjcjyoZs3/shadcn-studio-figma-uikit-pro-nova-preview?node-id=17111-31048&t=bgqkXpBCXNsSTXi4-11
+                  - img
+                  - text: Preview in Figma
+                  - img
+              - generic [ref=e479]:
+                - generic [ref=e480]:
+                  - generic [ref=e481]:
+                    - link "Get Code" [ref=e482] [cursor=pointer]:
+                      - /url: /#pricing
+                      - img
+                      - text: Get Code
+                      - img
+                    - link "Copy Prompt" [ref=e483] [cursor=pointer]:
+                      - /url: /#pricing
+                      - img
+                      - generic [ref=e484]: Copy Prompt
+                    - link "Download" [ref=e485] [cursor=pointer]:
+                      - /url: /#pricing
+                      - img
+                      - generic [ref=e486]: Download
+                  - generic [ref=e487]:
+                    - button "Toggle Theme" [ref=e488] [cursor=pointer]:
+                      - img
+                      - generic [ref=e489]: Toggle Theme
+                    - generic [ref=e490]:
+                      - button "Theme Generator" [ref=e491] [cursor=pointer]:
+                        - img
+                        - generic [ref=e492]: Theme Generator
+                      - button [ref=e493] [cursor=pointer]:
+                        - img
+                  - generic [ref=e494]:
+                    - generic [ref=e495]:
+                      - group [ref=e496]:
+                        - radio "Desktop" [checked] [ref=e497] [cursor=pointer]:
+                          - img
+                          - generic [ref=e498]: Desktop
+                        - radio "Tablet" [ref=e499] [cursor=pointer]:
+                          - img
+                          - generic [ref=e500]: Tablet
+                        - radio "Mobile" [ref=e501] [cursor=pointer]:
+                          - img
+                          - generic [ref=e502]: Mobile
+                      - link "Open in New Tab" [ref=e503] [cursor=pointer]:
+                        - /url: /preview/marketing-ui/verify-email/verify-email-02
+                        - img
+                        - generic [ref=e504]: Open in New Tab
+                    - link "npx shadcn add verify-email-02" [ref=e505] [cursor=pointer]:
+                      - /url: /#pricing
+                      - img
+                      - generic [ref=e506]: npx shadcn add verify-email-02
+                    - link "Open in v0" [ref=e507] [cursor=pointer]:
+                      - /url: /#pricing
+                      - img
+                      - generic [ref=e508]: Open in v0
+                - iframe [ref=e511]:
+                  - generic [active] [ref=f7e1]:
+                    - generic [ref=f7e3]:
+                      - generic [ref=f7e5]:
+                        - img "Dashboards" [ref=f7e7]
+                        - img [ref=f7e9]
+                      - generic [ref=f7e14]:
+                        - link "Back to the website" [ref=f7e15] [cursor=pointer]:
+                          - /url: "#"
+                          - img [ref=f7e16]
+                          - paragraph [ref=f7e18]: Back to the website
+                        - generic [ref=f7e19]:
+                          - generic [ref=f7e20]:
+                            - img [ref=f7e21]
+                            - generic [ref=f7e29]: shadcn/studio
+                          - generic [ref=f7e30]:
+                            - heading "Verify your email" [level=2] [ref=f7e31]
+                            - paragraph [ref=f7e32]: "An activation link has been sent to your email address: hello@example.com. Please check your inbox and click on the link to complete the activation process."
+                          - generic [ref=f7e33]:
+                            - link "Skip for now" [ref=f7e34] [cursor=pointer]:
+                              - /url: "#"
+                            - paragraph [ref=f7e35]:
+                              - text: Didn't get the mail?
+                              - link "Resend" [ref=f7e36] [cursor=pointer]:
+                                - /url: "#"
+                    - region "Notifications alt+T"
+                    - alert [ref=f7e37]
+            - generic [ref=e513]:
+              - generic [ref=e514]:
+                - generic [ref=e515]:
+                  - generic [ref=e516]:
+                    - heading "Verify Email 3" [level=2] [ref=e517]:
+                      - link "Verify Email 3" [ref=e518] [cursor=pointer]:
+                        - /url: "#verify-email-3"
+                    - generic [ref=e519]: Basic
+                  - paragraph [ref=e520]: This Shadcn verify email block displays a two-column split layout with email verification instructions, testimonial avatars, and a streamlined confirmation process.
+                - link "Preview in Figma" [ref=e521] [cursor=pointer]:
+                  - /url: https://www.figma.com/design/N1Be7W5xCHcpdgjcjyoZs3/shadcn-studio-figma-uikit-pro-nova-preview?node-id=17111-32432&t=bgqkXpBCXNsSTXi4-11
+                  - img
+                  - text: Preview in Figma
+                  - img
+              - generic [ref=e523]:
+                - generic [ref=e524]:
+                  - generic [ref=e525]:
+                    - link "Get Code" [ref=e526] [cursor=pointer]:
+                      - /url: /#pricing
+                      - img
+                      - text: Get Code
+                      - img
+                    - link "Copy Prompt" [ref=e527] [cursor=pointer]:
+                      - /url: /#pricing
+                      - img
+                      - generic [ref=e528]: Copy Prompt
+                    - link "Download" [ref=e529] [cursor=pointer]:
+                      - /url: /#pricing
+                      - img
+                      - generic [ref=e530]: Download
+                  - generic [ref=e531]:
+                    - button "Toggle Theme" [ref=e532] [cursor=pointer]:
+                      - img
+                      - generic [ref=e533]: Toggle Theme
+                    - generic [ref=e534]:
+                      - button "Theme Generator" [ref=e535] [cursor=pointer]:
+                        - img
+                        - generic [ref=e536]: Theme Generator
+                      - button [ref=e537] [cursor=pointer]:
+                        - img
+                  - generic [ref=e538]:
+                    - generic [ref=e539]:
+                      - group [ref=e540]:
+                        - radio "Desktop" [checked] [ref=e541] [cursor=pointer]:
+                          - img
+                          - generic [ref=e542]: Desktop
+                        - radio "Tablet" [ref=e543] [cursor=pointer]:
+                          - img
+                          - generic [ref=e544]: Tablet
+                        - radio "Mobile" [ref=e545] [cursor=pointer]:
+                          - img
+                          - generic [ref=e546]: Mobile
+                      - link "Open in New Tab" [ref=e547] [cursor=pointer]:
+                        - /url: /preview/marketing-ui/verify-email/verify-email-03
+                        - img
+                        - generic [ref=e548]: Open in New Tab
+                    - link "npx shadcn add verify-email-03" [ref=e549] [cursor=pointer]:
+                      - /url: /#pricing
+                      - img
+                      - generic [ref=e550]: npx shadcn add verify-email-03
+                    - link "Open in v0" [ref=e551] [cursor=pointer]:
+                      - /url: /#pricing
+                      - img
+                      - generic [ref=e552]: Open in v0
+                - iframe [ref=e555]:
+                  - generic [active] [ref=f8e1]:
+                    - generic [ref=f8e3]:
+                      - generic [ref=f8e5]:
+                        - generic [ref=f8e6]:
+                          - img [ref=f8e7]
+                          - generic [ref=f8e15]: shadcn/studio
+                        - generic [ref=f8e16]:
+                          - heading "Verify your email 📧" [level=2] [ref=f8e17]
+                          - paragraph [ref=f8e18]: Account activation link sent to your email address. johndoe@gmail.com, Please follow thee link inside to continue.
+                        - generic [ref=f8e19]:
+                          - link "Skip for now" [ref=f8e20] [cursor=pointer]:
+                            - /url: "#"
+                          - paragraph [ref=f8e21]:
+                            - text: Didn't get the mail?
+                            - link "Resend" [ref=f8e22] [cursor=pointer]:
+                              - /url: "#"
+                      - generic [ref=f8e24]:
+                        - generic [ref=f8e25]:
+                          - generic [ref=f8e26]: Welcome back! Please sign in to your Shadcn Studio account
+                          - paragraph [ref=f8e27]: Thank you for registering! Please check your inbox and click the verification link to activate your account.
+                        - img
+                        - generic [ref=f8e28]:
+                          - img
+                          - img [ref=f8e30]
+                          - generic [ref=f8e37]:
+                            - paragraph [ref=f8e38]: Please enter your login details
+                            - paragraph [ref=f8e39]: Stay connected with shadcn/studio Subscribe now for the latest updates and news.
+                            - generic [ref=f8e40]:
+                              - img "Olivia Sparks" [ref=f8e42]
+                              - img "Howard Lloyd" [ref=f8e44]
+                              - img "Hallie Richards" [ref=f8e46]
+                              - generic [ref=f8e48]: "+3695"
+                    - region "Notifications alt+T"
+                    - alert [ref=f8e49]
+            - img [ref=e557]
+        - generic [ref=e561]:
+          - heading "Shadcn Reset Password Blocks" [level=2] [ref=e562]:
+            - link "Shadcn Reset Password Blocks" [ref=e563] [cursor=pointer]:
+              - /url: "#shadcn-reset-password-blocks"
+          - paragraph [ref=e564]:
+            - text: Shadcn Reset Password Blocks are modern UI components designed to help users securely create a new password after initiating a password recovery request. Built using
+            - strong [ref=e565]: Shadcn UI, Tailwind CSS, and React
+            - text: ", these blocks provide clean and responsive layouts for password reset forms."
+          - paragraph [ref=e566]:
+            - text: Password reset pages are an essential part of
+            - strong [ref=e567]: authentication systems for SaaS platforms, web applications, membership websites, and enterprise dashboards
+            - text: . After users request a password reset through the forgot password flow, they are redirected to a reset password page where they can set a new password for their account.
+          - paragraph [ref=e568]:
+            - text: At
+            - link "Shadcn Studio" [ref=e569] [cursor=pointer]:
+              - /url: /
+              - strong [ref=e570]: Shadcn Studio
+            - text: ", developers can explore a wide range of"
+            - link "Shadcn Blocks" [ref=e571] [cursor=pointer]:
+              - /url: /blocks
+              - strong [ref=e572]: Shadcn Blocks
+            - text: . The reset password blocks include secure form layouts with fields for new password creation, confirmation validation, and navigation options back to login pages.
+          - heading "What Is a Reset Password Page in Web Design?" [level=3] [ref=e573]:
+            - link "What Is a Reset Password Page in Web Design?" [ref=e574] [cursor=pointer]:
+              - /url: "#what-is-a-reset-password-page-in-web-design"
+          - paragraph [ref=e575]:
+            - text: A
+            - strong [ref=e576]: reset password page
+            - text: is a webpage that allows users to create a new password after verifying their identity through a password reset link or token sent via email.
+          - paragraph [ref=e577]: "A typical reset password page includes:"
+          - list [ref=e578]:
+            - listitem [ref=e579]: New password input field
+            - listitem [ref=e580]: Confirm password field
+            - listitem [ref=e581]: Password validation or strength indicators
+            - listitem [ref=e582]: Submit button to update the password
+            - listitem [ref=e583]: Link to return to the login page
+          - paragraph [ref=e584]:
+            - text: Reset password pages are usually part of a
+            - strong [ref=e585]: password recovery workflow
+            - text: ", which begins with a forgot password request and ends with users setting a new password to regain access to their accounts."
+          - heading "Why Use Shadcn Reset Password Blocks?" [level=2] [ref=e586]:
+            - link "Why Use Shadcn Reset Password Blocks?" [ref=e587] [cursor=pointer]:
+              - /url: "#why-use-shadcn-reset-password-blocks"
+          - paragraph [ref=e588]: Shadcn reset password blocks provide structured layouts that help developers implement secure password reset interfaces quickly.
+          - paragraph [ref=e589]:
+            - strong [ref=e590]: Secure Authentication Flow
+          - paragraph [ref=e591]: Password reset pages allow users to create new credentials while protecting accounts through verification tokens and secure forms.
+          - paragraph [ref=e592]:
+            - strong [ref=e593]: Built with React and Tailwind
+          - paragraph [ref=e594]:
+            - text: Shadcn authentication components are built using
+            - strong [ref=e595]: React and Tailwind CSS
+            - text: ", making them easy to integrate with frameworks like"
+            - strong [ref=e596]: Next.js and modern frontend stacks
+            - text: .
+          - paragraph [ref=e597]:
+            - strong [ref=e598]: User-Friendly Form Design
+          - paragraph [ref=e599]: Clear form fields and validation messages guide users through creating strong passwords.
+          - paragraph [ref=e600]:
+            - strong [ref=e601]: Responsive Authentication Layouts
+          - paragraph [ref=e602]: Reset password pages are optimized for desktop, tablet, and mobile devices.
+          - paragraph [ref=e603]:
+            - strong [ref=e604]: Copy-Paste Developer Workflow
+          - paragraph [ref=e605]:
+            - text: Shadcn blocks follow a
+            - strong [ref=e606]: copy-paste or CLI install workflow
+            - text: ", allowing developers to integrate authentication UI components quickly."
+          - heading "Key Elements of a Secure Reset Password Page" [level=3] [ref=e607]:
+            - link "Key Elements of a Secure Reset Password Page" [ref=e608] [cursor=pointer]:
+              - /url: "#key-elements-of-a-secure-reset-password-page"
+          - paragraph [ref=e609]: Effective reset password pages include several important elements.
+          - paragraph [ref=e610]:
+            - strong [ref=e611]: New Password Field
+          - paragraph [ref=e612]: Allows users to enter their new account password.
+          - paragraph [ref=e613]:
+            - strong [ref=e614]: Confirm Password Field
+          - paragraph [ref=e615]: Ensures that users enter the same password twice to prevent errors.
+          - paragraph [ref=e616]:
+            - strong [ref=e617]: Password Strength Indicators
+          - paragraph [ref=e618]: Some interfaces include visual indicators that encourage strong passwords.
+          - paragraph [ref=e619]:
+            - strong [ref=e620]: Reset Confirmation Button
+          - paragraph [ref=e621]: Submits the new password and updates the user's account credentials.
+          - paragraph [ref=e622]:
+            - strong [ref=e623]: Navigation Back to Login
+          - paragraph [ref=e624]: Users can quickly return to the login page after completing the reset process.
+          - heading "Types of Reset Password Layouts" [level=2] [ref=e625]:
+            - link "Types of Reset Password Layouts" [ref=e626] [cursor=pointer]:
+              - /url: "#types-of-reset-password-layouts"
+          - paragraph [ref=e627]: Different applications implement different reset password page designs depending on their authentication flow.
+          - paragraph [ref=e628]:
+            - strong [ref=e629]: Centered Card Reset Page
+          - paragraph [ref=e630]: A simple layout with a reset form placed inside a centered card.
+          - paragraph [ref=e631]:
+            - strong [ref=e632]: Split Layout Reset Page
+          - paragraph [ref=e633]: A two-column design with branding visuals and the password reset form.
+          - paragraph [ref=e634]:
+            - strong [ref=e635]: Guided Reset Flow
+          - paragraph [ref=e636]: Includes step-by-step instructions and confirmation states.
+          - paragraph [ref=e637]:
+            - strong [ref=e638]: Minimal Reset Interface
+          - paragraph [ref=e639]: Focuses only on essential password fields to reduce friction.
+          - paragraph [ref=e640]:
+            - strong [ref=e641]: Security-Focused Reset Page
+          - paragraph [ref=e642]: Includes password requirements, validation messages, and security indicators.
+          - heading "Use Cases for Reset Password Blocks" [level=2] [ref=e643]:
+            - link "Use Cases for Reset Password Blocks" [ref=e644] [cursor=pointer]:
+              - /url: "#use-cases-for-reset-password-blocks"
+          - paragraph [ref=e645]: Shadcn reset password blocks are widely used across many types of applications.
+          - paragraph [ref=e646]:
+            - strong [ref=e647]: SaaS Platforms
+          - paragraph [ref=e648]: Allow users to regain access to their accounts by setting new passwords.
+          - paragraph [ref=e649]:
+            - strong [ref=e650]: Admin Dashboards
+          - paragraph [ref=e651]: Provide password reset flows for administrators or team members.
+          - paragraph [ref=e652]:
+            - strong [ref=e653]: Developer Platforms
+          - paragraph [ref=e654]: Enable secure credential resets for developer accounts.
+          - paragraph [ref=e655]:
+            - strong [ref=e656]: Membership Websites
+          - paragraph [ref=e657]: Allow users to restore access to their personal accounts.
+          - paragraph [ref=e658]:
+            - strong [ref=e659]: Enterprise Applications
+          - paragraph [ref=e660]: Support secure password recovery processes within internal systems.
+          - heading "Features of Shadcn Reset Password Blocks" [level=3] [ref=e661]:
+            - link "Features of Shadcn Reset Password Blocks" [ref=e662] [cursor=pointer]:
+              - /url: "#features-of-shadcn-reset-password-blocks"
+          - paragraph [ref=e663]: Shadcn reset password blocks include several UI features designed for modern authentication systems.
+          - paragraph [ref=e664]: "Common features include:"
+          - list [ref=e665]:
+            - listitem [ref=e666]: New password and confirm password fields
+            - listitem [ref=e667]: Password validation and strength indicators
+            - listitem [ref=e668]: Secure form submission layouts
+            - listitem [ref=e669]: Back-to-login navigation links
+            - listitem [ref=e670]: Responsive authentication layouts
+            - listitem [ref=e671]: Accessible form components
+            - listitem [ref=e672]: Tailwind CSS styling
+            - listitem [ref=e673]: Dark mode compatibility
+          - paragraph [ref=e674]:
+            - text: These features help developers build
+            - strong [ref=e675]: secure and user-friendly password recovery flows that allow users to safely update their credentials and regain access to their accounts
+            - text: .
+          - heading "FAQs" [level=2] [ref=e676]:
+            - link "FAQs" [ref=e677] [cursor=pointer]:
+              - /url: "#faqs"
+          - generic [ref=e678]:
+            - heading "What is a reset password page?" [level=3] [ref=e680]:
+              - button "What is a reset password page?" [ref=e681] [cursor=pointer]:
+                - text: What is a reset password page?
+                - img
+            - heading "What are Shadcn reset password blocks?" [level=3] [ref=e683]:
+              - button "What are Shadcn reset password blocks?" [ref=e684] [cursor=pointer]:
+                - text: What are Shadcn reset password blocks?
+                - img
+            - heading "What fields should a reset password form include?" [level=3] [ref=e686]:
+              - button "What fields should a reset password form include?" [ref=e687] [cursor=pointer]:
+                - text: What fields should a reset password form include?
+                - img
+            - heading "How does the password reset process work?" [level=3] [ref=e689]:
+              - button "How does the password reset process work?" [ref=e690] [cursor=pointer]:
+                - text: How does the password reset process work?
+                - img
+            - heading "Does the design file include premium reset password blocks?" [level=3] [ref=e692]:
+              - button "Does the design file include premium reset password blocks?" [ref=e693] [cursor=pointer]:
+                - text: Does the design file include premium reset password blocks?
+                - img
+            - heading "Will I get pro blocks with the package?" [level=3] [ref=e695]:
+              - button "Will I get pro blocks with the package?" [ref=e696] [cursor=pointer]:
+                - text: Will I get pro blocks with the package?
+                - img
+            - heading "Where can I get support?" [level=3] [ref=e698]:
+              - button "Where can I get support?" [ref=e699] [cursor=pointer]:
+                - text: Where can I get support?
+                - img
+            - heading "How do I get in touch?" [level=3] [ref=e701]:
+              - button "How do I get in touch?" [ref=e702] [cursor=pointer]:
+                - text: How do I get in touch?
+                - img
+      - button "Scroll to top":
+        - generic: Scroll to top
+    - separator [ref=e704]
+    - contentinfo [ref=e712]:
+      - generic [ref=e713]:
+        - generic [ref=e714]:
+          - generic [ref=e715]:
+            - link "shadcn/studio" [ref=e716] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e717]:
+                - img [ref=e718]
+                - generic [ref=e726]: shadcn/studio
+            - paragraph [ref=e727]:
+              - text: An open-source collection of copy-and-paste
+              - link "shadcn/ui" [ref=e728] [cursor=pointer]:
+                - /url: /
+              - text: components, blocks, and templates - paired with a powerful Shadcn theme generator to craft, customize, and ship faster.
+            - generic [ref=e729]:
+              - link "Github" [ref=e730] [cursor=pointer]:
+                - /url: https://github.com/shadcnstudio/shadcn-studio
+                - img [ref=e731]
+                - generic [ref=e734]: Github
+              - link "Discord" [ref=e735] [cursor=pointer]:
+                - /url: https://discord.com/invite/kBHkY7DekX
+                - img [ref=e736]
+                - generic [ref=e743]: Discord
+              - link "X" [ref=e744] [cursor=pointer]:
+                - /url: https://x.com/ShadcnStudio
+                - img [ref=e745]
+                - generic [ref=e747]: X
+              - link "Youtube" [ref=e748] [cursor=pointer]:
+                - /url: https://www.youtube.com/@themeselection
+                - img [ref=e749]
+                - generic [ref=e752]: Youtube
+            - paragraph [ref=e753]: This project is independent and not affiliated with Figma or shadcn/ui.
+            - link "Sponsor shadcn/ui on GitHub" [ref=e754] [cursor=pointer]:
+              - /url: https://github.com/sponsors/shadcn
+              - img
+              - text: Sponsor shadcn/ui on GitHub
+              - img
+            - paragraph [ref=e755]:
+              - text: This project wouldn't be possible without the open-source
+              - link "shadcn/ui" [ref=e756] [cursor=pointer]:
+                - /url: https://ui.shadcn.com/
+              - text: ecosystem.
+          - generic [ref=e757]:
+            - generic [ref=e758]: Products
+            - list [ref=e759]:
+              - listitem [ref=e760]:
+                - link "Shadcn Blocks" [ref=e761] [cursor=pointer]:
+                  - /url: /blocks
+              - listitem [ref=e762]:
+                - link "Shadcn Templates" [ref=e763] [cursor=pointer]:
+                  - /url: /templates
+              - listitem [ref=e764]:
+                - link "Shadcn Figma UI Kit" [ref=e765] [cursor=pointer]:
+                  - /url: /figma
+              - listitem [ref=e766]:
+                - link "Shadcn Builder" [ref=e767] [cursor=pointer]:
+                  - /url: /builder
+              - listitem [ref=e768]:
+                - link "Shadcn Theme Generator" [ref=e769] [cursor=pointer]:
+                  - /url: /theme-generator
+              - listitem [ref=e770]:
+                - link "Shadcn MCP Server" [ref=e771] [cursor=pointer]:
+                  - /url: /mcp
+              - listitem [ref=e772]:
+                - link "Shadcn Components" [ref=e773] [cursor=pointer]:
+                  - /url: /components
+              - listitem [ref=e774]:
+                - link "Shadcn Figma to Code" [ref=e775] [cursor=pointer]:
+                  - /url: /figma-plugin
+          - generic [ref=e776]:
+            - generic [ref=e777]: Resources
+            - list [ref=e778]:
+              - listitem [ref=e779]:
+                - link "Documentation" [ref=e780] [cursor=pointer]:
+                  - /url: /docs/getting-started/introduction
+              - listitem [ref=e781]:
+                - link "Blog" [ref=e782] [cursor=pointer]:
+                  - /url: /blog
+              - listitem [ref=e783]:
+                - link "Changelog" [ref=e784] [cursor=pointer]:
+                  - /url: /changelog
+              - listitem [ref=e785]:
+                - link "Roadmap" [ref=e786] [cursor=pointer]:
+                  - /url: https://github.com/orgs/themeselection/projects/42/views/2
+              - listitem [ref=e787]:
+                - link "Community Resources" [ref=e788] [cursor=pointer]:
+                  - /url: /community-resources
+              - listitem [ref=e789]:
+                - link "Credits" [ref=e790] [cursor=pointer]:
+                  - /url: /credits
+          - generic [ref=e791]:
+            - generic [ref=e792]: Help and Support
+            - list [ref=e793]:
+              - listitem [ref=e794]:
+                - link "Support" [ref=e795] [cursor=pointer]:
+                  - /url: /support
+              - listitem [ref=e796]:
+                - link "About Us" [ref=e797] [cursor=pointer]:
+                  - /url: https://themeselection.com/about-us/
+              - listitem [ref=e798]:
+                - link "Become Ambassador" [ref=e799] [cursor=pointer]:
+                  - /url: /become-ambassador
+              - listitem [ref=e800]:
+                - link "Affiliation Program" [ref=e801] [cursor=pointer]:
+                  - /url: /become-ambassador
+              - listitem [ref=e802]:
+                - link "Contact Us" [ref=e803] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e804]:
+                - link "Hire Us" [ref=e805] [cursor=pointer]:
+                  - /url: https://themeselection.com/hire-us/
+          - generic [ref=e806]:
+            - generic [ref=e807]: Legal
+            - list [ref=e808]:
+              - listitem [ref=e809]:
+                - link "License" [ref=e810] [cursor=pointer]:
+                  - /url: /license
+              - listitem [ref=e811]:
+                - link "Privacy policy" [ref=e812] [cursor=pointer]:
+                  - /url: /privacy-policy
+              - listitem [ref=e813]:
+                - link "Terms & Condition" [ref=e814] [cursor=pointer]:
+                  - /url: /terms-and-condition
+              - listitem [ref=e815]:
+                - link "Affiliation Terms & Condition" [ref=e816] [cursor=pointer]:
+                  - /url: /ambassador-terms-and-condition
+        - generic [ref=e817]:
+          - paragraph [ref=e818]: Shadcn Blocks
+          - generic [ref=e819]:
+            - generic [ref=e820]:
+              - link "Marketing UI Blocks" [ref=e821] [cursor=pointer]:
+                - /url: /blocks#marketing-ui
+              - list [ref=e822]:
+                - listitem [ref=e823]:
+                  - link "Hero Section" [ref=e824] [cursor=pointer]:
+                    - /url: /blocks/marketing-ui/hero-section
+                - listitem [ref=e825]:
+                  - link "Features Section" [ref=e826] [cursor=pointer]:
+                    - /url: /blocks/marketing-ui/features-section
+                - listitem [ref=e827]:
+                  - link "Pricing Component" [ref=e828] [cursor=pointer]:
+                    - /url: /blocks/marketing-ui/pricing-component
+                - listitem [ref=e829]:
+                  - link "Testimonials Component" [ref=e830] [cursor=pointer]:
+                    - /url: /blocks/marketing-ui/testimonials-component
+                - listitem [ref=e831]:
+                  - link "Social Proof" [ref=e832] [cursor=pointer]:
+                    - /url: /blocks/marketing-ui/social-proof
+                - listitem [ref=e833]:
+                  - link "Portfolio" [ref=e834] [cursor=pointer]:
+                    - /url: /blocks/marketing-ui/portfolio
+                - listitem [ref=e835]:
+                  - link "Team Section" [ref=e836] [cursor=pointer]:
+                    - /url: /blocks/marketing-ui/team-section
+                - listitem [ref=e837]:
+                  - link "CTA Section" [ref=e838] [cursor=pointer]:
+                    - /url: /blocks/marketing-ui/cta-section
+                - listitem [ref=e839]:
+                  - link "Logo Cloud" [ref=e840] [cursor=pointer]:
+                    - /url: /blocks/marketing-ui/logo-cloud
+                - listitem [ref=e841]:
+                  - link "Browse all" [ref=e842] [cursor=pointer]:
+                    - /url: /blocks#marketing-ui
+                    - text: Browse all
+                    - img [ref=e843]
+            - generic [ref=e845]:
+              - link "Dashboard & Application UI" [ref=e846] [cursor=pointer]:
+                - /url: /blocks#dashboard-and-application
+              - list [ref=e847]:
+                - listitem [ref=e848]:
+                  - link "Dashboard Shell" [ref=e849] [cursor=pointer]:
+                    - /url: /blocks/dashboard-and-application/dashboard-shell
+                - listitem [ref=e850]:
+                  - link "Application Shell" [ref=e851] [cursor=pointer]:
+                    - /url: /blocks/dashboard-and-application/application-shell
+                - listitem [ref=e852]:
+                  - link "Charts Component" [ref=e853] [cursor=pointer]:
+                    - /url: /blocks/dashboard-and-application/charts-component
+                - listitem [ref=e854]:
+                  - link "Widgets Component" [ref=e855] [cursor=pointer]:
+                    - /url: /blocks/dashboard-and-application/widgets-component
+                - listitem [ref=e856]:
+                  - link "Statistics Component" [ref=e857] [cursor=pointer]:
+                    - /url: /blocks/dashboard-and-application/statistics-component
+                - listitem [ref=e858]:
+                  - link "Dashboard Dialog" [ref=e859] [cursor=pointer]:
+                    - /url: /blocks/dashboard-and-application/dashboard-dialog
+                - listitem [ref=e860]:
+                  - link "Dashboard Dropdown" [ref=e861] [cursor=pointer]:
+                    - /url: /blocks/dashboard-and-application/dashboard-dropdown
+                - listitem [ref=e862]:
+                  - link "Multi Step Form" [ref=e863] [cursor=pointer]:
+                    - /url: /blocks/dashboard-and-application/multi-step-form
+                - listitem [ref=e864]:
+                  - link "Dashboard Sidebar" [ref=e865] [cursor=pointer]:
+                    - /url: /blocks/dashboard-and-application/dashboard-sidebar
+                - listitem [ref=e866]:
+                  - link "Browse all" [ref=e867] [cursor=pointer]:
+                    - /url: /blocks#dashboard-and-application
+                    - text: Browse all
+                    - img [ref=e868]
+            - generic [ref=e870]:
+              - link "eCommerce" [ref=e871] [cursor=pointer]:
+                - /url: /blocks#ecommerce
+              - list [ref=e872]:
+                - listitem [ref=e873]:
+                  - link "Product Overview" [ref=e874] [cursor=pointer]:
+                    - /url: /blocks/ecommerce/product-overview
+                - listitem [ref=e875]:
+                  - link "Product Quick View" [ref=e876] [cursor=pointer]:
+                    - /url: /blocks/ecommerce/product-quick-view
+                - listitem [ref=e877]:
+                  - link "Product Category" [ref=e878] [cursor=pointer]:
+                    - /url: /blocks/ecommerce/product-category
+                - listitem [ref=e879]:
+                  - link "Product List" [ref=e880] [cursor=pointer]:
+                    - /url: /blocks/ecommerce/product-list
+                - listitem [ref=e881]:
+                  - link "Shopping Cart" [ref=e882] [cursor=pointer]:
+                    - /url: /blocks/ecommerce/shopping-cart
+                - listitem [ref=e883]:
+                  - link "Offer Modal" [ref=e884] [cursor=pointer]:
+                    - /url: /blocks/ecommerce/offer-modal
+                - listitem [ref=e885]:
+                  - link "Checkout Page" [ref=e886] [cursor=pointer]:
+                    - /url: /blocks/ecommerce/checkout-page
+                - listitem [ref=e887]:
+                  - link "Product Reviews" [ref=e888] [cursor=pointer]:
+                    - /url: /blocks/ecommerce/product-reviews
+                - listitem [ref=e889]:
+                  - link "Order Summary" [ref=e890] [cursor=pointer]:
+                    - /url: /blocks/ecommerce/order-summary
+                - listitem [ref=e891]:
+                  - link "Browse all" [ref=e892] [cursor=pointer]:
+                    - /url: /blocks#ecommerce
+                    - text: Browse all
+                    - img [ref=e893]
+            - generic [ref=e895]:
+              - link "Bento & Datatable" [ref=e896] [cursor=pointer]:
+                - /url: /blocks#bento-grid
+              - list [ref=e897]:
+                - listitem [ref=e898]:
+                  - link "Bento Grid" [ref=e899] [cursor=pointer]:
+                    - /url: /blocks/bento-grid/bento-grid
+                - listitem [ref=e900]:
+                  - link "Datatable Component" [ref=e901] [cursor=pointer]:
+                    - /url: /blocks/datatable/datatable-component
+      - generic [ref=e903]:
+        - generic [ref=e904]:
+          - paragraph [ref=e905]: Innovative Offerings
+          - paragraph [ref=e906]: Discover other Tools & Brands in our Ecosystem
+        - generic [ref=e907]:
+          - link "ThemeSelection" [ref=e908] [cursor=pointer]:
+            - /url: https://themeselection.com
+            - img [ref=e909]
+            - generic [ref=e924]: ThemeSelection
+          - link "FlyonUI" [ref=e925] [cursor=pointer]:
+            - /url: https://flyonui.com
+            - img [ref=e926]
+            - generic [ref=e933]: FlyonUI
+          - link "FrameSpark" [ref=e934] [cursor=pointer]:
+            - /url: https://framespark.io
+            - img [ref=e935]
+            - generic [ref=e942]: FrameSpark
+          - link "All UtilityCSS" [ref=e943] [cursor=pointer]:
+            - /url: https://allutilitycss.com
+            - img [ref=e944]
+            - generic [ref=e952]: All UtilityCSS
+          - link "All ShadCN" [ref=e953] [cursor=pointer]:
+            - /url: https://allshadcn.com
+            - img [ref=e954]
+            - generic [ref=e961]: All ShadCN
+          - link "All Framer" [ref=e962] [cursor=pointer]:
+            - /url: https://allframer.club
+            - img [ref=e963]
+            - generic [ref=e969]: All Framer
+          - link "PixInvent" [ref=e970] [cursor=pointer]:
+            - /url: https://pixinvent.com
+            - img [ref=e971]
+            - generic [ref=e980]: PixInvent
+          - link "JetShip" [ref=e981] [cursor=pointer]:
+            - /url: https://themeselection.com/item/category/saas-boilerplate/
+            - img [ref=e982]
+            - generic [ref=e989]: JetShip
+      - generic [ref=e991]:
+        - paragraph [ref=e992]:
+          - text: ©2026
+          - link "shadcn/studio" [ref=e993] [cursor=pointer]:
+            - /url: /
+          - text: ", Supported by"
+          - link "ThemeSelection" [ref=e994] [cursor=pointer]:
+            - /url: https://themeselection.com/
+        - generic [ref=e995]:
+          - img "GDPR Compliant"
+          - img "100% Secure"
+          - img "Stripe"
+          - img "polar"
+  - region "Notifications alt+T"
+  - alert [ref=e996]

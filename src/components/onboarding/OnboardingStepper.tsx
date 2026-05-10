@@ -76,5 +76,5 @@ export const defaultOnboardingSteps: Step[] = [
     { number: 1, label: 'Perfil' },
     { number: 2, label: 'Clínica' },
     { number: 3, label: 'Ubicación' },
-    { number: 4, label: 'Completar' },
+    { number: 4, label: 'Listo' },
 ];

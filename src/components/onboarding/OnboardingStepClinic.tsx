@@ -142,7 +142,7 @@ export const OnboardingStepClinic = forwardRef<OnboardingStepClinicRef, Onboardi
         return (
             <Card className="card-clinic">
                 <CardHeader>
-                    <CardTitle>Nombre tu clínica</CardTitle>
+                    <CardTitle>Nombra tu clínica</CardTitle>
                     <CardDescription>Elige un nombre único para identificar tu consultorio</CardDescription>
                 </CardHeader>
                 <CardContent>
