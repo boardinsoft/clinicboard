@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { createAllergy } from '@/actions/allergies';
+import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import type { AllergyIntolerance } from '@/types/database.types';
 import {
     Dialog,
@@ -23,7 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Field, FieldLabel, FieldError } from '@/components/ui/field';
-import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
+import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
@@ -53,6 +54,7 @@ interface AddAllergyDialogProps {
 
 export function AddAllergyDialog({ patientId, open, onOpenChange, onSuccess }: AddAllergyDialogProps) {
     const [saving, setSaving] = useState(false);
+    const { activeClinic } = useActiveClinic();
 
     const form = useForm<FormValues>({
         resolver: zodResolver(schema),
@@ -75,6 +77,7 @@ export function AddAllergyDialog({ patientId, open, onOpenChange, onSuccess }: A
                 allergy_type: values.allergy_type,
                 category: values.category,
                 criticality: values.criticality,
+                clinic_id: activeClinic?.id || '',
             });
 
             if (result.error) {
@@ -113,24 +116,22 @@ export function AddAllergyDialog({ patientId, open, onOpenChange, onSuccess }: A
 
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
                     <Field>
-                        <FieldLabel >Código / Sustancia</FieldLabel>
-                        <InputGroup>
-                            <InputGroupInput
-                                placeholder="Ej. penicilina"
-                                {...form.register('code')}
-                            />
-                        </InputGroup>
+                        <FieldLabel>Código / Sustancia</FieldLabel>
+                        <Input
+                            placeholder="Ej. penicilina"
+                            {...form.register('code')}
+                            className="h-10"
+                        />
                         <FieldError>{form.formState.errors.code?.message}</FieldError>
                     </Field>
 
                     <Field>
-                        <FieldLabel >Nombre del alérgeno</FieldLabel>
-                        <InputGroup>
-                            <InputGroupInput
-                                placeholder="Ej. Penicilina G"
-                                {...form.register('code_display')}
-                            />
-                        </InputGroup>
+                        <FieldLabel>Nombre del alérgeno</FieldLabel>
+                        <Input
+                            placeholder="Ej. Penicilina G"
+                            {...form.register('code_display')}
+                            className="h-10"
+                        />
                         <FieldError>{form.formState.errors.code_display?.message}</FieldError>
                     </Field>
 
@@ -142,7 +143,7 @@ export function AddAllergyDialog({ patientId, open, onOpenChange, onSuccess }: A
                                 name="allergy_type"
                                 render={({ field }) => (
                                     <Select value={field.value} onValueChange={field.onChange}>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="h-10">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -164,7 +165,7 @@ export function AddAllergyDialog({ patientId, open, onOpenChange, onSuccess }: A
                                         value={field.value ?? ''}
                                         onValueChange={(v) => field.onChange(v || undefined)}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className="h-10">
                                             <SelectValue placeholder="Opcional" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -179,7 +180,7 @@ export function AddAllergyDialog({ patientId, open, onOpenChange, onSuccess }: A
                     </div>
 
                     <Field>
-                        <FieldLabel >Categoría</FieldLabel>
+                        <FieldLabel>Categoría</FieldLabel>
                         <div className="flex flex-wrap gap-3 pt-1">
                             {CATEGORIES.map(cat => (
                                 <div key={cat.value} className="flex items-center gap-2">

@@ -5,6 +5,7 @@ export const MedicationStatusEnum = z.enum(['draft', 'active', 'on-hold', 'cance
 export const prescriptionSchema = z.object({
     patient_id: z.string().uuid('Invalid patient ID (UUID required)'),
     prescriber_id: z.string().uuid('Invalid prescriber ID (UUID required)'),
+    clinic_id: z.string().uuid('Invalid clinic ID (UUID required)'),
     medication_code: z.string().min(1, 'Medication code (ATC/RXNorm) is required'),
     medication_display: z.string().min(1, 'Medication name is required'),
     status: MedicationStatusEnum.optional().default('active'),

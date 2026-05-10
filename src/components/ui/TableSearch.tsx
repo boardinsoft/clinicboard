@@ -2,13 +2,11 @@
 
 import React from 'react';
 import {
-    Search,
     ListFilter,
     X,
     Download,
     ArrowUpDown,
     Columns,
-    Check,
     Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,11 +14,9 @@ import { Input } from '@/components/ui/input';
 import { 
     DropdownMenu, 
     DropdownMenuContent, 
-    DropdownMenuItem, 
     DropdownMenuLabel, 
     DropdownMenuSeparator, 
     DropdownMenuTrigger,
-    DropdownMenuCheckboxItem,
     DropdownMenuRadioGroup,
     DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
@@ -65,12 +61,11 @@ export default function TableSearch({
             {/* ── Lado Izquierdo: Búsqueda e Indicador de Filtros ── */}
             <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="relative w-full max-w-xs group ml-4">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40 group-focus-within:text-foreground transition-colors" />
                     <Input
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
                         placeholder={placeholder}
-                        className="h-8 pl-8 pr-8 bg-background border-border/10 focus-visible:bg-background transition-all text-xs"
+                        className="h-8 pr-8 bg-background border-border transition-all text-xs"
                     />
                     {value && (
                         <button 
@@ -194,10 +189,10 @@ export default function TableSearch({
 
                 {onNewRecord && (
                     <Button 
-                        variant="menta" 
+                        variant="default" 
                         size="xs" 
                         onClick={onNewRecord}
-                        className="h-8 gap-2 px-3 shadow-xs"
+                        className="h-8 gap-2 px-3"
                     >
                         <Plus className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">Nuevo</span>

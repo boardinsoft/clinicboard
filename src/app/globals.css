@@ -3,399 +3,491 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   CLINICBOARD — DESIGN SYSTEM TOKENS
-   Paleta de marca: #3981f6 (blue) · #4045ba (indigo) · #90e2bc (mint) · #e64343 (red)
-   Fuente: coolors.co/3981f6-4045ba-90e2bc-e64343
+   CLINICBOARD — DESIGN SYSTEM: CLINICAL TEAL + SLATE FRÍO
+   Estética basada en el lenguaje visual de Supabase adaptado a contexto clínico.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @layer base {
-
-  /* ─────────────────────────────────────────────────────────────────────────
-     MODO CLARO — Base limpia con profundidad índigo sutil
-     Filosofía: quirófano blanco + acento azul vibrante = confianza médica
-     ───────────────────────────────────────────────────────────────────────── */
   :root {
-    /* ── Superficies ── */
-    --background:              oklch(1.00 0 0);               /* Blanco puro */
-    --foreground:              oklch(0.17 0.018 271);         /* Texto: negro con tinte índigo */
-    --card:                    oklch(1.00 0 0);
-    --card-foreground:         oklch(0.17 0.018 271);
-    --popover:                 oklch(1.00 0 0);
-    --popover-foreground:      oklch(0.17 0.018 271);
+    /* ── Escala Neutra (Slate Frío - Light) ── */
+    --n-1:  #fbfcfd;   /* page bg */
+    --n-2:  #f5f7fa;   /* surface-75 */
+    --n-3:  #eef1f5;   /* surface-100 */
+    --n-4:  #e4e8ee;   /* surface-200 */
+    --n-5:  #d7dde5;   /* border-muted */
+    --n-6:  #c4cbd5;   /* border-default */
+    --n-7:  #a5adbb;   /* border-strong */
+    --n-8:  #7f8a9b;   /* muted text */
+    --n-9:  #5a6478;   /* secondary text */
+    --n-10: #3d4555;   /* strong text */
+    --n-11: #222938;   /* heading */
+    --n-12: #0f141e;   /* ink */
 
-    /* ── Primary — #3981f6 Brand Blue ── */
-    --primary:                 oklch(0.597 0.197 262);
-    --primary-foreground:      oklch(1.00 0 0);
+    /* ── Escala Brand (Clinical Teal - Light) ── */
+    --b-1:  #f0fbf8;
+    --b-2:  #dbf6ef;
+    --b-3:  #bfefe2;
+    --b-4:  #99e4d1;
+    --b-5:  #6dd6ba;
+    --b-6:  #3fc49e;
+    --b-7:  #0fb088;
+    --b-8:  #0ca488;   /* ★ BRAND-500 (primario) */
+    --b-9:  #0a8c74;
+    --b-10: #086f5c;
+    --b-11: #064e42;
+    --b-12: #03271f;
 
-    /* ── Secondary — índigo muy suave ── */
-    --secondary:               oklch(0.965 0.010 271);
-    --secondary-foreground:    oklch(0.432 0.215 271);        /* #4045ba */
+    /* ── Roles Semánticos ── */
+    --s-success:     #0ca488;  --s-success-bg:  #e5f6f0;  --s-success-br:  #b6e4d5;
+    --s-warning:     #c98618;  --s-warning-bg:  #fbf2e0;  --s-warning-br:  #ead8a9;
+    --s-danger:      #d24848;  --s-danger-bg:   #fbe9e9;  --s-danger-br:   #ecbfbf;
+    --s-info:        #2f7cf6;  --s-info-bg:     #eaf2fe;  --s-info-br:     #c4d8f8;
+    --s-neutral:     #5a6478;  --s-neutral-bg:  #eef1f5;  --s-neutral-br:  #d7dde5;
 
-    /* ── Muted — gris-azul neutro ── */
-    --muted:                   oklch(0.960 0.006 265);
-    --muted-foreground:        oklch(0.52 0.018 265);
-
-    /* ── Accent — menta salud (#90e2bc family) ── */
-    --accent:                  oklch(0.945 0.040 155);
-    --accent-foreground:       oklch(0.30 0.090 155);
-
-    /* ── Destructive — #e64343 Rojo clínico ── */
-    --destructive:             oklch(0.561 0.215 25);
-    --destructive-foreground:  oklch(1.00 0 0);
-
-    /* ── Bordes e inputs ── */
-    --border:                  oklch(0.905 0.009 265);
-    --input:                   oklch(0.905 0.009 265);
-    --ring:                    oklch(0.597 0.197 262);
-
-    /* ── Charts (gradiente azul → menta) ── */
-    --chart-1:                 oklch(0.597 0.197 262);        /* blue */
-    --chart-2:                 oklch(0.843 0.097 155);        /* mint */
-    --chart-3:                 oklch(0.432 0.215 271);        /* indigo */
-    --chart-4:                 oklch(0.65  0.140 75);         /* amber */
-    --chart-5:                 oklch(0.561 0.215 25);         /* red */
-
-    /* ── Sidebar — blanco puro (modo claro) ── */
-    --sidebar-background:      oklch(1.00 0 0);
-    --sidebar-foreground:      oklch(0.30  0.030 271);
-    --sidebar-primary:         oklch(0.597 0.197 262);
-    --sidebar-primary-foreground: oklch(1.00 0 0);
-    --sidebar-accent:          oklch(0.960 0.006 265);
-    --sidebar-accent-foreground: oklch(0.20 0.040 271);
-    --sidebar-border:          oklch(0.905 0.009 265);
-    --sidebar-ring:            oklch(0.597 0.197 262);
-
-    /* ── Tipografía ── */
-    --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-
-    /* ── Radio — sutil y profesional estilo Supabase (6px base) ── */
-    --radius: 0.375rem;
-
-    /* ── Tracking ── */
-    --tracking-normal:   0em;
-    --tracking-tighter:  calc(var(--tracking-normal) - 0.05em);
-    --tracking-tight:    calc(var(--tracking-normal) - 0.025em);
-    --tracking-wide:     calc(var(--tracking-normal) + 0.025em);
-    --tracking-wider:    calc(var(--tracking-normal) + 0.05em);
-    --tracking-widest:   calc(var(--tracking-normal) + 0.1em);
-
-    /* ── Sombras — sutiles, casi planas ── */
-    --shadow-2xs: 0px 1px 2px hsl(230 40% 20% / 0.04);
-    --shadow-xs:  0px 2px 4px hsl(230 40% 20% / 0.05);
-    --shadow-sm:  0px 2px 6px hsl(230 40% 20% / 0.07), 0px 1px 2px hsl(230 40% 20% / 0.05);
-    --shadow:     0px 4px 8px hsl(230 40% 20% / 0.08), 0px 2px 4px hsl(230 40% 20% / 0.05);
-    --shadow-md:  0px 6px 12px hsl(230 40% 20% / 0.10), 0px 3px 6px hsl(230 40% 20% / 0.06);
-    --shadow-lg:  0px 8px 20px hsl(230 40% 20% / 0.12), 0px 4px 8px hsl(230 40% 20% / 0.07);
-    --shadow-xl:  0px 12px 28px hsl(230 40% 20% / 0.15), 0px 6px 12px hsl(230 40% 20% / 0.08);
-    --shadow-2xl: 0px 20px 40px hsl(230 40% 20% / 0.20);
-
-    /* ══════════════════════════════════════════════════════════════════
-       TOKENS DE MARCA — Clinicboard Brand Palette
-       Referenciar con var(--brand-*) para identidad visual
-       ══════════════════════════════════════════════════════════════════ */
-    --brand-blue:           #3981f6;   /* Azul primario — CTA, acciones, UI interactiva */
-    --brand-indigo:         #4045ba;   /* Índigo profundo — wordmark, superficies dark */
-    --brand-mint:           #90e2bc;   /* Menta salud — éxito, estabilidad clínica */
-    --brand-danger:         #e64343;   /* Rojo clínico — alertas críticas, destructivo */
-
-    /* ══════════════════════════════════════════════════════════════════
-       TOKENS CLÍNICOS — Estados de pacientes
-       ══════════════════════════════════════════════════════════════════ */
-    --clinical-stable:        oklch(0.843 0.097 155);    /* menta — paciente estable */
-    --clinical-stable-fg:     oklch(0.25 0.090 155);
-    --clinical-stable-bg:     oklch(0.955 0.035 155);
-    --clinical-critical:      oklch(0.561 0.215 25);     /* rojo — crítico */
-    --clinical-critical-fg:   oklch(1.00 0 0);
-    --clinical-critical-bg:   oklch(0.960 0.040 25);
-    --clinical-inactive:      oklch(0.560 0.008 265);    /* gris neutro */
-    --clinical-inactive-fg:   oklch(1.00 0 0);
-    --clinical-inactive-bg:   oklch(0.940 0.005 265);
-    --clinical-pending:       oklch(0.650 0.140 75);     /* ámbar — pendiente */
-    --clinical-pending-fg:    oklch(0.25 0.080 75);
-    --clinical-pending-bg:    oklch(0.970 0.040 80);
-
-    /* ══════════════════════════════════════════════════════════════════
-       TOKENS DE CITAS — Máquina de estados FHIR
-       ══════════════════════════════════════════════════════════════════ */
-    --apt-card-padding:     0.75rem;
-    --apt-card-time-size:   0.75rem;
-    --apt-card-title-size:  0.875rem;
-    --apt-card-badge-size:  0.6875rem;
-    --apt-card-radius:      calc(var(--radius) * 1.5);
-
-    /* Estados FHIR — modo claro */
-    --apt-status-proposed:  oklch(0.55 0.010 265);   /* slate neutro */
-    --apt-status-pending:   oklch(0.650 0.140 75);   /* ámbar */
-    --apt-status-booked:    oklch(0.597 0.197 262);  /* brand blue */
-    --apt-status-arrived:   oklch(0.620 0.160 38);   /* naranja */
-    --apt-status-fulfilled: oklch(0.500 0.097 155);  /* mint oscuro */
-    --apt-status-cancelled: oklch(0.561 0.215 25);   /* brand red */
-    --apt-status-noshow:    oklch(0.500 0.100 25);   /* rojo apagado */
-
-    /* Kanban */
-    --kanban-col-bg:     oklch(0.97 0.004 265 / 0.6);
-    --kanban-col-radius: 0.5rem;
-    --kanban-col-gap:    0.5rem;
-    --kanban-fade-size:  2.5rem;
-  }
-
-
-  /* ─────────────────────────────────────────────────────────────────────────
-     MODO OSCURO — Gris neutro absoluto al estilo Supabase
-     Filosofía: capas de profundidad (Darkest → Elevated) + azul vibrante
-     Chroma 0 para neutralidad absoluta (sin tintes azulejos o verdosos).
-     ───────────────────────────────────────────────────────────────────────── */
-  .dark {
-    /* Superficies escalonadas (Neutrales Supabase - Jerarquía corregida) */
-    /* OKLCH Lightness: 0.21 (~#171717), 0.24 (~#1c1c1c), 0.31 (~#262626) */
-    --surface-100:             oklch(0.21 0 0);          /* #171717 - Base: Header/Sidebars/Rail */
-    --surface-200:             oklch(0.24 0 0);          /* #1c1c1c - Canvas principal */
-    --surface-300:             oklch(0.31 0 0);          /* #262626 - Cards/Elevated */
-    --surface-400:             oklch(0.38 0 0);          /* #313131 - Popovers/Hover */
+    /* ── Alias de Aplicación (Shadcn Mapping) ── */
+    --background:              var(--n-1);
+    --foreground:              var(--n-12);
     
-    --background:              var(--surface-200);       /* L1: Canvas principal */
-    --foreground:              oklch(0.93 0 0);
-    --card:                    var(--surface-300);       /* L2: Tarjetas/Superficies */
-    --card-foreground:         oklch(0.93 0 0);
-    --popover:                 var(--surface-400);       /* L3: Elevación máxima */
-    --popover-foreground:      oklch(0.93 0 0);
+    --card:                    #ffffff;
+    --card-foreground:         var(--n-12);
+    
+    --popover:                 #ffffff;
+    --popover-foreground:      var(--n-12);
 
-    /* ── Primary — #3981f6 Brand Blue ── */
-    --primary:                 oklch(0.597 0.197 262);
-    --primary-foreground:      oklch(0.15 0 0);
+    --primary:                 var(--b-8);
+    --primary-foreground:      #ffffff;
 
-    /* ── Secondary — índigo profundo (#4045ba) ── */
-    --secondary:               oklch(0.432 0.215 271);
-    --secondary-foreground:    oklch(0.95 0 0);
+    --secondary:               var(--n-3);
+    --secondary-foreground:    var(--n-11);
 
-    /* ── Muted ── */
-    --muted:                   var(--surface-300);
-    --muted-foreground:        oklch(0.58 0 0);
+    --muted:                   var(--n-2);
+    --muted-foreground:        var(--n-8);
 
-    /* ── Accent ── */
-    --accent:                  var(--surface-300);
-    --accent-foreground:       oklch(0.92 0 0);
+    --accent:                  var(--b-2);
+    --accent-foreground:       var(--b-7);
 
-    /* ── Destructive — #e64343 Rojo clínico ── */
-    --destructive:             oklch(0.561 0.215 25);
-    --destructive-foreground:  oklch(1.00 0 0);
+    --destructive:             #d24848;
+    --destructive-foreground:  #ffffff;
 
-    /* ── Bordes e Inputs — Sutiles y finos estilo Supabase ── */
-    --border:                  oklch(0.28 0 0);          /* Gris neutro sutil para bordes */
-    --input:                   oklch(0.28 0 0);
-    --ring:                    oklch(0.597 0.197 262);
+    --border:                  var(--n-4);
+    --input:                   var(--n-5);
+    --ring:                    var(--b-8);
 
-    /* ── Sidebar & Header — #171717 (Misma capa base) ── */
-    --sidebar-background:      var(--surface-100);
-    --sidebar-foreground:      oklch(0.86 0 0);
-    --sidebar-primary:         oklch(0.597 0.197 262);
-    --sidebar-primary-foreground: oklch(0.15 0 0);
-    --sidebar-accent:          var(--surface-200);
-    --sidebar-accent-foreground: oklch(0.92 0 0);
-    --sidebar-border:          oklch(0.25 0 0 / 0.5);   /* Borde muy sutil */
-    --sidebar-ring:            oklch(0.597 0.197 262);
+    /* ── Tipografía (Variables de Layout) ── */
+    --font-outfit: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
-    /* ── Sombras dark — neutrales ── */
-    --shadow-2xs: 0px 2px 4px  hsl(0 0% 2% / 0.40);
-    --shadow-xs:  0px 2px 6px  hsl(0 0% 2% / 0.45);
-    --shadow-sm:  0px 4px 8px  hsl(0 0% 2% / 0.50), 0px 1px 3px hsl(0 0% 2% / 0.40);
-    --shadow:     0px 6px 12px hsl(0 0% 2% / 0.55), 0px 2px 4px hsl(0 0% 2% / 0.45);
-    --shadow-md:  0px 8px 16px hsl(0 0% 2% / 0.60), 0px 4px 8px hsl(0 0% 2% / 0.50);
-    --shadow-lg:  0px 12px 24px hsl(0 0% 2% / 0.65), 0px 6px 12px hsl(0 0% 2% / 0.55);
-    --shadow-xl:  0px 16px 32px hsl(0 0% 2% / 0.70), 0px 8px 16px hsl(0 0% 2% / 0.60);
-    --shadow-2xl: 0px 24px 48px hsl(0 0% 2% / 0.80);
+    /* ── Radio y Tracking ── */
+    --radius: 0.5rem; /* 8px base */
+    --tracking-normal:   0em;
+    --tracking-wider:    0.05em;
+    --tracking-widest:   0.08em;
 
-    /* ── Estados FHIR dark ── */
-    --apt-status-proposed:    oklch(0.65 0 0);
-    --apt-status-pending:     oklch(0.650 0.140 75);
-    --apt-status-booked:      oklch(0.597 0.197 262);
-    --apt-status-arrived:     oklch(0.620 0.160 38);
-    --apt-status-fulfilled:   oklch(0.500 0.097 155);
-    --apt-status-cancelled:   oklch(0.561 0.215 25);
-    --apt-status-noshow:      oklch(0.500 0.100 25);
+    /* Sidebar */
+    --sidebar-background:      var(--n-1);
+    --sidebar-foreground:      var(--n-10);
+    --sidebar-primary:         var(--b-8);
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent:          var(--n-2);
+    --sidebar-accent-foreground: var(--n-11);
+    --sidebar-border:          var(--n-5);
+    --sidebar-ring:            var(--b-8);
 
-    --kanban-col-bg:          oklch(0.15 0 0 / 0.70);
-
-    /* ── Tokens clínicos dark ── */
-    --clinical-stable-bg:     oklch(0.843 0.097 155 / 0.12);
-    --clinical-stable-fg:     oklch(0.843 0.097 155);
-    --clinical-critical-bg:   oklch(0.561 0.215 25 / 0.15);
-    --clinical-critical-fg:   oklch(0.780 0.150 25);
-    --clinical-inactive-bg:   oklch(0.58 0 0 / 0.12);
-    --clinical-inactive-fg:   oklch(0.58 0 0);
-    --clinical-pending-bg:    oklch(0.650 0.140 75 / 0.12);
-    --clinical-pending-fg:    oklch(0.650 0.140 75);
-
-    /* ── Spacing scale — 3-tier padding system ── */
-    --spacing-compact-x:  0.75rem;   /* 12px — px-3 */
-    --spacing-compact-y:  0.5rem;    /* 8px  — py-2 */
-    --spacing-default-x:  1rem;      /* 16px — px-4 */
-    --spacing-default-y:  0.75rem;   /* 12px — py-3 */
-    --spacing-spacious-x: 1.5rem;    /* 24px — px-6 */
-    --spacing-spacious-y: 1.25rem;   /* 20px — py-5 */
-
-    /* ── Radius (consistente entre modos) ── */
-    --radius: 0.375rem;
+    /* ── Shadows ── */
+    --shadow-subtle:   0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm:       0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md:       0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg:       0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl:       0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-2xl:      0 25px 50px -12px rgb(0 0 0 / 0.25);
   }
 
+  .dark {
+    /* ── Escala Neutra (Gris Cálido - Dark) ── */
+    /* Opción C: Prioridad Accesibilidad - WCAG AA */
+    --n-1:  #0f0f0f;   /* page bg - negro cálido */
+    --n-2:  #1a1a1a;   /* surface-75 - cards */
+    --n-3:  #262626;   /* surface-100 - elevated (mayor distinción) */
+    --n-4:  #222222;   /* dividers sutiles - Supabase-like */
+    --n-5:  #2a2a2a;   /* border-muted */
+    --n-6:  #3a3a3a;   /* border-default */
+    --n-7:  #4a4a4a;   /* border-strong */
+    --n-8:  #666666;   /* muted text */
+    --n-9:  #999999;   /* secondary text (WCAG: 4.5:1 sobre #0f0f0f) */
+    --n-10: #bbbbbb;   /* strong text */
+    --n-11: #d8d8d8;   /* heading */
+    --n-12: #f5f5f5;   /* ink */
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     BASE STYLES
-     ───────────────────────────────────────────────────────────────────────── */
+    /* ── Brand Dark (Teal Clínico) ── */
+    --b-8:  #1ac496;   /* primary action */
+    --b-9:  #16b085;   /* primary hover */
+
+    /* ── Semantic Colors Dark ── */
+    --s-success:     #1ac496;  --s-success-bg:  rgba(26, 196, 150, 0.12);  --s-success-br:  rgba(26, 196, 150, 0.3);
+    --s-warning:     #f59e0b;  --s-warning-bg:  rgba(245, 158, 11, 0.12);  --s-warning-br:  rgba(245, 158, 11, 0.3);
+    --s-danger:      #ef4444;  --s-danger-bg:   rgba(239, 68, 68, 0.12);   --s-danger-br:   rgba(239, 68, 68, 0.3);
+    --s-info:        #4a9eff;  --s-info-bg:     rgba(74, 158, 255, 0.12);  --s-info-br:     rgba(74, 158, 255, 0.3);   /* teal-ish blue */
+    --s-neutral:     #9ca3af;  --s-neutral-bg:  rgba(156, 163, 175, 0.12); --s-neutral-br:  rgba(156, 163, 175, 0.3);
+
+    /* ── Alias de Aplicación Dark ── */
+    --background:              var(--n-1);
+    --foreground:              var(--n-12);
+
+    --card:                    var(--n-2);
+    --card-foreground:         var(--n-12);
+
+    --popover:                 var(--n-3);
+    --popover-foreground:      var(--n-12);
+
+    --primary:                 var(--b-8);
+    --primary-foreground:      #03271f;
+
+    --secondary:               var(--n-4);
+    --secondary-foreground:    var(--n-11);
+
+    --muted:                   var(--n-3);
+    --muted-foreground:        var(--n-9);
+
+    --accent:                  var(--n-5);
+    --accent-foreground:       var(--b-8);
+
+    --border:                  var(--n-5);
+    --input:                   var(--n-5);
+    --ring:                    var(--b-8);
+
+    --sidebar-background:      var(--n-1);
+    --sidebar-foreground:      var(--n-10);
+    --sidebar-primary:         var(--b-8);
+    --sidebar-primary-foreground: #03271f;
+    --sidebar-accent:          var(--n-3);
+    --sidebar-accent-foreground: var(--n-12);
+    --sidebar-border:          var(--n-5);
+
+    /* ── Shadows (Dark Mode - opacity reducida) ── */
+    --shadow-subtle:   0 1px 2px 0 rgb(0 0 0 / 0.2);
+    --shadow-sm:       0 1px 3px 0 rgb(0 0 0 / 0.25), 0 1px 2px -1px rgb(0 0 0 / 0.25);
+    --shadow-md:       0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-lg:       0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.35);
+    --shadow-xl:       0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    --shadow-2xl:      0 25px 50px -12px rgb(0 0 0 / 0.5);
+  }
+
   * {
     @apply border-border;
-    box-sizing: border-box;
   }
 
-  html {
-    @apply bg-background;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  /* ── Focus ring accesible (WCAG 2.4.7) ── */
+  :focus-visible {
+    outline: 2px solid var(--b-8);
+    outline-offset: 2px;
+  }
+
+  .dark :focus-visible {
+    outline: 2px solid var(--b-8);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(26, 196, 150, 0.15);
+  }
+
+  /* ── Selection color — Supabase-inspired ── */
+  ::selection {
+    background-color: var(--b-3);
+    color: var(--b-12);
+  }
+
+  .dark ::selection {
+    background-color: rgba(26, 196, 150, 0.25);
+    color: var(--n-1);
+  }
+
+  /* ── Hover sutil universal para dark mode ── */
+  .dark *:hover:not([disabled]):not(.no-hover) {
+    transition: all 0.15s ease;
+  }
+
+  /* ── Neutralizar autofill del navegador ── */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px var(--background) inset !important;
+    -webkit-text-fill-color: var(--foreground) !important;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans);
-    letter-spacing: var(--tracking-normal);
-    line-height: 1.5;
+    font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
   }
-}
 
-/* Hide scrollbar for horizontal overflow containers */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+  /* ── Headings ── */
+  h1, h2, h3, h4, h5, h6, p { margin: 0; }
+  h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+  h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.015em; }
+  h3 { font-size: 24px; font-weight: 600; letter-spacing: -0.015em; }
+  h4 { font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
+  h5 { font-size: 18px; font-weight: 500; letter-spacing: -0.005em; }
+  h6 { font-size: 16px; font-weight: 500; letter-spacing: -0.005em; }
 
+  .mono {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-variant-ligatures: none;
+    letter-spacing: -0.02em;
+    font-size: 0.95em;
+  }
+
+  .text-muted {
+    color: var(--n-8);
+  }
+
+  .mono {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-variant-ligatures: none;
+    letter-spacing: -0.02em;
+  }
+
+  h1 { font-size: var(--text-5xl); font-weight: var(--weight-5xl); letter-spacing: -0.02em; }
+  h2 { font-size: var(--text-4xl); font-weight: var(--weight-4xl); letter-spacing: -0.015em; }
+  h3 { font-size: var(--text-3xl); font-weight: var(--weight-3xl); letter-spacing: -0.015em; }
+  h4 { font-size: var(--text-2xl); font-weight: var(--weight-2xl); letter-spacing: -0.01em; }
+  h5 { font-size: var(--text-xl); font-weight: var(--weight-xl); letter-spacing: -0.005em; }
+  h6 { font-size: var(--text-lg); font-weight: 500; letter-spacing: -0.005em; }
+}
 
 @layer components {
-  /* ── Fade inferior para columnas Kanban scrollables ── */
-  .kanban-col-fade {
-    mask-image: linear-gradient(
-      to bottom,
-      black calc(100% - var(--kanban-fade-size, 2.5rem)),
-      transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      black calc(100% - var(--kanban-fade-size, 2.5rem)),
-      transparent 100%
-    );
+  /* ── Pill: Estilo clínico con indicador de punto ── */
+  .pill {
+    @apply inline-flex items-center gap-1.5 font-medium whitespace-nowrap border transition-colors;
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 9999px;
   }
 
-  /* ── Badge clínico: Estable ── */
-  .badge-stable {
-    background-color: var(--clinical-stable-bg);
-    color: var(--clinical-stable-fg);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    border-radius: calc(var(--radius) * 0.75);
-    padding: 0.125rem 0.5rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
+  .pill::before {
+    content: '';
+    @apply w-1.5 h-1.5 rounded-full shrink-0;
   }
 
-  /* ── Badge clínico: Crítico ── */
-  .badge-critical {
-    background-color: var(--clinical-critical-bg);
-    color: var(--clinical-critical-fg);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    border-radius: calc(var(--radius) * 0.75);
-    padding: 0.125rem 0.5rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
+  .pill-success {
+    background-color: var(--s-success-bg);
+    border-color: var(--s-success-br);
+    color: var(--b-9);
+    transition: all 0.2s ease;
   }
-
-  /* ── Badge clínico: Inactivo ── */
-  .badge-inactive {
-    background-color: var(--clinical-inactive-bg);
-    color: var(--clinical-inactive-fg);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    border-radius: calc(var(--radius) * 0.75);
-    padding: 0.125rem 0.5rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
+  .pill-success:hover {
+    background-color: color-mix(in oklch, var(--s-success-bg), #000000 10%);
+    border-color: color-mix(in oklch, var(--s-success-br), #000000 20%);
   }
-
-  /* ── Tabla densa al estilo Supabase ── */
-  .table-dense {
-    border-collapse: collapse;
-    width: 100%;
+  .dark .pill-success {
+    background-color: rgba(26, 196, 150, 0.15);
+    border-color: rgba(26, 196, 150, 0.3);
+    color: #1ac496;
   }
-
-  .table-dense th {
-    font-size: 0.6875rem;          /* 11px */
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--muted-foreground);
-    height: 2rem;                  /* 32px — como Supabase */
-    padding: 0 0.75rem;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background-color: var(--background);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    text-align: left;
-    user-select: none;
+  .dark .pill-success:hover {
+    background-color: rgba(26, 196, 150, 0.25);
+    border-color: rgba(26, 196, 150, 0.4);
+    color: #1ac496;
   }
+  .pill-success::before { background-color: var(--s-success); }
 
-  .table-dense td {
-    font-size: 0.8125rem;          /* 13px */
-    height: 2.25rem;               /* 36px — como Supabase */
-    padding: 0 0.75rem;
-    vertical-align: middle;
-    white-space: nowrap;
-    border-bottom: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
+  .pill-warning {
+    background-color: var(--s-warning-bg);
+    border-color: var(--s-warning-br);
+    color: var(--s-warning);
+    transition: all 0.2s ease;
   }
-
-  .table-dense tbody tr {
-    transition: background-color 80ms ease;
+  .pill-warning:hover {
+    background-color: color-mix(in oklch, var(--s-warning-bg), #000000 12%);
+    border-color: color-mix(in oklch, var(--s-warning-br), #000000 25%);
   }
+  .dark .pill-warning {
+    background-color: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+  }
+  .dark .pill-warning:hover {
+    background-color: rgba(245, 158, 11, 0.25);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #f59e0b;
+  }
+  .pill-warning::before { background-color: var(--s-warning); }
 
-  .table-dense tbody tr:hover td {
+  .pill-danger {
+    background-color: var(--s-danger-bg);
+    border-color: var(--s-danger-br);
+    color: var(--destructive);
+    transition: all 0.2s ease;
+  }
+  .pill-danger:hover {
+    background-color: color-mix(in oklch, var(--s-danger-bg), #000000 12%);
+    border-color: color-mix(in oklch, var(--s-danger-br), #000000 25%);
+  }
+  .dark .pill-danger {
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+  }
+  .dark .pill-danger:hover {
+    background-color: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+  }
+  .pill-danger::before { background-color: var(--s-danger); }
+
+  .pill-info {
+    background-color: var(--s-info-bg);
+    border-color: var(--s-info-br);
+    color: var(--s-info);
+    transition: all 0.2s ease;
+  }
+  .pill-info:hover {
+    background-color: color-mix(in oklch, var(--s-info-bg), #000000 12%);
+    border-color: color-mix(in oklch, var(--s-info-br), #000000 25%);
+  }
+  .dark .pill-info {
+    background-color: rgba(74, 158, 255, 0.15);
+    border-color: rgba(74, 158, 255, 0.3);
+    color: #4a9eff;
+  }
+  .dark .pill-info:hover {
+    background-color: rgba(74, 158, 255, 0.25);
+    border-color: rgba(74, 158, 255, 0.4);
+    color: #4a9eff;
+  }
+  .pill-info::before { background-color: var(--s-info); }
+
+  .pill-neutral {
     background-color: var(--muted);
+    border-color: var(--border);
+    color: var(--muted-foreground);
+    transition: all 0.2s ease;
+  }
+  .pill-neutral:hover {
+    background-color: color-mix(in oklch, var(--muted), #000000 8%);
+    border-color: color-mix(in oklch, var(--border), #000000 15%);
+  }
+  .dark .pill-neutral {
+    background-color: rgba(156, 163, 175, 0.15);
+    border-color: rgba(156, 163, 175, 0.3);
+    color: #9ca3af;
+  }
+  .dark .pill-neutral:hover {
+    background-color: rgba(156, 163, 175, 0.25);
+    border-color: rgba(156, 163, 175, 0.4);
+    color: #9ca3af;
+  }
+  .pill-neutral::before { background-color: color-mix(in oklch, var(--muted-foreground), transparent 60%); }
+
+  /* ── Card Estilo Clínico ── */
+  .card-clinic {
+    @apply border border-border bg-card overflow-hidden;
+    border-radius: 8px;
   }
 
-  .table-dense tbody tr[data-selected="true"] td {
-    background-color: color-mix(in oklch, var(--primary) 8%, var(--background));
+  .card-header-clinic {
+    @apply p-4;
+    border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 60%);
   }
 
-  /* Columna checkbox — ancho fijo, centrado */
-  .table-dense .col-check {
-    width: 2.25rem;
-    padding: 0;
-    text-align: center;
+  .card-body-clinic {
+    @apply p-4;
   }
 
-  /* Columna de acciones — hover reveal */
-  .table-dense .col-actions {
-    width: 3.5rem;
-    text-align: right;
-    padding-right: 0.5rem;
+  .card-footer-clinic {
+    @apply p-4 bg-n-2;
+    border-top: 1px solid color-mix(in oklch, var(--border), transparent 60%);
   }
 
-  .table-dense tbody tr .row-actions {
-    opacity: 0;
-    transition: opacity 100ms ease;
+  /* ── Tabla Clínica ── */
+  .table-clinic {
+    @apply w-full border-collapse text-sm;
   }
-  .table-dense tbody tr:hover .row-actions {
-    opacity: 1;
+
+  .table-clinic th {
+    @apply text-left font-semibold uppercase tracking-wider text-n-8 bg-n-2;
+    border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 40%);
+    font-size: 11px;
+    padding: 12px 16px;
+  }
+
+  .table-clinic td {
+    @apply text-foreground align-middle;
+    border-bottom: 1px solid color-mix(in oklch, var(--border), transparent 60%);
+    padding: 12px 16px;
+  }
+
+  .table-clinic .table-name { @apply font-semibold text-foreground; }
+  .table-clinic .mono { @apply font-mono text-[12px] text-n-9 tracking-tight; }
+  .table-clinic tr:hover td {
+    background-color: var(--n-3);
+    @apply transition-colors;
+  }
+  /* ── Animaciones ── */
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 var(--s-warning); }
+    50% { box-shadow: 0 0 0 3px var(--s-warning-br); }
+  }
+
+  .animate-pulse-dot {
+    animation: pulse-dot 2s infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  .text-xs { font-size: 12px; line-height: 16px; }
+  .text-sm { font-size: 13px; line-height: 18px; }
+  .text-lg { font-size: 16px; line-height: 24px; }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ── Custom Scrollbar — Supabase-inspired minimal ── */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--n-5);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--n-7);
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: var(--n-6);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: var(--n-7);
+  }
+
+  /* ── Firefox scrollbar ── */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--n-5) transparent;
+  }
+  .dark * {
+    scrollbar-color: var(--n-6) transparent;
+  }
+
+  .clinic-change-overlay {
+    @apply fixed inset-0 z-[100] flex items-center justify-center;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+  }
+
+  .clinic-change-spinner {
+    @apply flex flex-col items-center gap-4;
   }
 }

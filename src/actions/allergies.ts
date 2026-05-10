@@ -19,6 +19,7 @@ export async function createAllergy(formData: {
     category: ('food' | 'medication' | 'environment' | 'biologic')[];
     criticality?: 'low' | 'high' | 'unable-to-assess';
     note?: string;
+    clinic_id: string;
 }) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
@@ -27,12 +28,17 @@ export async function createAllergy(formData: {
         return { error: 'No autorizado. Perfil de profesional no encontrado.' };
     }
 
-    // 1. Verify patient ownership via practitioner_id
+    if (!formData.clinic_id) {
+        return { error: 'Clínica no especificada.' };
+    }
+
+    // 1. Verify patient ownership via practitioner_id + clinic_id
     const { data: patient, error: patientError } = await supabase
         .from('patients')
         .select('id')
         .eq('id', formData.patient_id)
         .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', formData.clinic_id)
         .single();
 
     if (patientError || !patient) {
@@ -56,6 +62,7 @@ export async function createAllergy(formData: {
         .from('allergy_intolerances')
         .insert([{
             patient_id: validation.data.patient_id,
+            clinic_id: validation.data.clinic_id,
             clinical_status: validation.data.clinical_status,
             allergy_type: validation.data.allergy_type,
             category: validation.data.category, // pg array handling
@@ -122,20 +129,26 @@ export async function updateAllergyStatus(id: string, clinical_status: 'active' 
  * getAllergiesByPatient(patientId)
  * Query by patient_id, verify ownership join, order by created_at DESC.
  */
-export async function getAllergiesByPatient(patientId: string) {
+export async function getAllergiesByPatient(patientId: string, clinicId?: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
+    if (!practitionerId) {
         return { error: 'No autorizado' };
     }
 
-    const { data, error } = await supabase
+    let query = supabase
         .from('allergy_intolerances')
         .select('*, patients!inner(practitioner_id)')
         .eq('patient_id', patientId)
-        .eq('patients.practitioner_id', user.id)
+        .eq('patients.practitioner_id', practitionerId)
         .order('created_at', { ascending: false });
+
+    if (clinicId) {
+        query = query.eq('clinic_id', clinicId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error('Error in getAllergiesByPatient:', error);

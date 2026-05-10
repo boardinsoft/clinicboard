@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useCallback, useTransition } from 'react';
-import { Search, ListFilter, X, ArrowUpDown, Download } from 'lucide-react';
+import { ListFilter, X, ArrowUpDown, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { 
@@ -60,12 +60,11 @@ export default function EncounterFiltersBar() {
             {/* ── Lado Izquierdo: Búsqueda e Indicador de Filtros ── */}
             <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="relative w-full max-w-xs group">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40 group-focus-within:text-foreground transition-colors" />
                     <Input
                         placeholder="Buscar paciente o motivo..."
                         defaultValue={currentSearch}
                         onChange={(e) => updateFilter('q', e.target.value)}
-                        className="h-8 pl-8 pr-8 bg-muted/20 border-border/10 focus-visible:bg-background transition-all text-xs"
+                        className="h-8 pr-8 bg-background border-border transition-all text-xs"
                     />
                     {currentSearch && (
                         <button 
@@ -86,7 +85,7 @@ export default function EncounterFiltersBar() {
                                 size="sm" 
                                 className={cn(
                                     "h-8 gap-2 border-dashed border-border/60 font-medium px-3",
-                                    currentStatus !== 'all' && "bg-primary/5 border-primary/30 text-primary hover:text-primary hover:bg-primary/10"
+                                    currentStatus !== 'all' && "bg-b-2 border-b-8/30 text-b-8 hover:text-b-9 hover:bg-b-3"
                                 )}
                             >
                                 <ListFilter className="h-3 w-3" />

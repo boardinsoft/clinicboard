@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { patientSchema } from '@/lib/schemas/patient.schema';
 import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
+import type { Json } from '@/types/database.types';
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -154,7 +155,65 @@ export async function reactivatePatient(id: string) {
     revalidatePath(`/patients/${id}`);
     return { data };
 }
-export async function getPatients(queryText?: string) {
+
+export async function searchPatients({
+    query,
+    clinicId,
+    page = 1,
+    pageSize = 10,
+}: {
+    query: string;
+    clinicId?: string;
+    page?: number;
+    pageSize?: number;
+}) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) return { patients: [], total: 0 };
+
+    // No query or too short - return active patients list
+    if (!query || query.length < 2) {
+        let baseQuery = supabase
+            .from('patients')
+            .select('*', { count: 'exact' })
+            .eq('practitioner_id', practitionerId)
+            .eq('active', true)
+            .order('name_family', { ascending: true });
+
+        if (clinicId) {
+            baseQuery = baseQuery.eq('clinic_id', clinicId);
+        }
+
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
+        const { data, count, error } = await baseQuery.range(from, to);
+
+        if (error) {
+            console.error('Error fetching patients:', error);
+            return { patients: [], total: 0 };
+        }
+        return { patients: data || [], total: count || 0 };
+    }
+
+    // Search with RPC for better performance on name/identifier search
+    const { data, error } = await supabase.rpc('search_patients_v2', {
+        search_term: query,
+        p_id: practitionerId
+    });
+
+    if (error) {
+        console.error('Error in search_patients_v2 RPC:', error);
+        return { patients: [], total: 0 };
+    }
+
+    const patients = data || [];
+    // RPC doesn't support pagination, return all matches with total
+    return { patients, total: patients.length };
+}
+
+export async function getPatients(queryText?: string, clinicId?: string) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
 
@@ -162,13 +221,19 @@ export async function getPatients(queryText?: string) {
 
     if (!queryText || queryText.length < 2) {
         // Return standard list if no query
-        const { data, error } = await supabase
+        let query = supabase
             .from('patients')
             .select('*')
             .eq('practitioner_id', practitionerId)
             .eq('active', true)
             .order('name_family', { ascending: true })
             .limit(20);
+
+        if (clinicId) {
+            query = query.eq('clinic_id', clinicId);
+        }
+
+        const { data, error } = await query;
 
         if (error) {
             console.error('Error fetching patients:', error);
@@ -242,10 +307,10 @@ export async function updatePatientAnamnesis(patientId: string, data: {
     const { error } = await supabase
         .from('patients')
         .update({
-            family_history,
-            personal_history: personal_history.length > 0 ? personal_history : null,
-            habits,
-            extensions
+            family_history: family_history as Json,
+            personal_history: personal_history.length > 0 ? personal_history as Json : null,
+            habits: habits as Json,
+            extensions: extensions as Json
         })
         .eq('id', patientId)
         .eq('practitioner_id', practitionerId);
@@ -289,33 +354,51 @@ export async function archivePatient(id: string) {
  * Aggregates all clinical data for a patient into a single object.
  * Used by the FHIR export feature.
  */
-export async function getPatientFullHistory(patientId: string) {
+export async function getPatientFullHistory(patientId: string, clinicId?: string) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
 
     if (!practitionerId) return { error: 'No autorizado' };
 
     // Verify ownership
-    const { data: patient } = await supabase
+    let patientQuery = supabase
         .from('patients')
         .select('*')
         .eq('id', patientId)
-        .eq('practitioner_id', practitionerId)
-        .single();
+        .eq('practitioner_id', practitionerId);
+
+    if (clinicId) {
+        patientQuery = patientQuery.eq('clinic_id', clinicId);
+    }
+
+    const { data: patient } = await patientQuery.single();
 
     if (!patient) return { error: 'Paciente no encontrado o sin permisos' };
 
     // Fetch all related clinical data in parallel
-    const [encountersResult, conditionsResult, allergiesResult, prescriptionsResult, appointmentsResult, practitionerResult] = await Promise.all([
-        supabase
-            .from('encounters')
-            .select(`
-                *,
-                practitioner:practitioners(name_given, name_family, specialty)
-            `)
-            .eq('patient_id', patientId)
-            .order('start_time', { ascending: false }),
+    let encountersQuery = supabase
+        .from('encounters')
+        .select(`
+            *,
+            practitioner:practitioners(name_given, name_family, specialty)
+        `)
+        .eq('patient_id', patientId)
+        .order('start_time', { ascending: false });
 
+    let appointmentsQuery = supabase
+        .from('appointments')
+        .select('*')
+        .eq('patient_id', patientId)
+        .eq('practitioner_id', practitionerId)
+        .order('start_time', { ascending: false });
+
+    if (clinicId) {
+        encountersQuery = encountersQuery.eq('clinic_id', clinicId);
+        appointmentsQuery = appointmentsQuery.eq('clinic_id', clinicId);
+    }
+
+    const [encountersResult, conditionsResult, allergiesResult, prescriptionsResult, appointmentsResult, practitionerResult] = await Promise.all([
+        encountersQuery,
         supabase
             .from('conditions')
             .select('*')
@@ -334,12 +417,7 @@ export async function getPatientFullHistory(patientId: string) {
             .eq('prescriber_id', practitionerId)
             .order('authored_on', { ascending: false }),
 
-        supabase
-            .from('appointments')
-            .select('*')
-            .eq('patient_id', patientId)
-            .eq('practitioner_id', practitionerId)
-            .order('start_time', { ascending: false }),
+        appointmentsQuery,
 
         supabase
             .from('practitioners')

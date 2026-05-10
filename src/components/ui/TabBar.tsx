@@ -101,12 +101,12 @@ export default function TabBar() {
                 // Dot de estado (reemplaza al isDirty dot solo si hay encounterStatus)
                 const statusDot = encounterStatus === 'in-progress' ? (
                     <span
-                        className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 ring-1 ring-emerald-500/30"
+                        className="w-1.5 h-1.5 rounded-full bg-s-success shrink-0 ring-1 ring-s-success/30"
                         aria-label="Consulta en progreso"
                     />
                 ) : encounterStatus === 'arrived' ? (
                     <span
-                        className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 ring-1 ring-amber-400/30"
+                        className="w-1.5 h-1.5 rounded-full bg-s-warning shrink-0 ring-1 ring-s-warning/30"
                         aria-label="Paciente en sala de espera"
                     />
                 ) : tab.isDirty ? (

@@ -175,7 +175,7 @@ async function rotateTable(
 
     while (offset < count) {
         // Obtener lote de registros
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: records, error: fetchError } = await supabase
             .from(tableConfig.table)
             .select(`id, ${tableConfig.fields.join(', ')}`)

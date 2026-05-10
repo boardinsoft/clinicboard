@@ -268,17 +268,18 @@ export interface FHIRAllergyIntolerance {
 export interface Patient {
     id: string;
     fhir_id: string;
-    active: boolean;
+    active: boolean | null;
     name_given: string[];
     name_family: string;
-    gender?: 'male' | 'female' | 'other' | 'unknown';
-    birth_date?: string;
+    gender?: 'male' | 'female' | 'other' | 'unknown' | null;
+    birth_date?: string | null;
     telecom: ContactPoint[];
     address: Address[];
     identifiers: Identifier[];
     extensions: Record<string, unknown>;
-    encrypted_notes?: string;
+    encrypted_notes?: string | null;
     practitioner_id: string;
+    clinic_id?: string | null;
     created_at: string;
     updated_at: string;
 }

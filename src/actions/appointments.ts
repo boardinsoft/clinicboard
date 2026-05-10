@@ -74,11 +74,12 @@ function validateAppointmentTimes(startTime: string, endTime: string): { isValid
 /**
  * Verifica si hay solapamiento de horarios para un profesional.
  */
-async function checkOverlap(supabase: SupabaseClient<Database>, practitionerId: string, startTime: string, endTime: string, currentId?: string) {
+async function checkOverlap(supabase: SupabaseClient<Database>, practitionerId: string, clinicId: string, startTime: string, endTime: string, currentId?: string) {
     let query = supabase
         .from('appointments')
         .select('id, start_time, end_time')
         .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', clinicId)
         .in('status', ['proposed', 'pending', 'booked', 'arrived'])
         .lt('start_time', endTime)
         .gt('end_time', startTime);
@@ -94,9 +95,9 @@ async function checkOverlap(supabase: SupabaseClient<Database>, practitionerId: 
     }
 
     if (data && data.length > 0) {
-        return { 
-            hasOverlap: true, 
-            message: 'El profesional ya tiene una cita programada en este horario.' 
+        return {
+            hasOverlap: true,
+            message: 'El profesional ya tiene una cita programada en este horario.'
         };
     }
 
@@ -104,13 +105,14 @@ async function checkOverlap(supabase: SupabaseClient<Database>, practitionerId: 
 }
 
 /**
- * Verifica que un paciente no tenga ya una cita activa ('proposed', 'pending', 'booked', 'arrived') 
+ * Verifica que un paciente no tenga ya una cita activa ('proposed', 'pending', 'booked', 'arrived')
  * del mismo tipo con el mismo profesional.
  */
 async function checkDuplicateType(
-    supabase: SupabaseClient<Database>, 
-    practitionerId: string, 
-    patientId: string, 
+    supabase: SupabaseClient<Database>,
+    practitionerId: string,
+    clinicId: string,
+    patientId: string,
     appointmentType: string
 ) {
     if (!appointmentType) return { hasDuplicate: false };
@@ -119,6 +121,7 @@ async function checkDuplicateType(
         .from('appointments')
         .select('id, appointment_type')
         .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', clinicId)
         .eq('patient_id', patientId)
         .eq('appointment_type', appointmentType)
         .in('status', ['proposed', 'pending', 'booked', 'arrived']);
@@ -140,7 +143,7 @@ async function checkDuplicateType(
 
 /**
  * createAppointment(data)
- * Guard auth, validate with appointmentSchema, fhir_id=uuid, status='proposed', 
+ * Guard auth, validate with appointmentSchema, fhir_id=uuid, status='proposed',
  * insert with practitioner_id=user.id. revalidatePath('/appointments').
  */
 export async function createAppointment(formData: {
@@ -149,12 +152,17 @@ export async function createAppointment(formData: {
     end_time: string;
     appointment_type: string;
     description?: string;
+    clinic_id: string;
 }) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
 
     if (!practitionerId) {
         return { error: 'No autorizado. Perfil de profesional no encontrado.' };
+    }
+
+    if (!formData.clinic_id) {
+        return { error: 'Clínica no especificada.' };
     }
 
     const appointmentData = {
@@ -177,9 +185,10 @@ export async function createAppointment(formData: {
 
     // Checking for overlap
     const overlapResult = await checkOverlap(
-        supabase, 
-        practitionerId, 
-        validation.data.start_time, 
+        supabase,
+        practitionerId,
+        validation.data.clinic_id!,
+        validation.data.start_time,
         validation.data.end_time
     );
 
@@ -192,10 +201,11 @@ export async function createAppointment(formData: {
         const duplicateResult = await checkDuplicateType(
             supabase,
             practitionerId,
+            validation.data.clinic_id!,
             validation.data.patient_id,
             validation.data.appointment_type
         );
-        
+
         if (duplicateResult.hasDuplicate) {
             return { error: duplicateResult.message };
         }
@@ -206,6 +216,7 @@ export async function createAppointment(formData: {
         .insert([{
             patient_id: validation.data.patient_id,
             practitioner_id: validation.data.practitioner_id,
+            clinic_id: validation.data.clinic_id,
             start_time: validation.data.start_time,
             end_time: validation.data.end_time,
             appointment_type: validation.data.appointment_type,
@@ -323,7 +334,6 @@ export async function cancelAppointment(id: string, reason: string) {
         .update({
             status: 'cancelled',
             description: `Cancelación: ${reason}`,
-            cancellation_reason: reason
         })
         .eq('id', id)
         .eq('practitioner_id', practitionerId)
@@ -441,10 +451,10 @@ export async function markNoShow(id: string) {
         return { error: 'No autorizado' };
     }
 
-    // Check current status
+// Check current status
     const { data: currentAppt } = await supabase
         .from('appointments')
-        .select('status, end_time')
+        .select('status, clinic_id, end_time')
         .eq('id', id)
         .single();
 
@@ -487,6 +497,7 @@ export async function getAppointments(filters?: {
     date?: string;       // ISO date string (YYYY-MM-DD) — filtra citas del día
     status?: AppointmentStatus[];  // Array de estados FHIR a incluir
     patientId?: string;  // Filtrar por paciente específico
+    clinicId?: string;  // Filtrar por clínica
 }) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
@@ -496,18 +507,22 @@ export async function getAppointments(filters?: {
     let query = supabase
         .from('appointments')
         .select(`
-            *, 
+            *,
             patient:patients(
-                id, 
-                name_given, 
-                name_family, 
-                gender, 
-                birth_date, 
-                telecom, 
+                id,
+                name_given,
+                name_family,
+                gender,
+                birth_date,
+                telecom,
                 identifiers
             )
         `)
         .eq('practitioner_id', practitionerId);
+
+    if (filters?.clinicId) {
+        query = query.eq('clinic_id', filters.clinicId);
+    }
 
     if (filters?.date) {
         // Usar offset -04:00 para Venezuela en lugar de Z (UTC)
@@ -548,7 +563,7 @@ export async function rescheduleAppointment(id: string, newStartTime: string, ne
     // Check current status
     const { data: currentAppt } = await supabase
         .from('appointments')
-        .select('status')
+        .select('status, clinic_id')
         .eq('id', id)
         .single();
 
@@ -569,10 +584,11 @@ export async function rescheduleAppointment(id: string, newStartTime: string, ne
 
     // Checking for overlap
     const overlapResult = await checkOverlap(
-        supabase, 
+        supabase,
         practitionerId,
-        newStartTime, 
-        newEndTime, 
+        currentAppt?.clinic_id || '',
+        newStartTime,
+        newEndTime,
         id
     );
 
@@ -589,6 +605,7 @@ export async function rescheduleAppointment(id: string, newStartTime: string, ne
         })
         .eq('id', id)
         .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', currentAppt?.clinic_id || '')
         .eq('status', currentStatus)
         .select()
         .single();
@@ -626,7 +643,6 @@ export async function cleanupExpiredAppointments() {
         .update({
             status: 'cancelled',
             description: 'Cancelación automática: La cita expiró sin ser confirmada o atendida.',
-            cancellation_reason: 'Expiración automática del sistema'
         })
         .eq('practitioner_id', practitionerId)
         .in('status', ['proposed', 'pending'])
@@ -687,6 +703,8 @@ export async function startConsultationFromAppointment(appointmentId: string, de
 
     if (apptError || !appt) return { error: 'Cita no encontrada o sin permisos.' };
 
+    if (!appt.clinic_id) return { error: 'La cita no tiene clínica asociada.' };
+
     const currentStatus = (appt.status as AppointmentStatus) || 'proposed';
     if (!['booked', 'arrived'].includes(currentStatus)) {
         return { error: `No se puede iniciar consulta desde una cita en estado '${currentStatus}'. Solo desde 'Confirmada' o 'En Espera'.` };
@@ -741,7 +759,8 @@ export async function startConsultationFromAppointment(appointmentId: string, de
         encounter_class: 'AMB',
         start_time: new Date().toISOString(),
         appointment_id: appointmentId,
-        status: 'in-progress'
+        status: 'in-progress',
+        clinic_id: appt.clinic_id
     });
 
     if (encounterResult.error) {
@@ -765,26 +784,29 @@ export async function startConsultationFromAppointment(appointmentId: string, de
 }
 /**
  * createWalkInAppointment(patientId)
- * Creates an appointment with status 'arrived' directly, 
+ * Creates an appointment with status 'arrived' directly,
  * bypassing future date/overlap validations and assigning it to the queue.
  */
-export async function createWalkInAppointment(payload: { 
-    patient_id: string; 
-    description?: string; 
-    appointment_type?: string; 
+export async function createWalkInAppointment(payload: {
+    patient_id: string;
+    description?: string;
+    appointment_type?: string;
+    clinic_id: string;
 }) {
-    const { patient_id: patientId, description, appointment_type: appointmentType } = payload;
+    const { patient_id: patientId, description, appointment_type: appointmentType, clinic_id: clinicId } = payload;
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
 
     if (!practitionerId) return { error: 'No autorizado' };
+
+    if (!clinicId) return { error: 'Clínica no especificada.' };
 
     const now = new Date();
     // Round up to the nearest 15-minute interval to satisfy DB trigger and avoid "past time" error
     const minutes = now.getMinutes();
     const roundedMinutes = Math.ceil((minutes + 1) / 15) * 15;
     now.setMinutes(roundedMinutes, 0, 0);
-    
+
     const startTime = now.toISOString();
     const endTime = new Date(now.getTime() + 15 * 60000).toISOString();
 
@@ -792,16 +814,17 @@ export async function createWalkInAppointment(payload: {
     const { nowInVE, toISODate } = await import('@/lib/date-utils');
     const localToday = toISODate(nowInVE());
     const startOfLocalDay = `${localToday}T00:00:00-04:00`;
-    
+
     // Checking for duplicate active appointment of the same type
     if (appointmentType) {
         const duplicateResult = await checkDuplicateType(
             supabase,
             practitionerId,
+            clinicId,
             patientId,
             appointmentType
         );
-        
+
         if (duplicateResult.hasDuplicate) {
             return { error: duplicateResult.message };
         }
@@ -811,6 +834,7 @@ export async function createWalkInAppointment(payload: {
         .from('appointments')
         .select('queue_position')
         .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', clinicId)
         .gte('start_time', startOfLocalDay)
         .order('queue_position', { ascending: false })
         .limit(1)
@@ -822,6 +846,7 @@ export async function createWalkInAppointment(payload: {
         .insert([{
             patient_id: patientId,
             practitioner_id: practitionerId,
+            clinic_id: clinicId,
             status: 'arrived',
             start_time: startTime,
             end_time: endTime,
@@ -928,7 +953,7 @@ export async function swapQueuePositions(
  * Solo citas del practitioner autenticado, ordenadas por start_time.
  * Excluye estados terminales: fulfilled, cancelled, noshow.
  */
-export async function getTodayAppointmentsWithPatients(): Promise<Array<{
+export async function getTodayAppointmentsWithPatients(clinicId?: string): Promise<Array<{
   id: string;
   start_time: string;
   end_time: string;
@@ -938,8 +963,8 @@ export async function getTodayAppointmentsWithPatients(): Promise<Array<{
   appointment_type: string | null;
 }>> {
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
+  const practitionerId = await getCurrentPractitionerId(supabase);
+  if (!practitionerId) return [];
 
   // Rango del día en Venezuela (UTC-4)
   const now = new Date();
@@ -949,7 +974,7 @@ export async function getTodayAppointmentsWithPatients(): Promise<Array<{
   const dayStart = `${dateStr}T00:00:00-04:00`;
   const dayEnd   = `${dateStr}T23:59:59-04:00`;
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('appointments')
     .select(`
       id,
@@ -958,29 +983,47 @@ export async function getTodayAppointmentsWithPatients(): Promise<Array<{
       status,
       patient_id,
       appointment_type,
+      clinic_id,
       patients!inner (
         name_given,
         name_family
       )
     `)
-    .eq('practitioner_id', user.id)
+    .eq('practitioner_id', practitionerId)
     .gte('start_time', dayStart)
     .lte('start_time', dayEnd)
     .not('status', 'in', '("fulfilled","cancelled","noshow")')
     .order('start_time', { ascending: true });
 
+  if (clinicId) {
+    query = query.eq('clinic_id', clinicId);
+  }
+
+  const { data, error } = await query;
+
   if (error || !data) return [];
 
-  return data.map((row: any) => ({
-    id: row.id,
-    start_time: row.start_time,
-    end_time: row.end_time,
-    status: row.status ?? 'proposed',
-    patient_id: row.patient_id,
-    appointment_type: row.appointment_type ?? null,
-    patient_name: [
-      row.patients?.name_given?.join(' ') ?? '',
-      row.patients?.name_family ?? '',
-    ].join(' ').trim() || 'Paciente',
-  }));
+  return data.map((row) => {
+    const r = row as {
+      id: string;
+      start_time: string;
+      end_time: string;
+      status: string;
+      patient_id: string;
+      appointment_type: string | null;
+      patients: { name_given: string[] | null; name_family: string | null } | null;
+    };
+    return {
+      id: r.id,
+      start_time: r.start_time,
+      end_time: r.end_time,
+      status: r.status ?? 'proposed',
+      patient_id: r.patient_id,
+      appointment_type: r.appointment_type ?? null,
+      patient_name: [
+        r.patients?.name_given?.join(' ') ?? '',
+        r.patients?.name_family ?? '',
+      ].join(' ').trim() || 'Paciente',
+    };
+  });
 }

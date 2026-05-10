@@ -58,11 +58,14 @@ export async function createEncounter(formData: {
     status?: EncounterStatus;
     encounter_category?: string;
     encounter_subcategory?: string;
+    clinic_id: string;
 }) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
 
     if (!practitionerId) return { error: 'No autorizado. Perfil de profesional no encontrado.' };
+
+    if (!formData.clinic_id) return { error: 'Clínica no especificada.' };
 
     const encounterData = {
         ...formData,
@@ -73,12 +76,13 @@ export async function createEncounter(formData: {
     const validation = encounterSchema.safeParse(encounterData);
     if (!validation.success) return { error: z.flattenError(validation.error).fieldErrors };
 
-    // Verificar que la cita existe y pertenece al practitioner
+    // Verificar que la cita existe y pertenece al practitioner y clínica
     const { data: appt, error: apptError } = await supabase
         .from('appointments')
-        .select('id, patient_id')
+        .select('id, patient_id, clinic_id')
         .eq('id', formData.appointment_id)
         .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', formData.clinic_id)
         .single();
 
     if (apptError || !appt) {
@@ -91,6 +95,7 @@ export async function createEncounter(formData: {
         .insert([{
             patient_id: validation.data.patient_id,
             practitioner_id: practitionerId,
+            clinic_id: validation.data.clinic_id,
             encounter_class: validation.data.encounter_class,
             encounter_category: validation.data.encounter_category,
             encounter_subcategory: validation.data.encounter_subcategory,
@@ -110,6 +115,7 @@ export async function createEncounter(formData: {
             encounter_id: encounter.id,
             patient_id: validation.data.patient_id,
             practitioner_id: practitionerId,
+            clinic_id: validation.data.clinic_id,
             is_finalized: false,
         }])
         .select()
@@ -118,9 +124,125 @@ export async function createEncounter(formData: {
     if (noteError) {
         // Rollback: eliminar el encounter si no se pudo crear la nota
         await supabase.from('encounters').delete().eq('id', encounter.id);
-        return { error: 'Error al crear la nota clínica del encuentro.' };
+        console.error('[createEncounter] Clinical note insert error:', noteError);
+        return {
+            error: 'Error al crear la nota clínica del encuentro.',
+            details: noteError?.message || null,
+        };
     }
 
+    revalidatePath('/history');
+    return { data: { encounter, clinical_note: clinicalNote } };
+}
+
+/**
+ * startWalkInEncounter(payload)
+ * Crea un encounter para un paciente sin cita previa: genera la cita de cola
+ * (walk-in, status=arrived) y el encuentro clínico asociado en un solo paso.
+ */
+export async function startWalkInEncounter(payload: {
+    patient_id: string;
+    clinic_id: string;
+    encounter_class?: 'AMB' | 'IMP' | 'EMER' | 'HH';
+    encounter_category?: string;
+    appointment_type?: string;
+    description?: string;
+}) {
+    const { patient_id: patientId, clinic_id: clinicId, encounter_class: encClass, encounter_category: encCategory, appointment_type: apptType, description: apptDesc } = payload;
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) return { error: 'No autorizado' };
+    if (!clinicId) return { error: 'Clínica no especificada.' };
+
+    const now = new Date();
+    const minutes = now.getMinutes();
+    const roundedMinutes = Math.ceil((minutes + 1) / 15) * 15;
+    now.setMinutes(roundedMinutes, 0, 0);
+    const startTime = now.toISOString();
+    const endTime = new Date(now.getTime() + 15 * 60000).toISOString();
+
+    const { nowInVE, toISODate } = await import('@/lib/date-utils');
+    const localToday = toISODate(nowInVE());
+    const startOfLocalDay = `${localToday}T00:00:00-04:00`;
+
+    const { data: lastInQueue } = await supabase
+        .from('appointments')
+        .select('queue_position')
+        .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', clinicId)
+        .gte('start_time', startOfLocalDay)
+        .order('queue_position', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    const nextPosition = (lastInQueue?.queue_position || 0) + 1;
+
+    const { data: appointment, error: apptError } = await supabase
+        .from('appointments')
+        .insert([{
+            patient_id: patientId,
+            practitioner_id: practitionerId,
+            clinic_id: clinicId,
+            status: 'arrived',
+            start_time: startTime,
+            end_time: endTime,
+            description: apptDesc || 'Consulta por orden de llegada (Walk-In)',
+            queue_position: nextPosition,
+            appointment_type: apptType || 'walk-in',
+        }])
+        .select()
+        .single();
+
+    if (apptError || !appointment) {
+        console.error('[startWalkInEncounter] Appointment insert error:', apptError);
+        return { error: apptError?.message || 'Error al registrar la cita de llegada.' };
+    }
+
+    const { data: encounter, error: encError } = await supabase
+        .from('encounters')
+        .insert([{
+            patient_id: patientId,
+            practitioner_id: practitionerId,
+            clinic_id: clinicId,
+            encounter_class: encClass || 'AMB',
+            encounter_category: encCategory || 'Consulta General',
+            status: 'arrived',
+            start_time: startTime,
+            appointment_id: appointment.id,
+        }])
+        .select()
+        .single();
+
+    if (encError || !encounter) {
+        await supabase.from('appointments').delete().eq('id', appointment.id);
+        console.error('[startWalkInEncounter] Encounter insert error:', encError);
+        return { error: encError?.message || 'Error al crear el encuentro.' };
+    }
+
+    const { data: clinicalNote, error: noteError } = await supabase
+        .from('clinical_notes')
+        .insert([{
+            encounter_id: encounter.id,
+            patient_id: patientId,
+            practitioner_id: practitionerId,
+            clinic_id: clinicId,
+            is_finalized: false,
+        }])
+        .select()
+        .single();
+
+    if (noteError || !clinicalNote) {
+        await supabase.from('encounters').delete().eq('id', encounter.id);
+        await supabase.from('appointments').delete().eq('id', appointment.id);
+        console.error('[startWalkInEncounter] Clinical note insert error:', noteError);
+        return {
+            error: 'Error al crear la nota clínica del encuentro.',
+            details: noteError?.message || null,
+        };
+    }
+
+    revalidatePath('/appointments');
     revalidatePath('/history');
     return { data: { encounter, clinical_note: clinicalNote } };
 }
@@ -268,6 +390,30 @@ export async function getEncounters(patientId: string): Promise<{ data: Encounte
 }
 
 /**
+ * getEncounterById(encounterId)
+ * Retorna un encuentro por su ID con nota clínica y datos del profesional.
+ */
+export async function getEncounterById(encounterId: string): Promise<{ data: EncounterWithClinicalNote | null }> {
+    const supabase = await createServerSupabaseClient();
+    const { data, error } = await supabase
+        .from('encounters')
+        .select(`
+            *,
+            practitioner:practitioners(name_given, name_family, specialty),
+            clinical_note:clinical_notes(*)
+        `)
+        .eq('id', encounterId)
+        .single();
+
+    if (error) {
+        console.error('Error fetching encounter by id:', error);
+        return { data: null };
+    }
+
+    return { data: data as EncounterWithClinicalNote };
+}
+
+/**
  * getEncountersFiltered(filters)
  * Retorna encuentros del practitioner autenticado con filtros opcionales.
  * Para la vista tabla /history/all.
@@ -277,6 +423,7 @@ export async function getEncountersFiltered(filters?: {
     status?: string;
     date_from?: string;
     date_to?: string;
+    clinicId?: string;
 }): Promise<{ data: EncounterWithClinicalNote[] }> {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
@@ -294,6 +441,10 @@ export async function getEncountersFiltered(filters?: {
         .eq('practitioner_id', practitionerId)
         .order('start_time', { ascending: false })
         .limit(50);
+
+    if (filters?.clinicId) {
+        query = query.eq('clinic_id', filters.clinicId);
+    }
 
     if (filters?.status) {
         query = query.eq('status', filters.status as Database['public']['Enums']['encounter_status']);

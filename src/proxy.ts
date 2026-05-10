@@ -59,7 +59,13 @@ export async function proxy(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
-    const isPublicRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/auth');
+    const isPublicRoute = request.nextUrl.pathname.startsWith('/login') ||
+        request.nextUrl.pathname.startsWith('/auth') ||
+        request.nextUrl.pathname.startsWith('/register') ||
+        request.nextUrl.pathname.startsWith('/onboarding') ||
+        request.nextUrl.pathname.startsWith('/forgot-password') ||
+        request.nextUrl.pathname.startsWith('/reset-password') ||
+        request.nextUrl.pathname.startsWith('/verify-email');
 
     // === SESSION TIMEOUT CHECK ===
     // Verificar timeout de inactividad (10 minutos) para usuarios autenticados
@@ -73,21 +79,17 @@ export async function proxy(request: NextRequest) {
             const timeSinceLastActivity = now - lastActivity;
 
             if (timeSinceLastActivity > sessionTimeoutMs) {
-                // Sesión expirada por inactividad
                 const url = request.nextUrl.clone();
                 url.pathname = '/login';
                 url.searchParams.set('reason', 'session_timeout');
 
                 const redirectResponse = NextResponse.redirect(url);
-
-                // Limpiar cookies de sesión
                 redirectResponse.cookies.delete('clinicboard_last_activity');
 
                 return redirectResponse;
             }
         }
 
-        // Actualizar timestamp de última actividad
         supabaseResponse.cookies.set('clinicboard_last_activity', Date.now().toString(), {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -95,6 +97,31 @@ export async function proxy(request: NextRequest) {
             maxAge: sessionTimeoutMs / 1000,
             path: '/',
         });
+    }
+
+    if (user) {
+        const isOnboardingRoute = request.nextUrl.pathname.match(/^\/[^/]+\/onboarding$/) !== null;
+        const isDashboardRoute = request.nextUrl.pathname.match(/^\/[^/]+\/dashboard$/) !== null;
+
+        if (!isOnboardingRoute && !isDashboardRoute) {
+            try {
+                const { data: practitioner } = await supabase
+                    .from('practitioners')
+                    .select('onboarding_completed')
+                    .eq('auth_user_id', user.id)
+                    .single();
+
+                if (practitioner?.onboarding_completed !== true) {
+                    const url = request.nextUrl.clone();
+                    const slug = url.pathname.split('/')[1];
+                    url.pathname = `/${slug}/onboarding`;
+                    url.searchParams.set('reason', 'incomplete');
+                    return NextResponse.redirect(url);
+                }
+            } catch {
+                // Continue without blocking
+            }
+        }
     }
 
     if (!user && !isPublicRoute) {
@@ -112,12 +139,14 @@ export async function proxy(request: NextRequest) {
     }
 
     if (user && isPublicRoute) {
-        // user is logged in, redirect to dashboard if trying to access login
+        const isOnboardingRoute = request.nextUrl.pathname.startsWith('/onboarding');
+        if (isOnboardingRoute) {
+            return supabaseResponse;
+        }
         const url = request.nextUrl.clone();
-        url.pathname = '/';
+        url.pathname = '/dashboard';
         const redirectResponse = NextResponse.redirect(url);
 
-        // Preserve cookies setup by createServerClient
         supabaseResponse.cookies.getAll().forEach((cookie) => {
             redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
         });

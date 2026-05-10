@@ -70,7 +70,7 @@ export default function PatientTabBar() {
                                 )}
                             >
                                 {tab.isDirty && (
-                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-s-warning shrink-0" />
                                 )}
                                 
                                 <span className="truncate flex-1 text-left">

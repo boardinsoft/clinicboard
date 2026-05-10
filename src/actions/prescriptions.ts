@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prescriptionSchema } from '@/lib/schemas/prescription.schema';
 import { MedicationRequestStatus } from '@/lib/fhir/types';
+import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
 
 /**
  * createPrescription(data)
@@ -19,20 +20,26 @@ export async function createPrescription(formData: {
     medication_display: string;
     dosage_instruction: string[];
     note?: string;
+    clinic_id: string;
 }) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
+    if (!practitionerId) {
         return { error: 'No autorizado. Sesión no encontrada.' };
     }
 
-    // Verify the patient belongs to this practitioner
+    if (!formData.clinic_id) {
+        return { error: 'Clínica no especificada.' };
+    }
+
+    // Verify the patient belongs to this practitioner + clinic
     const { data: patient } = await supabase
         .from('patients')
         .select('id')
         .eq('id', formData.patient_id)
-        .eq('practitioner_id', user.id)
+        .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', formData.clinic_id)
         .single();
 
     if (!patient) {
@@ -41,7 +48,7 @@ export async function createPrescription(formData: {
 
     const prescriptionData = {
         ...formData,
-        prescriber_id: user.id,
+        prescriber_id: practitionerId,
         status: 'draft' as MedicationRequestStatus,
     };
 
@@ -57,6 +64,7 @@ export async function createPrescription(formData: {
             patient_id: validation.data.patient_id,
             encounter_id: formData.encounter_id,
             prescriber_id: validation.data.prescriber_id,
+            clinic_id: validation.data.clinic_id,
             medication_code: validation.data.medication_code,
             medication_display: validation.data.medication_display,
             status: validation.data.status,
@@ -169,20 +177,26 @@ export async function completePrescription(id: string) {
  * getPrescriptionsByPatient(patientId)
  * Query by patient_id, verify ownership, order by authored_on DESC.
  */
-export async function getPrescriptionsByPatient(patientId: string) {
+export async function getPrescriptionsByPatient(patientId: string, clinicId?: string) {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const practitionerId = await getCurrentPractitionerId(supabase);
 
-    if (!user) {
+    if (!practitionerId) {
         return { error: 'No autorizado' };
     }
 
-    const { data, error } = await supabase
+    let query = supabase
         .from('medication_requests')
         .select('*')
         .eq('patient_id', patientId)
-        .eq('prescriber_id', user.id)
+        .eq('prescriber_id', practitionerId)
         .order('authored_on', { ascending: false });
+
+    if (clinicId) {
+        query = query.eq('clinic_id', clinicId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error('Error in getPrescriptionsByPatient:', error);

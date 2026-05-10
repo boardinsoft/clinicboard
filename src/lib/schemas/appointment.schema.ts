@@ -13,6 +13,7 @@ const dateStringSchema = z.string()
 export const appointmentSchema = z.object({
     patient_id: z.string().uuid('Invalid patient ID (UUID required)'),
     practitioner_id: z.string().uuid('Invalid practitioner ID (UUID required)'),
+    clinic_id: z.string().uuid('Invalid clinic ID (UUID required)').optional(),
     start_time: dateStringSchema,
     end_time: dateStringSchema,
     status: AppointmentStatusEnum,

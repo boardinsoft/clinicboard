@@ -109,10 +109,9 @@ export function PatientSearchField({
         <FormItem className="relative">
             <FormLabel>{label}</FormLabel>
             <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                     placeholder={placeholder}
-                    className="pl-9"
+                    className="w-full"
                     value={query}
                     onFocus={() => {
                         if (query.length === 0 || results.length > 0) setIsOpen(true);

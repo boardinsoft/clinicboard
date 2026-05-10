@@ -5,34 +5,34 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[6px] font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 border border-primary/20",
+          "bg-b-8 text-white border border-b-9 hover:bg-b-9 dark:bg-b-8 dark:hover:bg-b-7",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 border border-destructive/20",
+          "bg-destructive text-destructive-foreground border border-s-danger/50 hover:bg-destructive/90 dark:hover:bg-s-danger",
         outline:
-          "border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
+          "bg-background text-foreground border border-n-5 hover:bg-n-3 dark:hover:bg-n-4",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 border border-secondary",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        menta:
-          "bg-[var(--brand-mint)] text-[var(--clinical-stable-fg)] shadow-sm hover:bg-[var(--brand-mint)]/90 border border-[var(--brand-mint)]/30 font-bold",
+          "bg-n-3 dark:bg-n-5 text-foreground border border-n-5 dark:border-n-7 hover:bg-n-4 dark:hover:bg-n-5",
+        ghost:
+          "bg-transparent text-foreground border border-transparent hover:bg-n-3 dark:hover:bg-n-4",
+        link:
+          "bg-transparent text-b-8 border border-transparent hover:text-b-7 hover:underline dark:hover:text-b-7 px-1",
       },
       size: {
-        default: "h-9 px-4 py-2",
-        xs: "h-7 px-2 text-[10px] rounded-md uppercase tracking-wider",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
+        xs: "h-7 px-2 text-xs gap-1.5",
+        sm: "h-8 px-3 text-sm gap-1.5",
+        md: "h-9 px-4 text-base gap-2", // Default (15px)
+        lg: "h-11 px-6 text-lg gap-2.5",
         icon: "h-9 w-9",
       },
     },
     defaultVariants: {
       variant: "default",
-      size: "default",
+      size: "md",
     },
   }
 )
