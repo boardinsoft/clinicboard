@@ -152,7 +152,7 @@ export default function RegisterPage() {
                                 htmlFor="username"
                                 className="text-xs font-semibold tracking-wider text-n-8"
                             >
-                                Nombre de tu consultorio
+                                Nombre de usuario
                             </FieldLabel>
                             <Input
                                 {...form.register("username")}
