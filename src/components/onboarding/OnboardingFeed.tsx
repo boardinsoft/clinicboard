@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OnboardingStepProfile } from './OnboardingStepProfile';
 import { OnboardingStepClinic } from './OnboardingStepClinic';
@@ -33,28 +33,33 @@ interface StepConfig {
     id: 'profile' | 'location' | 'clinic' | 'complete';
     title: string;
     description: string;
+    visual?: string;
 }
 
 const steps: StepConfig[] = [
     {
         id: 'profile',
         title: 'Cuéntanos sobre ti',
-        description: 'Este será tu perfil profesional en ClinicBoard',
+        description: 'Este será tu perfil profesional en ClinicBoard. Comparte tu specialization y años de experiencia.',
+        visual: 'Professional Profile',
     },
     {
         id: 'location',
         title: '¿Dónde está tu consultorio?',
-        description: 'Indica la ubicación para que pacientes te encuentren',
+        description: 'Indica la ubicación para que pacientes te encuentren fácilmente cerca de su zona.',
+        visual: 'Location Setup',
     },
     {
         id: 'clinic',
         title: 'Nombra tu clínica',
-        description: 'Elige un nombre único para identificar tu consultorio',
+        description: 'Elige un nombre único para identificar tu consultorio en la plataforma.',
+        visual: 'Clinic Creation',
     },
     {
         id: 'complete',
         title: '¡Todo listo!',
-        description: 'Revisa la información antes de continuar',
+        description: 'Revisa la información antes de continuar al tablero de ClinicBoard.',
+        visual: 'Ready',
     },
 ];
 
@@ -206,56 +211,99 @@ export function OnboardingFeed({ userId, initialData, onComplete }: OnboardingFe
 
     return (
         <div className="min-h-svh bg-n-1 flex">
-            <aside className="w-60 border-r border-n-5 bg-n-1 flex flex-col sticky top-0 h-svh">
-                <div className="px-6 py-8 flex flex-col h-full">
-                    <div className="mb-8">
-                        <h1 className="text-lg font-semibold text-n-12 tracking-tight">
-                            {currentConfig.title}
-                        </h1>
-                        <p className="text-sm text-n-8 mt-2 leading-relaxed">
-                            {currentConfig.description}
-                        </p>
-                    </div>
+            <aside className="w-1/2 bg-gradient-to-br from-b-9/10 via-n-2 to-n-2 border-r border-n-5 flex flex-col sticky top-0 h-svh">
+                <div className="flex flex-col h-full p-12 lg:p-16">
+                    <div className="flex-1 flex flex-col justify-center">
+                        <div className="mb-12">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="h-10 w-10 rounded-[6px] bg-b-8 flex items-center justify-center">
+                                    <svg className="h-5 w-5 text-n-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm font-medium text-b-8 tracking-wide uppercase">ClinicBoard</span>
+                            </div>
 
-                    <div className="mt-auto flex flex-col gap-2">
-                        {canGoBack && (
+                            <h1 className="text-3xl lg:text-4xl font-semibold text-n-12 tracking-tight leading-tight mb-4">
+                                {currentConfig.title}
+                            </h1>
+                            <p className="text-base text-n-8 leading-relaxed max-w-md">
+                                {currentConfig.description}
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 mb-8">
+                            {steps.map((step, index) => {
+                                const isCompleted = index < currentStepIndex;
+                                const isCurrent = index === currentStepIndex;
+                                return (
+                                    <React.Fragment key={step.id}>
+                                        <div className="flex items-center gap-2">
+                                            <div className={`
+                                                h-8 w-8 rounded-full flex items-center justify-center transition-all duration-200
+                                                ${isCompleted ? 'bg-b-8 text-n-1' : isCurrent ? 'bg-b-8/20 text-b-8 border-2 border-b-8' : 'bg-n-4 text-n-8'}
+                                            `}>
+                                                {isCompleted ? (
+                                                    <Check className="h-4 w-4" />
+                                                ) : (
+                                                    <span className="text-sm font-medium">{index + 1}</span>
+                                                )}
+                                            </div>
+                                            {index < steps.length - 1 && (
+                                                <div className={`w-8 h-0.5 transition-all duration-200 ${isCompleted ? 'bg-b-8' : 'bg-n-4'}`} />
+                                            )}
+                                        </div>
+                                    </React.Fragment>
+                                );
+                            })}
+                        </div>
+
+                        <div className="space-y-3">
+                            {canGoBack && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={handleBack}
+                                    className="justify-start gap-2 text-n-8 hover:text-n-12 hover:bg-n-3"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                    Volver
+                                </Button>
+                            )}
                             <Button
                                 type="button"
-                                variant="ghost"
-                                onClick={handleBack}
-                                className="justify-start gap-2 text-n-8 hover:text-n-12"
+                                variant="default"
+                                onClick={handleContinue}
+                                className="w-full gap-2 bg-b-8 hover:bg-b-9 active:scale-[0.98] transition-all"
+                                disabled={
+                                    isLoading ||
+                                    (currentStep === 'clinic' && !isClinicAvailable)
+                                }
                             >
-                                <ArrowLeft className="w-4 h-4" />
-                                Volver
+                                {isLoading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <>
+                                        {continueButtonText}
+                                        {currentStep !== 'complete' && (
+                                            <ArrowRight className="w-4 h-4" />
+                                        )}
+                                    </>
+                                )}
                             </Button>
-                        )}
-                        <Button
-                            type="button"
-                            variant="default"
-                            onClick={handleContinue}
-                            className="gap-2"
-                            disabled={
-                                isLoading ||
-                                (currentStep === 'clinic' && !isClinicAvailable)
-                            }
-                        >
-                            {isLoading ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <>
-                                    {continueButtonText}
-                                    {currentStep !== 'complete' && (
-                                        <ArrowRight className="w-4 h-4" />
-                                    )}
-                                </>
-                            )}
-                        </Button>
+                        </div>
+                    </div>
+
+                    <div className="mt-auto pt-8 border-t border-n-4/50">
+                        <p className="text-xs text-n-8">
+                            Proteger tu información es nuestra prioridad. Tus datos están seguros con nosotros.
+                        </p>
                     </div>
                 </div>
             </aside>
 
-            <main className="flex-1 overflow-y-auto">
-                <div className="max-w-xl mx-auto py-12 px-6">
+            <main className="w-1/2 overflow-y-auto bg-n-1">
+                <div className="max-w-xl mx-auto py-12 px-6 lg:py-16 lg:px-12">
                     {error && (
                         <div className="mb-6 p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
                             <p className="text-sm text-destructive">{error}</p>
