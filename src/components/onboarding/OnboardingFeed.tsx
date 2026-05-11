@@ -41,25 +41,25 @@ const steps: StepConfig[] = [
     {
         id: 'profile',
         title: 'Cuéntanos sobre ti',
-        description: 'Este será tu perfil profesional en ClinicBoard. Comparte tu specialization y años de experiencia.',
+        description: 'Tu nombre, especialidad y datos profesionales. Así te reconocerán tus pacientes.',
         visual: 'Professional Profile',
     },
     {
         id: 'location',
         title: '¿Dónde está tu consultorio?',
-        description: 'Indica la ubicación para que pacientes te encuentren fácilmente cerca de su zona.',
-        visual: 'Location Setup',
+        description: 'La ubicación que tus pacientes verán para encontrarte.',
+        visual: 'LocationSetup',
     },
     {
         id: 'clinic',
         title: 'Nombra tu clínica',
-        description: 'Elige un nombre único para identificar tu consultorio en la plataforma.',
+        description: 'Elige el nombre y la URL única para tu espacio en ClinicBoard.',
         visual: 'Clinic Creation',
     },
     {
         id: 'complete',
         title: '¡Todo listo!',
-        description: 'Revisa la información antes de continuar al tablero de ClinicBoard.',
+        description: 'Revisa la información y confirma para comenzar.',
         visual: 'Ready',
     },
 ];

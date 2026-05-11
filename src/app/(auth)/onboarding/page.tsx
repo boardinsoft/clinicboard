@@ -216,7 +216,7 @@ export default function OnboardingPage() {
                                     Configuración incompleta
                                 </AlertTitle>
                                 <AlertDescription className="text-xs text-n-8 leading-relaxed">
-                                    Tu configuración está incompleta. Completa el proceso de configuración para continuar.
+                                    Completa los pasos para continuar.
                                 </AlertDescription>
                             </div>
                             <div className="flex items-center gap-3">

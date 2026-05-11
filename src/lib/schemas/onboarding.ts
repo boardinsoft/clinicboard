@@ -44,15 +44,15 @@ export const VENEZUELA_CITIES: Record<string, string[]> = {
 
 export const profileStepSchema = z.object({
     name_given: z.array(z.string())
-        .min(1, 'Al menos un nombre es requerido')
-        .max(50, 'El nombre no puede exceder 50 caracteres')
+        .min(1, 'Ingresa al menos un nombre')
+        .max(50, 'Máximo 50 caracteres')
         .refine(
             (val) => val.every((n) => /^[a-zA-ZáéíóúñÑ\s-]+$/.test(n)),
             'Solo letras, espacios y guiones'
         ),
     name_family: z.string()
         .min(1, 'El apellido es requerido')
-        .max(50, 'El apellido no puede exceder 50 caracteres')
+        .max(50, 'Máximo 50 caracteres')
         .refine((val) => /^[a-zA-ZáéíóúñÑ\s-]+$/.test(val), 'Solo letras, espacios y guiones'),
     specialty: z.string().optional(),
     gender: z.enum(['male', 'female', 'other', 'unknown']).optional(),
@@ -65,22 +65,22 @@ export const profileStepSchema = z.object({
 
 export const clinicStepSchema = z.object({
     name: z.string()
-        .min(3, 'El nombre debe tener al menos 3 caracteres')
-        .max(50, 'El nombre no puede exceder 50 caracteres')
-        .refine((val) => !/[\u{1F300}-\u{1F9FF}]/u.test(val), 'No emojis en el nombre')
-        .refine((val) => /^[a-zA-ZáéíóúñÑ0-9\s&.,'\-]+$/.test(val), 'Solo letras, números, espacios y los símbolos &.,\'-'),
+        .min(3, 'Mínimo 3 caracteres')
+        .max(50, 'Máximo 50 caracteres')
+        .refine((val) => !/[\u{1F300}-\u{1F9FF}]/u.test(val), 'No emojis')
+        .refine((val) => /^[a-zA-ZáéíóúñÑ0-9\s&.,'\-]+$/.test(val), 'Solo letras, números y los símbolos &.,\'-'),
     slug: z.string()
-        .min(3, 'El slug debe tener al menos 3 caracteres')
-        .max(30, 'El slug no puede exceder 30 caracteres')
+        .min(3, 'Mínimo 3 caracteres')
+        .max(30, 'Máximo 30 caracteres')
         .regex(/^[a-z]+(?:-[a-z]+)*$/, 'Solo letras minúsculas y guiones')
-        .refine((val) => !val.startsWith('-') && !val.endsWith('-'), 'No comenzar ni terminar con guión')
-        .refine((val) => !RESERVED_SLUGS.includes(val), 'Esta URL no está disponible'),
+        .refine((val) => !val.startsWith('-') && !val.endsWith('-'), 'Sin guiones al inicio o final')
+        .refine((val) => !RESERVED_SLUGS.includes(val), 'URL no disponible'),
 });
 
 export const locationStepSchema = z.object({
     state: z.string().min(1, 'Selecciona un estado'),
     city: z.string().min(1, 'Selecciona una ciudad'),
-    address: z.string().max(200, 'La dirección no puede exceder 200 caracteres').optional(),
+    address: z.string().max(200, 'Máximo 200 caracteres').optional(),
     phone: z.string()
         .regex(/^\+58\s?\d{3}[-\s]?\d{3}[-\s]?\d{2}[-\s]?\d{2}$/, 
             'Formato: +58 XXX-XXX-XX-XX (ej: +58 212-555-1234)'),

@@ -68,8 +68,8 @@ export const OnboardingStepProfile = forwardRef<OnboardingStepProfileRef, Onboar
         return (
             <Card className="card-clinic">
                 <CardHeader>
-                    <CardTitle>Cuéntanos sobre ti</CardTitle>
-                    <CardDescription>Este será tu perfil profesional en ClinicBoard</CardDescription>
+                    <CardTitle>Tu perfil profesional</CardTitle>
+                    <CardDescription>Este será tu perfil profesional en ClinicBoard.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form id="profile-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
