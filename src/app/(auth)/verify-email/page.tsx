@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { resendConfirmationEmail } from '@/actions/auth';
@@ -45,6 +46,13 @@ function EmailContent() {
     return (
         <>
             <div className="flex flex-col items-center gap-4 mb-8">
+                <Image
+                    src="/brand/logo-mark.svg"
+                    alt="ClinicBoard"
+                    width={48}
+                    height={48}
+                    className="text-b-8"
+                />
                 <div className="w-14 h-14 rounded-[8px] bg-b-8/10 flex items-center justify-center">
                     <Mail className="w-7 h-7 text-b-8" />
                 </div>

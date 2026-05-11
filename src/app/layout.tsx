@@ -31,7 +31,9 @@ export const metadata: Metadata = {
   icons: {
     icon: '/brand/favicon.svg',
     apple: '/brand/apple-touch-icon.png',
+    shortcut: '/brand/favicon.svg',
   },
+  manifest: '/brand/site.webmanifest',
 };
 
 export default function RootLayout({
