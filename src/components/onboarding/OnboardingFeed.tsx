@@ -52,7 +52,7 @@ const steps: StepConfig[] = [
     },
     {
         id: 'clinic',
-        title: 'Nombra tu clínica',
+        title: 'Nombra tu consultorio',
         description: 'Elige el nombre y la URL única para tu espacio en ClinicBoard.',
         visual: 'Clinic Creation',
     },

@@ -63,13 +63,13 @@ export default function OnboardingPage() {
                 }
 
                 if (clinicCount >= 2) {
-                    setErrorMessage('Has alcanzado el límite máximo de 2 clínicas. Contacta a soporte si necesitas más.');
+                    setErrorMessage('Has alcanzado el límite máximo de 2 consultorios. Contacta a soporte si necesitas más.');
                     setPageState('clinic_limit_reached');
                     return;
                 }
 
                 if (clinicCount === 1) {
-                    setErrorMessage('Ya tienes una clínica. Ve al Tablero para gestionarla.');
+                    setErrorMessage('Ya tienes un consultorio. Ve al Tablero para gestionarlo.');
                     setPageState('clinic_limit_reached');
                     return;
                 }
@@ -153,7 +153,7 @@ export default function OnboardingPage() {
                             Ir al Tablero
                         </Button>
                         <p className="text-xs text-n-8 text-center">
-                            ¿No tienes clínica?{' '}
+                            ¿No tienes consultorio?{' '}
                             <button
                                 onClick={handleSignOut}
                                 className="text-b-8 underline-offset-4 hover:underline font-medium"
@@ -176,9 +176,9 @@ export default function OnboardingPage() {
                         <div className="w-12 h-12 bg-n-3 rounded-full flex items-center justify-center mb-3">
                             <ShieldAlert className="h-6 w-6 text-n-8" />
                         </div>
-                        <h1 className="text-lg font-semibold text-foreground">Límite de clínicas alcanzado</h1>
+                        <h1 className="text-lg font-semibold text-foreground">Límite de consultorios alcanzado</h1>
                         <p className="text-sm text-n-8 mt-1">
-                            {errorMessage || 'Has alcanzado el máximo de 2 clínicas permitidas por cuenta.'}
+                            {errorMessage || 'Has alcanzado el máximo de 2 consultorios permitidos por cuenta.'}
                         </p>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -190,7 +190,7 @@ export default function OnboardingPage() {
                             Ir al Tablero
                         </Button>
                         <p className="text-xs text-n-8 text-center">
-                            ¿Necesitas más clínicas?{' '}
+                            ¿Necesitas más consultorios?{' '}
                             <button
                                 onClick={handleSignOut}
                                 className="text-b-8 underline-offset-4 hover:underline font-medium"

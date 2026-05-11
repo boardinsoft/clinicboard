@@ -98,7 +98,7 @@ export const OnboardingStepClinic = forwardRef<OnboardingStepClinicRef, Onboardi
                 } else {
                     setAvailabilityStatus('unavailable');
                     if (result.conflict === 'name') {
-                        setConflictMessage('Este nombre de clínica ya existe');
+                        setConflictMessage('Este nombre de consultorio ya existe');
                     } else {
                         setConflictMessage('Esta URL ya está en uso');
                     }
@@ -142,16 +142,16 @@ export const OnboardingStepClinic = forwardRef<OnboardingStepClinicRef, Onboardi
         return (
             <Card className="card-clinic">
                 <CardHeader>
-                    <CardTitle>Nombra tu clínica</CardTitle>
+                    <CardTitle>Nombra tu consultorio</CardTitle>
                     <CardDescription>Elige un nombre único para identificar tu consultorio</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form id="clinic-form" onSubmit={handleSubmit} className="space-y-5">
                         <Field>
-                            <FieldLabel className="text-xs font-semibold tracking-wider text-n-8 uppercase">Nombre de la clínica</FieldLabel>
+                            <FieldLabel className="text-xs font-semibold tracking-wider text-n-8 uppercase">Nombre del consultorio</FieldLabel>
                             <Input
                                 {...form.register('name')}
-                                placeholder="ej. Clínica San Rafael"
+                                placeholder="ej. Consultorio San Rafael"
                                 className="mt-1 bg-n-2 border-n-5"
                                 suffixIcon={getIndicator()}
                                 onChange={(e) => {
@@ -168,7 +168,7 @@ export const OnboardingStepClinic = forwardRef<OnboardingStepClinicRef, Onboardi
                         </Field>
 
                         <Field>
-                            <FieldLabel className="text-xs font-semibold tracking-wider text-n-8 uppercase">URL de tu clínica</FieldLabel>
+                            <FieldLabel className="text-xs font-semibold tracking-wider text-n-8 uppercase">URL de tu consultorio</FieldLabel>
                             <div className="mt-1 flex items-center">
                                 <Input
                                     {...form.register('slug')}
