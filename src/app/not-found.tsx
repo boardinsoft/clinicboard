@@ -1,14 +1,19 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen text-center bg-background text-foreground p-4">
-            {/* Brand Logo/Name */}
             <div className="mb-12 flex items-center justify-center">
-                <span className="text-3xl font-bold tracking-tight">clinic</span>
-                <span className="text-3xl tracking-tight text-primary font-light">board</span>
+                <Image
+                    src="/brand/logo-mark.svg"
+                    alt="ClinicBoard"
+                    width={48}
+                    height={48}
+                    className="text-b-8"
+                />
             </div>
 
             {/* Error Code */}

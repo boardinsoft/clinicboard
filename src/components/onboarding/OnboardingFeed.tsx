@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Loader2, Check } from 'lucide-react';
@@ -216,11 +217,13 @@ export function OnboardingFeed({ userId, initialData, onComplete }: OnboardingFe
                     <div className="flex-1 flex flex-col justify-center">
                         <div className="mb-12">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="h-10 w-10 rounded-[6px] bg-b-8 flex items-center justify-center">
-                                    <svg className="h-5 w-5 text-n-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                                    </svg>
-                                </div>
+                                <Image
+                                    src="/brand/logo-mark.svg"
+                                    alt="ClinicBoard"
+                                    width={40}
+                                    height={40}
+                                    className="text-b-8"
+                                />
                                 <span className="text-sm font-medium text-b-8 tracking-wide uppercase">ClinicBoard</span>
                             </div>
 
