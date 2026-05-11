@@ -241,7 +241,7 @@ export function OnboardingFeed({ userId, initialData, onComplete }: OnboardingFe
                                         <div className="flex items-center gap-2">
                                             <div className={`
                                                 h-8 w-8 rounded-full flex items-center justify-center transition-all duration-200
-                                                ${isCompleted ? 'bg-b-8 text-n-1' : isCurrent ? 'bg-b-8/20 text-b-8 border-2 border-b-8' : 'bg-n-4 text-n-8'}
+                                                ${isCompleted ? 'bg-b-8 text-n-1' : isCurrent ? 'bg-n-3 text-n-10 border-2 border-n-6' : 'bg-n-4 text-n-8'}
                                             `}>
                                                 {isCompleted ? (
                                                     <Check className="h-4 w-4" />

@@ -137,7 +137,7 @@ export const OnboardingStepProfile = forwardRef<OnboardingStepProfileRef, Onboar
                                         className={cn(
                                             'flex-1 flex items-center justify-center h-10 px-3 border border-n-5 rounded-[6px] cursor-pointer text-[13px] transition-all duration-200 hover:bg-n-3 focus:outline-none focus:ring-2 focus:ring-b-8/10',
                                             form.watch('gender') === g.value
-                                                ? 'border-b-8 bg-b-8/10 text-foreground'
+                                                ? 'border-n-6 bg-n-3 text-foreground'
                                                 : 'text-n-8'
                                         )}
                                     >
