@@ -175,7 +175,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                 ]}
                 actions={
                     <div className="flex items-center gap-2">
-                        <Badge variant={patient.active ? "pill-success" : "pill-muted"} className="text-[11px] mr-2">
+                        <Badge variant={patient.active ? "pill-success" : "pill-neutral"} className="text-[11px] mr-2">
                             {patient.active ? 'Activo' : 'Inactivo'}
                         </Badge>
                         <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold border-border gap-2 px-3 font-sans transition-colors duration-100" onClick={() => router.push(`/patients/${patient.id}/edit`)}>
@@ -319,7 +319,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                                     {c.code} · Iniciado el {formatDate(c.onset_date)}
                                                 </p>
                                             </div>
-                                            <Badge variant={c.clinical_status === 'active' ? 'pill-success' : 'pill-muted'} className="text-[11px]">
+                                            <Badge variant={c.clinical_status === 'active' ? 'pill-success' : 'pill-neutral'} className="text-[11px]">
                                                 {c.clinical_status === 'active' ? 'Activa' : 'Resuelta'}
                                             </Badge>
                                         </div>

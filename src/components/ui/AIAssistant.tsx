@@ -46,7 +46,7 @@ import {
 } from '@/components/ui/sidebar';
 import type { Condition, AllergyIntolerance, EncounterWithClinicalNote } from '@/types/database.types';
 import PatientDetailSidebar from '@/components/patients/PatientDetailSidebar';
-import EncounterDetailPanel from '@/components/history/EncounterDetailPanel';
+import EncounterDetailPanel from '@/app/(dashboard)/[clinicSlug]/history/encounters/[encounterId]/EncounterDetailView';
 
 interface PatientFile {
     id: string;

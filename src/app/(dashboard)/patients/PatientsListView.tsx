@@ -20,7 +20,7 @@ import {
   Plus,
 } from 'lucide-react';
 
-import PatientsSidebar from './PatientsSidebar';
+import PatientDetailSidebar from '@/components/patients/PatientDetailSidebar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { PatientTelecom, PatientIdentifier } from '@/types/patient-jsonb';
 
@@ -152,10 +152,6 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
         setRightPanelOpen(true);
     }
   }, [selectedPatientForPreview, setSelectedPatientForPreview, setRightPanelOpen]);
-
-  useEffect(() => {
-    setSecondaryPanel(<PatientsSidebar />, 'Pacientes');
-  }, [setSecondaryPanel]);
 
   const totalPages = Math.ceil(totalItems / pageSize);
   const hasFilters = filters.status !== 'all' || filters.gender !== 'all' || localQ !== '';
@@ -329,7 +325,7 @@ export default function PatientsListView({ patients, totalItems, page, pageSize 
                     <td className="h-12 border-r border-border px-4 text-[13px] text-muted-foreground tabular-nums font-sans font-medium">{calcAge(p.birth_date)}</td>
                     <td className="h-12 border-r border-border px-4 text-[12px] text-muted-foreground/80 tabular-nums font-sans font-medium">{getPhone(p)}</td>
                     <td className="h-12 border-r border-border px-4">
-                      <Badge variant={p.active !== false ? 'pill-success' : 'pill-muted'} className="text-[10px] font-bold font-sans px-1.5 h-5 uppercase tracking-wider">
+                      <Badge variant={p.active !== false ? 'pill-success' : 'pill-neutral'} className="text-[10px] font-bold font-sans px-1.5 h-5 uppercase tracking-wider">
                         {p.active !== false ? 'Activo' : 'Inactivo'}
                       </Badge>
                     </td>

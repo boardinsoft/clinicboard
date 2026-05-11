@@ -9,33 +9,62 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EmptyStatePresentational } from '@/components/ui/EmptyStatePresentational';
 import { cn } from '@/lib/utils';
 import { formatDate, formatTime } from '@/lib/date-utils';
-import type { Tables } from '@/types/database.types';
+import type { Tables, Json } from '@/types/database.types';
 
 type ClinicalNote = Tables<'clinical_notes'>;
 type Encounter = Tables<'encounters'>;
 
 type EncounterDetailProps = {
-    encounter: Encounter & {
-        clinical_note: ClinicalNote | null;
-        patient: {
+    encounter: {
+        id: string;
+        appointment_id?: string | null;
+        clinic_id?: string | null;
+        patient_id?: string | null;
+        practitioner_id?: string | null;
+        start_time: string;
+        end_time?: string | null;
+        status?: string | null;
+        encounter_class?: string | null;
+        encounter_category?: string | null;
+        encounter_subcategory?: string | null;
+        reason_code?: Json;
+        vital_signs?: Json | null;
+        clinical_note?: {
             id: string;
-            name_given: string[] | null;
-            name_family: string;
-            birth_date: string | null;
-            gender: string | null;
+            encounter_id: string;
+            clinic_id?: string | null;
+            evolution_note?: string | null;
+            subjective?: string | null;
+            objective?: string | null;
+            analysis?: string | null;
+            plan?: string | null;
+            diagnosis?: Json;
+            reason_code?: Json;
+            physical_exam?: Json;
+            is_finalized?: boolean | null;
+            created_at?: string | null;
+            updated_at?: string | null;
         } | null;
-        practitioner: {
-            name_given: string[] | null;
+        patient?: {
+            id: string;
+            name_given?: string[] | null;
             name_family: string;
-            specialty: string | null;
+            birth_date?: string | null;
+            gender?: string | null;
+        } | null;
+        practitioner?: {
+            name_given?: string[] | null;
+            name_family: string;
+            specialty?: string | null;
         } | null;
     };
-    addenda: Array<{
+    addenda?: Array<{
         id: string;
         content: string;
-        created_at: string | null;
-        author: { name_family: string; name_given: string[] | null } | null;
+        created_at?: string | null;
+        author?: { name_family: string; name_given?: string[] | null } | null;
     }>;
+    onClose?: () => void;
 };
 
 type VitalSigns = {
@@ -121,7 +150,7 @@ export default function EncounterDetailView({ encounter, addenda }: EncounterDet
 
     const statusLabel = ENCOUNTER_STATUS_LABELS[encounter.status || ''] || encounter.status || '—';
     const classLabel = CLASS_LABELS[encounter.encounter_class || ''] || encounter.encounter_class || '—';
-    const duration = calcDuration(encounter.start_time, encounter.end_time);
+    const duration = calcDuration(encounter.start_time, encounter.end_time ?? null);
 
     const reasonCode = Array.isArray(clinicalNote?.reason_code)
         ? (clinicalNote!.reason_code as Array<{ text?: string }>)[0]?.text
@@ -441,13 +470,13 @@ export default function EncounterDetailView({ encounter, addenda }: EncounterDet
                             <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">Notas de aclaración agregadas posteriormente al cierre del encuentro.</p>
                         </div>
                         <CardContent className="p-0">
-                            {addenda.length === 0 ? (
+                            {addenda && addenda.length === 0 ? (
                                 <div className="p-8">
                                     <EmptyStatePresentational icon={FileText} title="Sin addenda" description="No hay notas de aclaración para este encuentro." />
                                 </div>
                             ) : (
                                 <div className="divide-y divide-n-5/30">
-                                    {addenda.map((a) => (
+                                    {addenda && addenda.map((a) => (
                                         <div key={a.id} className="p-5">
                                             <div className="flex items-center justify-between mb-3">
                                                 <p className="text-xs font-bold text-n-8">
