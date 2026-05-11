@@ -74,29 +74,29 @@ export const OnboardingStepProfile = forwardRef<OnboardingStepProfileRef, Onboar
                 <CardContent>
                     <form id="profile-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                         <div className="grid grid-cols-2 gap-3">
-                            <Field>
-                                <FieldLabel className="text-xs font-semibold tracking-wider text-n-8 uppercase">Nombres</FieldLabel>
-                                <Input
-                                    {...form.register('name_given.0')}
-                                    placeholder="Juan Carlos"
-                                    className="mt-1"
-                                />
-                                {form.formState.errors.name_given && (
-                                    <FieldError className="text-[11px]">Ingresa al menos un nombre</FieldError>
-                                )}
-                            </Field>
+                        <Field>
+                            <FieldLabel className="text-xs font-semibold tracking-wider text-n-8 uppercase">Nombres</FieldLabel>
+                            <Input
+                                {...form.register('name_given.0')}
+                                placeholder="Juan Carlos"
+                                className="mt-1 bg-n-2 border-n-5"
+                            />
+                            {form.formState.errors.name_given && (
+                                <FieldError className="text-[11px]">Ingresa al menos un nombre</FieldError>
+                            )}
+                        </Field>
 
-                            <Field>
-                                <FieldLabel className="text-xs font-semibold tracking-wider text-n-8 uppercase">Apellidos</FieldLabel>
-                                <Input
-                                    {...form.register('name_family')}
-                                    placeholder="Pérez Medina"
-                                    className="mt-1"
-                                />
-                                {form.formState.errors.name_family && (
-                                    <FieldError className="text-[11px]">{form.formState.errors.name_family.message}</FieldError>
-                                )}
-                            </Field>
+                        <Field>
+                            <FieldLabel className="text-xs font-semibold tracking-wider text-n-8 uppercase">Apellidos</FieldLabel>
+                            <Input
+                                {...form.register('name_family')}
+                                placeholder="Pérez Medina"
+                                className="mt-1 bg-n-2 border-n-5"
+                            />
+                            {form.formState.errors.name_family && (
+                                <FieldError className="text-[11px]">{form.formState.errors.name_family.message}</FieldError>
+                            )}
+                        </Field>
                         </div>
 
                         <Field>
@@ -105,7 +105,7 @@ export const OnboardingStepProfile = forwardRef<OnboardingStepProfileRef, Onboar
                                 value={form.watch('specialty') || ''}
                                 onValueChange={(value) => form.setValue('specialty', value)}
                             >
-                                <SelectTrigger className="mt-1">
+                                <SelectTrigger className="mt-1 bg-n-2 border-n-5">
                                     <SelectValue placeholder="Selecciona una especialidad" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -121,7 +121,7 @@ export const OnboardingStepProfile = forwardRef<OnboardingStepProfileRef, Onboar
                             <Input
                                 {...form.register('license_number')}
                                 placeholder="Ej: 25.456"
-                                className="mt-1"
+                                className="mt-1 bg-n-2 border-n-5"
                             />
                             {form.formState.errors.license_number && (
                                 <FieldError className="text-[11px]">{form.formState.errors.license_number.message}</FieldError>

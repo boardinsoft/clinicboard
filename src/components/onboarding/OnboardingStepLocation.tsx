@@ -59,7 +59,7 @@ export const OnboardingStepLocation = forwardRef<OnboardingStepLocationRef, Onbo
                                     value={form.watch('state') || ''}
                                     onValueChange={handleStateChange}
                                 >
-                                    <SelectTrigger className="mt-1">
+                                    <SelectTrigger className="mt-1 bg-n-2 border-n-5">
                                         <SelectValue placeholder="Selecciona un estado" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -80,7 +80,7 @@ export const OnboardingStepLocation = forwardRef<OnboardingStepLocationRef, Onbo
                                     onValueChange={(value) => form.setValue('city', value as any)}
                                     disabled={!watchedState}
                                 >
-                                    <SelectTrigger className="mt-1">
+                                    <SelectTrigger className="mt-1 bg-n-2 border-n-5">
                                         <SelectValue placeholder={watchedState ? 'Selecciona una ciudad' : 'Primero selecciona un estado'} />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -100,7 +100,7 @@ export const OnboardingStepLocation = forwardRef<OnboardingStepLocationRef, Onbo
                             <Input
                                 {...form.register('address')}
                                 placeholder="Av. Libertador #123, Torre Empresarial, Piso 3"
-                                className="mt-1"
+                                className="mt-1 bg-n-2 border-n-5"
                             />
                             {form.formState.errors.address && (
                                 <FieldError className="text-[11px]">{form.formState.errors.address.message}</FieldError>
@@ -112,7 +112,7 @@ export const OnboardingStepLocation = forwardRef<OnboardingStepLocationRef, Onbo
                             <Input
                                 {...form.register('phone')}
                                 placeholder="+58 212-555-1234"
-                                className="mt-1"
+                                className="mt-1 bg-n-2 border-n-5"
                             />
                             {form.formState.errors.phone && (
                                 <FieldError className="text-[11px]">{form.formState.errors.phone.message}</FieldError>

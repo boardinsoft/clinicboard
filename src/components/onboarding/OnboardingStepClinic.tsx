@@ -152,7 +152,7 @@ export const OnboardingStepClinic = forwardRef<OnboardingStepClinicRef, Onboardi
                             <Input
                                 {...form.register('name')}
                                 placeholder="ej. Clínica San Rafael"
-                                className="mt-1"
+                                className="mt-1 bg-n-2 border-n-5"
                                 suffixIcon={getIndicator()}
                                 onChange={(e) => {
                                     form.register('name').onChange(e);
@@ -173,13 +173,13 @@ export const OnboardingStepClinic = forwardRef<OnboardingStepClinicRef, Onboardi
                                 <Input
                                     {...form.register('slug')}
                                     placeholder="mi-clinica"
-                                    className="flex-1 rounded-r-none rounded-l-[6px]"
+                                    className="flex-1 rounded-r-none rounded-l-[6px] bg-n-2 border-n-5"
                                     onChange={(e) => {
                                         form.register('slug').onChange(e);
                                         handleSlugChange(e.target.value);
                                     }}
                                 />
-                                <span className="text-[13px] text-n-8 bg-n-2 px-3 h-10 flex items-center border border-l-0 border-n-5 rounded-r-[6px]">
+                                <span className="text-[13px] text-n-8 bg-n-3 px-3 h-10 flex items-center border border-l-0 border-n-5 rounded-r-[6px]">
                                     .clinicboard.app
                                 </span>
                             </div>
