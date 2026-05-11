@@ -219,8 +219,8 @@ export function OnboardingFeed({ userId, initialData, onComplete }: OnboardingFe
                                 <Image
                                     src="/brand/logo-mark.svg"
                                     alt="ClinicBoard"
-                                    width={64}
-                                    height={64}
+                                    width={128}
+                                    height={128}
                                     className="text-b-8 mb-6"
                                 />
 
