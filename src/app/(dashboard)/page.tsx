@@ -20,6 +20,8 @@ export default async function RootPage() {
 
     const clinics = await getPractitionerClinics(supabase, practitioner?.id);
 
+    console.log('[RootPage] clinics:', clinics.length, 'practitionerId:', practitioner?.id);
+
     if (clinics.length === 0) {
         redirect('/onboarding');
     }

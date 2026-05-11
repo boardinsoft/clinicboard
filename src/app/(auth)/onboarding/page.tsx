@@ -115,7 +115,8 @@ export default function OnboardingPage() {
         if (data.userId) {
             clearOnboardingState(data.userId);
         }
-        router.push('/dashboard');
+        const clinicSlug = data.clinic.slug.toLowerCase();
+        router.push(`/${clinicSlug}/dashboard`);
     };
 
     const handleSignOut = async () => {

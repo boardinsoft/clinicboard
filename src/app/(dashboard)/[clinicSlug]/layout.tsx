@@ -37,6 +37,7 @@ export default async function ClinicSlugLayout({ children, params }: ClinicSlugL
     const clinic = clinics.find(c => c.slug === clinicSlug) ?? null;
 
     if (!clinic) {
+        console.error('[ClinicSlugLayout] Clinic not found for slug:', clinicSlug, '| Clinics:', clinics);
         notFound();
     }
 
