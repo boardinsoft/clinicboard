@@ -215,17 +215,14 @@ export function OnboardingFeed({ userId, initialData, onComplete }: OnboardingFe
             <aside className="w-1/2 bg-gradient-to-br from-b-9/10 via-n-2 to-n-2 border-r border-n-5 flex flex-col sticky top-0 h-svh">
                 <div className="flex flex-col h-full p-12 lg:px-16 lg:py-12">
                     <div className="flex-1 flex flex-col justify-center">
-                        <div className="mb-12">
-                            <div className="flex items-center gap-3 mb-6">
+                            <div className="mb-8">
                                 <Image
                                     src="/brand/logo-mark.svg"
                                     alt="ClinicBoard"
-                                    width={40}
-                                    height={40}
-                                    className="text-b-8"
+                                    width={64}
+                                    height={64}
+                                    className="text-b-8 mb-6"
                                 />
-                                <span className="text-sm font-medium text-b-8 tracking-wide uppercase">ClinicBoard</span>
-                            </div>
 
                             <h1 className="text-3xl lg:text-4xl font-semibold text-n-12 tracking-tight leading-tight mb-4">
                                 {currentConfig.title}
