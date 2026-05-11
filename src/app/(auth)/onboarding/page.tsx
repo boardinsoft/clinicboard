@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, AlertCircle, ShieldAlert } from 'lucide-react';
+import { Loader2, AlertCircle, ShieldAlert, CircleAlert } from 'lucide-react';
 import { OnboardingFeed, type OnboardingStepData } from '@/components/onboarding';
 import { createClinicAsAdmin, getOnboardingStatus } from '@/actions/onboarding';
 import { createClient } from '@/lib/supabase/client';
@@ -10,7 +10,7 @@ import { loadOnboardingState, clearOnboardingState } from '@/lib/schemas/onboard
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
-type OnboardingPageState = 'loading' | 'auth_error' | 'clinic_limit_reached' | 'already_completed' | 'ready';
+type OnboardingPageState = 'loading' | 'auth_error' | 'clinic_limit_reached' | 'already_completed' | 'ready' | 'incomplete_reason';
 
 export default function OnboardingPage() {
     const router = useRouter();
@@ -22,6 +22,8 @@ export default function OnboardingPage() {
     React.useEffect(() => {
         async function checkAuthAndStatus() {
             try {
+                const searchParams = new URLSearchParams(window.location.search);
+                const reason = searchParams.get('reason');
                 const supabase = createClient();
                 const { data: { user } } = await supabase.auth.getUser();
 
@@ -32,7 +34,7 @@ export default function OnboardingPage() {
                 }
 
                 if (!user.email_confirmed_at) {
-                    setErrorMessage('Por favor, confirma tu correo electrónico antes de continuar.');
+                    setErrorMessage('Confirma tu correo electrónico antes de continuar.');
                     setPageState('auth_error');
                     return;
                 }
@@ -54,6 +56,11 @@ export default function OnboardingPage() {
 
                 const clinicCount = status.clinicCount ?? 0;
 
+                if (reason === 'incomplete') {
+                    setPageState('incomplete_reason');
+                    return;
+                }
+
                 if (clinicCount >= 2) {
                     setErrorMessage('Has alcanzado el límite máximo de 2 clínicas. Contacta a soporte si necesitas más.');
                     setPageState('clinic_limit_reached');
@@ -61,7 +68,7 @@ export default function OnboardingPage() {
                 }
 
                 if (clinicCount === 1) {
-                    setErrorMessage('Ya tienes una clínica. Ve al dashboard para gestionarla.');
+                    setErrorMessage('Ya tienes una clínica. Ve al Tablero para gestionarla.');
                     setPageState('clinic_limit_reached');
                     return;
                 }
@@ -87,7 +94,7 @@ export default function OnboardingPage() {
 
     const handleComplete = async (data: OnboardingStepData) => {
         if (!data.profile || !data.clinic || !data.userId) {
-            throw new Error('Falta información. Por favor, completa todos los pasos.');
+            throw new Error('Falta información. Completa todos los pasos.');
         }
 
         const result = await createClinicAsAdmin({
@@ -135,7 +142,7 @@ export default function OnboardingPage() {
                 <div className="w-full max-w-md bg-background rounded-lg border border-n-5 p-6">
                     <Alert variant="destructive" className="mb-4">
                         <AlertCircle className="h-4 w-4" />
-                        <AlertTitle className="text-xs font-bold tracking-wider">ERROR</AlertTitle>
+                        <AlertTitle className="text-xs font-bold tracking-wider">No se pudo continuar</AlertTitle>
                         <AlertDescription className="text-sm opacity-90">{errorMessage}</AlertDescription>
                     </Alert>
                     <div className="flex flex-col gap-2">
@@ -144,7 +151,7 @@ export default function OnboardingPage() {
                             variant="default"
                             className="w-full"
                         >
-                            Ir al Dashboard
+                            Ir al Tablero
                         </Button>
                         <p className="text-xs text-n-8 text-center">
                             ¿No tienes clínica?{' '}
@@ -181,7 +188,7 @@ export default function OnboardingPage() {
                             variant="default"
                             className="w-full"
                         >
-                            Ir al Dashboard
+                            Ir al Tablero
                         </Button>
                         <p className="text-xs text-n-8 text-center">
                             ¿Necesitas más clínicas?{' '}
@@ -190,6 +197,42 @@ export default function OnboardingPage() {
                                 className="text-b-8 underline-offset-4 hover:underline font-medium"
                             >
                                 Cambiar cuenta
+                            </button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (pageState === 'incomplete_reason') {
+        return (
+            <div className="min-h-svh bg-n-1 flex items-center justify-center p-4">
+                <div className="w-full max-w-md bg-background rounded-lg border border-n-5 p-6">
+                    <div className="flex flex-col items-center text-center mb-4">
+                        <div className="w-12 h-12 bg-n-3 rounded-full flex items-center justify-center mb-3">
+                            <CircleAlert className="h-6 w-6 text-n-8" />
+                        </div>
+                        <h1 className="text-lg font-semibold text-foreground">Configuración incomplete</h1>
+                        <p className="text-sm text-n-8 mt-1">
+                            Tu configuración está incomplete. Completa el proceso de configuración para continuar.
+                        </p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <Button
+                            onClick={() => setPageState('ready')}
+                            variant="default"
+                            className="w-full"
+                        >
+                            Completar configuración
+                        </Button>
+                        <p className="text-xs text-n-8 text-center">
+                            ¿Deseas empezar de nuevo?{' '}
+                            <button
+                                onClick={handleSignOut}
+                                className="text-b-8 underline-offset-4 hover:underline font-medium"
+                            >
+                                Cerrar sesión
                             </button>
                         </p>
                     </div>

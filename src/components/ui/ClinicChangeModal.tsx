@@ -54,10 +54,10 @@ export function ClinicChangeModal({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Building2 className="h-5 w-5 text-b-8" />
-                        Cambiar de Clínica
+                        Cambiar de clínica
                     </DialogTitle>
                     <DialogDescription>
-                        Estás a punto de cambiar tu clínica activa.
+                        Estás a punto de cambiar de clínica.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -91,7 +91,7 @@ export function ClinicChangeModal({
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-n-2 dark:bg-n-3">
                             <Building2 className="h-4 w-4 text-n-9" />
                             <div className="flex flex-col gap-0.5">
-                                <span className="text-xs text-n-9 uppercase tracking-wide">Clínica Actual</span>
+                                <span className="text-xs text-n-9 uppercase tracking-wide">Clínica actual</span>
                                 <span className="text-sm font-medium">{currentClinic?.name || 'No seleccionada'}</span>
                             </div>
                         </div>
@@ -113,7 +113,7 @@ export function ClinicChangeModal({
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-b-8/10 border border-b-8/20">
                             <Building2 className="h-4 w-4 text-b-8" />
                             <div className="flex flex-col gap-0.5">
-                                <span className="text-xs text-b-8 uppercase tracking-wide">Nueva Clínica</span>
+                                <span className="text-xs text-b-8 uppercase tracking-wide">Nueva clínica</span>
                                 <span className="text-sm font-medium">{targetClinic?.name || 'No seleccionada'}</span>
                             </div>
                         </div>

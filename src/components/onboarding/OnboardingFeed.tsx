@@ -48,7 +48,7 @@ const steps: StepConfig[] = [
     },
     {
         id: 'clinic',
-        title: 'Nombre tu clínica',
+        title: 'Nombra tu clínica',
         description: 'Elige un nombre único para identificar tu consultorio',
     },
     {

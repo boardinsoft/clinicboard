@@ -51,7 +51,7 @@ export const profileStepSchema = z.object({
             'Solo letras, espacios y guiones'
         ),
     name_family: z.string()
-        .min(1, 'Apellido es requerido')
+        .min(1, 'El apellido es requerido')
         .max(50, 'El apellido no puede exceder 50 caracteres')
         .refine((val) => /^[a-zA-ZáéíóúñÑ\s-]+$/.test(val), 'Solo letras, espacios y guiones'),
     specialty: z.string().optional(),
@@ -67,12 +67,12 @@ export const clinicStepSchema = z.object({
     name: z.string()
         .min(3, 'El nombre debe tener al menos 3 caracteres')
         .max(50, 'El nombre no puede exceder 50 caracteres')
-        .refine((val) => !/[\u{1F300}-\u{1F9FF}]/u.test(val), 'No emojis en el nombre de clínica')
+        .refine((val) => !/[\u{1F300}-\u{1F9FF}]/u.test(val), 'No emojis en el nombre')
         .refine((val) => /^[a-zA-ZáéíóúñÑ0-9\s&.,'\-]+$/.test(val), 'Solo letras, números, espacios y los símbolos &.,\'-'),
     slug: z.string()
         .min(3, 'El slug debe tener al menos 3 caracteres')
         .max(30, 'El slug no puede exceder 30 caracteres')
-        .regex(/^[a-z]+(?:-[a-z]+)*$/, 'Solo letras minúsculas y guiones (no consecutivos)')
+        .regex(/^[a-z]+(?:-[a-z]+)*$/, 'Solo letras minúsculas y guiones')
         .refine((val) => !val.startsWith('-') && !val.endsWith('-'), 'No comenzar ni terminar con guión')
         .refine((val) => !RESERVED_SLUGS.includes(val), 'Esta URL no está disponible'),
 });

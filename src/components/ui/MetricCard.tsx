@@ -59,7 +59,7 @@ export function MetricCard({
               {delta}
             </span>
             {deltaType !== 'neutral' && (
-              <span className="text-n-8 ml-1">vs. semana anterior</span>
+              <span className="text-n-8 ml-1">vs. semana pasada</span>
             )}
           </div>
         )}

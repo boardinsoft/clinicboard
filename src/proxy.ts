@@ -100,26 +100,29 @@ export async function proxy(request: NextRequest) {
     }
 
     if (user) {
-        const isOnboardingRoute = request.nextUrl.pathname.match(/^\/[^/]+\/onboarding$/) !== null;
-        const isDashboardRoute = request.nextUrl.pathname.match(/^\/[^/]+\/dashboard$/) !== null;
+        const isRootOnboarding = request.nextUrl.pathname === '/onboarding';
 
-        if (!isOnboardingRoute && !isDashboardRoute) {
-            try {
-                const { data: practitioner } = await supabase
-                    .from('practitioners')
-                    .select('onboarding_completed')
-                    .eq('auth_user_id', user.id)
-                    .single();
+        if (!isRootOnboarding) {
+            const isOnboardingRoute = request.nextUrl.pathname.match(/^\/[^/]+\/onboarding$/) !== null;
+            const isDashboardRoute = request.nextUrl.pathname.match(/^\/[^/]+\/dashboard$/) !== null;
 
-                if (practitioner?.onboarding_completed !== true) {
-                    const url = request.nextUrl.clone();
-                    const slug = url.pathname.split('/')[1];
-                    url.pathname = `/${slug}/onboarding`;
-                    url.searchParams.set('reason', 'incomplete');
-                    return NextResponse.redirect(url);
+            if (!isOnboardingRoute && !isDashboardRoute) {
+                try {
+                    const { data: practitioner } = await supabase
+                        .from('practitioners')
+                        .select('onboarding_completed')
+                        .eq('auth_user_id', user.id)
+                        .single();
+
+                    if (practitioner?.onboarding_completed !== true) {
+                        const url = request.nextUrl.clone();
+                        url.pathname = '/onboarding';
+                        url.searchParams.set('reason', 'incomplete');
+                        return NextResponse.redirect(url);
+                    }
+                } catch {
+                    // Continue without blocking
                 }
-            } catch {
-                // Continue without blocking
             }
         }
     }
@@ -139,19 +142,7 @@ export async function proxy(request: NextRequest) {
     }
 
     if (user && isPublicRoute) {
-        const isOnboardingRoute = request.nextUrl.pathname.startsWith('/onboarding');
-        if (isOnboardingRoute) {
-            return supabaseResponse;
-        }
-        const url = request.nextUrl.clone();
-        url.pathname = '/dashboard';
-        const redirectResponse = NextResponse.redirect(url);
-
-        supabaseResponse.cookies.getAll().forEach((cookie) => {
-            redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
-        });
-
-        return redirectResponse;
+        return supabaseResponse;
     }
 
     return supabaseResponse;

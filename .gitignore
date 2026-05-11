@@ -83,3 +83,4 @@ env/
 api/requirements.txt
 api/*.pyc
 *.md
+.playwright-mcp/

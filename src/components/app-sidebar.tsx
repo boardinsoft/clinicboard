@@ -69,7 +69,7 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   {
-    title: 'Historia',
+    title: 'Historia Clínica',
     url: '/history/all',
     icon: History,
     items: [

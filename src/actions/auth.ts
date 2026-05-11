@@ -11,7 +11,7 @@ export async function signInWithEmail(formData: FormData) {
 
     if (!email || !password) {
         logger.warn('Intento de login sin credenciales completas');
-        return { error: 'Por favor, ingresa correo y contraseña' };
+        return { error: 'Ingresa correo y contraseña' };
     }
 
     try {
@@ -32,7 +32,7 @@ export async function signInWithEmail(formData: FormData) {
             // Manejar específicamente el error 429 (rate limiting)
             if (error.status === 429 || error.message?.toLowerCase().includes('rate limit')) {
                 return {
-                    error: 'Demasiados intentos de inicio de sesión. Por favor, espera unos minutos antes de intentar nuevamente.',
+                    error: 'Demasiados intentos. Espera unos minutos e intenta de nuevo.',
                     errorType: 'rate_limit'
                 };
             }
@@ -156,7 +156,7 @@ export async function registerUser(email: string, password: string) {
 export async function forgotPassword(email: string) {
     if (!email) {
         logger.warn('Intento de recuperación sin email');
-        return { error: 'Por favor, ingresa tu correo electrónico' };
+        return { error: 'Ingresa tu correo para reenviar el enlace' };
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -210,7 +210,7 @@ export async function resendConfirmationEmail(email: string) {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        return { error: 'Por favor, ingresa un correo electrónico válido' };
+        return { error: 'Ingresa un correo válido' };
     }
 
     try {

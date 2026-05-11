@@ -57,7 +57,7 @@ export function OnboardingResumeModal({ open, onOpenChange, practitionerId }: On
                         onClick={handleResume}
                         className="w-full sm:w-auto flex items-center gap-2"
                     >
-                        Continuar registro
+                        Continuar
                         <ArrowRight className="w-4 h-4" />
                     </Button>
                     <Button
