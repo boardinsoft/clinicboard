@@ -213,9 +213,9 @@ export default function OnboardingPage() {
                         <div className="w-12 h-12 bg-n-3 rounded-full flex items-center justify-center mb-3">
                             <CircleAlert className="h-6 w-6 text-n-8" />
                         </div>
-                        <h1 className="text-lg font-semibold text-foreground">Configuración incomplete</h1>
+                        <h1 className="text-lg font-semibold text-foreground">Configuración incompleta</h1>
                         <p className="text-sm text-n-8 mt-1">
-                            Tu configuración está incomplete. Completa el proceso de configuración para continuar.
+                            Tu configuración está incompleta. Completa el proceso de configuración para continuar.
                         </p>
                     </div>
                     <div className="flex flex-col gap-2">
