@@ -104,8 +104,8 @@ export default function RegisterPage() {
                         <Image
                             src="/brand/logo-mark.svg"
                             alt="ClinicBoard"
-                            width={48}
-                            height={48}
+                            width={128}
+                            height={128}
                             className="text-b-8"
                         />
                         <h1 className="text-2xl font-bold tracking-tight text-n-11">

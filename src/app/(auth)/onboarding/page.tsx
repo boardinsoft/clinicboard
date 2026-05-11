@@ -8,6 +8,7 @@ import { createClinicAsAdmin, getOnboardingStatus } from '@/actions/onboarding';
 import { createClient } from '@/lib/supabase/client';
 import { loadOnboardingState, clearOnboardingState } from '@/lib/schemas/onboarding';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 type OnboardingPageState = 'loading' | 'auth_error' | 'clinic_limit_reached' | 'already_completed' | 'ready' | 'incomplete_reason';
@@ -117,12 +118,10 @@ export default function OnboardingPage() {
         router.push('/dashboard');
     };
 
-    const handleSignOut = () => {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/api/auth/signout';
-        document.body.appendChild(form);
-        form.submit();
+    const handleSignOut = async () => {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        router.push('/login');
     };
 
     if (pageState === 'loading') {
@@ -208,35 +207,36 @@ export default function OnboardingPage() {
     if (pageState === 'incomplete_reason') {
         return (
             <div className="min-h-svh bg-n-1 flex items-center justify-center p-4">
-                <div className="w-full max-w-md bg-background rounded-lg border border-n-5 p-6">
-                    <div className="flex flex-col items-center text-center mb-4">
-                        <div className="w-12 h-12 bg-n-3 rounded-full flex items-center justify-center mb-3">
-                            <CircleAlert className="h-6 w-6 text-n-8" />
+                <Card className="w-full max-w-md p-6">
+                    <Alert variant="warning" className="bg-warning/5 border-warning/20 p-4">
+                        <CircleAlert className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+                        <div className="flex flex-1 flex-col gap-3">
+                            <div className="flex flex-col gap-1">
+                                <AlertTitle className="text-sm font-semibold text-foreground">
+                                    Configuración incompleta
+                                </AlertTitle>
+                                <AlertDescription className="text-xs text-n-8 leading-relaxed">
+                                    Tu configuración está incompleta. Completa el proceso de configuración para continuar.
+                                </AlertDescription>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Button
+                                    onClick={() => setPageState('ready')}
+                                    variant="default"
+                                    className="h-8 text-xs px-3"
+                                >
+                                    Completar configuración
+                                </Button>
+                                <button
+                                    onClick={handleSignOut}
+                                    className="text-xs text-n-8 hover:text-b-8 font-medium transition-colors"
+                                >
+                                    Cerrar sesión
+                                </button>
+                            </div>
                         </div>
-                        <h1 className="text-lg font-semibold text-foreground">Configuración incompleta</h1>
-                        <p className="text-sm text-n-8 mt-1">
-                            Tu configuración está incompleta. Completa el proceso de configuración para continuar.
-                        </p>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <Button
-                            onClick={() => setPageState('ready')}
-                            variant="default"
-                            className="w-full"
-                        >
-                            Completar configuración
-                        </Button>
-                        <p className="text-xs text-n-8 text-center">
-                            ¿Deseas empezar de nuevo?{' '}
-                            <button
-                                onClick={handleSignOut}
-                                className="text-b-8 underline-offset-4 hover:underline font-medium"
-                            >
-                                Cerrar sesión
-                            </button>
-                        </p>
-                    </div>
-                </div>
+                    </Alert>
+                </Card>
             </div>
         );
     }
