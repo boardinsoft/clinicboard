@@ -212,7 +212,7 @@ export function OnboardingFeed({ userId, initialData, onComplete }: OnboardingFe
     return (
         <div className="min-h-svh bg-n-1 flex">
             <aside className="w-1/2 bg-gradient-to-br from-b-9/10 via-n-2 to-n-2 border-r border-n-5 flex flex-col sticky top-0 h-svh">
-                <div className="flex flex-col h-full p-12 lg:p-16">
+                <div className="flex flex-col h-full p-12 lg:px-16 lg:py-12">
                     <div className="flex-1 flex flex-col justify-center">
                         <div className="mb-12">
                             <div className="flex items-center gap-3 mb-6">
@@ -302,26 +302,30 @@ export function OnboardingFeed({ userId, initialData, onComplete }: OnboardingFe
                 </div>
             </aside>
 
-            <main className="w-1/2 overflow-y-auto bg-n-1">
-                <div className="max-w-xl mx-auto py-12 px-6 lg:py-16 lg:px-12">
-                    {error && (
-                        <div className="mb-6 p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
-                            <p className="text-sm text-destructive">{error}</p>
-                        </div>
-                    )}
+            <main className="w-1/2 overflow-y-auto bg-n-2/50">
+                <div className="flex flex-col h-full py-16 px-12 lg:px-20">
+                    <div className="flex-1 flex items-center justify-center">
+                        <div className="w-full max-w-md">
+                            {error && (
+                                <div className="mb-6 p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
+                                    <p className="text-sm text-destructive">{error}</p>
+                                </div>
+                            )}
 
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={currentStep}
-                            initial="initial"
-                            animate="enter"
-                            exit="exit"
-                            variants={pageVariants}
-                            transition={pageTransition}
-                        >
-                            {renderStepContent()}
-                        </motion.div>
-                    </AnimatePresence>
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentStep}
+                                    initial="initial"
+                                    animate="enter"
+                                    exit="exit"
+                                    variants={pageVariants}
+                                    transition={pageTransition}
+                                >
+                                    {renderStepContent()}
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
