@@ -327,13 +327,13 @@ const displayName =
         {/* ── SECCIÓN IZQUIERDA: Contexto (Macro-gap: 4) ── */}
         <div className="flex items-center gap-4 shrink-0">
           {/* Brand Mark (logo icon only) */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <Image
-              src="/brand/logo-mark.svg"
+              src="/brand/favicon.svg"
               alt="ClinicBoard"
-              width={20}
-              height={20}
-              className="rounded-[4px]"
+              width={24}
+              height={24}
+              className="object-contain"
             />
           </div>
 
