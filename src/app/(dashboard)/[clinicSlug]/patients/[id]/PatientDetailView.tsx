@@ -211,20 +211,21 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                     }}
                     className="gap-0"
                 >
-                    <TabsList className="w-full justify-start gap-0 bg-transparent p-0 h-auto border-0">
+                    <TabsList className="w-full justify-start gap-1 bg-transparent p-0 h-auto border-0">
                         {[
-                            { value: 'overview', label: 'Resumen' },
-                            { value: 'conditions', label: 'Condiciones' },
-                            { value: 'allergies', label: 'Alergias' },
-                            { value: 'history', label: 'Consultas' },
-                            { value: 'vitals', label: 'Signos Vitales' },
-                        ].map((tab) => (
+                            { value: 'overview', label: 'Resumen', icon: UserCircle },
+                            { value: 'conditions', label: 'Condiciones', icon: Stethoscope },
+                            { value: 'allergies', label: 'Alergias', icon: AlertCircle },
+                            { value: 'history', label: 'Consultas', icon: Calendar },
+                            { value: 'vitals', label: 'Signos Vitales', icon: Activity },
+                        ].map(({ value, label, icon: Icon }) => (
                             <TabsTrigger
-                                key={tab.value}
-                                value={tab.value}
-                                className="px-4 py-2 text-xs font-medium rounded-md border border-transparent data-[state=active]:border-n-5/30 data-[state=active]:bg-n-1 data-[state=active]:text-n-11 data-[state=active]:shadow-sm text-n-8 hover:text-n-11 hover:bg-n-2/50 transition-all duration-100"
+                                key={value}
+                                value={value}
+                                className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md data-[state=active]:bg-b-8 data-[state=active]:text-white text-n-8 hover:text-n-12 hover:bg-n-3 transition-all duration-150"
                             >
-                                {tab.label}
+                                <Icon className="w-4 h-4" />
+                                {label}
                             </TabsTrigger>
                         ))}
                     </TabsList>
