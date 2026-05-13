@@ -400,7 +400,7 @@ export default function AIAssistant() {
         {
             id: '1',
             role: 'assistant',
-            text: 'Hola, soy tu asistente clínica. Puedo ayudarte a analizar historias clínicas, resumir encuentros y extraer información médica. ¿En qué puedo asistirte?',
+            text: 'Hola, soy tu asistente clínico. Puedo ayudarte a analizar historias clínicas, resumir encuentros y extraer información médica. ¿En qué puedo asistirte?',
             timestamp: new Date()
         }
     ]);

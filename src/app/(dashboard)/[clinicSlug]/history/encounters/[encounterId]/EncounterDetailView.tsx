@@ -99,15 +99,15 @@ const ENCOUNTER_STATUS_LABELS: Record<string, string> = {
     'planned': 'Planificada',
     'arrived': 'Llegó',
     'cancelled': 'Cancelada',
-    'triaged': 'Triaged',
-    'onleave': 'On Leave',
+    'triaged': 'Triaje',
+    'onleave': 'Pausa',
 };
 
 const CLASS_LABELS: Record<string, string> = {
-    AMB: 'Ambulatory',
-    IMP: 'Impatient',
-    EMER: 'Emergency',
-    HH: 'Home Health',
+    AMB: 'Ambulatorio',
+    IMP: 'Hospitalario',
+    EMER: 'Urgencia',
+    HH: 'Domicilio',
 };
 
 function PropertyItem({ label, value, className, mono }: { label: string; value: string | undefined; className?: string; mono?: boolean }) {

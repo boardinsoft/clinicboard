@@ -584,7 +584,7 @@ className="pt-5 pb-4 px-6"
                                                 <MessageSquare className="w-6 h-6" />
                                             </div>
                                             <div>
-                                                <h4 className="font-semibold text-sm text-n-11">AI Clinical Scribe</h4>
+                                                <h4 className="font-semibold text-sm text-n-11">Asistente de Notas Clínicas</h4>
                                                 <p className="text-xs text-n-8 font-medium">Transcripción inteligente y autogeneración de nota evolutiva.</p>
                                             </div>
                                         </div>

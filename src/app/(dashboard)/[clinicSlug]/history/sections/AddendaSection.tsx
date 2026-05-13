@@ -86,7 +86,7 @@ export default function AddendaSection({
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h3 className="text-sm font-bold flex items-center gap-2 text-n-11">
-                            <ClipboardList className="w-4 h-4 text-b-8" /> Historial de Addendas
+                            <ClipboardList className="w-4 h-4 text-b-8" /> Addendas
                         </h3>
                         {!isAddingAddendum && (
                             <Button size="sm" onClick={() => setIsAddingAddendum(true)} className="gap-2">
