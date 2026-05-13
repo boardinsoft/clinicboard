@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -33,6 +33,11 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
+
+function getClinicSlug(pathname: string): string {
+    const parts = pathname.split('/').filter(Boolean);
+    return parts[0] || '';
+}
 
 const patientSchema = z.object({
     givenNames: z.string().min(1, "Los nombres son requeridos"),
@@ -125,6 +130,8 @@ export function PatientForm({
     patientActive = true,
 }: PatientFormProps) {
     const router = useRouter()
+    const pathname = usePathname()
+    const clinicSlug = getClinicSlug(pathname)
     const [showCancelConfirm, setShowCancelConfirm] = React.useState(false)
 
     const form = useForm<PatientFormValues>({
@@ -378,7 +385,7 @@ export function PatientForm({
                                         if (form.formState.isDirty) {
                                             setShowCancelConfirm(true)
                                         } else {
-                                            router.push(mode === "edit" && patientId ? `/patients/${patientId}` : "/patients")
+                                            router.push(mode === "edit" && patientId ? `/${clinicSlug}/patients/${patientId}` : `/${clinicSlug}/patients`)
                                         }
                                     }}
                                     className="text-n-8 hover:text-n-11 hover:bg-n-3 transition-colors h-9 px-4"
@@ -417,7 +424,7 @@ export function PatientForm({
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Seguir {mode === "create" ? "registrando" : "editando"}</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => router.push(mode === "edit" && patientId ? `/patients/${patientId}` : "/patients")}>
+                            <AlertDialogAction onClick={() => router.push(mode === "edit" && patientId ? `/${clinicSlug}/patients/${patientId}` : `/${clinicSlug}/patients`)}>
                                 Descartar
                             </AlertDialogAction>
                         </AlertDialogFooter>

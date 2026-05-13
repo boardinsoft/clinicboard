@@ -1,13 +1,20 @@
 "use client"
 
 import React, { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { createPatient } from "@/actions/patients"
 import { PatientForm, PatientFormValues } from "@/components/patients/PatientForm"
 import { toast } from "sonner"
 
+function getClinicSlug(pathname: string): string {
+    const parts = pathname.split('/').filter(Boolean);
+    return parts[0] || '';
+}
+
 export default function NewPatientPage() {
     const router = useRouter()
+    const pathname = usePathname()
+    const clinicSlug = getClinicSlug(pathname)
     const [loading, setLoading] = useState(false)
 
     const handleSubmit = async (values: PatientFormValues) => {
@@ -39,9 +46,9 @@ export default function NewPatientPage() {
         })
 
         if (result.data?.id) {
-            router.push(`/patients/${result.data.id}`)
+            router.push(`/${clinicSlug}/patients/${result.data.id}`)
         } else {
-            router.push("/patients")
+            router.push(`/${clinicSlug}/patients`)
         }
 
         setLoading(false)

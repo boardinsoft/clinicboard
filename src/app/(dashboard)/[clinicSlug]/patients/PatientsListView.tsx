@@ -102,6 +102,8 @@ export default function PatientsListView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const clinicSlug = pathname.split('/').filter(Boolean)[0] || '';
+
   const [selectedPatients, setSelectedPatients] = useState<Set<string>>(new Set());
   const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
   const headerCheckboxRef = React.useRef<HTMLInputElement>(null);
@@ -223,7 +225,7 @@ export default function PatientsListView() {
               variant="default"
               size="sm"
               className="h-9 px-4 bg-b-8 hover:bg-b-9 text-white font-medium"
-              onClick={() => router.push('/patients/new')}
+              onClick={() => router.push(`/${clinicSlug}/patients/new`)}
             >
               <span className="mr-1">+</span> Nuevo Paciente
             </Button>
@@ -344,7 +346,7 @@ export default function PatientsListView() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  router.push(`/patients/${p.id}`);
+                                  router.push(`/${clinicSlug}/patients/${p.id}`);
                                   setOpenPopoverId(null);
                                 }}
                                 className="flex items-center gap-2 px-3 py-2 text-sm rounded-[6px] text-n-12 dark:text-n-11 cursor-pointer hover:bg-n-3 dark:hover:bg-n-2 transition-colors"
@@ -355,7 +357,7 @@ export default function PatientsListView() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  router.push(`/patients/${p.id}/edit`);
+                                  router.push(`/${clinicSlug}/patients/${p.id}/edit`);
                                   setOpenPopoverId(null);
                                 }}
                                 className="flex items-center gap-2 px-3 py-2 text-sm rounded-[6px] text-n-12 dark:text-n-11 cursor-pointer hover:bg-n-3 dark:hover:bg-n-2 transition-colors"

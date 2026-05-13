@@ -24,7 +24,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { getEncounters } from '@/actions/encounters';
 import { archivePatient, reactivatePatient } from '@/actions/patients';
 import { usePatientStore } from '@/store/usePatientStore';
@@ -95,6 +95,8 @@ export type TabValue = 'overview' | 'conditions' | 'allergies' | 'history' | 'vi
 
 export default function PatientDetailView({ patient, conditions: initialConditions, allergies: initialAllergies }: PatientDetailViewProps) {
     const router = useRouter();
+    const pathname = usePathname();
+    const clinicSlug = pathname.split('/').filter(Boolean)[0] || '';
     const [encounters, setEncounters] = useState<EncounterWithSpecialty[]>([]);
     const [loadingEncounters, setLoadingEncounters] = useState(false);
     const [conditions, setConditions] = useState<Condition[]>(initialConditions);
@@ -170,7 +172,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                         <div className="w-10 h-10 rounded-lg bg-b-8/10 flex items-center justify-center">
                             <UserCircle className="w-5 h-5 text-b-8" />
                         </div>
-                        <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold border-n-5 gap-2 px-3 font-sans transition-colors duration-100" onClick={() => router.push(`/patients/${patient.id}/edit`)}>
+                        <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold border-n-5 gap-2 px-3 font-sans transition-colors duration-100" onClick={() => router.push(`/${clinicSlug}/patients/${patient.id}/edit`)}>
                             <Edit className="w-3.5 h-3.5" /> Editar
                         </Button>
                         <DropdownMenu>
@@ -386,9 +388,9 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                                     className="w-full text-left flex items-start p-5 gap-5 hover:bg-n-2 transition-all duration-150 group"
                                                     onClick={() => {
                                                         if (e.status === 'finished') {
-                                                            router.push(`/history/encounters/${e.id}`);
+                                                            router.push(`/${clinicSlug}/history/encounters/${e.id}`);
                                                         } else {
-                                                            router.push(`/history?patientId=${patient.id}&encounterId=${e.id}`);
+                                                            router.push(`/${clinicSlug}/history?patientId=${patient.id}&encounterId=${e.id}`);
                                                         }
                                                     }}
                                                 >
@@ -450,7 +452,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                     return;
                                 }
                                 toast.success('Paciente archivado');
-                                router.push('/patients');
+                                router.push(`/${clinicSlug}/patients`);
                             }}
                         >
                             {archiving ? 'Archivando...' : 'Archivar'}

@@ -12,10 +12,17 @@ import {
     ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 
+function getClinicSlug(pathname: string): string {
+    const parts = pathname.split('/').filter(Boolean);
+    return parts[0] || '';
+}
+
 export default function PatientTabBar() {
     const { tabs, activePatientId, setActivePatient, closePatientTab } = usePatientStore();
     const router = useRouter();
     const pathname = usePathname();
+
+    const clinicSlug = getClinicSlug(pathname);
 
     const handleTabClick = (id: string, url: string) => {
         setActivePatient(id);
@@ -25,9 +32,9 @@ export default function PatientTabBar() {
     const handleCloseTab = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
         closePatientTab(id);
-        
+
         if (tabs.length <= 1) {
-            router.push('/patients');
+            router.push(`/${clinicSlug}/patients`);
         } else if (activePatientId === id) {
             const remaining = tabs.filter(t => t.id !== id);
             router.push(remaining[remaining.length - 1].url);
@@ -38,10 +45,10 @@ export default function PatientTabBar() {
         <div className="flex items-center h-full overflow-x-auto no-scrollbar flex-1 bg-transparent px-2">
             {/* Pestaña "Raíz" - Estilo Supabase: Texto con barra inferior fina */}
             <button
-                onClick={() => { setActivePatient(null); router.push('/patients'); }}
+                onClick={() => { setActivePatient(null); router.push(`/${clinicSlug}/patients`); }}
                 className={cn(
                     'flex items-center gap-2 h-full px-4 text-[13px] font-semibold tracking-tight transition-all relative',
-                    pathname === '/patients'
+                    pathname === `/${clinicSlug}/patients`
                         ? 'text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary'
                         : 'text-muted-foreground/80 hover:text-foreground'
                 )}
@@ -56,7 +63,7 @@ export default function PatientTabBar() {
             {/* Pestañas de pacientes */}
             {tabs.map((tab) => {
                 const isActive = activePatientId === tab.id;
-                
+
                 return (
                     <ContextMenu key={tab.id}>
                         <ContextMenuTrigger asChild>
@@ -72,7 +79,7 @@ export default function PatientTabBar() {
                                 {tab.isDirty && (
                                     <div className="w-1.5 h-1.5 rounded-full bg-s-warning shrink-0" />
                                 )}
-                                
+
                                 <span className="truncate flex-1 text-left">
                                     {tab.name}
                                 </span>
@@ -90,7 +97,7 @@ export default function PatientTabBar() {
                                 Cerrar Pestaña
                             </ContextMenuItem>
                             <ContextMenuSeparator />
-                            <ContextMenuItem onClick={() => router.push(`/patients/${tab.id}/edit`)}>
+                            <ContextMenuItem onClick={() => router.push(`/${clinicSlug}/patients/${tab.id}/edit`)}>
                                 Editar Expediente
                             </ContextMenuItem>
                         </ContextMenuContent>
@@ -99,7 +106,7 @@ export default function PatientTabBar() {
             })}
 
             <button
-                onClick={() => router.push('/patients/new')}
+                onClick={() => router.push(`/${clinicSlug}/patients/new`)}
                 className="flex items-center justify-center h-7 w-7 ml-2 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
                 title="Nuevo Paciente"
             >

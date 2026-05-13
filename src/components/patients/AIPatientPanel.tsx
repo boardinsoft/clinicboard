@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
     ExternalLink,
     Edit2,
@@ -24,6 +24,11 @@ import { getEncounters } from '@/actions/encounters';
 import { formatDate, calcAge, getGenderLabel } from '@/lib/clinical';
 import type { Patient, Condition, AllergyIntolerance, EncounterWithClinicalNote } from '@/types/database.types';
 import type { PatientTelecom, PatientAddress, PatientIdentifier } from '@/types/patient-jsonb';
+
+function getClinicSlug(pathname: string): string {
+    const parts = pathname.split('/').filter(Boolean);
+    return parts[0] || '';
+}
 
 interface AIPatientPanelProps {
     patient: Patient;
@@ -78,6 +83,8 @@ function CollapsibleSection({ title, children, defaultOpen = true }: {
 
 export default function AIPatientPanel({ patient, onClose }: AIPatientPanelProps) {
     const router = useRouter();
+    const pathname = usePathname();
+    const clinicSlug = getClinicSlug(pathname);
     const [clinicalData, setClinicalData] = useState<{
         conditions: Condition[];
         allergies: AllergyIntolerance[];
@@ -144,7 +151,7 @@ export default function AIPatientPanel({ patient, onClose }: AIPatientPanelProps
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 rounded-md hover:bg-muted"
-                        onClick={() => router.push(`/patients/${patient.id}`)}
+                        onClick={() => router.push(`/${clinicSlug}/patients/${patient.id}`)}
                         title="Abrir expediente completo"
                     >
                         <ExternalLink className="w-3.5 h-3.5 opacity-60" />
@@ -269,7 +276,7 @@ export default function AIPatientPanel({ patient, onClose }: AIPatientPanelProps
                                 return (
                                     <button
                                         key={enc.id}
-                                        onClick={() => router.push(`/history?encounterId=${enc.id}`)}
+                                        onClick={() => router.push(`/${clinicSlug}/history?encounterId=${enc.id}`)}
                                         className="w-full text-left p-3 rounded-md border border-border/40 bg-card hover:bg-muted/40 hover:border-primary/20 transition-all duration-100 group"
                                     >
                                         <div className="flex items-center justify-between mb-1">
@@ -291,7 +298,7 @@ export default function AIPatientPanel({ patient, onClose }: AIPatientPanelProps
                             })}
 
                             <button
-                                onClick={() => router.push(`/history/all?patientId=${patient.id}`)}
+                                onClick={() => router.push(`/${clinicSlug}/history/all?patientId=${patient.id}`)}
                                 className="w-full flex items-center justify-between p-2 rounded-md hover:bg-muted/30 transition-colors duration-100 text-primary/70 hover:text-primary group mt-1"
                             >
                                 <span className="text-[11px] font-semibold">Ver todas las consultas</span>

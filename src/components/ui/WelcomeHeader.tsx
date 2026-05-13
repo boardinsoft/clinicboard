@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Stethoscope, Activity, Clock, Users, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface QuickStat {
   label: string;
@@ -36,6 +36,11 @@ function getPrefix(gender?: 'male' | 'female' | 'other' | 'unknown'): string {
   return 'Dr.';
 }
 
+function getClinicSlug(pathname: string): string {
+  const parts = pathname.split('/').filter(Boolean);
+  return parts[0] || '';
+}
+
 export function WelcomeHeader({
   practitionerName,
   specialty,
@@ -49,6 +54,9 @@ export function WelcomeHeader({
 }: WelcomeHeaderProps) {
   const [mounted, setMounted] = React.useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  const clinicSlug = getClinicSlug(pathname);
 
   React.useEffect(() => {
     setMounted(true);
@@ -128,7 +136,7 @@ export function WelcomeHeader({
             size="sm"
             variant="outline"
             className="h-8 text-xs font-medium border-n-5 text-n-8 hover:bg-n-3 hover:text-n-12"
-            onClick={() => router.push('/patients/new')}
+            onClick={() => router.push(`/${clinicSlug}/patients/new`)}
           >
             <Users size={12} strokeWidth={1.8} className="mr-1.5" />
             Nuevo Paciente
@@ -137,7 +145,7 @@ export function WelcomeHeader({
             size="sm"
             variant="outline"
             className="h-8 text-xs font-medium border-n-5 text-n-8 hover:bg-n-3 hover:text-n-12"
-            onClick={() => router.push('/appointments')}
+            onClick={() => router.push(`/${clinicSlug}/appointments`)}
           >
             <CalendarDays size={12} strokeWidth={1.8} className="mr-1.5" />
             Nueva Cita

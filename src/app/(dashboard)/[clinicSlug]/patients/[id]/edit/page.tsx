@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
-import { useRouter, useParams } from "next/navigation"
+import { useRouter, useParams, usePathname } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { updatePatient } from "@/actions/patients"
 import { PatientForm, PatientFormValues } from "@/components/patients/PatientForm"
@@ -13,8 +13,15 @@ interface PatientIdentifier { value?: string }
 interface PatientTelecom { system?: string; value?: string }
 interface PatientAddress { text?: string }
 
+function getClinicSlug(pathname: string): string {
+    const parts = pathname.split('/').filter(Boolean);
+    return parts[0] || '';
+}
+
 export default function EditPatientPage() {
     const router = useRouter()
+    const pathname = usePathname()
+    const clinicSlug = pathname.split('/').filter(Boolean)[0] || ''
     const { id } = useParams<{ id: string }>()
     const supabase = createClient()
 
@@ -38,7 +45,7 @@ export default function EditPatientPage() {
                 if (error) throw error
 
                 if (!data) {
-                    router.replace("/patients")
+                    router.replace(`/${clinicSlug}/patients`)
                     return
                 }
 
@@ -87,7 +94,7 @@ export default function EditPatientPage() {
             description: "Los cambios han sido guardados exitosamente."
         })
 
-        router.push(`/patients/${id}`)
+        router.push(`/${clinicSlug}/patients/${id}`)
 
         setSaving(false)
     }
