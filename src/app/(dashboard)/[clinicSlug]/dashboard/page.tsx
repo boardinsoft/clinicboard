@@ -373,7 +373,7 @@ export default function DashboardPage() {
                 </div>
               )) : (
                 <div className="flex items-center justify-center p-8 bg-n-2 rounded-lg border border-dashed border-n-5">
-                  <p className="text-sm text-n-8">No hay evoluciones recientes.</p>
+                  <p className="text-sm text-n-8">No hay evoluciones registradas.</p>
                 </div>
               )}
             </CardContent>
@@ -428,7 +428,7 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-center p-8">
                     <div className="flex flex-col items-center text-center space-y-2 text-n-8">
                       <CalendarDays className="w-8 h-8 opacity-20" strokeWidth={1.8} />
-                      <span className="text-sm">No hay citas próximas programadas.</span>
+                      <span className="text-sm">No hay citas programadas.</span>
                     </div>
                   </div>
                 )}

@@ -287,7 +287,7 @@ const displayName =
       setShowChangeModal(false);
       setPendingClinic(null);
     } catch {
-      setChangeError('Error al cambiar de clínica. Intenta de nuevo.');
+      setChangeError('Error al cambiar de consultorio. Intenta de nuevo.');
     }
   };
 
@@ -303,7 +303,7 @@ const displayName =
         <div className="clinic-change-overlay">
           <div className="clinic-change-spinner">
             <Loader2 className="h-8 w-8 text-b-8 animate-spin" />
-            <p className="text-sm font-medium text-white">Cambiando de clínica...</p>
+            <p className="text-sm font-medium text-white">Cambiando de consultorio...</p>
           </div>
         </div>
       )}
@@ -353,14 +353,14 @@ const displayName =
                   <Building2 size={13} className="text-n-9 group-hover:text-n-11 transition-colors" strokeWidth={1.8} />
                 )}
                 <span className="text-[13px] font-medium text-n-11 dark:text-n-11 truncate max-w-[160px]">
-                  {activeClinic?.name || 'Sin clínica'}
+                  {activeClinic?.name || 'Sin consultorio'}
                 </span>
                 <ChevronsUpDown size={12} className="text-n-8 dark:text-n-9 ml-0.5" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-60 rounded-lg shadow-lg border-n-5 p-1 bg-popover dark:shadow-lg/80">
               <div className="px-3 py-2 border-b border-n-4">
-                <h4 className="text-[10px] uppercase tracking-wider text-n-9 dark:text-n-10 font-bold">Clínicas Vinculadas</h4>
+                <h4 className="text-[10px] uppercase tracking-wider text-n-9 dark:text-n-10 font-bold">Consultorios Vinculados</h4>
               </div>
               <div className="p-1">
                 {clinics.map((clinic) => (

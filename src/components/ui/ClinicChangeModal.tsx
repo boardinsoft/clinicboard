@@ -54,10 +54,10 @@ export function ClinicChangeModal({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Building2 className="h-5 w-5 text-b-8" />
-                        Cambiar de clínica
+                        Cambiar de consultorio
                     </DialogTitle>
                     <DialogDescription>
-                        Estás a punto de cambiar de clínica.
+                        Estás a punto de cambiar de consultorio.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -68,7 +68,7 @@ export function ClinicChangeModal({
                             <div className="flex flex-col gap-1">
                                 <p className="text-sm font-medium text-warning">Cambios sin guardar</p>
                                 <p className="text-sm text-foreground/80">
-                                    Tienes cambios sin guardar que se perderán si cambias de clínica.
+                                    Tienes cambios sin guardar que se perderán si cambias de consultorio.
                                     ¿Estás seguro de que deseas continuar?
                                 </p>
                             </div>
@@ -91,7 +91,7 @@ export function ClinicChangeModal({
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-n-2 dark:bg-n-3">
                             <Building2 className="h-4 w-4 text-n-9" />
                             <div className="flex flex-col gap-0.5">
-                                <span className="text-xs text-n-9 uppercase tracking-wide">Clínica actual</span>
+                                <span className="text-xs text-n-9 uppercase tracking-wide">Consultorio actual</span>
                                 <span className="text-sm font-medium">{currentClinic?.name || 'No seleccionada'}</span>
                             </div>
                         </div>
@@ -113,7 +113,7 @@ export function ClinicChangeModal({
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-b-8/10 border border-b-8/20">
                             <Building2 className="h-4 w-4 text-b-8" />
                             <div className="flex flex-col gap-0.5">
-                                <span className="text-xs text-b-8 uppercase tracking-wide">Nueva clínica</span>
+                                <span className="text-xs text-b-8 uppercase tracking-wide">Nuevo consultorio</span>
                                 <span className="text-sm font-medium">{targetClinic?.name || 'No seleccionada'}</span>
                             </div>
                         </div>
