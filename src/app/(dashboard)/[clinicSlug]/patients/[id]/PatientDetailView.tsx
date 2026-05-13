@@ -183,7 +183,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                 <DropdownMenuLabel className="text-[11px] font-bold text-n-8 px-3 py-2 font-sans">Opciones</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-n-5/20" />
                                 <DropdownMenuItem className="text-xs font-sans" onClick={() => {/* FHIR export */}}>
-                                    <FileText className="w-4 h-4 mr-2 opacity-60" /> Exportar Historia FHIR
+                                    <FileText className="w-4 h-4 mr-2 opacity-60" /> Exportar Historia Clínica
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator className="bg-n-5/20" />
                                 {patient.active ? (
@@ -351,7 +351,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                                     </p>
                                                 </div>
                                                 <Badge variant={a.criticality === 'high' ? 'pill-danger' : 'pill-warning'} className="text-[11px]">
-                                                    {a.criticality === 'high' ? 'Alta' : 'Normal'}
+                                                    {a.criticality === 'high' ? 'Alta' : 'Baja'}
                                                 </Badge>
                                             </div>
                                         ))

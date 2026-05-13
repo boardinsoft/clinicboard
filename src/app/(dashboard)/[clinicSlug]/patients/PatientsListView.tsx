@@ -66,8 +66,8 @@ function calcAge(birthDate?: string | null): string {
 
 function getGenderLabel(gender?: string | null): string {
   switch (gender) {
-    case 'male': return 'Masc.';
-    case 'female': return 'Fem.';
+    case 'male': return 'Masculino';
+    case 'female': return 'Femenino';
     default: return 'Otro';
   }
 }
@@ -248,7 +248,7 @@ export default function PatientsListView() {
             <div className="flex flex-col items-center justify-center h-64 text-muted-foreground/50 gap-2">
               <AlertCircle className="w-8 h-8 opacity-20" />
               <span className="text-sm font-medium">
-                {query ? 'No se encontraron pacientes' : 'No hay pacientes registrados'}
+                {query ? 'Sin resultados' : 'Sin pacientes registrados'}
               </span>
               {query && (
                 <span className="text-xs text-muted-foreground">

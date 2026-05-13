@@ -196,7 +196,7 @@ export function PatientForm({
                             </div>
                         </div>
                         <p className="text-sm text-n-8 mt-4 leading-relaxed">
-                            Los cambios se guardarán en el expediente FHIR del paciente
+                            Los cambios se guardarán en la historia clínica del paciente
                         </p>
                     </div>
                 ) : (
@@ -205,9 +205,9 @@ export function PatientForm({
                             <div className="w-10 h-10 rounded-lg bg-b-8/10 flex items-center justify-center">
                                 <UserIcon className="size-5 text-b-8" />
                             </div>
-                            <h1 className="text-2xl font-bold tracking-tight text-n-11">
-                                Alta de Paciente
-                            </h1>
+<h1 className="text-2xl font-bold tracking-tight text-n-11">
+                            Nuevo Paciente
+                        </h1>
                         </div>
                         <p className="text-sm text-n-8 mt-2 leading-relaxed">
                             Complete la información demográfica del paciente
