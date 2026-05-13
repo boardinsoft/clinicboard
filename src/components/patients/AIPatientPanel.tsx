@@ -25,7 +25,7 @@ import { formatDate, calcAge, getGenderLabel } from '@/lib/clinical';
 import type { Patient, Condition, AllergyIntolerance, EncounterWithClinicalNote } from '@/types/database.types';
 import type { PatientTelecom, PatientAddress, PatientIdentifier } from '@/types/patient-jsonb';
 
-interface PatientDetailSidebarProps {
+interface AIPatientPanelProps {
     patient: Patient;
     onClose: () => void;
 }
@@ -76,7 +76,7 @@ function CollapsibleSection({ title, children, defaultOpen = true }: {
 
 // ─── Main Sidebar Component ───────────────────────────────────────────────────
 
-export default function PatientDetailSidebar({ patient, onClose }: PatientDetailSidebarProps) {
+export default function AIPatientPanel({ patient, onClose }: AIPatientPanelProps) {
     const router = useRouter();
     const [clinicalData, setClinicalData] = useState<{
         conditions: Condition[];

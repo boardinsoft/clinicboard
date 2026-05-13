@@ -4,6 +4,7 @@ import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/components/ui/sidebar';
+import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import {
   Home,
   Users,
@@ -110,12 +111,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<'div'>) {
   const pathname = usePathname() || '';
   const router = useRouter();
   const { state, toggleSidebar } = useSidebar();
+  const { activeClinic } = useActiveClinic();
   const activeItemTitle = getActiveItem(pathname);
   const isCollapsed = state === 'collapsed';
 
+  const clinicSlug = activeClinic?.slug || '';
+
   const handleNavigation = (url: string) => {
     if (url.startsWith('/')) {
-      router.push(`/${url.replace(/^\//, '')}`);
+      router.push(`/${clinicSlug}${url}`);
     } else {
       router.push(url);
     }

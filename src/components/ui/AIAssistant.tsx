@@ -45,7 +45,7 @@ import {
     SidebarMenuAction,
 } from '@/components/ui/sidebar';
 import type { Condition, AllergyIntolerance, EncounterWithClinicalNote } from '@/types/database.types';
-import PatientDetailSidebar from '@/components/patients/PatientDetailSidebar';
+import AIPatientPanel from '@/components/patients/AIPatientPanel';
 import EncounterDetailPanel from '@/app/(dashboard)/[clinicSlug]/history/encounters/[encounterId]/EncounterDetailView';
 
 interface PatientFile {
@@ -567,7 +567,7 @@ export default function AIAssistant() {
                 <div className="flex-1 min-h-0 overflow-hidden">
                     {rightPanelTab === 'patient' ? (
                         <div className="h-full [&>div>div:first-child]:hidden">
-                            <PatientDetailSidebar
+                            <AIPatientPanel
                                 patient={selectedPatientForPreview}
                                 onClose={() => setRightPanelTab('ai')}
                             />
