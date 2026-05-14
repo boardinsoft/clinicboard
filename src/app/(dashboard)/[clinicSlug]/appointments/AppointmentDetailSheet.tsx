@@ -602,7 +602,7 @@ export default function AppointmentDetailSheet({
                             </DialogTitle>
                             <DialogDescription>
                                 Estás a punto de cancelar esta cita. Esta acción liberará el horario pero no puede ser deshecha.
-                                Por favor, indica el motivo de la cancelación.
+                                Indica el motivo de la cancelación.
                             </DialogDescription>
                         </DialogHeader>
                         
