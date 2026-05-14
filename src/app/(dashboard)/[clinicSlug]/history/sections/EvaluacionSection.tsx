@@ -97,9 +97,9 @@ export default function EvaluacionSection({
                         </Button>
                     </div>
 
-                    <div className="space-y-4 bg-n-2/30 p-6 rounded-xl border border-n-5/30">
+                    <div className="space-y-4">
                         {diagnosesFields.length === 0 && (
-                            <div className="bg-n-1 p-1.5 rounded-lg border border-n-5/30 focus-within:ring-1 focus-within:ring-b-8/10 transition-all">
+                            <div className="bg-n-1 p-4 rounded-lg border border-n-5/30 focus-within:ring-1 focus-within:ring-b-8/10 transition-all">
                                 <Controller
                                     control={form.control}
                                     name="diagnoses"
@@ -124,26 +124,36 @@ export default function EvaluacionSection({
                         )}
 
                         {diagnosesFields.map((field, index) => (
-                            <div key={field.id} className="flex gap-4 items-end bg-n-1 p-5 rounded-xl border border-n-5/30 shadow-sm relative group animate-in slide-in-from-left-2 duration-200">
+                            <div key={field.id} className="flex gap-4 items-end bg-n-1 p-4 rounded-lg border border-n-5/30 relative group animate-in slide-in-from-left-2 duration-200">
                                 <div className="flex-1">
                                     <Controller
                                         control={form.control}
                                         name={`diagnoses.${index}.code`}
-                                        render={() => (
-                                            <DiagnosisSearch
-                                                id={`diagnosis-${index}`}
-                                                label={index === 0 ? "Diagnóstico principal" : `Relacionado #${index}`}
-                                                placeholder="CIE-10..."
-                                                value={`${form.watch(`diagnoses.${index}.code`)}${form.watch(`diagnoses.${index}.description`) ? ' — ' + form.watch(`diagnoses.${index}.description`) : ''}`}
-                                                onChange={val => {
-                                                    const [code, ...descParts] = val.split(' — ');
-                                                    const desc = descParts.join(' — ');
-                                                    form.setValue(`diagnoses.${index}.code`, code);
-                                                    form.setValue(`diagnoses.${index}.description`, desc);
-                                                }}
-                                                disabled={!selectedPatient}
-                                            />
-                                        )}
+                                        render={() => {
+                                            const code = form.watch(`diagnoses.${index}.code`);
+                                            const description = form.watch(`diagnoses.${index}.description`);
+                                            const hasValue = code && description;
+                                            return (
+                                                <DiagnosisSearch
+                                                    id={`diagnosis-${index}`}
+                                                    label={index === 0 ? "Diagnóstico principal" : `Relacionado #${index}`}
+                                                    placeholder="CIE-10..."
+                                                    value={hasValue ? `${code} — ${description}` : ''}
+                                                    showBadge={hasValue}
+                                                    onClear={() => {
+                                                        form.setValue(`diagnoses.${index}.code`, '');
+                                                        form.setValue(`diagnoses.${index}.description`, '');
+                                                    }}
+                                                    onChange={val => {
+                                                        const [codeVal, ...descParts] = val.split(' — ');
+                                                        const desc = descParts.join(' — ');
+                                                        form.setValue(`diagnoses.${index}.code`, codeVal);
+                                                        form.setValue(`diagnoses.${index}.description`, desc);
+                                                    }}
+                                                    disabled={!selectedPatient}
+                                                />
+                                            );
+                                        }}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">

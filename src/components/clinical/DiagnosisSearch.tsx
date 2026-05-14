@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { searchCIE10 } from '@/actions/diagnoses';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, X } from 'lucide-react';
 
 interface DiagnosisSearchProps {
     id: string;
@@ -14,6 +15,8 @@ interface DiagnosisSearchProps {
     onChange: (value: string) => void;
     disabled?: boolean;
     labelClassName?: string;
+    showBadge?: boolean;
+    onClear?: () => void;
 }
 
 export default function DiagnosisSearch({
@@ -23,7 +26,9 @@ export default function DiagnosisSearch({
     value,
     onChange,
     disabled,
-    labelClassName
+    labelClassName,
+    showBadge = false,
+    onClear,
 }: DiagnosisSearchProps) {
     const [query, setQuery] = useState(value);
     const [results, setResults] = useState<{ code: string; description: string }[]>([]);
@@ -34,6 +39,8 @@ export default function DiagnosisSearch({
     useEffect(() => {
         setQuery(value);
     }, [value]);
+
+    const isSelected = value.includes(' — ') && !isOpen;
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -77,19 +84,43 @@ export default function DiagnosisSearch({
         setIsOpen(false);
     };
 
+    const handleClear = () => {
+        setQuery('');
+        onChange('');
+        onClear?.();
+    };
+
     return (
         <div className="relative w-full" ref={containerRef}>
             <div className="space-y-2">
-                <Label htmlFor={id} className={labelClassName}>{label}</Label>
+                {label && <Label htmlFor={id} className={labelClassName}>{label}</Label>}
                 <div className="relative">
-                    <Input
-                        id={id}
-                        placeholder={placeholder}
-                        value={query}
-                        onChange={(e) => handleSearch(e.target.value)}
-                        disabled={disabled}
-                        autoComplete="off"
-                    />
+                    {showBadge && isSelected ? (
+                        <div className="flex items-center gap-2 h-9 w-full rounded-[6px] border border-n-5/30 bg-n-1 px-3">
+                            <Badge variant="outline" className="font-mono text-[11px] font-semibold text-b-8 border-b-8/30 bg-b-2/20">
+                                {value.split(' — ')[0]}
+                            </Badge>
+                            <span className="flex-1 truncate text-sm text-n-11">{value.split(' — ')[1]}</span>
+                            {onClear && (
+                                <button
+                                    type="button"
+                                    onClick={handleClear}
+                                    className="shrink-0 text-n-8 hover:text-n-11 transition-colors"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <Input
+                            id={id}
+                            placeholder={placeholder}
+                            value={query}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            disabled={disabled}
+                            autoComplete="off"
+                        />
+                    )}
                     {isLoading && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
                             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -99,16 +130,16 @@ export default function DiagnosisSearch({
             </div>
 
             {isOpen && results.length > 0 && (
-                <div className="absolute top-[calc(100%+4px)] left-0 w-full z-50 bg-popover text-popover-foreground rounded-md border border-border shadow-md max-h-60 overflow-y-auto">
+                <div className="absolute top-[calc(100%+4px)] left-0 w-full z-50 bg-n-2 text-n-12 rounded-md border border-n-5/30 shadow-lg max-h-60 overflow-y-auto">
                     <ul className="flex flex-col text-sm py-1">
                         {results.map((item) => (
                             <li
                                 key={item.code}
                                 onClick={() => handleSelect(item)}
-                                className="px-3 py-2 cursor-pointer hover:bg-muted/50 hover:text-foreground transition-colors border-b border-border/50 last:border-0 truncate"
+                                className="px-3 py-2 cursor-pointer hover:bg-n-3 transition-colors border-b border-n-5/20 last:border-0 truncate"
                             >
-                                <span className="mono text-brand-8 font-bold mr-2">{item.code}</span>
-                                <span className="text-muted-foreground">{item.description}</span>
+                                <span className="font-mono text-[11px] font-semibold text-b-8 mr-2">{item.code}</span>
+                                <span className="text-n-10">{item.description}</span>
                             </li>
                         ))}
                     </ul>

@@ -17,9 +17,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Field, FieldLabel, FieldError } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import DiagnosisSearch from '@/components/clinical/DiagnosisSearch';
 import { cn } from '@/lib/utils';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
@@ -83,23 +83,22 @@ export function AddConditionDialog({ patientId, open, onOpenChange, onSuccess }:
 
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
                     <Field>
-                        <FieldLabel>Código CIE-10</FieldLabel>
-                        <Input
-                            placeholder="Ej. J45"
-                            {...form.register('code')}
-                            className="h-10"
+                        <FieldLabel>Código y Nombre CIE-10</FieldLabel>
+                        <DiagnosisSearch
+                            id="condition-cie10"
+                            label=""
+                            placeholder="Busque por código o nombre (ej: J45.9)..."
+                            value={form.watch('code') && form.watch('code_display') ? `${form.watch('code')} — ${form.watch('code_display')}` : ''}
+                            showBadge={!!(form.watch('code') && form.watch('code_display'))}
+                            onClear={() => { form.setValue('code', ''); form.setValue('code_display', ''); }}
+                            onChange={val => {
+                                const [code, ...descParts] = val.split(' — ');
+                                const desc = descParts.join(' — ');
+                                form.setValue('code', code);
+                                form.setValue('code_display', desc);
+                            }}
                         />
                         <FieldError>{form.formState.errors.code?.message}</FieldError>
-                    </Field>
-
-                    <Field>
-                        <FieldLabel>Nombre de la condición</FieldLabel>
-                        <Input
-                            placeholder="Ej. Asma bronquial"
-                            {...form.register('code_display')}
-                            className="h-10"
-                        />
-                        <FieldError>{form.formState.errors.code_display?.message}</FieldError>
                     </Field>
 
                     <Field>
