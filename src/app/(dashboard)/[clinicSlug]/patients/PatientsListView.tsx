@@ -385,7 +385,7 @@ export default function PatientsListView() {
       </div>
 
       {/* ── Pagination Footer ── */}
-      <div className="flex items-center justify-between px-6 py-3 h-14 border-t border-border bg-background shrink-0 font-sans">
+      <div className="flex items-center justify-between px-6 py-2.5 h-11 border-t border-border bg-background shrink-0 font-sans">
         <div className="flex items-center gap-4">
           <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-widest">
             Total: <span className="text-foreground">{total}</span> registros
@@ -399,20 +399,20 @@ export default function PatientsListView() {
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8 bg-background shadow-xs hover:bg-muted transition-all border-border"
+              className="h-7 w-7 bg-background shadow-xs hover:bg-muted transition-all border-border"
               disabled={currentPage <= 1}
               onClick={() => handlePageChange(currentPage - 1)}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3.5 w-3.5" />
             </Button>
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8 bg-background shadow-xs hover:bg-muted transition-all border-border"
+              className="h-7 w-7 bg-background shadow-xs hover:bg-muted transition-all border-border"
               disabled={currentPage >= totalPages}
               onClick={() => handlePageChange(currentPage + 1)}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>

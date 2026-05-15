@@ -23,7 +23,6 @@ import {
 import {
   SidebarGroup,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
@@ -117,11 +116,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<'div'>) {
 
   const clinicSlug = activeClinic?.slug || '';
 
-  const handleNavigation = (url: string) => {
+  const handleNavClick = (url: string, hasSubItems: boolean) => {
+    if (isCollapsed && hasSubItems) {
+      toggleSidebar();
+      return;
+    }
+    if (hasSubItems) {
+      return;
+    }
     if (url.startsWith('/')) {
       router.push(`/${clinicSlug}${url}`);
     } else {
       router.push(url);
+    }
+  };
+
+  const handleParentClick = (item: NavItem) => {
+    if (isCollapsed && item.items?.length) {
+      toggleSidebar();
+      return;
     }
   };
 
@@ -137,39 +150,64 @@ export function AppSidebar({ ...props }: React.ComponentProps<'div'>) {
           <SidebarMenu>
             {NAV_ITEMS.map((item) => {
               const isActive = item.title === activeItemTitle;
-              const hasSubItems = item.items && item.items.length > 0;
+              const hasSubItems = !!(item.items && item.items.length > 0);
 
               return (
-                <Collapsible
-                  key={item.title}
-                  asChild
-                  defaultOpen={isActive && hasSubItems}
-                  className="group/collapsible"
-                >
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton
-                        tooltip={item.title}
-                        isActive={isActive}
-                        onClick={() => !hasSubItems && handleNavigation(item.url)}
-                        className={cn(
-                          'w-full h-8 px-2 relative',
-                          hasSubItems && 'cursor-pointer',
-                          isActive && 'bg-b-2/50 text-b-8',
+                <SidebarMenuItem key={item.title}>
+                  <Collapsible
+                    key={`${item.title}-${isCollapsed}`}
+                    defaultOpen={isActive && hasSubItems && !isCollapsed}
+                    className="group/collapsible"
+                  >
+                    {isCollapsed ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => handleNavClick(item.url, hasSubItems)}
+                            className={cn(
+                              'relative flex items-center justify-center rounded-[6px]',
+                              'hover:bg-n-3 focus-visible:ring-2 focus-visible:ring-b-8/50 focus-visible:ring-inset',
+                              'transition-colors duration-150 cursor-pointer',
+                              isActive && 'bg-b-2/50 text-b-8',
+                              !isActive && 'text-n-11 dark:text-n-11',
+                              'w-9 h-9 mx-auto'
+                            )}
+                          >
+                            <item.icon size={16} strokeWidth={1.8} />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="right"
+                          sideOffset={12}
+                          className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100 dark:bg-n-4 dark:text-n-10 dark:border-n-6 dark:shadow-xl/80"
+                        >
+                          {item.title}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <CollapsibleTrigger asChild>
+                        <button
+                          onClick={() => handleParentClick(item)}
+                          className={cn(
+                          'relative flex items-center gap-2 rounded-[6px]',
                           'hover:bg-n-3 focus-visible:ring-2 focus-visible:ring-b-8/50 focus-visible:ring-inset',
-                          'transition-colors duration-150'
+                          'transition-colors duration-150 cursor-pointer',
+                          isActive && 'bg-b-2/50 text-b-8',
+                          !isActive && 'text-n-11 dark:text-n-11',
+                          'w-full h-8 px-2'
                         )}
                       >
                         {isActive && (
                           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[18px] bg-b-8 rounded-r-[3px]" />
                         )}
-                        <item.icon size={16} strokeWidth={1.8} className={cn(!isActive && 'text-n-8')} />
+                        <item.icon size={16} strokeWidth={1.8} />
                         <span className="truncate text-[13px]">{item.title}</span>
                         {hasSubItems && (
-                          <ChevronRight className="ml-auto size-3 transition-transform duration-200 ease-out group-data-[state=open]/collapsible:rotate-90" />
+                          <ChevronRight size={12} className="ml-auto transition-transform duration-200 ease-out group-data-[state=open]/collapsible:rotate-90" />
                         )}
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
+                        </button>
+                      </CollapsibleTrigger>
+                    )}
                     {hasSubItems && (
                       <CollapsibleContent>
                         <SidebarMenuSub>
@@ -179,7 +217,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<'div'>) {
                               <SidebarMenuSubItem key={subItem.title}>
                                 <SidebarMenuSubButton
                                   isActive={isSubActive}
-                                  onClick={() => handleNavigation(subItem.url)}
+                                  onClick={() => {
+                                    if (isCollapsed) {
+                                      toggleSidebar();
+                                    } else {
+                                      router.push(`/${clinicSlug}${subItem.url}`);
+                                    }
+                                  }}
                                   className={cn(
                                     'h-7 text-[13px] cursor-pointer',
                                     isSubActive && 'bg-b-2/50 text-b-8 font-medium',
@@ -195,8 +239,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<'div'>) {
                         </SidebarMenuSub>
                       </CollapsibleContent>
                     )}
-                  </SidebarMenuItem>
-                </Collapsible>
+                  </Collapsible>
+                </SidebarMenuItem>
               );
             })}
           </SidebarMenu>

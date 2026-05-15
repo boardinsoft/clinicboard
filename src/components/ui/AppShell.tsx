@@ -122,10 +122,9 @@ function IconBtn({
           )}
         </Button>
       </TooltipTrigger>
-      <TooltipContent 
-        side="bottom" 
-        sideOffset={12}
-        className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100"
+      <TooltipContent
+        side="bottom"
+        className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100 dark:bg-n-4 dark:text-n-10 dark:border-n-6 dark:shadow-xl/80"
       >
         {label}
       </TooltipContent>
@@ -164,7 +163,7 @@ function SubHeader() {
                 <PanelLeft className={cn('w-4 h-4 transition-transform duration-200', !secondaryPanelOpen && 'rotate-180')} strokeWidth={1.8} />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-[11px] font-medium">
+            <TooltipContent side="bottom" className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl dark:bg-n-4 dark:text-n-10 dark:border-n-6">
               {secondaryPanelOpen ? 'Colapsar panel' : 'Expandir panel'}
             </TooltipContent>
           </Tooltip>
@@ -607,7 +606,7 @@ const displayName =
                 />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={12} className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100 dark:shadow-xl/80">
+            <TooltipContent side="bottom" className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100 dark:bg-n-4 dark:text-n-10 dark:border-n-6 dark:shadow-xl/80">
               Asistente IA
             </TooltipContent>
           </Tooltip>
