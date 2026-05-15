@@ -400,7 +400,11 @@ const displayName =
         {/* ── SECCIÓN IZQUIERDA: Contexto (Macro-gap: 4) ── */}
         <div className="flex items-center gap-4 shrink-0">
           {/* Brand Mark (logo icon only) */}
-          <div className="flex items-center">
+          <button
+            onClick={() => router.push(`/${slug}/dashboard`)}
+            className="flex items-center cursor-pointer"
+            aria-label="Ir al dashboard"
+          >
             <Image
               src="/brand/favicon.svg"
               alt="ClinicBoard"
@@ -408,7 +412,7 @@ const displayName =
               height={24}
               className="object-contain"
             />
-          </div>
+          </button>
 
           <div className="w-px h-4 bg-n-5" />
 
@@ -888,7 +892,7 @@ const displayName =
 export default function AppShellWrapper(props: AppShellProps) {
   return (
     <SidebarProvider
-      defaultOpen={true}
+      defaultOpen={false}
       style={
         {
           '--sidebar-width': '16rem',
