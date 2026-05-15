@@ -322,12 +322,7 @@ export default function PatientsListView() {
                     </td>
                     <td className="text-right">
                       <div className="flex items-center justify-end gap-1 pr-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Popover
-                          open={openPopoverId === p.id}
-                          onOpenChange={(open) => {
-                            if (!open) setOpenPopoverId(null);
-                          }}
-                        >
+                        <Popover>
                           <PopoverTrigger asChild>
                             <button
                               onClick={(e) => e.stopPropagation()}

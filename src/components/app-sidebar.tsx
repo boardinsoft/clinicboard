@@ -181,7 +181,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<'div'>) {
                                   isActive={isSubActive}
                                   onClick={() => handleNavigation(subItem.url)}
                                   className={cn(
-                                    'h-7 text-[13px]',
+                                    'h-7 text-[13px] cursor-pointer',
                                     isSubActive && 'bg-b-2/50 text-b-8 font-medium',
                                     'hover:bg-n-3 focus-visible:ring-2 focus-visible:ring-b-8/50 focus-visible:ring-inset',
                                     'transition-colors duration-150'
