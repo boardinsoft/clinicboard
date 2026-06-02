@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ReactNode, useState, useEffect, Suspense } from 'react';
+import React, { ReactNode, useState, useEffect, useRef, Suspense } from 'react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
@@ -14,7 +14,7 @@ import { useTabStore } from '@/store/useTabStore';
 import TabContentManager from './TabContentManager';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import AIAssistant from './AIAssistant';
-import { searchGlobal, SearchResult } from '@/actions/search';
+import { searchGlobal, SearchResult, GroupedSearchResults } from '@/actions/search';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
 import { getTabTitle } from '@/lib/tabs-utils';
@@ -122,10 +122,9 @@ function IconBtn({
           )}
         </Button>
       </TooltipTrigger>
-      <TooltipContent 
-        side="bottom" 
-        sideOffset={12}
-        className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100"
+      <TooltipContent
+        side="bottom"
+        className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100 dark:bg-n-4 dark:text-n-10 dark:border-n-6 dark:shadow-xl/80"
       >
         {label}
       </TooltipContent>
@@ -164,7 +163,7 @@ function SubHeader() {
                 <PanelLeft className={cn('w-4 h-4 transition-transform duration-200', !secondaryPanelOpen && 'rotate-180')} strokeWidth={1.8} />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-[11px] font-medium">
+            <TooltipContent side="bottom" className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl dark:bg-n-4 dark:text-n-10 dark:border-n-6">
               {secondaryPanelOpen ? 'Colapsar panel' : 'Expandir panel'}
             </TooltipContent>
           </Tooltip>
@@ -187,13 +186,41 @@ function AppLayout({ children, user, practitioner, clinics, initialClinic, email
 
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<GroupedSearchResults>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [showChangeModal, setShowChangeModal] = useState(false);
   const [pendingClinic, setPendingClinic] = useState<Clinic | null>(null);
   const [changeError, setChangeError] = useState<string | null>(null);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const searchIdRef = useRef(0);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [hasSearchedOnce, setHasSearchedOnce] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  const RECENT_SEARCHES_KEY = 'clinicboard:recent-searches';
+  const MAX_RECENT_SEARCHES = 5;
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
+      if (stored) {
+        setRecentSearches(JSON.parse(stored));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const saveRecentSearch = (query: string) => {
+    try {
+      const updated = [query, ...recentSearches.filter(q => q !== query)].slice(0, MAX_RECENT_SEARCHES);
+      setRecentSearches(updated);
+      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
 
   const slug = activeClinic?.slug ?? '';
 
@@ -251,25 +278,70 @@ const displayName =
   useEffect(() => {
     async function performSearch() {
       if (debouncedSearchQuery.length >= 2) {
+        setHasSearchedOnce(true);
+        setSelectedIndex(-1);
+        const currentSearchId = ++searchIdRef.current;
         setIsSearching(true);
-        const results = await searchGlobal(debouncedSearchQuery);
-        setSearchResults(results);
-        setIsSearching(false);
+        const results = await searchGlobal(debouncedSearchQuery, slug);
+        if (currentSearchId === searchIdRef.current) {
+          setSearchResults(results);
+          setIsSearching(false);
+        }
       } else {
         setSearchResults([]);
       }
     }
     performSearch();
-  }, [debouncedSearchQuery, pathname]);
+  }, [debouncedSearchQuery]);
 
   const handleResultClick = (result: SearchResult) => {
     setSearchQuery('');
     setSearchResults([]);
     setIsSearchModalOpen(false);
-    if (result.type === 'patient') {
-      addTab({ id: result.url, title: result.title, url: result.url });
-    }
+    if (searchQuery) saveRecentSearch(searchQuery);
+    addTab({ id: result.url, title: result.title, url: result.url });
     router.push(result.url);
+  };
+
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [searchResults]);
+
+  const flattenedResults = searchResults.flatMap(group => group.results);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    let items: typeof QUICK_ACTIONS | typeof flattenedResults;
+    let offset = 0;
+
+    if (searchQuery.length >= 2) {
+      items = flattenedResults;
+    } else if (searchQuery.length === 0 && recentSearches.length > 0) {
+      items = recentSearches.map(q => ({ id: q, label: q, description: '', href: '#', icon: SearchIcon as any }));
+      offset = QUICK_ACTIONS.length;
+    } else {
+      items = QUICK_ACTIONS;
+    }
+
+    if (items.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev < items.length - 1 ? prev + 1 : 0));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev > 0 ? prev - 1 : items.length - 1));
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      const item = items[selectedIndex];
+      if (searchQuery.length >= 2 && flattenedResults[selectedIndex]) {
+        handleResultClick(flattenedResults[selectedIndex]);
+      } else if ('href' in item && item.href !== '#') {
+        setIsSearchModalOpen(false);
+        router.push(item.href);
+      } else if ('href' in item && item.href === '#') {
+        setSearchQuery(item.id);
+      }
+    }
   };
 
   const handleClinicSelect = (clinic: Clinic) => {
@@ -327,7 +399,11 @@ const displayName =
         {/* ── SECCIÓN IZQUIERDA: Contexto (Macro-gap: 4) ── */}
         <div className="flex items-center gap-4 shrink-0">
           {/* Brand Mark (logo icon only) */}
-          <div className="flex items-center">
+          <button
+            onClick={() => router.push(`/${slug}/dashboard`)}
+            className="flex items-center cursor-pointer"
+            aria-label="Ir al dashboard"
+          >
             <Image
               src="/brand/favicon.svg"
               alt="ClinicBoard"
@@ -335,7 +411,7 @@ const displayName =
               height={24}
               className="object-contain"
             />
-          </div>
+          </button>
 
           <div className="w-px h-4 bg-n-5" />
 
@@ -530,7 +606,7 @@ const displayName =
                 />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={12} className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100 dark:shadow-xl/80">
+            <TooltipContent side="bottom" className="text-[11px] font-medium bg-n-11 text-n-1 border-n-10 rounded-[5px] shadow-xl animate-in fade-in zoom-in-95 duration-100 dark:bg-n-4 dark:text-n-10 dark:border-n-6 dark:shadow-xl/80">
               Asistente IA
             </TooltipContent>
           </Tooltip>
@@ -644,7 +720,8 @@ const displayName =
           <SubHeader />
           {/* Global Search Dialog */}
           <Dialog open={isSearchModalOpen} onOpenChange={setIsSearchModalOpen}>
-            <DialogContent className="sm:max-w-xl top-[18%] w-full rounded-xl shadow-2xl p-0 overflow-hidden border-n-5 bg-popover dark:shadow-2xl/80">
+            <DialogContent className="sm:max-w-xl w-full rounded-xl shadow-2xl p-0 overflow-hidden border-n-5 bg-popover dark:shadow-2xl/80">
+              <DialogTitle className="sr-only">Búsqueda global</DialogTitle>
               <div className="flex items-center border-b border-n-5 px-3 py-2 bg-n-2/50">
                 <SearchIcon className="mr-2 h-4 w-4 shrink-0 text-n-8" strokeWidth={1.8} />
                 <Input
@@ -652,6 +729,7 @@ const displayName =
                   placeholder="Pacientes, citas, recetas..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
                   autoFocus
                 />
                 <kbd className="hidden sm:inline-flex items-center gap-1 rounded border border-n-5 bg-n-1 px-1.5 py-0.5 font-mono text-[10px] text-n-8 mr-1 shadow-sm">
@@ -660,23 +738,69 @@ const displayName =
               </div>
               <div className="max-h-[320px] overflow-y-auto px-2 py-2 bg-n-1">
                 {isSearching && (
-                  <div className="p-4 text-center text-sm text-n-8">Buscando...</div>
+                  <div className="p-3 space-y-2">
+                    <div className="flex items-center gap-3 px-3 py-2">
+                      <div className="h-8 w-8 rounded-md bg-n-3 animate-pulse" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3 w-32 rounded bg-n-3 animate-pulse" />
+                        <div className="h-2 w-24 rounded bg-n-3 animate-pulse" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 px-3 py-2">
+                      <div className="h-8 w-8 rounded-md bg-n-3 animate-pulse" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3 w-40 rounded bg-n-3 animate-pulse" />
+                        <div className="h-2 w-28 rounded bg-n-3 animate-pulse" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 px-3 py-2">
+                      <div className="h-8 w-8 rounded-md bg-n-3 animate-pulse" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3 w-36 rounded bg-n-3 animate-pulse" />
+                        <div className="h-2 w-20 rounded bg-n-3 animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
                 )}
                 {!isSearching && searchQuery.length >= 2 && searchResults.length === 0 && (
                   <div className="p-4 text-center text-sm text-n-8 font-medium">
                     Sin resultados para &quot;{searchQuery}&quot;
                   </div>
                 )}
-                {!isSearching && searchQuery.length === 0 && (
+                {!isSearching && searchQuery.length === 0 && recentSearches.length > 0 && (
+                  <div className="p-1">
+                    <p className="px-2 py-1 text-[10px] font-bold text-n-8 mb-1 uppercase tracking-widest">
+                      Búsquedas recientes
+                    </p>
+                    {recentSearches.map((query, idx) => (
+                      <div
+                        key={query}
+                        onClick={() => setSearchQuery(query)}
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-n-2 rounded-md transition-colors',
+                          selectedIndex === idx && 'bg-n-2'
+                        )}
+                      >
+                        <SearchIcon className="w-4 h-4 text-n-8 shrink-0" strokeWidth={1.8} />
+                        <span className="text-[13px] text-n-12 font-medium truncate">{query}</span>
+                        <span className="ml-auto text-[10px] mono text-n-8">⌘R</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {!isSearching && searchQuery.length === 0 && recentSearches.length === 0 && (
                   <div className="p-1">
                     <p className="px-2 py-1 text-[10px] font-bold text-n-8 mb-1 uppercase tracking-widest">
                       Acciones rápidas
                     </p>
-                    {QUICK_ACTIONS.map(action => (
+                    {QUICK_ACTIONS.map((action, idx) => (
                       <div
                         key={action.id}
                         onClick={() => { setIsSearchModalOpen(false); router.push(action.href); }}
-                        className="flex items-center gap-3 px-3 py-2.5 text-sm cursor-pointer hover:bg-n-2 rounded-md transition-colors"
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2.5 text-sm cursor-pointer hover:bg-n-2 rounded-md transition-colors',
+                          selectedIndex === idx && 'bg-n-2'
+                        )}
                       >
                         <div className="flex h-8 w-8 items-center justify-center rounded-md border border-n-5 bg-n-1 shrink-0">
                           <action.icon className="w-4 h-4 text-n-9" strokeWidth={1.8} />
@@ -685,25 +809,57 @@ const displayName =
                           <span className="font-semibold text-n-12 text-[13px]">{action.label}</span>
                           <span className="text-[11px] text-n-8">{action.description}</span>
                         </div>
+                        <span className="ml-auto text-[10px] font-medium mono text-n-8">⌘{idx + 1}</span>
                       </div>
                     ))}
                   </div>
                 )}
-                {searchResults.map((result) => (
-                  <div
-                    key={`${result.type}-${result.id}`}
-                    className="flex items-center gap-3 px-3 py-2.5 text-sm cursor-pointer hover:bg-n-2 rounded-md transition-colors"
-                    onClick={() => handleResultClick(result)}
-                  >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-md border border-n-5 bg-n-2 font-bold text-[10px] text-n-8 shrink-0 uppercase tracking-tighter">
-                      {result.type.slice(0, 3)}
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="font-semibold text-n-12 truncate text-[13px]">{result.title}</span>
-                      <span className="text-[11px] text-n-8 truncate font-medium">{result.subtitle}</span>
-                    </div>
+                {searchResults.length > 0 && (
+                  <div className="p-1">
+                    {searchResults.map((group) => (
+                      <div key={group.type} className="mb-3 last:mb-0">
+                        <div className="flex items-center gap-2 px-2 py-1">
+                          <div className={cn('w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold', group.color)}>
+                            {group.type.slice(0, 2).toUpperCase()}
+                          </div>
+                          <span className="text-[10px] font-bold text-n-8 uppercase tracking-widest">{group.label}</span>
+                          <span className="text-[10px] text-n-8">({group.results.length})</span>
+                        </div>
+                        {group.results.map((result, resultIdx) => {
+                          const globalIdx = searchResults.slice(0, searchResults.indexOf(group)).reduce((acc, g) => acc + g.results.length, 0) + resultIdx;
+                          return (
+                            <div
+                              key={result.id}
+                              onClick={() => handleResultClick(result)}
+                              className={cn(
+                                'flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-n-2 rounded-md transition-colors',
+                                selectedIndex === globalIdx && 'bg-n-2'
+                              )}
+                            >
+                              <div className={cn('flex h-8 w-8 items-center justify-center rounded-md border border-n-5 shrink-0', group.color.split(' ')[1])}
+                                style={{ backgroundColor: 'var(--bg)' }}
+                              >
+                                {group.type === 'patient' && <span className="text-[10px] font-bold">P</span>}
+                                {group.type === 'appointment' && <span className="text-[10px] font-bold">C</span>}
+                                {group.type === 'medication' && <span className="text-[10px] font-bold">R</span>}
+                                {group.type === 'encounter' && <span className="text-[10px] font-bold">N</span>}
+                              </div>
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <span className="font-semibold text-n-12 truncate text-[13px]">{result.title}</span>
+                                <span className="text-[11px] text-n-8 truncate font-medium">{result.subtitle}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+                {searchQuery.length > 0 && searchQuery.length < 2 && !isSearching && (
+                  <div className="p-3 text-center text-[11px] text-n-8">
+                    Escribí al menos 2 caracteres para buscar
+                  </div>
+                )}
               </div>
             </DialogContent>
           </Dialog>
@@ -735,7 +891,7 @@ const displayName =
 export default function AppShellWrapper(props: AppShellProps) {
   return (
     <SidebarProvider
-      defaultOpen={true}
+      defaultOpen={false}
       style={
         {
           '--sidebar-width': '16rem',

@@ -78,7 +78,7 @@ export default function PrescriptionsPage() {
         <div className="h-full flex flex-col bg-background overflow-hidden">
             <PageHeader
                 title="Recetas Médicas"
-                description="Diseñador de recetas médicas — Basado en MedicationRequest FHIR R4."
+                description="Diseño de recetas digitales basadas en estándares médicos internacionales."
                 breadcrumbs={[{ label: 'Recetas' }]}
                 actions={
                     <div className="flex items-center gap-2">

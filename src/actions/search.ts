@@ -11,7 +11,24 @@ export interface SearchResult {
     metadata?: Record<string, unknown>;
 }
 
-export async function searchGlobal(queryText: string, context?: string): Promise<SearchResult[]> {
+export interface SearchResultGroup {
+    type: 'patient' | 'appointment' | 'encounter' | 'medication';
+    label: string;
+    icon: string;
+    color: string;
+    results: SearchResult[];
+}
+
+const TYPE_CONFIG = {
+    patient: { label: 'Pacientes', icon: 'user', color: 'text-b-8 bg-b-1' },
+    appointment: { label: 'Citas', icon: 'calendar', color: 'text-info bg-info-bg' },
+    medication: { label: 'Recetas', icon: 'pill', color: 'text-success bg-success-bg' },
+    encounter: { label: 'Notas clínicas', icon: 'file-text', color: 'text-warning bg-warning-bg' },
+} as const;
+
+export type GroupedSearchResults = SearchResultGroup[];
+
+export async function searchGlobal(queryText: string, clinicSlug: string, context?: string): Promise<GroupedSearchResults> {
     if (!queryText || queryText.length < 2) return [];
 
     const supabase = await createServerSupabaseClient();
@@ -84,7 +101,7 @@ export async function searchGlobal(queryText: string, context?: string): Promise
                     type: 'patient',
                     title: `${p.name_given.join(' ')} ${p.name_family}`,
                     subtitle: `Paciente • Probable coincidencia`,
-                    url: `/patients/${p.id}`,
+                    url: `/${clinicSlug}/patients/${p.id}`,
                 });
             });
         }
@@ -104,7 +121,7 @@ export async function searchGlobal(queryText: string, context?: string): Promise
                 type: 'patient',
                 title: `${p.name_given.join(' ')} ${p.name_family}`,
                 subtitle: `Paciente • ${phone || (Array.isArray(p.identifiers) && p.identifiers.length > 0 ? (p.identifiers[0] as { value?: string })?.value : 'Sin ID')}`,
-                url: `/patients/${p.id}`,
+                url: `/${clinicSlug}/patients/${p.id}`,
             });
         });
     }
@@ -148,19 +165,35 @@ export async function searchGlobal(queryText: string, context?: string): Promise
                 type: 'encounter',
                 title: `Nota: ${noteText.substring(0, 50)}...`,
                 subtitle: `Historia Clínica • ${patientName}`,
-                url: `/history?patientId=${e.patient_id}`, // Direct to history with parameter
+                url: `/${clinicSlug}/history?patientId=${e.patient_id}`,
             });
         });
     }
 
-    // Prioritization logic
-    if (context) {
-        results.sort((a, b) => {
-            if (a.type === context && b.type !== context) return -1;
-            if (a.type !== context && b.type === context) return 1;
-            return 0;
-        });
-    }
+    // Group results by type
+    const grouped: Record<string, SearchResult[]> = {
+        patient: [],
+        appointment: [],
+        medication: [],
+        encounter: [],
+    };
 
-    return results;
+    results.forEach(r => {
+        if (grouped[r.type]) {
+            grouped[r.type].push(r);
+        }
+    });
+
+    // Build grouped output, only include types with results
+    const groupedResults: GroupedSearchResults = Object.entries(grouped)
+        .filter(([, items]) => items.length > 0)
+        .map(([type]) => ({
+            type: type as 'patient' | 'appointment' | 'encounter' | 'medication',
+            label: TYPE_CONFIG[type as keyof typeof TYPE_CONFIG].label,
+            icon: TYPE_CONFIG[type as keyof typeof TYPE_CONFIG].icon,
+            color: TYPE_CONFIG[type as keyof typeof TYPE_CONFIG].color,
+            results: grouped[type],
+        }));
+
+    return groupedResults;
 }
