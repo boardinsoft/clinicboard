@@ -30,7 +30,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { startWalkInEncounter } from '@/actions/encounters';
 import { useActiveClinic } from '@/providers/ActiveClinicContext';
-import { Loader2, Stethoscope } from 'lucide-react';
+import { Loader2, Stethoscope, Zap, ClipboardList } from 'lucide-react';
 import { PatientSearchField } from '@/components/patients/PatientSearchField';
 import { APPOINTMENT_TYPES } from '@/lib/appointmentConstants';
 import AlertConflict from '@/components/ui/AlertConflict';
@@ -45,6 +45,7 @@ interface WalkInEncounterFormValues {
     patient_id: string;
     appointment_type: string;
     description: string;
+    workflow_type: 'quick' | 'with-evaluation';
 }
 
 export default function NewWalkInEncounterDialog({
@@ -61,6 +62,7 @@ export default function NewWalkInEncounterDialog({
             patient_id: '',
             appointment_type: 'Consulta General',
             description: '',
+            workflow_type: 'quick',
         },
     });
 
@@ -77,6 +79,7 @@ export default function NewWalkInEncounterDialog({
                 appointment_type: values.appointment_type,
                 description: values.description,
                 clinic_id: activeClinic?.id || '',
+                workflow_type: values.workflow_type,
             });
 
             if (result.error) {
@@ -187,6 +190,44 @@ export default function NewWalkInEncounterDialog({
                                                 {...field}
                                             />
                                         </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="workflow_type"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Tipo de Consulta</FormLabel>
+                                        <div className="flex gap-2 pt-1">
+                                            <Button
+                                                type="button"
+                                                variant={field.value === 'quick' ? 'default' : 'outline'}
+                                                size="sm"
+                                                className={`flex-1 gap-2 ${field.value === 'quick' ? 'bg-b-8 hover:bg-b-9 shadow-lg shadow-b-8/20' : ''}`}
+                                                onClick={() => field.onChange('quick')}
+                                            >
+                                                <Zap className="w-4 h-4" />
+                                                Rápida
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant={field.value === 'with-evaluation' ? 'default' : 'outline'}
+                                                size="sm"
+                                                className={`flex-1 gap-2 ${field.value === 'with-evaluation' ? 'bg-b-8 hover:bg-b-9 shadow-lg shadow-b-8/20' : ''}`}
+                                                onClick={() => field.onChange('with-evaluation')}
+                                            >
+                                                <ClipboardList className="w-4 h-4" />
+                                                Con Evaluación
+                                            </Button>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            {field.value === 'quick'
+                                                ? 'Para consultas simples sin triage previo.'
+                                                : 'Para casos que requieren evaluación/triage.'}
+                                        </p>
                                         <FormMessage />
                                     </FormItem>
                                 )}

@@ -147,13 +147,53 @@ export async function startWalkInEncounter(payload: {
     encounter_category?: string;
     appointment_type?: string;
     description?: string;
+    workflow_type?: 'quick' | 'with-evaluation';
 }) {
-    const { patient_id: patientId, clinic_id: clinicId, encounter_class: encClass, encounter_category: encCategory, appointment_type: apptType, description: apptDesc } = payload;
+    const { patient_id: patientId, clinic_id: clinicId, encounter_class: encClass, encounter_category: encCategory, appointment_type: apptType, description: apptDesc, workflow_type: wfType } = payload;
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
 
     if (!practitionerId) return { error: 'No autorizado' };
     if (!clinicId) return { error: 'Clínica no especificada.' };
+
+    // 1. Check if patient already has an active encounter (in-progress, arrived, or triaged)
+    const { data: activeEncounter } = await supabase
+        .from('encounters')
+        .select('id, status, start_time')
+        .eq('patient_id', patientId)
+        .in('status', ['in-progress', 'arrived', 'triaged'])
+        .maybeSingle();
+
+    if (activeEncounter) {
+        return {
+            error: `El paciente ya tiene una consulta activa en estado '${activeEncounter.status}' desde ${new Date(activeEncounter.start_time).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}. Completa o cancela la consulta existente primero.`,
+            activeEncounterId: activeEncounter.id,
+        };
+    }
+
+    // 2. Check if patient already had a walk-in encounter today (prevent duplicates same day)
+    const { nowInVE, toISODate } = await import('@/lib/date-utils');
+    const localToday = toISODate(nowInVE());
+    const startOfLocalDay = `${localToday}T00:00:00-04:00`;
+    const endOfLocalDay = `${localToday}T23:59:59-04:00`;
+
+    const { data: todayEncounter } = await supabase
+        .from('encounters')
+        .select('id, start_time')
+        .eq('patient_id', patientId)
+        .eq('practitioner_id', practitionerId)
+        .eq('clinic_id', clinicId)
+        .gte('start_time', startOfLocalDay)
+        .lt('start_time', endOfLocalDay)
+        .not('status', 'eq', 'cancelled')
+        .maybeSingle();
+
+    if (todayEncounter) {
+        return {
+            error: 'Este paciente ya fue atendido el día de hoy. ¿Deseas iniciar otra consulta de todas formas?',
+            todayEncounterId: todayEncounter.id,
+        };
+    }
 
     const now = new Date();
     const minutes = now.getMinutes();
@@ -162,21 +202,16 @@ export async function startWalkInEncounter(payload: {
     const startTime = now.toISOString();
     const endTime = new Date(now.getTime() + 15 * 60000).toISOString();
 
-    const { nowInVE, toISODate } = await import('@/lib/date-utils');
-    const localToday = toISODate(nowInVE());
-    const startOfLocalDay = `${localToday}T00:00:00-04:00`;
+    // 3. Use atomic function to get next queue position (prevents race conditions)
+    const { data: nextPosition } = await supabase.rpc('get_next_queue_position_locked' as any, {
+        p_practitioner_id: practitionerId,
+        p_clinic_id: clinicId,
+        p_date: localToday,
+    });
 
-    const { data: lastInQueue } = await supabase
-        .from('appointments')
-        .select('queue_position')
-        .eq('practitioner_id', practitionerId)
-        .eq('clinic_id', clinicId)
-        .gte('start_time', startOfLocalDay)
-        .order('queue_position', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-    const nextPosition = (lastInQueue?.queue_position || 0) + 1;
+    if (typeof nextPosition !== 'number') {
+        return { error: 'Error al calcular la posición en cola. Intenta de nuevo.' };
+    }
 
     const { data: appointment, error: apptError } = await supabase
         .from('appointments')
@@ -199,6 +234,18 @@ export async function startWalkInEncounter(payload: {
         return { error: apptError?.message || 'Error al registrar la cita de llegada.' };
     }
 
+    // Write audit log for appointment creation (explicit, in addition to DB trigger)
+    await supabase.from('appointment_audit_log').insert([{
+        appointment_id: appointment.id,
+        changed_by: practitionerId,
+        old_status: null,
+        new_status: 'arrived',
+        notes: `Walk-in creado: ${apptDesc || 'Consulta por orden de llegada'}`,
+        change_reason: 'walk-in_created',
+    }]);
+
+    const encounterStatus = wfType === 'quick' ? 'in-progress' : 'arrived';
+
     const { data: encounter, error: encError } = await supabase
         .from('encounters')
         .insert([{
@@ -207,7 +254,7 @@ export async function startWalkInEncounter(payload: {
             clinic_id: clinicId,
             encounter_class: encClass || 'AMB',
             encounter_category: encCategory || 'Consulta General',
-            status: 'arrived',
+            status: encounterStatus,
             start_time: startTime,
             appointment_id: appointment.id,
         }])
@@ -277,6 +324,13 @@ export async function saveEncounterDraft(id: string, formData: {
     if (!encounter) return { error: 'Encuentro no encontrado o sin permisos.' };
     if (encounter.status === 'finished') return { error: 'No se puede editar un encuentro finalizado.' };
 
+    // Capture previous state for audit
+    const { data: prevEncounter } = await supabase
+        .from('encounters').select('vital_signs').eq('id', id).single();
+    const { data: prevNote } = await supabase
+        .from('clinical_notes').select('subjective, objective, analysis, plan')
+        .eq('encounter_id', id).single();
+
     const [encResult, noteResult] = await Promise.all([
         // Actualizar datos del evento (vitales) en encounters
         supabase
@@ -312,7 +366,70 @@ export async function saveEncounterDraft(id: string, formData: {
     if (encResult.error) return { error: encResult.error.message };
     if (noteResult.error) return { error: noteResult.error.message };
 
+    // Audit the draft save (vital signs and SOAP changes)
+    await (supabase as any).from('encounter_draft_audit_log').insert([{
+        encounter_id: id,
+        changed_by: practitionerId,
+        vital_signs_snapshot: prevEncounter?.vital_signs ?? null,
+        soap_snapshot: {
+            subjective: prevNote?.subjective,
+            objective: prevNote?.objective,
+            analysis: prevNote?.analysis,
+            plan: prevNote?.plan,
+        },
+        change_type: 'updated',
+    }]);
+
     return { data: { encounter: encResult.data, clinical_note: noteResult.data } };
+}
+
+/**
+ * updateEncounterStatus(id, newStatus)
+ * Transiciona el encuentro a un nuevo estado válido.
+ */
+export async function updateEncounterStatus(id: string, newStatus: EncounterStatus, reason?: string) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) return { error: 'No autorizado' };
+
+    const { data: encounter } = await supabase
+        .from('encounters')
+        .select('status')
+        .eq('id', id)
+        .eq('practitioner_id', practitionerId)
+        .single();
+
+    if (!encounter) return { error: 'Encuentro no encontrado o sin permisos.' };
+
+    const oldStatus = encounter.status as EncounterStatus;
+    const transition = validateEncounterTransition(oldStatus, newStatus);
+    if (!transition.isValid) return { error: transition.error };
+
+    // Update + explicit audit log (in addition to DB trigger for redundancy)
+    const [{ data, error }] = await Promise.all([
+        supabase
+            .from('encounters')
+            .update({ status: newStatus as Database['public']['Enums']['encounter_status'], updated_at: new Date().toISOString() })
+            .eq('id', id)
+            .eq('practitioner_id', practitionerId)
+            .select()
+            .single(),
+        // Explicit audit entry (DB trigger also creates one, but this is explicit)
+        (supabase as any).from('encounter_audit_log').insert([{
+            encounter_id: id,
+            changed_by: practitionerId,
+            old_status: oldStatus,
+            new_status: newStatus,
+            notes: reason || 'Cambio de estado manual',
+            change_reason: 'manual_transition',
+        }]),
+    ]);
+
+    if (error) return { error: error.message };
+
+    revalidatePath('/history');
+    return { data };
 }
 
 /**
@@ -356,6 +473,16 @@ export async function finalizeEncounter(id: string) {
     ]);
 
     if (encResult.error) return { error: encResult.error.message };
+
+    // Explicit audit for encounter finalization
+    await (supabase as any).from('encounter_audit_log').insert([{
+        encounter_id: id,
+        changed_by: practitionerId,
+        old_status: encounter.status,
+        new_status: 'finished',
+        notes: 'Encuentro finalizado y firmado',
+        change_reason: 'finalized',
+    }]);
 
     revalidatePath('/history');
     return { data: { encounter: encResult.data, clinical_note: noteResult.data } };

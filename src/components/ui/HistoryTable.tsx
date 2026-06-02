@@ -70,9 +70,18 @@ export default function HistoryTable({ encounters, toolbar, className }: History
 
     return (
         <div className={`flex-1 flex flex-col min-h-0 bg-background overflow-hidden ${className ?? ''}`}>
-            {toolbar && (
-                <div className="shrink-0">
-                    {toolbar}
+            {(toolbar || true) && (
+                <div className="shrink-0 flex items-center justify-between px-4 py-2 border-b border-border/40 bg-background">
+                    <div className="flex-1">{toolbar}</div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 gap-1 text-b-8 hover:bg-b-1"
+                        onClick={() => setIsWalkInDialogOpen(true)}
+                    >
+                        <Stethoscope className="w-3.5 h-3.5" />
+                        <span className="text-xs font-medium">+ Consulta</span>
+                    </Button>
                 </div>
             )}
             <div className="overflow-x-auto min-h-0 flex-1 no-scrollbar">
@@ -178,6 +187,11 @@ export default function HistoryTable({ encounters, toolbar, className }: History
                     </tbody>
                 </table>
             </div>
+            <NewWalkInEncounterDialog
+                open={isWalkInDialogOpen}
+                onOpenChange={setIsWalkInDialogOpen}
+                onSuccess={(encounterId) => router.push(`/${slug}/history?encounterId=${encounterId}`)}
+            />
         </div>
     );
 }
