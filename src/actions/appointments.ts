@@ -802,7 +802,6 @@ export async function createWalkInAppointment(payload: {
     if (!clinicId) return { error: 'Clínica no especificada.' };
 
     const now = new Date();
-    // Round up to the nearest 15-minute interval to satisfy DB trigger and avoid "past time" error
     const minutes = now.getMinutes();
     const roundedMinutes = Math.ceil((minutes + 1) / 15) * 15;
     now.setMinutes(roundedMinutes, 0, 0);
@@ -810,10 +809,8 @@ export async function createWalkInAppointment(payload: {
     const startTime = now.toISOString();
     const endTime = new Date(now.getTime() + 15 * 60000).toISOString();
 
-    // Calcular la posición en cola basada en el día local de Venezuela
     const { nowInVE, toISODate } = await import('@/lib/date-utils');
     const localToday = toISODate(nowInVE());
-    const startOfLocalDay = `${localToday}T00:00:00-04:00`;
 
     // Checking for duplicate active appointment of the same type
     if (appointmentType) {
@@ -830,17 +827,17 @@ export async function createWalkInAppointment(payload: {
         }
     }
 
-    const { data: lastInQueue } = await supabase
-        .from('appointments')
-        .select('queue_position')
-        .eq('practitioner_id', practitionerId)
-        .eq('clinic_id', clinicId)
-        .gte('start_time', startOfLocalDay)
-        .order('queue_position', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+    // Use atomic function to get next queue position (prevents race conditions)
+    const { data: nextPosition } = await (supabase as any).rpc('get_next_queue_position_locked', {
+        p_practitioner_id: practitionerId,
+        p_clinic_id: clinicId,
+        p_date: localToday,
+    });
 
-    const nextPosition = (lastInQueue?.queue_position || 0) + 1;
+    if (typeof nextPosition !== 'number') {
+        return { error: 'Error al calcular la posición en cola. Intenta de nuevo.' };
+    }
+
     const { data, error } = await supabase
         .from('appointments')
         .insert([{
@@ -863,6 +860,16 @@ export async function createWalkInAppointment(payload: {
         console.error('Error in createWalkInAppointment:', error);
         return { error: error.message };
     }
+
+    // Explicit audit entry (DB trigger also creates one, but this is explicit and includes more context)
+    await (supabase as any).from('appointment_audit_log').insert([{
+        appointment_id: data.id,
+        changed_by: practitionerId,
+        old_status: null,
+        new_status: 'arrived',
+        notes: `Walk-in creado: ${description || 'Consulta por orden de llegada'}`,
+        change_reason: 'walk-in_created',
+    }]);
 
     revalidatePath('/appointments');
     return { data };
