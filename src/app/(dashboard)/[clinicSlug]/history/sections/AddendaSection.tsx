@@ -53,7 +53,7 @@ export default function AddendaSection({
             const { createAddendum, getAddenda } = await import('@/actions/encounters');
             const res = await createAddendum(activeEncounterId, newAddendumContent);
             if (res.error) {
-                import('sonner').then(({ toast }) => toast.error('Error al guardar addenda: ' + res.error));
+                import('sonner').then(({ toast }) => toast.error('Error al guardar addenda', { description: 'No se pudo guardar la nota aclaratoria. Intenta de nuevo.' }));
             } else {
                 import('sonner').then(({ toast }) => toast.success('Addenda guardada correctamente'));
                 setNewAddendumContent('');

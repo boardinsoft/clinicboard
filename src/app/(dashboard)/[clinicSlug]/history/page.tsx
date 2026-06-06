@@ -281,8 +281,8 @@ export default function HistoryPage() {
 
     const onSave: SubmitHandler<EncounterFormValues> = async (values) => {
         if (!selectedPatient) {
-            toast.error('Sin paciente', {
-                description: 'Selecciona un paciente con ⌘K o desde el listado.'
+            toast.error('Selecciona un paciente', {
+                description: 'Usa ⌘K o el listado para elegir.'
             });
             return;
         }
@@ -340,7 +340,7 @@ export default function HistoryPage() {
 
         if (res.error) {
             toast.error('Error al guardar borrador', {
-                description: typeof res.error === 'string' ? res.error : 'No se pudo guardar el borrador.'
+                description: 'No se pudieron guardar los cambios. Intenta de nuevo.'
             });
         } else {
             toast.success('Borrador guardado', {
@@ -358,7 +358,7 @@ export default function HistoryPage() {
         const res = await finalizeEncounter(activeEncounterId);
         setIsSaving(false);
         if (res.error) {
-            toast.error('Error al finalizar', { description: res.error as string });
+            toast.error('Error al finalizar', { description: 'No se pudo cerrar el encuentro. Intenta de nuevo.' });
         } else {
             toast.success('Encuentro finalizado', {
                 description: 'El acto médico ha sido cerrado y firmado con éxito.'
