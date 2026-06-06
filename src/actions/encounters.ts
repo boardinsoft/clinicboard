@@ -8,6 +8,18 @@ import { EncounterStatus, VitalSigns } from '@/lib/fhir/types';
 import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
 import type { Json, EncounterWithClinicalNote, Database } from '@/types/database.types';
 
+const ENCOUNTER_STATUS_LABELS: Record<EncounterStatus, string> = {
+    planned: 'Planificada',
+    arrived: 'Llegada',
+    triaged: 'Triaje',
+    'in-progress': 'En Consulta',
+    onleave: 'Pausa',
+    finished: 'Finalizada',
+    cancelled: 'Cancelada',
+    'entered-in-error': 'Error de Entrada',
+    unknown: 'Desconocido',
+};
+
 /**
  * FHIR R4 Encounter State Machine
  */
@@ -27,9 +39,11 @@ function validateEncounterTransition(current: EncounterStatus, target: Encounter
     if (current === target) return { isValid: true };
     const allowed = VALID_ENCOUNTER_TRANSITIONS[current] || [];
     if (allowed.includes(target)) return { isValid: true };
+    const currentLabel = ENCOUNTER_STATUS_LABELS[current] || current;
+    const targetLabel = ENCOUNTER_STATUS_LABELS[target] || target;
     return {
         isValid: false,
-        error: `No se puede cambiar el estado del encuentro de '${current}' a '${target}'.`,
+        error: `No se puede cambiar el estado del encuentro de '${currentLabel}' a '${targetLabel}'.`,
     };
 }
 
@@ -168,8 +182,9 @@ export async function startWalkInEncounter(payload: {
         .maybeSingle();
 
     if (activeEncounter) {
+        const statusLabel = ENCOUNTER_STATUS_LABELS[activeEncounter.status as EncounterStatus] || activeEncounter.status;
         return {
-            error: `El paciente ya tiene una consulta activa en estado '${activeEncounter.status}' desde ${new Date(activeEncounter.start_time).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}. Completa o cancela la consulta existente primero.`,
+            error: `El paciente ya tiene una consulta activa en estado '${statusLabel}' desde ${new Date(activeEncounter.start_time).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}. Completa o cancela la consulta existente primero.`,
             activeEncounterId: activeEncounter.id,
         };
     }
