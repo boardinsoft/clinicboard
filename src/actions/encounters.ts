@@ -8,6 +8,18 @@ import { EncounterStatus, VitalSigns } from '@/lib/fhir/types';
 import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
 import type { Json, EncounterWithClinicalNote, Database } from '@/types/database.types';
 
+const ENCOUNTER_STATUS_LABELS: Record<EncounterStatus, string> = {
+    planned: 'Planificada',
+    arrived: 'Llegada',
+    triaged: 'Triaje',
+    'in-progress': 'En Consulta',
+    onleave: 'Pausa',
+    finished: 'Finalizada',
+    cancelled: 'Cancelada',
+    'entered-in-error': 'Error de Entrada',
+    unknown: 'Desconocido',
+};
+
 /**
  * FHIR R4 Encounter State Machine
  */
@@ -27,9 +39,11 @@ function validateEncounterTransition(current: EncounterStatus, target: Encounter
     if (current === target) return { isValid: true };
     const allowed = VALID_ENCOUNTER_TRANSITIONS[current] || [];
     if (allowed.includes(target)) return { isValid: true };
+    const currentLabel = ENCOUNTER_STATUS_LABELS[current] || current;
+    const targetLabel = ENCOUNTER_STATUS_LABELS[target] || target;
     return {
         isValid: false,
-        error: `Transición de encuentro inválida: de '${current}' a '${target}'. Permitidos: [${allowed.join(', ')}]`,
+        error: `No se puede cambiar el estado del encuentro de '${currentLabel}' a '${targetLabel}'.`,
     };
 }
 
@@ -108,7 +122,7 @@ export async function createEncounter(formData: {
         .select()
         .single();
 
-    if (encError || !encounter) return { error: encError?.message || 'Error al crear el encuentro.' };
+    if (encError || !encounter) return { error: 'No se pudo crear el encuentro. Intenta de nuevo.' };
 
     // Crear la clinical_note vacía (1:1 con encounter)
     const { data: clinicalNote, error: noteError } = await supabase
@@ -128,8 +142,8 @@ export async function createEncounter(formData: {
         await supabase.from('encounters').delete().eq('id', encounter.id);
         console.error('[createEncounter] Clinical note insert error:', noteError);
         return {
-            error: 'Error al crear la nota clínica del encuentro.',
-            details: noteError?.message || null,
+            error: 'No se pudo crear la nota clínica. Intenta de nuevo.',
+            details: null,
         };
     }
 
@@ -168,8 +182,9 @@ export async function startWalkInEncounter(payload: {
         .maybeSingle();
 
     if (activeEncounter) {
+        const statusLabel = ENCOUNTER_STATUS_LABELS[activeEncounter.status as EncounterStatus] || activeEncounter.status;
         return {
-            error: `El paciente ya tiene una consulta activa en estado '${activeEncounter.status}' desde ${new Date(activeEncounter.start_time).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}. Completa o cancela la consulta existente primero.`,
+            error: `El paciente ya tiene una consulta activa en estado '${statusLabel}' desde ${new Date(activeEncounter.start_time).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}. Completa o cancela la consulta existente primero.`,
             activeEncounterId: activeEncounter.id,
         };
     }
@@ -223,7 +238,7 @@ export async function startWalkInEncounter(payload: {
 
     if (rpcError) {
         console.error('[startWalkInEncounter] RPC error:', rpcError);
-        return { error: `Error RPC: ${rpcError.message}` };
+        return { error: 'Error al calcular la posición en cola. Intenta de nuevo.' };
     }
 
     if (typeof nextPosition !== 'number') {
@@ -249,7 +264,7 @@ export async function startWalkInEncounter(payload: {
 
     if (apptError || !appointment) {
         console.error('[startWalkInEncounter] Appointment insert error:', apptError);
-        return { error: apptError?.message || 'Error al registrar la cita de llegada.' };
+        return { error: 'No se pudo registrar la cita de llegada. Intenta de nuevo.' };
     }
 
     // Write audit log for appointment creation (explicit, in addition to DB trigger)
@@ -283,7 +298,7 @@ export async function startWalkInEncounter(payload: {
     if (encError || !encounter) {
         await supabase.from('appointments').delete().eq('id', appointment.id);
         console.error('[startWalkInEncounter] Encounter insert error:', encError);
-        return { error: encError?.message || 'Error al crear el encuentro.' };
+        return { error: 'No se pudo crear el encuentro. Intenta de nuevo.' };
     }
 
     const { data: clinicalNote, error: noteError } = await supabase
@@ -303,8 +318,8 @@ export async function startWalkInEncounter(payload: {
         await supabase.from('appointments').delete().eq('id', appointment.id);
         console.error('[startWalkInEncounter] Clinical note insert error:', noteError);
         return {
-            error: 'Error al crear la nota clínica del encuentro.',
-            details: noteError?.message || null,
+            error: 'No se pudo crear la nota clínica. Intenta de nuevo.',
+            details: null,
         };
     }
 
@@ -382,8 +397,8 @@ export async function saveEncounterDraft(id: string, formData: {
             .single(),
     ]);
 
-    if (encResult.error) return { error: encResult.error.message };
-    if (noteResult.error) return { error: noteResult.error.message };
+    if (encResult.error) return { error: 'No se pudieron guardar los signos vitales. Intenta de nuevo.' };
+    if (noteResult.error) return { error: 'No se pudo guardar la nota clínica. Intenta de nuevo.' };
 
     // Audit the draft save (vital signs and SOAP changes)
     await (supabase as any).from('encounter_draft_audit_log').insert([{
@@ -445,7 +460,7 @@ export async function updateEncounterStatus(id: string, newStatus: EncounterStat
         }]),
     ]);
 
-    if (error) return { error: error.message };
+    if (error) return { error: 'No se pudo actualizar el estado del encuentro. Intenta de nuevo.' };
 
     revalidatePath('/history');
     return { data };
@@ -491,7 +506,7 @@ export async function finalizeEncounter(id: string) {
             .single(),
     ]);
 
-    if (encResult.error) return { error: encResult.error.message };
+    if (encResult.error) return { error: 'No se pudo finalizar el encuentro. Intenta de nuevo.' };
 
     // Explicit audit for encounter finalization
     await (supabase as any).from('encounter_audit_log').insert([{
@@ -651,7 +666,7 @@ export async function createAddendum(encounterId: string, content: string) {
         .select()
         .single();
 
-    if (error) return { error: error.message };
+    if (error) return { error: 'No se pudo guardar la addenda. Intenta de nuevo.' };
 
     revalidatePath('/history');
     return { data };

@@ -113,7 +113,7 @@ export default function NewWalkInEncounterDialog({
                 if (isBlockingError) {
                     setAlertError(errorMsg);
                 } else {
-                    toast.error(details ? `${errorMsg}\n(${details})` : errorMsg);
+                    toast.error(errorMsg, { description: details ?? undefined });
                 }
             } else {
                 toast.success('Consulta iniciada');
