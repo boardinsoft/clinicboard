@@ -78,6 +78,7 @@ const SidebarProvider = React.forwardRef<
 
     const getInitialOpen = () => {
       if (defaultOpen === true) return true
+      if (typeof document === 'undefined') return false
       const cookies = document.cookie.split(';')
       for (const cookie of cookies) {
         const [name, value] = cookie.trim().split('=')
