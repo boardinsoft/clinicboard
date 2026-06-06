@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Calendar, Clock, User2, Stethoscope, Search } from 'lucide-react';
+import { Calendar, Clock, User2, Stethoscope, Search, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDate, formatTime } from '@/lib/date-utils';
@@ -104,6 +104,11 @@ export default function HistoryTable({ encounters, toolbar, className }: History
                             </div>
                         </th>
                         <th>Estado</th>
+                        <th className="hidden md:table-cell">
+                            <div className="flex items-center gap-1.5">
+                                Origen
+                            </div>
+                        </th>
                         <th className="hidden lg:table-cell">Motivo</th>
                         <th className="hidden lg:table-cell text-right">
                             <div className="flex items-center justify-end gap-1.5">
@@ -168,6 +173,17 @@ export default function HistoryTable({ encounters, toolbar, className }: History
                                     <Badge variant={variant}>
                                         {label}
                                     </Badge>
+                                </td>
+
+                                <td className="hidden md:table-cell">
+                                    {enc.appointment?.appointment_type === 'walk-in' ? (
+                                        <div className="flex items-center gap-1">
+                                            <Zap className="w-3 h-3 text-n-8" />
+                                            <span className="text-[10px] font-medium text-n-8 uppercase tracking-tight">Sin Cita</span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-[10px] text-n-6 uppercase tracking-tight">Agenda</span>
+                                    )}
                                 </td>
 
                                 <td className="hidden lg:table-cell max-w-[200px]">

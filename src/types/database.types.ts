@@ -991,4 +991,10 @@ export type EncounterForPreview = EncounterWithClinicalNote & {
     name_family: string;
     birth_date: string | null;
   };
+  appointment?: {
+    id: string;
+    start_time: string | null;
+    appointment_type: string | null;
+    status: string | null;
+  } | null;
 };

@@ -34,6 +34,7 @@ import { Loader2, Stethoscope, Zap, ClipboardList } from 'lucide-react';
 import { PatientSearchField } from '@/components/patients/PatientSearchField';
 import { APPOINTMENT_TYPES } from '@/lib/appointmentConstants';
 import AlertConflict from '@/components/ui/AlertConflict';
+import SameDayDuplicateConfirm from '@/components/ui/SameDayDuplicateConfirm';
 
 interface NewWalkInEncounterDialogProps {
     open: boolean;
@@ -55,6 +56,7 @@ export default function NewWalkInEncounterDialog({
 }: NewWalkInEncounterDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [alertError, setAlertError] = useState<string | null>(null);
+    const [duplicateConfirm, setDuplicateConfirm] = useState<{ open: boolean; previousTime: string | null }>({ open: false, previousTime: null });
     const { activeClinic } = useActiveClinic();
 
     const form = useForm<WalkInEncounterFormValues>({
@@ -85,16 +87,22 @@ export default function NewWalkInEncounterDialog({
             if (result.error) {
                 const rawError = result.error;
 
+                if (typeof rawError === 'object' && rawError !== null && 'error' in rawError && (rawError as any).error === 'duplicate_same_day') {
+                    setDuplicateConfirm({
+                        open: true,
+                        previousTime: (rawError as any).previousEncounterTime || null,
+                    });
+                    return;
+                }
+
                 let errorMsg: string;
                 let details: string | null = null;
 
                 if (typeof rawError === 'string') {
                     errorMsg = rawError;
-                } else if (rawError !== null && typeof rawError === 'object') {
-                    errorMsg = 'Error al iniciar la consulta';
-                    details = (rawError as { details?: string }).details || null;
                 } else {
                     errorMsg = 'Error al iniciar la consulta';
+                    details = (rawError as { details?: string }).details || null;
                 }
 
                 const isBlockingError = errorMsg.includes('ya tiene una cita activa') ||
@@ -127,6 +135,41 @@ export default function NewWalkInEncounterDialog({
                 open={!!alertError}
                 onOpenChange={(open) => { if (!open) setAlertError(null); }}
                 message={alertError}
+            />
+
+            <SameDayDuplicateConfirm
+                open={duplicateConfirm.open}
+                onOpenChange={(open) => { if (!open) setDuplicateConfirm({ open: false, previousTime: null }); }}
+                previousEncounterTime={duplicateConfirm.previousTime}
+                onConfirm={async () => {
+                    const values = form.getValues();
+                    if (!values.patient_id) return;
+
+                    setIsSubmitting(true);
+                    try {
+                        const result = await startWalkInEncounter({
+                            patient_id: values.patient_id,
+                            appointment_type: values.appointment_type,
+                            description: values.description,
+                            clinic_id: activeClinic?.id || '',
+                            workflow_type: values.workflow_type,
+                            force_create: true,
+                        });
+
+                        if (result.error) {
+                            toast.error(typeof result.error === 'string' ? result.error : 'Error al iniciar la consulta');
+                        } else {
+                            toast.success('Consulta iniciada');
+                            form.reset();
+                            onSuccess(result.data!.encounter.id);
+                            onOpenChange(false);
+                        }
+                    } catch (err) {
+                        toast.error('Ocurrió un error inesperado');
+                    } finally {
+                        setIsSubmitting(false);
+                    }
+                }}
             />
 
             <Dialog open={open} onOpenChange={onOpenChange}>

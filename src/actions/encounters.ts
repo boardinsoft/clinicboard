@@ -148,8 +148,9 @@ export async function startWalkInEncounter(payload: {
     appointment_type?: string;
     description?: string;
     workflow_type?: 'quick' | 'with-evaluation';
+    force_create?: boolean;
 }) {
-    const { patient_id: patientId, clinic_id: clinicId, encounter_class: encClass, encounter_category: encCategory, appointment_type: apptType, description: apptDesc, workflow_type: wfType } = payload;
+    const { patient_id: patientId, clinic_id: clinicId, encounter_class: encClass, encounter_category: encCategory, appointment_type: apptType, description: apptDesc, workflow_type: wfType, force_create } = payload;
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
 
@@ -179,7 +180,7 @@ export async function startWalkInEncounter(payload: {
 
     const { data: todayEncounter } = await supabase
         .from('encounters')
-        .select('id, start_time')
+        .select('id, start_time, appointment_id')
         .eq('patient_id', patientId)
         .eq('practitioner_id', practitionerId)
         .eq('clinic_id', clinicId)
@@ -188,10 +189,19 @@ export async function startWalkInEncounter(payload: {
         .not('status', 'eq', 'cancelled')
         .maybeSingle();
 
-    if (todayEncounter) {
+    if (todayEncounter && !force_create) {
+        // Get appointment details for context
+        const { data: appt } = await supabase
+            .from('appointments')
+            .select('start_time')
+            .eq('id', todayEncounter.appointment_id)
+            .maybeSingle();
+
         return {
-            error: 'Este paciente ya fue atendido el día de hoy. ¿Deseas iniciar otra consulta de todas formas?',
+            error: 'duplicate_same_day',
             todayEncounterId: todayEncounter.id,
+            previousEncounterTime: todayEncounter.start_time,
+            previousAppointmentTime: appt?.start_time || null,
         };
     }
 
@@ -563,7 +573,8 @@ export async function getEncountersFiltered(filters?: {
             *,
             patient:patients(id, name_given, name_family, birth_date),
             practitioner:practitioners(name_given, name_family, specialty),
-            clinical_note:clinical_notes(reason_code, subjective, plan, is_finalized)
+            clinical_note:clinical_notes(reason_code, subjective, plan, is_finalized),
+            appointment:appointments(id, start_time, appointment_type, status)
         `)
         .eq('practitioner_id', practitionerId)
         .order('start_time', { ascending: false })
