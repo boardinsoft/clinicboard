@@ -112,6 +112,30 @@ export type Database = {
           },
         ]
       }
+      encounter_type_config: {
+        Row: {
+          created_at: string | null
+          encounter_class: string
+          id: string
+          max_duration_minutes: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          encounter_class: string
+          id?: string
+          max_duration_minutes: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          encounter_class?: string
+          id?: string
+          max_duration_minutes?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_type: string | null
@@ -431,13 +455,17 @@ export type Database = {
           encounter_category: string | null
           encounter_subcategory: string | null
           end_time: string | null
+          extended_count: number | null
           fhir_id: string
           id: string
+          notified_at: string | null
+          original_duration_minutes: number | null
           patient_id: string
           practitioner_id: string
           source: string | null
           start_time: string
           status: Database["public"]["Enums"]["encounter_status"] | null
+          timeout_reason: string | null
           updated_at: string | null
           vital_signs: Json | null
         }
@@ -449,13 +477,17 @@ export type Database = {
           encounter_category?: string | null
           encounter_subcategory?: string | null
           end_time?: string | null
+          extended_count?: number | null
           fhir_id?: string
           id?: string
+          notified_at?: string | null
+          original_duration_minutes?: number | null
           patient_id: string
           practitioner_id: string
           source?: string | null
           start_time?: string
           status?: Database["public"]["Enums"]["encounter_status"] | null
+          timeout_reason?: string | null
           updated_at?: string | null
           vital_signs?: Json | null
         }
@@ -466,14 +498,18 @@ export type Database = {
           encounter_class?: string | null
           encounter_category?: string | null
           encounter_subcategory?: string | null
-          source?: string | null
           end_time?: string | null
+          extended_count?: number | null
           fhir_id?: string
           id?: string
+          notified_at?: string | null
+          original_duration_minutes?: number | null
           patient_id?: string
           practitioner_id?: string
+          source?: string | null
           start_time?: string
           status?: Database["public"]["Enums"]["encounter_status"] | null
+          timeout_reason?: string | null
           updated_at?: string | null
           vital_signs?: Json | null
         }
@@ -1000,4 +1036,18 @@ export type EncounterForPreview = EncounterWithClinicalNote & {
     appointment_type: string | null;
     status: string | null;
   } | null;
+};
+
+export type EncounterTimeoutStatus = {
+  encounterId: string;
+  isExpired: boolean;
+  isNotified: boolean;
+  extendedCount: number;
+  maxExtensions: number;
+  maxDurationMinutes: number;
+  elapsedMinutes: number;
+  remainingMinutes: number | null;
+  shouldAutoCancel: boolean;
+  gracePeriodMinutes: number;
+  gracePeriodRemainingMinutes: number | null;
 };

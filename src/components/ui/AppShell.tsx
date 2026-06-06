@@ -14,6 +14,7 @@ import { useTabStore } from '@/store/useTabStore';
 import TabContentManager from './TabContentManager';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import AIAssistant from './AIAssistant';
+import { EncounterTimeoutProvider } from '@/components/providers/EncounterTimeoutProvider';
 import { searchGlobal, SearchResult, GroupedSearchResults } from '@/actions/search';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
@@ -902,7 +903,9 @@ export default function AppShellWrapper(props: AppShellProps) {
       <Sidebar side="left" variant="sidebar" collapsible="icon">
         <AppSidebar />
       </Sidebar>
-      <AppLayout {...props} />
+      <EncounterTimeoutProvider>
+        <AppLayout {...props} />
+      </EncounterTimeoutProvider>
     </SidebarProvider>
   );
 }

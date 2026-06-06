@@ -694,3 +694,205 @@ export async function getAddenda(encounterId: string) {
 
     return { data: data || [] };
 }
+
+const ENCOUNTER_TIMEOUT_GRACE_PERIOD_MINUTES = 15;
+const ENCOUNTER_TIMEOUT_MAX_EXTENSIONS = 3;
+
+async function getEncounterTypeConfig(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, encounterClass: string | null): Promise<number> {
+    if (!encounterClass) return 45;
+    const { data } = await supabase
+        .from('encounter_type_config')
+        .select('max_duration_minutes')
+        .eq('encounter_class', encounterClass)
+        .maybeSingle();
+    return data?.max_duration_minutes ?? 45;
+}
+
+export async function getEncounterTimeStatus(encounterId: string) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) return { error: 'No autorizado' };
+
+    const { data: encounter, error } = await supabase
+        .from('encounters')
+        .select('id, status, start_time, notified_at, extended_count, encounter_class')
+        .eq('id', encounterId)
+        .eq('practitioner_id', practitionerId)
+        .single();
+
+    if (error || !encounter) return { error: 'Encuentro no encontrado' };
+
+    if (encounter.status !== 'in-progress') {
+        return { data: null };
+    }
+
+    const maxDurationMinutes = await getEncounterTypeConfig(supabase, encounter.encounter_class);
+    const startTime = new Date(encounter.start_time);
+    const now = new Date();
+    const elapsedMinutes = Math.floor((now.getTime() - startTime.getTime()) / 60000);
+    const isExpired = elapsedMinutes > maxDurationMinutes;
+    const remainingMinutes = isExpired ? 0 : maxDurationMinutes - elapsedMinutes;
+
+    let gracePeriodRemainingMinutes: number | null = null;
+    const shouldAutoCancel = isExpired && encounter.notified_at !== null;
+
+    if (shouldAutoCancel) {
+        const notifiedAt = new Date(encounter.notified_at!);
+        const gracePeriodEnd = new Date(notifiedAt.getTime() + ENCOUNTER_TIMEOUT_GRACE_PERIOD_MINUTES * 60000);
+        gracePeriodRemainingMinutes = Math.max(0, Math.floor((gracePeriodEnd.getTime() - now.getTime()) / 60000));
+    }
+
+    const status = {
+        encounterId: encounter.id,
+        isExpired,
+        isNotified: encounter.notified_at !== null,
+        extendedCount: encounter.extended_count ?? 0,
+        maxExtensions: ENCOUNTER_TIMEOUT_MAX_EXTENSIONS,
+        maxDurationMinutes,
+        elapsedMinutes,
+        remainingMinutes,
+        shouldAutoCancel,
+        gracePeriodMinutes: ENCOUNTER_TIMEOUT_GRACE_PERIOD_MINUTES,
+        gracePeriodRemainingMinutes,
+    };
+
+    return { data: status };
+}
+
+export async function extendEncounterTimeout(encounterId: string) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) return { error: 'No autorizado' };
+
+    const { data: encounter, error } = await supabase
+        .from('encounters')
+        .select('id, status, extended_count, notified_at, encounter_class, start_time')
+        .eq('id', encounterId)
+        .eq('practitioner_id', practitionerId)
+        .single();
+
+    if (error || !encounter) return { error: 'Encuentro no encontrado' };
+    if (encounter.status !== 'in-progress') return { error: 'El encuentro no está en consulta' };
+
+    const currentExtendedCount = encounter.extended_count ?? 0;
+    if (currentExtendedCount >= ENCOUNTER_TIMEOUT_MAX_EXTENSIONS) {
+        return { error: `Se alcanzó el máximo de ${ENCOUNTER_TIMEOUT_MAX_EXTENSIONS} extensiones permitidas` };
+    }
+
+    const maxDurationMinutes = await getEncounterTypeConfig(supabase, encounter.encounter_class);
+    const actualDurationMinutes = Math.floor((new Date().getTime() - new Date(encounter.start_time).getTime()) / 60000);
+
+    const [{ data, error: updateError }] = await Promise.all([
+        supabase
+            .from('encounters')
+            .update({
+                notified_at: null,
+                extended_count: currentExtendedCount + 1,
+                updated_at: new Date().toISOString(),
+            })
+            .eq('id', encounterId)
+            .select()
+            .single(),
+        (supabase as any).from('encounter_audit_log').insert([{
+            encounter_id: encounterId,
+            changed_by: practitionerId,
+            old_status: encounter.status,
+            new_status: encounter.status,
+            notes: `Timeout extendido ${currentExtendedCount + 1}/${ENCOUNTER_TIMEOUT_MAX_EXTENSIONS} veces`,
+            change_reason: 'timeout_extended',
+            timeout_action: 'extended',
+            extended_by: practitionerId,
+            original_duration_minutes: maxDurationMinutes,
+            actual_duration_minutes: actualDurationMinutes,
+        }]),
+    ]);
+
+    if (updateError) return { error: 'No se pudo extender el timeout. Intenta de nuevo.' };
+
+    return { data };
+}
+
+export async function cleanupExpiredEncounters() {
+    const supabase = await createServerSupabaseClient();
+
+    const { data: expiredEncounters, error } = await supabase
+        .from('encounters')
+        .select('id, notified_at, extended_count, encounter_class, start_time, practitioner_id')
+        .eq('status', 'in-progress')
+        .not('notified_at', 'is', null);
+
+    if (error) {
+        console.error('[cleanupExpiredEncounters] Error fetching expired encounters:', error);
+        return { error: 'Error al buscar encuentros expirados' };
+    }
+
+    if (!expiredEncounters || expiredEncounters.length === 0) {
+        return { data: { processed: 0, cancelled: 0, extended: 0 } };
+    }
+
+    let cancelled = 0;
+    let extended = 0;
+
+    for (const encounter of expiredEncounters) {
+        const maxDuration = await getEncounterTypeConfig(supabase, encounter.encounter_class);
+        const notifiedAt = new Date(encounter.notified_at!);
+        const gracePeriodEnd = new Date(notifiedAt.getTime() + ENCOUNTER_TIMEOUT_GRACE_PERIOD_MINUTES * 60000);
+        const now = new Date();
+
+        const actualDurationMinutes = Math.floor((now.getTime() - new Date(encounter.start_time).getTime()) / 60000);
+
+        if (encounter.extended_count !== null && encounter.extended_count >= ENCOUNTER_TIMEOUT_MAX_EXTENSIONS) {
+            await supabase
+                .from('encounters')
+                .update({
+                    status: 'cancelled',
+                    timeout_reason: 'timeout',
+                    end_time: now.toISOString(),
+                    updated_at: now.toISOString(),
+                })
+                .eq('id', encounter.id);
+
+            await (supabase as any).from('encounter_audit_log').insert([{
+                encounter_id: encounter.id,
+                changed_by: null,
+                old_status: 'in-progress',
+                new_status: 'cancelled',
+                notes: 'Auto-cancelado: máximo de extensiones alcanzado',
+                change_reason: 'timeout_auto_cancelled',
+                timeout_action: 'auto_cancelled',
+                original_duration_minutes: maxDuration,
+                actual_duration_minutes: actualDurationMinutes,
+            }]);
+
+            cancelled++;
+        } else if (now >= gracePeriodEnd) {
+            await supabase
+                .from('encounters')
+                .update({
+                    status: 'cancelled',
+                    timeout_reason: 'timeout',
+                    end_time: now.toISOString(),
+                    updated_at: now.toISOString(),
+                })
+                .eq('id', encounter.id);
+
+            await (supabase as any).from('encounter_audit_log').insert([{
+                encounter_id: encounter.id,
+                changed_by: null,
+                old_status: 'in-progress',
+                new_status: 'cancelled',
+                notes: 'Auto-cancelado: período de gracia vencido',
+                change_reason: 'timeout_auto_cancelled',
+                timeout_action: 'auto_cancelled',
+                original_duration_minutes: maxDuration,
+                actual_duration_minutes: actualDurationMinutes,
+            }]);
+
+            cancelled++;
+        }
+    }
+
+    return { data: { processed: expiredEncounters.length, cancelled, extended } };
+}
