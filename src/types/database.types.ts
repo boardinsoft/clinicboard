@@ -435,6 +435,7 @@ export type Database = {
           id: string
           patient_id: string
           practitioner_id: string
+          source: string | null
           start_time: string
           status: Database["public"]["Enums"]["encounter_status"] | null
           updated_at: string | null
@@ -452,6 +453,7 @@ export type Database = {
           id?: string
           patient_id: string
           practitioner_id: string
+          source?: string | null
           start_time?: string
           status?: Database["public"]["Enums"]["encounter_status"] | null
           updated_at?: string | null
@@ -464,6 +466,7 @@ export type Database = {
           encounter_class?: string | null
           encounter_category?: string | null
           encounter_subcategory?: string | null
+          source?: string | null
           end_time?: string | null
           fhir_id?: string
           id?: string

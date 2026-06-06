@@ -760,7 +760,8 @@ export async function startConsultationFromAppointment(appointmentId: string, de
         start_time: new Date().toISOString(),
         appointment_id: appointmentId,
         status: 'in-progress',
-        clinic_id: appt.clinic_id
+        clinic_id: appt.clinic_id,
+        source: 'appointments-module',
     });
 
     if (encounterResult.error) {

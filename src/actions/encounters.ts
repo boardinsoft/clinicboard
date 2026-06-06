@@ -59,6 +59,7 @@ export async function createEncounter(formData: {
     encounter_category?: string;
     encounter_subcategory?: string;
     clinic_id: string;
+    source?: string;
 }) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
@@ -102,6 +103,7 @@ export async function createEncounter(formData: {
             status: validation.data.status,
             start_time: validation.data.start_time,
             appointment_id: validation.data.appointment_id,
+            source: validation.data.source,
         }])
         .select()
         .single();
@@ -273,6 +275,7 @@ export async function startWalkInEncounter(payload: {
             status: encounterStatus,
             start_time: startTime,
             appointment_id: appointment.id,
+            source: 'walk-in-dialog',
         }])
         .select()
         .single();

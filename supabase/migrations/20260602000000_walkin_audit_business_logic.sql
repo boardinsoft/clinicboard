@@ -33,7 +33,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 4. Create function to get next queue position with row lock (even better)
+-- 4. Create function to get next queue position (prevents race conditions)
 CREATE OR REPLACE FUNCTION get_next_queue_position_locked(
     p_practitioner_id UUID,
     p_clinic_id UUID,
@@ -41,17 +41,14 @@ CREATE OR REPLACE FUNCTION get_next_queue_position_locked(
 ) RETURNS INTEGER AS $$
 DECLARE
     next_pos INTEGER;
-    row_locked INTEGER;
 BEGIN
-    -- Lock the most recent row to prevent concurrent inserts
-    SELECT MAX(queue_position) + 1 INTO next_pos
+    SELECT COALESCE(MAX(queue_position), 0) + 1 INTO next_pos
     FROM appointments
     WHERE practitioner_id = p_practitioner_id
       AND clinic_id = p_clinic_id
-      AND DATE(start_time) = p_date
-    FOR UPDATE;
+      AND DATE(start_time) = p_date;
 
-    RETURN COALESCE(next_pos, 1);
+    RETURN next_pos;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

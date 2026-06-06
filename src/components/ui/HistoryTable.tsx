@@ -176,13 +176,15 @@ export default function HistoryTable({ encounters, toolbar, className }: History
                                 </td>
 
                                 <td className="hidden md:table-cell">
-                                    {enc.appointment?.appointment_type === 'walk-in' ? (
+                                    {enc.source === 'walk-in-dialog' ? (
                                         <div className="flex items-center gap-1">
                                             <Zap className="w-3 h-3 text-n-8" />
                                             <span className="text-[10px] font-medium text-n-8 uppercase tracking-tight">Sin Cita</span>
                                         </div>
-                                    ) : (
+                                    ) : enc.source === 'appointments-module' ? (
                                         <span className="text-[10px] text-n-6 uppercase tracking-tight">Agenda</span>
+                                    ) : (
+                                        <span className="text-[10px] text-n-6 uppercase tracking-tight">—</span>
                                     )}
                                 </td>
 

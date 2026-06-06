@@ -16,6 +16,7 @@ export const encounterSchema = z.object({
     status: EncounterStatusEnum.optional().default('planned'),
     start_time: z.string().datetime({ message: 'Fecha/hora inválida (se requiere ISO 8601)' }),
     end_time: z.string().datetime().optional().nullable(),
+    source: z.string().optional().nullable(),
     vital_signs: z.object({
         temperature: z.number().optional(),
         blood_pressure_systolic: z.number().optional(),
