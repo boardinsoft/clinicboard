@@ -213,13 +213,19 @@ export async function startWalkInEncounter(payload: {
     const endTime = new Date(now.getTime() + 15 * 60000).toISOString();
 
     // 3. Use atomic function to get next queue position (prevents race conditions)
-    const { data: nextPosition } = await supabase.rpc('get_next_queue_position_locked' as any, {
+    const { data: nextPosition, error: rpcError } = await supabase.rpc('get_next_queue_position_locked' as any, {
         p_practitioner_id: practitionerId,
         p_clinic_id: clinicId,
         p_date: localToday,
     });
 
+    if (rpcError) {
+        console.error('[startWalkInEncounter] RPC error:', rpcError);
+        return { error: `Error RPC: ${rpcError.message}` };
+    }
+
     if (typeof nextPosition !== 'number') {
+        console.error('[startWalkInEncounter] Invalid queue position:', nextPosition, { practitionerId, clinicId, localToday });
         return { error: 'Error al calcular la posición en cola. Intenta de nuevo.' };
     }
 
