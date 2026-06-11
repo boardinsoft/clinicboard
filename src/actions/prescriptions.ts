@@ -3,9 +3,10 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { prescriptionSchema } from '@/lib/schemas/prescription.schema';
+import { prescriptionSchema, createPrescriptionFormSchema } from '@/lib/schemas/prescription.schema';
 import { MedicationRequestStatus } from '@/lib/fhir/types';
 import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
+import type { MedicationItemInput } from '@/lib/schemas/prescription.schema';
 
 /**
  * createPrescription(data)
@@ -83,6 +84,100 @@ export async function createPrescription(formData: {
     }
 
     revalidatePath('/prescriptions');
+    return { data };
+}
+
+/**
+ * createPrescriptions(formData)
+ * Creates multiple medication_requests rows (one per medication item).
+ * Validates encounter belongs to practitioner and is in-progress.
+ * Returns array of created prescriptions.
+ */
+export async function createPrescriptions(formData: {
+    encounter_id: string;
+    patient_id: string;
+    clinic_id: string;
+    items: MedicationItemInput[];
+    notes?: string;
+    intent?: string;
+}) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) {
+        return { error: 'No autorizado. Sesión no encontrada.' };
+    }
+
+    const validation = createPrescriptionFormSchema.safeParse({
+        encounter_id: formData.encounter_id,
+        patient_id: formData.patient_id,
+        clinic_id: formData.clinic_id,
+        items: formData.items,
+        notes: formData.notes,
+        intent: formData.intent || 'order',
+    });
+
+    if (!validation.success) {
+        return { error: z.flattenError(validation.error).fieldErrors };
+    }
+
+    const { data: encounter } = await supabase
+        .from('encounters')
+        .select('id, status, practitioner_id')
+        .eq('id', formData.encounter_id)
+        .single();
+
+    if (!encounter) {
+        return { error: 'Encuentro no encontrado.' };
+    }
+
+    if (encounter.practitioner_id !== practitionerId) {
+        return { error: 'No tienes permisos sobre este encuentro.' };
+    }
+
+    if (encounter.status !== 'in-progress') {
+        return { error: 'Solo se pueden crear recetas desde encuentros en curso.' };
+    }
+
+    const now = new Date().toISOString();
+    const prescriptionsToInsert = formData.items.map((item) => {
+        const dosage_instruction = [
+            item.dose,
+            item.frequency,
+            `Vía: ${item.route}`,
+            `Duración: ${item.duration_value} ${item.duration_unit}`,
+            item.indications ? `Indicaciones: ${item.indications}` : '',
+        ].filter(Boolean);
+
+        return {
+            patient_id: formData.patient_id,
+            encounter_id: formData.encounter_id,
+            prescriber_id: practitionerId,
+            clinic_id: formData.clinic_id,
+            medication_code: item.medication_code,
+            medication_display: item.medication_display,
+            status: 'draft' as MedicationRequestStatus,
+            intent: formData.intent || 'order',
+            dosage_instruction,
+            authored_on: now,
+            note: formData.notes || null,
+            fhir_id: crypto.randomUUID(),
+        };
+    });
+
+    const { data, error } = await supabase
+        .from('medication_requests')
+        .insert(prescriptionsToInsert)
+        .select();
+
+    if (error) {
+        console.error('Error in createPrescriptions:', error);
+        return { error: error.message };
+    }
+
+    revalidatePath('/prescriptions');
+    revalidatePath(`/history`);
+
     return { data };
 }
 

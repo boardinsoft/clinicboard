@@ -60,36 +60,18 @@ export default function PrescriptionTable({ prescriptions, toolbar, className }:
                 <div className="text-center space-y-1">
                     <h3 className="text-sm font-bold text-foreground">No hay recetas registradas</h3>
                     <p className="text-[12px] text-n-8 max-w-[280px] mx-auto">
-                        Aún no se han creado recetas médicas para este periodo.
+                        Las recetas médicas se crean desde un encuentro clínico activo.
                     </p>
                 </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2 h-8"
-                    onClick={() => router.push(`/${slug}/prescriptions/new`)}
-                >
-                    <Pill className="w-3.5 h-3.5 mr-2" />
-                    Nueva Receta
-                </Button>
             </div>
         );
     }
 
     return (
         <div className={`flex-1 flex flex-col min-h-0 bg-background overflow-hidden ${className ?? ''}`}>
-            {(toolbar || true) && (
+            {toolbar && (
                 <div className="shrink-0 flex items-center justify-between px-4 py-2 border-b border-border/40 bg-background">
                     <div className="flex-1">{toolbar}</div>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2 gap-1 text-b-8 hover:bg-b-1"
-                        onClick={() => router.push(`/${slug}/prescriptions/new`)}
-                    >
-                        <Pill className="w-3.5 h-3.5" />
-                        <span className="text-xs font-medium">+ Receta</span>
-                    </Button>
                 </div>
             )}
             <div className="overflow-x-auto min-h-0 flex-1 no-scrollbar">
