@@ -1051,3 +1051,16 @@ export type EncounterTimeoutStatus = {
   gracePeriodMinutes: number;
   gracePeriodRemainingMinutes: number | null;
 };
+
+export type PrescriptionForPreview = Tables<'medication_requests'> & {
+  patient?: {
+    id: string;
+    name_given: string[];
+    name_family: string;
+    birth_date: string | null;
+  } | null;
+  prescriber?: {
+    name_given: string[];
+    name_family: string;
+  } | null;
+};

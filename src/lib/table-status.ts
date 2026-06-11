@@ -26,3 +26,23 @@ export const CLASS_LABELS: Record<string, string> = {
     EMER: 'Urgencia',
     HH:   'Domicilio',
 };
+
+export const PRESCRIPTION_STATUS_LABELS: Record<string, string> = {
+    'draft':     'Borrador',
+    'active':    'Activa',
+    'on-hold':   'En espera',
+    'cancelled': 'Cancelada',
+    'completed': 'Completada',
+    'stopped':   'Detenida',
+    'unknown':   'Desconocido',
+};
+
+export const PRESCRIPTION_STATUS_VARIANT: Record<string, BadgeProps['variant']> = {
+    'draft':     'pill-neutral',
+    'active':    'pill-success',
+    'on-hold':   'pill-warning',
+    'cancelled': 'pill-danger',
+    'completed': 'pill-neutral',
+    'stopped':   'pill-danger',
+    'unknown':   'pill-neutral',
+};

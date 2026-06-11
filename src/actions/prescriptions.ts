@@ -205,3 +205,40 @@ export async function getPrescriptionsByPatient(patientId: string, clinicId?: st
 
     return { data };
 }
+
+/**
+ * getPrescriptionsForTable(clinicId?)
+ * Fetch all prescriptions for the table view with patient and prescriber joins.
+ * Orders by authored_on DESC.
+ */
+export async function getPrescriptionsForTable(clinicId?: string) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) {
+        return { error: 'No autorizado' };
+    }
+
+    let query = supabase
+        .from('medication_requests')
+        .select(`
+            *,
+            patient:patients(id, name_given, name_family, birth_date),
+            prescriber:practitioners(name_given, name_family)
+        `)
+        .eq('prescriber_id', practitionerId)
+        .order('authored_on', { ascending: false });
+
+    if (clinicId) {
+        query = query.eq('clinic_id', clinicId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('Error in getPrescriptionsForTable:', error);
+        return { error: error.message };
+    }
+
+    return { data };
+}
