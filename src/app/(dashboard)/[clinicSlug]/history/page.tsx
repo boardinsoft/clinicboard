@@ -207,6 +207,7 @@ export default function HistoryPage() {
     );
     const [pastEncounters, setPastEncounters] = useState<EncounterWithClinicalNote[]>([]);
     const [activeEncounterId, setActiveEncounterId] = useState<string | null>(null);
+    const [activeEncounterStatus, setActiveEncounterStatus] = useState<string | null>(null);
     const [isReadOnly, setIsReadOnly] = useState(false);
     const [isLoadingEncounters, setIsLoadingEncounters] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -246,6 +247,7 @@ export default function HistoryPage() {
 
     const handleEncounterSelect = useCallback((id: string | null, enc: EncounterWithClinicalNote | null) => {
         setActiveEncounterId(id);
+        setActiveEncounterStatus(enc?.status || null);
         const readOnly = enc?.status === 'finished';
         setIsReadOnly(readOnly);
         if (enc) {
@@ -607,6 +609,8 @@ className="pt-5 pb-4 px-6"
                                         diagnosesFields={diagnosesFields}
                                         appendDiagnosis={appendDiagnosis}
                                         removeDiagnosis={removeDiagnosis}
+                                        encounterId={activeEncounterId}
+                                        encounterStatus={activeEncounterStatus}
                                     />
                                 </>
                             )}

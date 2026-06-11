@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { UseFormReturn, Controller, useFieldArray } from 'react-hook-form';
 import { Stethoscope, Plus, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -43,6 +44,8 @@ type EvaluacionSectionProps = {
     appendDiagnosis: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     removeDiagnosis: any;
+    encounterId: string | null;
+    encounterStatus: string | null;
 };
 
 export default function EvaluacionSection({
@@ -51,7 +54,13 @@ export default function EvaluacionSection({
     diagnosesFields,
     appendDiagnosis,
     removeDiagnosis,
+    encounterId,
+    encounterStatus,
 }: EvaluacionSectionProps) {
+    const router = useRouter();
+    const params = useParams();
+    const slug = (params.clinicSlug as string) || '';
+    const isEncounterActive = encounterId && encounterStatus === 'in-progress';
     return (
         <Card className="bg-n-1">
             <div className="px-6 pt-5 pb-4 border-b border-n-5/30">
@@ -207,8 +216,17 @@ export default function EvaluacionSection({
 
                     <div className="pt-4 border-t border-n-5/30">
                         <div className="flex flex-wrap gap-3" role="group" aria-label="Acciones rápidas">
-                            {['Generar Receta', 'Orden de Laboratorios', 'Certificado Médico', 'Referencia'].map(action => (
-                                <Button key={action} variant="outline" size="sm" disabled={!selectedPatient} className="bg-n-1 hover:bg-b-8/10 hover:text-b-8 border-n-5/30 text-n-11 hover:border-b-8/30 transition-all font-medium text-xs h-8 px-4">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={!selectedPatient || !isEncounterActive}
+                                onClick={() => encounterId && router.push(`/${slug}/prescriptions/new?encounterId=${encounterId}`)}
+                                className="bg-n-1 hover:bg-b-8/10 hover:text-b-8 border-n-5/30 text-n-11 hover:border-b-8/30 transition-all font-medium text-xs h-8 px-4"
+                            >
+                                Generar Receta
+                            </Button>
+                            {['Orden de Laboratorios', 'Certificado Médico', 'Referencia'].map(action => (
+                                <Button key={action} variant="outline" size="sm" disabled={!selectedPatient} className="bg-n-1 hover:bg-n-2 hover:text-n-11 border-n-5/30 text-n-11 transition-all font-medium text-xs h-8 px-4">
                                     {action}
                                 </Button>
                             ))}
