@@ -201,15 +201,10 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                         <X className="size-5 text-n-8 hover:text-n-11" />
                                     </button>
                                 )}
-                                {results.length > 0 && (
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-n-8 font-mono">
-                                        {results.length} meds
-                                    </span>
-                                )}
                             </div>
                         </div>
 
-                        <div ref={resultsRef} id={listboxId} role="listbox" aria-label="Resultados de medicamentos" aria-busy={isLoading} className="flex-1 overflow-y-auto min-h-0">
+                        <div ref={resultsRef} id={listboxId} role="listbox" aria-label="Resultados de medicamentos" aria-busy={isLoading} className="max-h-[60vh] overflow-y-auto">
                             {isLoading ? (
                                 <div className="flex flex-col py-2">
                                     {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
@@ -224,6 +219,13 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                 </div>
                             ) : hasSearchResults ? (
                                 <>
+                                    <div className="px-6 py-2.5 border-b border-n-5/10 flex items-center justify-between">
+                                        <span className="text-[11px] text-n-8">
+                                            <span className="font-mono font-semibold text-b-8">{results.length}</span>
+                                            {' '}resultados para{' '}
+                                            <span className="font-mono text-n-11">&ldquo;{searchQuery}&rdquo;</span>
+                                        </span>
+                                    </div>
                                     {groupedResults.map(group => (
                                         <div key={group.form}>
                                             <div className="sticky top-0 z-10 bg-n-2/95 backdrop-blur-sm px-6 py-2 border-b border-b-8/20">
