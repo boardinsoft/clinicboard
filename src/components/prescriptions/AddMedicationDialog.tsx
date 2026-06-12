@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Pill, X, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -173,14 +172,14 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                 {!showManualEntry ? (
                     <>
                         <div className="shrink-0 px-6 py-3 border-b border-n-5/10">
-                            <InputGroup className="h-12 rounded-lg focus-within:ring-2 focus-within:ring-b-8/20 focus-within:border-b-8">
-                                <InputGroupInput
+                            <div className="relative flex items-center h-12 rounded-md bg-n-1 px-3 transition-all focus-within:border-2 focus-within:border-b-8">
+                                <Input
                                     ref={inputRef}
                                     placeholder="Buscar por nombre comercial o principio activo (DCI)..."
                                     value={searchQuery}
                                     onChange={(e) => { setSearchQuery(e.target.value); }}
                                     onKeyDown={handleKeyDown}
-                                    className="h-12 text-sm"
+                                    className="h-11 flex-1 border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 text-sm"
                                     autoFocus
                                     role="combobox"
                                     aria-label="Buscar medicamento"
@@ -189,21 +188,19 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                     aria-activedescendant={selectedIndex >= 0 ? `med-option-${selectedIndex}` : undefined}
                                 />
                                 {isSearching && (
-                                    <div className="pr-3">
-                                        <Loader2 className="size-4 text-b-8 animate-spin" />
-                                    </div>
+                                    <Loader2 className="size-4 text-b-8 animate-spin shrink-0" />
                                 )}
                                 {searchQuery && !isSearching && (
                                     <button
                                         type="button"
                                         aria-label="Limpiar búsqueda"
                                         onClick={() => { setSearchQuery(''); setResults([]); inputRef.current?.focus(); }}
-                                        className="pr-3 active:scale-95 transition-transform"
+                                        className="shrink-0 active:scale-95 transition-transform"
                                     >
                                         <X className="size-4 text-n-8 hover:text-n-11" />
                                     </button>
                                 )}
-                            </InputGroup>
+                            </div>
                         </div>
 
                         <div ref={resultsRef} id={listboxId} role="listbox" aria-label="Resultados de medicamentos" aria-busy={isLoading} className="max-h-[400px] overflow-y-auto">
