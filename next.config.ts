@@ -9,7 +9,7 @@ const cspDirectives = [
   "default-src 'self'",
   // Removemos unsafe-eval pero mantenemos unsafe-inline temporalmente para React
   // TODO: Migrar a nonces en el futuro
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
   // Permitir conexiones a Supabase y Upstash Redis
   `connect-src 'self' ${supabaseUrl} ${supabaseWss} ${upstashUrl}`.trim(),

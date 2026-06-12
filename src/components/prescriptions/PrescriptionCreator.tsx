@@ -130,7 +130,10 @@ export default function PrescriptionCreator({
         setIsSaving(false);
 
         if (result.error) {
-            toast.error('Error al guardar', { description: result.error as string });
+            const errorMsg = typeof result.error === 'string'
+                ? result.error
+                : JSON.stringify(result.error);
+            toast.error('Error al guardar', { description: errorMsg });
             return;
         }
 
@@ -163,7 +166,10 @@ export default function PrescriptionCreator({
         setIsSaving(false);
 
         if (result.error) {
-            toast.error('Error al guardar', { description: result.error as string });
+            const errorMsg = typeof result.error === 'string'
+                ? result.error
+                : JSON.stringify(result.error);
+            toast.error('Error al guardar', { description: errorMsg });
             return;
         }
 
