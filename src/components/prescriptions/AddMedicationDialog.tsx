@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Pill, Search, X, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 interface MedicationResult {
@@ -24,6 +24,11 @@ interface AddMedicationDialogProps {
     onSelect: (medication: { code: string; display: string }) => void;
 }
 
+type GroupedResults = {
+    form: string;
+    items: MedicationResult[];
+};
+
 export default function AddMedicationDialog({ open, onOpenChange, onSelect }: AddMedicationDialogProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [results, setResults] = useState<MedicationResult[]>([]);
@@ -37,6 +42,30 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
     const inputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const listboxId = 'medications-listbox';
+
+    const groupedResults = useMemo<GroupedResults[]>(() => {
+        if (results.length === 0) return [];
+
+        const groups: Record<string, MedicationResult[]> = {};
+        for (const med of results) {
+            const form = med.pharmaceutical_form || 'Otros';
+            if (!groups[form]) groups[form] = [];
+            groups[form].push(med);
+        }
+
+        return Object.entries(groups)
+            .sort(([a], [b]) => {
+                const order = ['TABLETAS RECUBIERTAS', 'TABLETAS', 'COMPRIMIDOS', 'CAPSULAS', 'JARABE', 'SOLUCION INYECTABLE', 'SOLUCION ORAL', 'INYECTABLE', 'Otros'];
+                const aIdx = order.indexOf(a);
+                const bIdx = order.indexOf(b);
+                return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
+            })
+            .map(([form, items]) => ({ form, items }));
+    }, [results]);
+
+    const flatResults = useMemo(() => {
+        return groupedResults.flatMap(g => g.items);
+    }, [groupedResults]);
 
     const searchMedications = useCallback(async (query: string) => {
         if (query.trim().length < 2) {
@@ -126,17 +155,17 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (!showDropdown || results.length === 0) return;
+        if (!showDropdown || flatResults.length === 0) return;
 
         if (e.key === 'ArrowDown') {
             e.preventDefault();
-            setSelectedIndex(prev => (prev < results.length - 1 ? prev + 1 : 0));
+            setSelectedIndex(prev => (prev < flatResults.length - 1 ? prev + 1 : 0));
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            setSelectedIndex(prev => (prev > 0 ? prev - 1 : results.length - 1));
+            setSelectedIndex(prev => (prev > 0 ? prev - 1 : flatResults.length - 1));
         } else if (e.key === 'Enter' && selectedIndex >= 0) {
             e.preventDefault();
-            handleSelectResult(results[selectedIndex]);
+            handleSelectResult(flatResults[selectedIndex]);
         } else if (e.key === 'Escape') {
             setShowDropdown(false);
         }
@@ -156,6 +185,9 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
 
     const hasSearchResults = results.length > 0;
     const isEmptySearch = searchQuery.length >= 2 && !isSearching && results.length === 0;
+    const isLoading = isSearching && results.length === 0;
+
+    let globalIndex = -1;
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
@@ -191,12 +223,12 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                     autoFocus
                                     role="combobox"
                                     aria-label="Buscar medicamento"
-                                    aria-expanded={showDropdown && results.length > 0}
+                                    aria-expanded={showDropdown && (results.length > 0 || isSearching)}
                                     aria-controls={listboxId}
                                     aria-activedescendant={selectedIndex >= 0 ? `med-option-${selectedIndex}` : undefined}
                                 />
                                 {isSearching && (
-                                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-n-8 animate-spin" />
+                                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-b-8 animate-spin" />
                                 )}
                                 {searchQuery && !isSearching && (
                                     <button
@@ -214,50 +246,87 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                 )}
                             </div>
 
-                            {showDropdown && hasSearchResults && (
+                            {showDropdown && (hasSearchResults || isLoading) && (
                                 <div
                                     ref={dropdownRef}
                                     id={listboxId}
                                     role="listbox"
                                     aria-label="Resultados de medicamentos"
+                                    aria-busy={isLoading}
                                     className="absolute z-50 w-full mt-1 bg-n-1 border border-b-8/30 rounded-lg shadow-lg max-h-64 overflow-y-auto"
                                 >
-                                    {results.map((med, idx) => (
-                                        <button
-                                            key={med.id}
-                                            id={`med-option-${idx}`}
-                                            role="option"
-                                            aria-selected={idx === selectedIndex}
-                                            onClick={() => handleSelectResult(med)}
-                                            className={`w-full px-3 py-2.5 text-left hover:bg-b-2/20 transition-colors flex flex-col gap-1 active:scale-[0.99] ${
-                                                idx === selectedIndex ? 'bg-b-2/20' : ''
-                                            } ${idx === 0 ? 'rounded-t-lg' : ''} ${idx === results.length - 1 ? 'rounded-b-lg' : ''} ${idx < results.length - 1 ? 'border-b border-b-8/20' : ''}`}
-                                        >
-                                            <div className="flex items-start justify-between gap-2">
-                                                <span className="font-medium text-sm text-n-11 line-clamp-1">
-                                                    {med.name}
+                                    {isLoading ? (
+                                        <div className="flex flex-col gap-0">
+                                            {[1, 2, 3].map(i => (
+                                                <div key={i} className={`px-3 py-2.5 flex flex-col gap-2 ${i < 3 ? 'border-b border-n-5/20' : ''}`}>
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <Skeleton className="h-4 w-32 rounded" />
+                                                        <Skeleton className="h-4 w-16 rounded" />
+                                                    </div>
+                                                    <Skeleton className="h-3 w-48 rounded" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {groupedResults.map(group => (
+                                                <div key={group.form}>
+                                                    <div className="sticky top-0 z-10 bg-n-2/95 backdrop-blur-sm px-3 py-1.5 border-b border-b-8/20">
+                                                        <span className="text-[10px] font-bold text-n-8 uppercase tracking-wider">
+                                                            {group.form}
+                                                        </span>
+                                                    </div>
+                                                    {group.items.map(med => {
+                                                        globalIndex++;
+                                                        const currentIdx = globalIndex;
+                                                        return (
+                                                            <button
+                                                                key={med.id}
+                                                                id={`med-option-${currentIdx}`}
+                                                                role="option"
+                                                                aria-selected={currentIdx === selectedIndex}
+                                                                onClick={() => handleSelectResult(med)}
+                                                                className={`w-full px-3 py-2.5 text-left hover:bg-b-2/20 transition-colors flex flex-col gap-1 active:scale-[0.99] ${
+                                                                    currentIdx === selectedIndex ? 'bg-b-2/20' : ''
+                                                                } ${currentIdx < flatResults.length - 1 ? 'border-b border-b-8/20' : ''}`}
+                                                            >
+                                                                <div className="flex items-start justify-between gap-2">
+                                                                    <span className="font-medium text-sm text-n-11 line-clamp-1">
+                                                                        {med.name}
+                                                                    </span>
+                                                                    <Badge variant="outline" className="font-mono text-[10px] shrink-0">
+                                                                        {med.code}
+                                                                    </Badge>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 text-xs text-n-8">
+                                                                    <span className="line-clamp-1">{med.generic_name}</span>
+                                                                    {med.concentration && (
+                                                                        <>
+                                                                            <span className="text-n-5">·</span>
+                                                                            <span className="font-mono">{med.concentration}</span>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ))}
+                                            <div className="px-3 py-1.5 bg-n-2/50 border-t border-n-5/20 flex items-center justify-center gap-3">
+                                                <span className="text-[10px] text-n-8">
+                                                    <kbd className="font-mono bg-n-3 px-1 py-0.5 rounded text-n-10">↑↓</kbd> navegar
                                                 </span>
-                                                <Badge variant="outline" className="font-mono text-[10px] shrink-0">
-                                                    {med.code}
-                                                </Badge>
+                                                <span className="text-n-5">·</span>
+                                                <span className="text-[10px] text-n-8">
+                                                    <kbd className="font-mono bg-n-3 px-1 py-0.5 rounded text-n-10">↵</kbd> seleccionar
+                                                </span>
+                                                <span className="text-n-5">·</span>
+                                                <span className="text-[10px] text-n-8">
+                                                    <kbd className="font-mono bg-n-3 px-1 py-0.5 rounded text-n-10">esc</kbd> cerrar
+                                                </span>
                                             </div>
-                                            <div className="flex items-center gap-2 text-xs text-n-8">
-                                                <span className="line-clamp-1">{med.generic_name}</span>
-                                                {med.pharmaceutical_form && (
-                                                    <>
-                                                        <span className="text-n-5">·</span>
-                                                        <span>{med.pharmaceutical_form}</span>
-                                                    </>
-                                                )}
-                                                {med.concentration && (
-                                                    <>
-                                                        <span className="text-n-5">·</span>
-                                                        <span className="font-mono">{med.concentration}</span>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </button>
-                                    ))}
+                                        </>
+                                    )}
                                 </div>
                             )}
 
@@ -315,7 +384,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                 />
                             </div>
                             <div className="flex flex-col gap-1.5">
-                                <Label htmlFor="manual-med-code" className="text-[11px] font-bold text-n-8 uppercase tracking-wider">
+                                <Label htmlFor="manual-med-code" className="text-[10px] font-bold text-n-8 uppercase tracking-wider">
                                     Código ATC / RXNorm
                                 </Label>
                                 <Input
@@ -326,7 +395,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                     className="h-10 focus-visible:outline-2 focus-visible:outline-b-8 focus-visible:outline-offset-2"
                                 />
                                 <p className="text-[10px] text-n-6">
-                                    Si no conoces el código, se generarÃ¡ uno automáticamente.
+                                    Si no conoces el código, se generará uno automáticamente.
                                 </p>
                             </div>
                         </div>
