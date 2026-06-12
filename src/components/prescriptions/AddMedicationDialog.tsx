@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Pill, Search, X, Loader2, Plus } from 'lucide-react';
+import { Pill, X, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -172,15 +173,14 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                 {!showManualEntry ? (
                     <>
                         <div className="shrink-0 px-6 py-3 border-b border-n-5/10">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-n-8" />
-                                <Input
+                            <InputGroup className="h-12 rounded-lg focus-within:ring-2 focus-within:ring-b-8/20 focus-within:border-b-8">
+                                <InputGroupInput
                                     ref={inputRef}
-                                    placeholder="Ej: Losartán, Metformina, Amoxicilina..."
+                                    placeholder="Buscar por nombre comercial o principio activo (DCI)..."
                                     value={searchQuery}
                                     onChange={(e) => { setSearchQuery(e.target.value); }}
                                     onKeyDown={handleKeyDown}
-                                    className="h-12 pl-10 pr-20 text-sm focus-visible:outline-2 focus-visible:outline-b-8 focus-visible:outline-offset-2 rounded-lg"
+                                    className="h-12 text-sm"
                                     autoFocus
                                     role="combobox"
                                     aria-label="Buscar medicamento"
@@ -189,19 +189,21 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                     aria-activedescendant={selectedIndex >= 0 ? `med-option-${selectedIndex}` : undefined}
                                 />
                                 {isSearching && (
-                                    <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-b-8 animate-spin" />
+                                    <div className="pr-3">
+                                        <Loader2 className="size-4 text-b-8 animate-spin" />
+                                    </div>
                                 )}
                                 {searchQuery && !isSearching && (
                                     <button
                                         type="button"
                                         aria-label="Limpiar búsqueda"
                                         onClick={() => { setSearchQuery(''); setResults([]); inputRef.current?.focus(); }}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 active:scale-95 transition-transform"
+                                        className="pr-3 active:scale-95 transition-transform"
                                     >
-                                        <X className="size-5 text-n-8 hover:text-n-11" />
+                                        <X className="size-4 text-n-8 hover:text-n-11" />
                                     </button>
                                 )}
-                            </div>
+                            </InputGroup>
                         </div>
 
                         <div ref={resultsRef} id={listboxId} role="listbox" aria-label="Resultados de medicamentos" aria-busy={isLoading} className="max-h-[400px] overflow-y-auto">
@@ -284,9 +286,6 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                 </div>
                             ) : (
                                 <div className="flex-1 flex flex-col items-center justify-center gap-3 py-12 text-center">
-                                    <div className="size-14 rounded-full bg-n-3 flex items-center justify-center mb-2">
-                                        <Search className="size-7 text-n-8" />
-                                    </div>
                                     <p className="text-sm font-semibold text-n-11">Busca un medicamento</p>
                                     <p className="text-xs text-n-8 max-w-[260px]">Escribe al menos 2 caracteres para buscar por nombre comercial o principio activo.</p>
                                 </div>
