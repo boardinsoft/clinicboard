@@ -443,6 +443,7 @@ export default function HistoryPage() {
                     const encounter = encs.find(e => e.id === encId);
                     if (encounter && !cancelled) {
                         setActiveEncounterId(encId);
+                        setActiveEncounterStatus(encounter.status);
                         const readOnly = encounter.status === 'finished';
                         setIsReadOnly(readOnly);
 
