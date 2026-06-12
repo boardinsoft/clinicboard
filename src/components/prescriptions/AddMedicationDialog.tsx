@@ -172,14 +172,14 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                 {!showManualEntry ? (
                     <>
                         <div className="shrink-0 px-6 py-3 border-b border-n-5/10">
-                            <div className="relative flex items-center h-12 rounded-md bg-n-1 px-3 transition-all focus-within:border-2 focus-within:border-b-8">
+                            <div className="relative flex items-center h-12 rounded-md bg-n-1 px-3">
                                 <Input
                                     ref={inputRef}
                                     placeholder="Buscar por nombre comercial o principio activo (DCI)..."
                                     value={searchQuery}
                                     onChange={(e) => { setSearchQuery(e.target.value); }}
                                     onKeyDown={handleKeyDown}
-                                    className="h-11 flex-1 border-0 bg-transparent p-0 shadow-none focus-visible:ring-2 focus-visible:ring-b-8/10 focus-visible:ring-offset-0 text-sm"
+                                    className="h-11 flex-1 bg-transparent p-0 shadow-none border-0 outline-none focus-visible:ring-0 placeholder:text-n-8 text-sm"
                                     autoFocus
                                     role="combobox"
                                     aria-label="Buscar medicamento"
