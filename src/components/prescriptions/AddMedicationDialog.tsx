@@ -191,7 +191,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <div className="size-8 rounded-md bg-b-8/10 flex items-center justify-center">
@@ -253,7 +253,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                     role="listbox"
                                     aria-label="Resultados de medicamentos"
                                     aria-busy={isLoading}
-                                    className="absolute z-50 w-full mt-1 bg-n-1 border border-b-8/30 rounded-lg shadow-lg max-h-[60vh] overflow-y-auto"
+                                    className="absolute z-50 w-full mt-1 bg-n-1 border border-b-8/30 rounded-lg shadow-lg max-h-[80vh] overflow-y-auto"
                                 >
                                     {isLoading ? (
                                         <div className="flex flex-col gap-0">
