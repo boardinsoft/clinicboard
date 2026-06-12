@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Pill, Search, X, Loader2 } from 'lucide-react';
+import { Pill, Search, X, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 interface MedicationResult {
@@ -29,7 +30,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
     const [isSearching, setIsSearching] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [showDropdown, setShowDropdown] = useState(false);
-    const [manualMode, setManualMode] = useState(false);
+    const [showManualEntry, setShowManualEntry] = useState(false);
     const [medicationName, setMedicationName] = useState('');
     const [medicationCode, setMedicationCode] = useState('');
     const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
@@ -66,7 +67,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
             clearTimeout(searchTimeoutRef.current);
         }
 
-        if (!manualMode && searchQuery.trim().length >= 2) {
+        if (searchQuery.trim().length >= 2) {
             searchTimeoutRef.current = setTimeout(() => {
                 searchMedications(searchQuery);
             }, 300);
@@ -79,7 +80,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                 clearTimeout(searchTimeoutRef.current);
             }
         };
-    }, [searchQuery, manualMode, searchMedications]);
+    }, [searchQuery, searchMedications]);
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -98,13 +99,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
             code: med.code,
             display: `${med.name} (${med.generic_name})`,
         });
-        setSearchQuery('');
-        setResults([]);
-        setShowDropdown(false);
-        setManualMode(false);
-        setMedicationName('');
-        setMedicationCode('');
-        onOpenChange(false);
+        resetAndClose();
     };
 
     const handleManualAdd = () => {
@@ -113,21 +108,21 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
             code: medicationCode.trim() || `RX-${Date.now()}`,
             display: medicationName.trim(),
         });
+        resetAndClose();
+    };
+
+    const resetAndClose = () => {
+        setSearchQuery('');
+        setResults([]);
+        setShowDropdown(false);
+        setShowManualEntry(false);
         setMedicationName('');
         setMedicationCode('');
-        setSearchQuery('');
-        setManualMode(false);
         onOpenChange(false);
     };
 
     const handleClose = () => {
-        setSearchQuery('');
-        setResults([]);
-        setManualMode(false);
-        setMedicationName('');
-        setMedicationCode('');
-        setShowDropdown(false);
-        onOpenChange(false);
+        resetAndClose();
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -147,6 +142,21 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
         }
     };
 
+    const toggleManualEntry = () => {
+        setShowManualEntry(!showManualEntry);
+        setSearchQuery('');
+        setResults([]);
+        setShowDropdown(false);
+        if (!showManualEntry) {
+            setTimeout(() => {
+                document.getElementById('manual-med-name')?.focus();
+            }, 50);
+        }
+    };
+
+    const hasSearchResults = results.length > 0;
+    const isEmptySearch = searchQuery.length >= 2 && !isSearching && results.length === 0;
+
     return (
         <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
@@ -163,7 +173,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto flex flex-col gap-4 py-4">
-                    {!manualMode ? (
+                    {!showManualEntry ? (
                         <div className="relative">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-n-8" />
@@ -204,7 +214,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                 )}
                             </div>
 
-                            {showDropdown && results.length > 0 && (
+                            {showDropdown && hasSearchResults && (
                                 <div
                                     ref={dropdownRef}
                                     id={listboxId}
@@ -251,19 +261,52 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                 </div>
                             )}
 
-                            {showDropdown && searchQuery.length >= 2 && !isSearching && results.length === 0 && (
-                                <div className="absolute z-50 w-full mt-1 bg-n-1 border border-b-8/30 rounded-lg shadow-lg p-4 text-center text-sm text-n-6">
-                                    No se encontraron medicamentos para &ldquo;{searchQuery}&rdquo;
+                            {isEmptySearch && (
+                                <div className="absolute z-50 w-full mt-1 bg-n-1 border border-b-8/30 rounded-lg shadow-lg p-5 flex flex-col items-center gap-3">
+                                    <div className="size-10 rounded-full bg-n-3 flex items-center justify-center">
+                                        <Pill className="size-5 text-n-8" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-sm font-semibold text-n-11 mb-1">
+                                            Sin resultados para &ldquo;{searchQuery}&rdquo;
+                                        </p>
+                                        <p className="text-xs text-n-8">
+                                            Verifica el nombre o crea el medicamento manualmente.
+                                        </p>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={toggleManualEntry}
+                                        className="h-8 text-xs gap-1.5 border-b-8/30 text-b-8 hover:bg-b-2/10 hover:border-b-8/50 active:scale-95"
+                                    >
+                                        <Plus className="size-3.5" />
+                                        Crear manualmente
+                                    </Button>
                                 </div>
                             )}
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-4 animate-in slide-in-from-top-2 duration-200">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-n-8 uppercase tracking-wider">
+                                    Medicamento personalizado
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={toggleManualEntry}
+                                    className="text-xs text-n-8 hover:text-n-11 active:scale-95 transition-all"
+                                >
+                                    ← Volver a buscar
+                                </button>
+                            </div>
                             <div className="flex flex-col gap-1.5">
-                                <Label className="text-[11px] font-bold text-n-8 uppercase tracking-wider">
+                                <Label htmlFor="manual-med-name" className="text-[11px] font-bold text-n-8 uppercase tracking-wider">
                                     Nombre del medicamento <span className="text-s-danger">*</span>
                                 </Label>
                                 <Input
+                                    id="manual-med-name"
                                     placeholder="Ej: Losartán 50mg, Metformina 850mg"
                                     value={medicationName}
                                     onChange={(e) => setMedicationName(e.target.value)}
@@ -272,48 +315,39 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                 />
                             </div>
                             <div className="flex flex-col gap-1.5">
-                                <Label className="text-[11px] font-bold text-n-8 uppercase tracking-wider">
+                                <Label htmlFor="manual-med-code" className="text-[11px] font-bold text-n-8 uppercase tracking-wider">
                                     Código ATC / RXNorm
                                 </Label>
                                 <Input
+                                    id="manual-med-code"
                                     placeholder="Ej: C09CA01, NDC-0000-0000-00"
                                     value={medicationCode}
                                     onChange={(e) => setMedicationCode(e.target.value)}
                                     className="h-10 focus-visible:outline-2 focus-visible:outline-b-8 focus-visible:outline-offset-2"
                                 />
                                 <p className="text-[10px] text-n-6">
-                                    Si no conoces el código, puedes dejarlo en blanco. Se generarÃ¡ uno automáticamente.
+                                    Si no conoces el código, se generarÃ¡ uno automáticamente.
                                 </p>
                             </div>
                         </div>
                     )}
 
-                    {!manualMode && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setManualMode(true);
-                                setSearchQuery('');
-                                setResults([]);
-                                setShowDropdown(false);
-                            }}
-                            className="text-xs text-b-8 hover:text-b-9 font-medium underline-offset-2 hover:underline active:scale-95 transition-all text-left"
-                        >
-                            + Ingresar medicamento manualmente (sin buscar)
-                        </button>
+                    {!showManualEntry && !searchQuery && (
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1 h-px bg-n-5/20" />
+                            <span className="text-[10px] text-n-8 uppercase tracking-wider font-medium">o</span>
+                            <div className="flex-1 h-px bg-n-5/20" />
+                        </div>
                     )}
 
-                    {manualMode && (
+                    {!showManualEntry && !searchQuery && (
                         <button
                             type="button"
-                            onClick={() => {
-                                setManualMode(false);
-                                setMedicationName('');
-                                setMedicationCode('');
-                            }}
-                            className="text-xs text-b-8 hover:text-b-9 font-medium underline-offset-2 hover:underline active:scale-95 transition-all text-left"
+                            onClick={toggleManualEntry}
+                            className="flex items-center gap-2 text-xs text-b-8 hover:text-b-9 font-medium active:scale-95 transition-all text-left"
                         >
-                            ← Volver a buscar en el catálogo
+                            <Plus className="size-3.5" />
+                            Crear medicamento personalizado
                         </button>
                     )}
                 </div>
@@ -322,7 +356,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                     <Button variant="ghost" size="sm" className="h-9" onClick={handleClose}>
                         Cancelar
                     </Button>
-                    {manualMode && (
+                    {showManualEntry && (
                         <Button
                             size="sm"
                             className="h-9 bg-b-8 hover:bg-b-9 active:scale-95"
