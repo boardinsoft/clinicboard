@@ -173,14 +173,14 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                     <>
                         <div className="shrink-0 px-6 py-3 border-b border-n-5/10">
                             <div className="relative">
-                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 size-4 text-n-8" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-n-8" />
                                 <Input
                                     ref={inputRef}
                                     placeholder="Ej: Losartán, Metformina, Amoxicilina..."
                                     value={searchQuery}
                                     onChange={(e) => { setSearchQuery(e.target.value); }}
                                     onKeyDown={handleKeyDown}
-                                    className="h-12 pl-12 pr-20 text-sm focus-visible:outline-2 focus-visible:outline-b-8 focus-visible:outline-offset-2 rounded-lg"
+                                    className="h-12 pl-10 pr-20 text-sm focus-visible:outline-2 focus-visible:outline-b-8 focus-visible:outline-offset-2 rounded-lg"
                                     autoFocus
                                     role="combobox"
                                     aria-label="Buscar medicamento"
