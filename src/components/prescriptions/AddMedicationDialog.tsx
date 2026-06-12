@@ -157,154 +157,154 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-hidden flex flex-col p-0 gap-0">
-                <div className="shrink-0 px-6 pt-5 pb-4 border-b border-n-5/20">
-                    <DialogTitle className="flex items-center gap-2 mb-1">
+            <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-hidden flex flex-col p-0 gap-0 [&>div:last-child]:mb-0">
+                <DialogHeader className="shrink-0 px-6 pt-5 pb-3 border-b border-n-5/20">
+                    <DialogTitle className="flex items-center gap-2 mb-0.5">
                         <div className="size-8 rounded-md bg-b-8/10 flex items-center justify-center">
                             <Pill className="size-4 text-b-8" />
                         </div>
                         Agregar medicamento
                     </DialogTitle>
-                    <DialogDescription className="text-xs mb-3">
+                    <DialogDescription className="text-xs">
                         Busca por nombre comercial o principio activo (DCI).
                     </DialogDescription>
+                </DialogHeader>
 
-                    {!showManualEntry ? (
+                {!showManualEntry ? (
+                    <div className="shrink-0 px-6 py-3 relative">
                         <div className="relative">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-n-8" />
-                                <Input
-                                    ref={inputRef}
-                                    placeholder="Ej: Losartán, Metformina, Amoxicilina..."
-                                    value={searchQuery}
-                                    onChange={(e) => { setSearchQuery(e.target.value); setShowDropdown(true); }}
-                                    onFocus={() => setShowDropdown(true)}
-                                    onKeyDown={handleKeyDown}
-                                    className="h-10 pl-9 pr-9 focus-visible:outline-2 focus-visible:outline-b-8 focus-visible:outline-offset-2"
-                                    autoFocus
-                                    role="combobox"
-                                    aria-label="Buscar medicamento"
-                                    aria-expanded={showDropdown && (results.length > 0 || isSearching)}
-                                    aria-controls={listboxId}
-                                    aria-activedescendant={selectedIndex >= 0 ? `med-option-${selectedIndex}` : undefined}
-                                />
-                                {isSearching && (
-                                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-b-8 animate-spin" />
-                                )}
-                                {searchQuery && !isSearching && (
-                                    <button
-                                        type="button"
-                                        aria-label="Limpiar búsqueda"
-                                        onClick={() => { setSearchQuery(''); setResults([]); inputRef.current?.focus(); }}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 active:scale-95 transition-transform"
-                                    >
-                                        <X className="size-4 text-n-8 hover:text-n-11" />
-                                    </button>
-                                )}
-                            </div>
-
-                            {showDropdown && (hasSearchResults || isLoading) && (
-                                <div
-                                    id={listboxId}
-                                    role="listbox"
-                                    aria-label="Resultados de medicamentos"
-                                    aria-busy={isLoading}
-                                    className="absolute left-0 right-0 top-[calc(100%+4px)] z-[100] bg-n-1 border border-b-8/30 rounded-lg shadow-2xl max-h-[60vh] overflow-y-auto"
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-n-8" />
+                            <Input
+                                ref={inputRef}
+                                placeholder="Ej: Losartán, Metformina, Amoxicilina..."
+                                value={searchQuery}
+                                onChange={(e) => { setSearchQuery(e.target.value); setShowDropdown(true); }}
+                                onFocus={() => setShowDropdown(true)}
+                                onKeyDown={handleKeyDown}
+                                className="h-10 pl-9 pr-9 focus-visible:outline-2 focus-visible:outline-b-8 focus-visible:outline-offset-2"
+                                autoFocus
+                                role="combobox"
+                                aria-label="Buscar medicamento"
+                                aria-expanded={showDropdown && (results.length > 0 || isSearching)}
+                                aria-controls={listboxId}
+                                aria-activedescendant={selectedIndex >= 0 ? `med-option-${selectedIndex}` : undefined}
+                            />
+                            {isSearching && (
+                                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-b-8 animate-spin" />
+                            )}
+                            {searchQuery && !isSearching && (
+                                <button
+                                    type="button"
+                                    aria-label="Limpiar búsqueda"
+                                    onClick={() => { setSearchQuery(''); setResults([]); inputRef.current?.focus(); }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 active:scale-95 transition-transform"
                                 >
-                                    {isLoading ? (
-                                        <div className="flex flex-col">
-                                            {[1, 2, 3, 4, 5].map(i => (
-                                                <div key={i} className={`px-3 py-2.5 flex flex-col gap-2 ${i < 5 ? 'border-b border-n-5/20' : ''}`}>
-                                                    <div className="flex items-start justify-between gap-2">
-                                                        <Skeleton className="h-4 w-40 rounded" />
-                                                        <Skeleton className="h-4 w-16 rounded" />
-                                                    </div>
-                                                    <Skeleton className="h-3 w-56 rounded" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {groupedResults.map(group => (
-                                                <div key={group.form}>
-                                                    <div className="sticky top-0 z-10 bg-n-2/95 backdrop-blur-sm px-3 py-1.5 border-b border-b-8/20">
-                                                        <span className="text-[10px] font-bold text-n-8 uppercase tracking-wider">{group.form}</span>
-                                                    </div>
-                                                    {group.items.map(med => {
-                                                        globalIndex++;
-                                                        const currentIdx = globalIndex;
-                                                        return (
-                                                            <button
-                                                                key={med.id}
-                                                                id={`med-option-${currentIdx}`}
-                                                                role="option"
-                                                                aria-selected={currentIdx === selectedIndex}
-                                                                onClick={() => handleSelectResult(med)}
-                                                                className={`w-full px-3 py-2.5 text-left hover:bg-b-2/20 transition-colors flex flex-col gap-1 active:scale-[0.99] ${currentIdx === selectedIndex ? 'bg-b-2/20' : ''} ${currentIdx < flatResults.length - 1 ? 'border-b border-b-8/20' : ''}`}
-                                                            >
-                                                                <div className="flex items-start justify-between gap-2">
-                                                                    <span className="font-medium text-sm text-n-11 line-clamp-1">{med.name}</span>
-                                                                    <Badge variant="outline" className="font-mono text-[10px] shrink-0">{med.code}</Badge>
-                                                                </div>
-                                                                <div className="flex items-center gap-2 text-xs text-n-8">
-                                                                    <span className="line-clamp-1">{med.generic_name}</span>
-                                                                    {med.concentration && (
-                                                                        <>
-                                                                            <span className="text-n-5">·</span>
-                                                                            <span className="font-mono">{med.concentration}</span>
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            ))}
-                                            <div className="px-3 py-1.5 bg-n-2/50 border-t border-n-5/20 flex items-center justify-center gap-3">
-                                                <span className="text-[10px] text-n-8"><kbd className="font-mono bg-n-3 px-1 py-0.5 rounded text-n-10">↑↓</kbd> navegar</span>
-                                                <span className="text-n-5">·</span>
-                                                <span className="text-[10px] text-n-8"><kbd className="font-mono bg-n-3 px-1 py-0.5 rounded text-n-10">↵</kbd> seleccionar</span>
-                                                <span className="text-n-5">·</span>
-                                                <span className="text-[10px] text-n-8"><kbd className="font-mono bg-n-3 px-1 py-0.5 rounded text-n-10">esc</kbd> cerrar</span>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
+                                    <X className="size-4 text-n-8 hover:text-n-11" />
+                                </button>
                             )}
+                        </div>
 
-                            {isEmptySearch && (
-                                <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-[100] bg-n-1 border border-b-8/30 rounded-lg shadow-xl p-6 flex flex-col items-center gap-3">
-                                    <div className="size-12 rounded-full bg-n-3 flex items-center justify-center">
-                                        <Pill className="size-6 text-n-8" />
+                        {showDropdown && (hasSearchResults || isLoading) && (
+                            <div
+                                id={listboxId}
+                                role="listbox"
+                                aria-label="Resultados de medicamentos"
+                                aria-busy={isLoading}
+                                className="absolute left-6 right-6 top-full z-[100] bg-n-1 border border-b-8/30 rounded-lg shadow-2xl max-h-[60vh] overflow-y-auto"
+                            >
+                                {isLoading ? (
+                                    <div className="flex flex-col">
+                                        {[1, 2, 3, 4, 5].map(i => (
+                                            <div key={i} className={`px-3 py-2.5 flex flex-col gap-2 ${i < 5 ? 'border-b border-n-5/20' : ''}`}>
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <Skeleton className="h-4 w-40 rounded" />
+                                                    <Skeleton className="h-4 w-16 rounded" />
+                                                </div>
+                                                <Skeleton className="h-3 w-56 rounded" />
+                                            </div>
+                                        ))}
                                     </div>
-                                    <div className="text-center">
-                                        <p className="text-sm font-semibold text-n-11 mb-1">Sin resultados para &ldquo;{searchQuery}&rdquo;</p>
-                                        <p className="text-xs text-n-8">Verifica el nombre o crea el medicamento manualmente.</p>
-                                    </div>
-                                    <Button type="button" variant="outline" size="sm" onClick={toggleManualEntry} className="h-8 text-xs gap-1.5 border-b-8/30 text-b-8 hover:bg-b-2/10 hover:border-b-8/50 active:scale-95">
-                                        <Plus className="size-3.5" />Crear manualmente
-                                    </Button>
+                                ) : (
+                                    <>
+                                        {groupedResults.map(group => (
+                                            <div key={group.form}>
+                                                <div className="sticky top-0 z-10 bg-n-2/95 backdrop-blur-sm px-3 py-1.5 border-b border-b-8/20">
+                                                    <span className="text-[10px] font-bold text-n-8 uppercase tracking-wider">{group.form}</span>
+                                                </div>
+                                                {group.items.map(med => {
+                                                    globalIndex++;
+                                                    const currentIdx = globalIndex;
+                                                    return (
+                                                        <button
+                                                            key={med.id}
+                                                            id={`med-option-${currentIdx}`}
+                                                            role="option"
+                                                            aria-selected={currentIdx === selectedIndex}
+                                                            onClick={() => handleSelectResult(med)}
+                                                            className={`w-full px-3 py-2.5 text-left hover:bg-b-2/20 transition-colors flex flex-col gap-1 active:scale-[0.99] ${currentIdx === selectedIndex ? 'bg-b-2/20' : ''} ${currentIdx < flatResults.length - 1 ? 'border-b border-b-8/20' : ''}`}
+                                                        >
+                                                            <div className="flex items-start justify-between gap-2">
+                                                                <span className="font-medium text-sm text-n-11 line-clamp-1">{med.name}</span>
+                                                                <Badge variant="outline" className="font-mono text-[10px] shrink-0">{med.code}</Badge>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 text-xs text-n-8">
+                                                                <span className="line-clamp-1">{med.generic_name}</span>
+                                                                {med.concentration && (
+                                                                    <>
+                                                                        <span className="text-n-5">·</span>
+                                                                        <span className="font-mono">{med.concentration}</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        ))}
+                                        <div className="px-3 py-1.5 bg-n-2/50 border-t border-n-5/20 flex items-center justify-center gap-3">
+                                            <span className="text-[10px] text-n-8"><kbd className="font-mono bg-n-3 px-1 py-0.5 rounded text-n-10">↑↓</kbd> navegar</span>
+                                            <span className="text-n-5">·</span>
+                                            <span className="text-[10px] text-n-8"><kbd className="font-mono bg-n-3 px-1 py-0.5 rounded text-n-10">↵</kbd> seleccionar</span>
+                                            <span className="text-n-5">·</span>
+                                            <span className="text-[10px] text-n-8"><kbd className="font-mono bg-n-3 px-1 py-0.5 rounded text-n-10">esc</kbd> cerrar</span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
+                        {isEmptySearch && (
+                            <div className="absolute left-6 right-6 top-full z-[100] bg-n-1 border border-b-8/30 rounded-lg shadow-xl p-6 flex flex-col items-center gap-3">
+                                <div className="size-12 rounded-full bg-n-3 flex items-center justify-center">
+                                    <Pill className="size-6 text-n-8" />
                                 </div>
-                            )}
+                                <div className="text-center">
+                                    <p className="text-sm font-semibold text-n-11 mb-1">Sin resultados para &ldquo;{searchQuery}&rdquo;</p>
+                                    <p className="text-xs text-n-8">Verifica el nombre o crea el medicamento manualmente.</p>
+                                </div>
+                                <Button type="button" variant="outline" size="sm" onClick={toggleManualEntry} className="h-8 text-xs gap-1.5 border-b-8/30 text-b-8 hover:bg-b-2/10 hover:border-b-8/50 active:scale-95">
+                                    <Plus className="size-3.5" />Crear manualmente
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="shrink-0 px-6 py-3 flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-n-8 uppercase tracking-wider">Medicamento personalizado</span>
+                            <button type="button" onClick={toggleManualEntry} className="text-xs text-n-8 hover:text-n-11 active:scale-95 transition-all">← Volver a buscar</button>
                         </div>
-                    ) : (
-                        <div className="flex flex-col gap-3">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-n-8 uppercase tracking-wider">Medicamento personalizado</span>
-                                <button type="button" onClick={toggleManualEntry} className="text-xs text-n-8 hover:text-n-11 active:scale-95 transition-all">← Volver a buscar</button>
-                            </div>
-                            <div className="flex flex-col gap-1.5">
-                                <Label htmlFor="manual-med-name" className="text-[11px] font-bold text-n-8 uppercase tracking-wider">Nombre del medicamento <span className="text-s-danger">*</span></Label>
-                                <Input id="manual-med-name" placeholder="Ej: Losartán 50mg, Metformina 850mg" value={medicationName} onChange={(e) => setMedicationName(e.target.value)} className="h-10 focus-visible:outline-2 focus-visible:outline-b-8 focus-visible:outline-offset-2" autoFocus />
-                            </div>
-                            <div className="flex flex-col gap-1.5">
-                                <Label htmlFor="manual-med-code" className="text-[10px] font-bold text-n-8 uppercase tracking-wider">Código ATC / RXNorm</Label>
-                                <Input id="manual-med-code" placeholder="Ej: C09CA01" value={medicationCode} onChange={(e) => setMedicationCode(e.target.value)} className="h-10 focus-visible:outline-2 focus-visible:outline-b-8 focus-visible:outline-offset-2" />
-                                <p className="text-[10px] text-n-6">Si no conoces el código, se generará uno automáticamente.</p>
-                            </div>
+                        <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="manual-med-name" className="text-[11px] font-bold text-n-8 uppercase tracking-wider">Nombre del medicamento <span className="text-s-danger">*</span></Label>
+                            <Input id="manual-med-name" placeholder="Ej: Losartán 50mg, Metformina 850mg" value={medicationName} onChange={(e) => setMedicationName(e.target.value)} className="h-10 focus-visible:outline-2 focus-visible:outline-b-8 focus-visible:outline-offset-2" autoFocus />
                         </div>
-                    )}
-                </div>
+                        <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="manual-med-code" className="text-[10px] font-bold text-n-8 uppercase tracking-wider">Código ATC / RXNorm</Label>
+                            <Input id="manual-med-code" placeholder="Ej: C09CA01" value={medicationCode} onChange={(e) => setMedicationCode(e.target.value)} className="h-10 focus-visible:outline-2 focus-visible:outline-b-8 focus-visible:outline-offset-2" />
+                            <p className="text-[10px] text-n-6">Si no conoces el código, se generará uno automáticamente.</p>
+                        </div>
+                    </div>
+                )}
 
                 {!showManualEntry && (
                     <div className="shrink-0 px-6 py-3 border-t border-n-5/20 bg-n-2/30">
