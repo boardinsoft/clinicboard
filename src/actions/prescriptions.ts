@@ -153,7 +153,6 @@ export async function createPrescriptions(formData: {
             patient_id: formData.patient_id,
             encounter_id: formData.encounter_id,
             prescriber_id: practitionerId,
-            clinic_id: formData.clinic_id,
             medication_code: item.medication_code,
             medication_display: item.medication_display,
             status: 'draft' as MedicationRequestStatus,
