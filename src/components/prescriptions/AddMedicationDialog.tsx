@@ -179,7 +179,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                                     value={searchQuery}
                                     onChange={(e) => { setSearchQuery(e.target.value); }}
                                     onKeyDown={handleKeyDown}
-                                    className="h-11 flex-1 border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 text-sm"
+                                    className="h-11 flex-1 border-0 bg-transparent p-0 shadow-none focus-visible:ring-2 focus-visible:ring-b-8/10 focus-visible:ring-offset-0 text-sm"
                                     autoFocus
                                     role="combobox"
                                     aria-label="Buscar medicamento"
