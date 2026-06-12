@@ -156,7 +156,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-hidden flex flex-col p-0 gap-0">
+            <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
                 <DialogHeader className="shrink-0 px-6 pt-5 pb-3 border-b border-n-5/20">
                     <DialogTitle className="flex items-center gap-2 mb-0.5">
                         <div className="size-8 rounded-md bg-b-8/10 flex items-center justify-center">
@@ -204,7 +204,7 @@ export default function AddMedicationDialog({ open, onOpenChange, onSelect }: Ad
                             </div>
                         </div>
 
-                        <div ref={resultsRef} id={listboxId} role="listbox" aria-label="Resultados de medicamentos" aria-busy={isLoading} className="max-h-[60vh] overflow-y-auto">
+                        <div ref={resultsRef} id={listboxId} role="listbox" aria-label="Resultados de medicamentos" aria-busy={isLoading} className="max-h-[400px] overflow-y-auto">
                             {isLoading ? (
                                 <div className="flex flex-col py-2">
                                     {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
