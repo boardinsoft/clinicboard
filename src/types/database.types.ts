@@ -544,6 +544,50 @@ export type Database = {
           },
         ]
       }
+      medications: {
+        Row: {
+          clinic_id: string | null
+          code: string
+          concentration: string | null
+          country: string | null
+          created_at: string | null
+          generic_name: string
+          id: string
+          name: string
+          pharmaceutical_form: string | null
+        }
+        Insert: {
+          clinic_id?: string | null
+          code: string
+          concentration?: string | null
+          country?: string | null
+          created_at?: string | null
+          generic_name: string
+          id?: string
+          name: string
+          pharmaceutical_form?: string | null
+        }
+        Update: {
+          clinic_id?: string | null
+          code?: string
+          concentration?: string | null
+          country?: string | null
+          created_at?: string | null
+          generic_name?: string
+          id?: string
+          name?: string
+          pharmaceutical_form?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medications_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medication_requests: {
         Row: {
           authored_on: string | null

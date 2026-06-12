@@ -337,3 +337,31 @@ export async function getPrescriptionsForTable(clinicId?: string) {
 
     return { data };
 }
+
+/**
+ * searchMedications(query, limit?)
+ * Search medications by name or generic_name (case-insensitive ILIKE).
+ * Returns up to limit results (default 20).
+ */
+export async function searchMedications(query: string, limit = 20) {
+    const supabase = await createServerSupabaseClient();
+
+    if (!query || query.trim().length < 2) {
+        return { data: [] };
+    }
+
+    const searchTerm = `%${query.trim()}%`;
+
+    const { data, error } = await supabase
+        .from('medications')
+        .select('id, code, name, generic_name, pharmaceutical_form, concentration')
+        .or(`name.ilike.${searchTerm},generic_name.ilike.${searchTerm}`)
+        .limit(limit);
+
+    if (error) {
+        console.error('Error in searchMedications:', error);
+        return { error: error.message };
+    }
+
+    return { data };
+}
