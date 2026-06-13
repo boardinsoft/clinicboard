@@ -18,17 +18,18 @@ CREATE INDEX IF NOT EXISTS idx_prescription_audit_log_changed_at ON prescription
 -- RLS
 ALTER TABLE prescription_audit_log ENABLE ROW LEVEL SECURITY;
 
+-- READ: allow if the prescription this audit entry belongs to is owned by the current practitioner
 DROP POLICY IF EXISTS "prescription_audit_log_read" ON prescription_audit_log;
 CREATE POLICY "prescription_audit_log_read" ON prescription_audit_log FOR SELECT USING (
-    changed_by = auth.uid()
-    OR EXISTS (
+    EXISTS (
         SELECT 1 FROM medication_requests mr
         WHERE mr.id = prescription_audit_log.prescription_id
-        AND mr.prescriber_id = auth.uid()
+        AND mr.prescriber_id IN (SELECT id FROM practitioners WHERE auth_user_id = auth.uid())
     )
 );
 
+-- INSERT: allow if the changed_by practitioner belongs to the current auth user
 DROP POLICY IF EXISTS "prescription_audit_log_insert" ON prescription_audit_log;
 CREATE POLICY "prescription_audit_log_insert" ON prescription_audit_log FOR INSERT WITH CHECK (
-    changed_by = auth.uid()
+    changed_by IN (SELECT id FROM practitioners WHERE auth_user_id = auth.uid())
 );

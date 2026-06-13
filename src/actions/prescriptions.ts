@@ -101,12 +101,58 @@ async function checkPatientAllergies(
     return conflicts;
 }
 
-/**
- * createPrescription(data)
- * Guard auth, validate with prescriptionSchema,
- * status='draft', intent='order', prescriber_id=user.id, authored_on=now().
- * revalidatePath('/prescriptions').
- */
+const cancelPrescriptionSchema = z.object({
+    id: z.string().uuid(),
+    cancellationReason: z.string().min(5, 'El motivo de cancelación debe tener al menos 5 caracteres'),
+});
+
+async function transitionPrescription(
+    id: string,
+    targetStatus: MedicationRequestStatus,
+    action: string,
+    opts?: { reason?: string }
+) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) {
+        return { error: 'No autorizado' };
+    }
+
+    const { data: prescription } = await supabase
+        .from('medication_requests')
+        .select('id, status')
+        .eq('id', id)
+        .eq('prescriber_id', practitionerId)
+        .single();
+
+    if (!prescription) {
+        return { error: 'Receta no encontrada' };
+    }
+
+    const currentStatus = prescription.status as MedicationRequestStatus;
+    if (!canTransition(currentStatus, targetStatus)) {
+        return { error: `No se puede ${action} una receta con estado '${currentStatus}'.` };
+    }
+
+    const { data, error } = await supabase
+        .from('medication_requests')
+        .update({ status: targetStatus as MedicationRequestStatus })
+        .eq('id', id)
+        .eq('prescriber_id', practitionerId)
+        .select()
+        .single();
+
+    if (error) {
+        console.error(`Error in ${action}Prescription:`, error);
+        return { error: error.message };
+    }
+
+    await logPrescriptionAudit(supabase, id, action, currentStatus, targetStatus, practitionerId, opts?.reason);
+    revalidatePath('/prescriptions');
+    return { data };
+}
+
 export async function createPrescription(formData: {
     patient_id: string;
     encounter_id?: string;
@@ -175,17 +221,11 @@ export async function createPrescription(formData: {
         return { error: error.message };
     }
 
+    await logPrescriptionAudit(supabase, data.id, 'create', 'unknown', 'draft', practitionerId);
     revalidatePath('/prescriptions');
     return { data };
 }
 
-/**
- * createPrescriptions(formData)
- * Creates multiple medication_requests rows (one per medication item).
- * Validates encounter belongs to practitioner and is in-progress.
- * Checks patient allergies before creating (hard block).
- * Returns array of created prescriptions.
- */
 export async function createPrescriptions(formData: {
     encounter_id: string;
     patient_id: string;
@@ -277,246 +317,42 @@ export async function createPrescriptions(formData: {
         return { error: error.message };
     }
 
+    for (const rx of data) {
+        await logPrescriptionAudit(supabase, rx.id, 'create', 'unknown', 'draft', practitionerId);
+    }
+
     revalidatePath('/prescriptions');
     revalidatePath(`/history`);
 
     return { data };
 }
 
-/**
- * activatePrescription(id)
- * Transition from 'draft' to 'active'.
- */
 export async function activatePrescription(id: string) {
-    const supabase = await createServerSupabaseClient();
-    const practitionerId = await getCurrentPractitionerId(supabase);
-
-    if (!practitionerId) {
-        return { error: 'No autorizado' };
-    }
-
-    const { data: prescription } = await supabase
-        .from('medication_requests')
-        .select('id, status')
-        .eq('id', id)
-        .eq('prescriber_id', practitionerId)
-        .single();
-
-    if (!prescription) {
-        return { error: 'Receta no encontrada' };
-    }
-
-    const currentStatus = prescription.status as MedicationRequestStatus;
-    if (!canTransition(currentStatus, 'active')) {
-        return { error: `No se puede activar una receta con estado '${currentStatus}'. Solo recetas en borrador pueden activarse.` };
-    }
-
-    const { data, error } = await supabase
-        .from('medication_requests')
-        .update({ status: 'active' as MedicationRequestStatus })
-        .eq('id', id)
-        .eq('prescriber_id', practitionerId)
-        .select()
-        .single();
-
-    if (error) {
-        console.error('Error in activatePrescription:', error);
-        return { error: error.message };
-    }
-
-    await logPrescriptionAudit(supabase, id, 'activate', currentStatus, 'active', practitionerId);
-    revalidatePath('/prescriptions');
-    return { data };
+    return transitionPrescription(id, 'active', 'activate');
 }
 
-/**
- * cancelPrescription(id, cancellationReason?)
- * Transition to 'cancelled'.
- */
 export async function cancelPrescription(id: string, cancellationReason?: string) {
-    const supabase = await createServerSupabaseClient();
-    const practitionerId = await getCurrentPractitionerId(supabase);
-
-    if (!practitionerId) {
-        return { error: 'No autorizado' };
+    if (cancellationReason !== undefined) {
+        const parsed = cancelPrescriptionSchema.safeParse({ id, cancellationReason });
+        if (!parsed.success) {
+            return { error: z.flattenError(parsed.error).fieldErrors.cancellationReason?.[0] || 'Motivo inválido' };
+        }
     }
-
-    const { data: prescription } = await supabase
-        .from('medication_requests')
-        .select('id, status')
-        .eq('id', id)
-        .eq('prescriber_id', practitionerId)
-        .single();
-
-    if (!prescription) {
-        return { error: 'Receta no encontrada' };
-    }
-
-    const currentStatus = prescription.status as MedicationRequestStatus;
-    if (!canTransition(currentStatus, 'cancelled')) {
-        return { error: `No se puede cancelar una receta con estado '${currentStatus}'.` };
-    }
-
-    const { data, error } = await supabase
-        .from('medication_requests')
-        .update({ status: 'cancelled' as MedicationRequestStatus })
-        .eq('id', id)
-        .eq('prescriber_id', practitionerId)
-        .select()
-        .single();
-
-    if (error) {
-        console.error('Error in cancelPrescription:', error);
-        return { error: error.message };
-    }
-
-    await logPrescriptionAudit(supabase, id, 'cancel', currentStatus, 'cancelled', practitionerId, cancellationReason);
-    revalidatePath('/prescriptions');
-    return { data };
+    return transitionPrescription(id, 'cancelled', 'cancel', { reason: cancellationReason });
 }
 
-/**
- * completePrescription(id)
- * Transition from 'active' to 'completed'.
- */
 export async function completePrescription(id: string) {
-    const supabase = await createServerSupabaseClient();
-    const practitionerId = await getCurrentPractitionerId(supabase);
-
-    if (!practitionerId) {
-        return { error: 'No autorizado' };
-    }
-
-    const { data: prescription } = await supabase
-        .from('medication_requests')
-        .select('id, status')
-        .eq('id', id)
-        .eq('prescriber_id', practitionerId)
-        .single();
-
-    if (!prescription) {
-        return { error: 'Receta no encontrada' };
-    }
-
-    const currentStatus = prescription.status as MedicationRequestStatus;
-    if (!canTransition(currentStatus, 'completed')) {
-        return { error: `No se puede completar una receta con estado '${currentStatus}'. Solo recetas activas pueden completarse.` };
-    }
-
-    const { data, error } = await supabase
-        .from('medication_requests')
-        .update({ status: 'completed' as MedicationRequestStatus })
-        .eq('id', id)
-        .eq('prescriber_id', practitionerId)
-        .select()
-        .single();
-
-    if (error) {
-        console.error('Error in completePrescription:', error);
-        return { error: error.message };
-    }
-
-    await logPrescriptionAudit(supabase, id, 'complete', currentStatus, 'completed', practitionerId);
-    revalidatePath('/prescriptions');
-    return { data };
+    return transitionPrescription(id, 'completed', 'complete');
 }
 
-/**
- * pausePrescription(id)
- * Transition from 'active' to 'on-hold'.
- */
 export async function pausePrescription(id: string) {
-    const supabase = await createServerSupabaseClient();
-    const practitionerId = await getCurrentPractitionerId(supabase);
-
-    if (!practitionerId) {
-        return { error: 'No autorizado' };
-    }
-
-    const { data: prescription } = await supabase
-        .from('medication_requests')
-        .select('id, status')
-        .eq('id', id)
-        .eq('prescriber_id', practitionerId)
-        .single();
-
-    if (!prescription) {
-        return { error: 'Receta no encontrada' };
-    }
-
-    const currentStatus = prescription.status as MedicationRequestStatus;
-    if (!canTransition(currentStatus, 'on-hold')) {
-        return { error: `No se puede pausar una receta con estado '${currentStatus}'.` };
-    }
-
-    const { data, error } = await supabase
-        .from('medication_requests')
-        .update({ status: 'on-hold' as MedicationRequestStatus })
-        .eq('id', id)
-        .eq('prescriber_id', practitionerId)
-        .select()
-        .single();
-
-    if (error) {
-        console.error('Error in pausePrescription:', error);
-        return { error: error.message };
-    }
-
-    await logPrescriptionAudit(supabase, id, 'pause', currentStatus, 'on-hold', practitionerId);
-    revalidatePath('/prescriptions');
-    return { data };
+    return transitionPrescription(id, 'on-hold', 'pause');
 }
 
-/**
- * resumePrescription(id)
- * Transition from 'on-hold' to 'active'.
- */
 export async function resumePrescription(id: string) {
-    const supabase = await createServerSupabaseClient();
-    const practitionerId = await getCurrentPractitionerId(supabase);
-
-    if (!practitionerId) {
-        return { error: 'No autorizado' };
-    }
-
-    const { data: prescription } = await supabase
-        .from('medication_requests')
-        .select('id, status')
-        .eq('id', id)
-        .eq('prescriber_id', practitionerId)
-        .single();
-
-    if (!prescription) {
-        return { error: 'Receta no encontrada' };
-    }
-
-    const currentStatus = prescription.status as MedicationRequestStatus;
-    if (!canTransition(currentStatus, 'active')) {
-        return { error: `No se puede reanudar una receta con estado '${currentStatus}'.` };
-    }
-
-    const { data, error } = await supabase
-        .from('medication_requests')
-        .update({ status: 'active' as MedicationRequestStatus })
-        .eq('id', id)
-        .eq('prescriber_id', practitionerId)
-        .select()
-        .single();
-
-    if (error) {
-        console.error('Error in resumePrescription:', error);
-        return { error: error.message };
-    }
-
-    await logPrescriptionAudit(supabase, id, 'resume', currentStatus, 'active', practitionerId);
-    revalidatePath('/prescriptions');
-    return { data };
+    return transitionPrescription(id, 'active', 'resume');
 }
 
-/**
- * getPrescriptionById(id)
- * Fetch single prescription with patient and prescriber joins.
- */
 export async function getPrescriptionById(id: string) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
@@ -545,10 +381,6 @@ export async function getPrescriptionById(id: string) {
     return { data };
 }
 
-/**
- * getPrescriptionAuditLog(prescriptionId)
- * Fetch audit log entries for a prescription.
- */
 export async function getPrescriptionAuditLog(prescriptionId: string) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
@@ -574,10 +406,6 @@ export async function getPrescriptionAuditLog(prescriptionId: string) {
     return { data };
 }
 
-/**
- * getPrescriptionsByPatient(patientId)
- * Query by patient_id, verify ownership, order by authored_on DESC.
- */
 export async function getPrescriptionsByPatient(patientId: string, clinicId?: string) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
@@ -607,12 +435,99 @@ export async function getPrescriptionsByPatient(patientId: string, clinicId?: st
     return { data };
 }
 
-/**
- * getPrescriptionsForTable(clinicId?)
- * Fetch all prescriptions for the table view with patient and prescriber joins.
- * Orders by authored_on DESC.
- */
-export async function getPrescriptionsForTable(clinicId?: string) {
+export interface PrescriptionFilters {
+    status?: MedicationRequestStatus | 'all';
+    dateFrom?: string;
+    dateTo?: string;
+    search?: string;
+    page?: number;
+    pageSize?: number;
+}
+
+export async function getPrescriptionsForTable(clinicId?: string, filters?: PrescriptionFilters) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) {
+        return { error: 'No autorizado' };
+    }
+
+    const page = filters?.page ?? 1;
+    const pageSize = filters?.pageSize ?? 50;
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
+        .from('medication_requests')
+        .select(`
+            *,
+            patient:patients(id, name_given, name_family, birth_date),
+            prescriber:practitioners(name_given, name_family)
+        `, { count: 'exact' })
+        .eq('prescriber_id', practitionerId)
+        .order('authored_on', { ascending: false })
+        .range(from, to);
+
+    if (clinicId) {
+        query = query.eq('clinic_id', clinicId);
+    }
+
+    if (filters?.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status);
+    }
+
+    if (filters?.dateFrom) {
+        query = query.gte('authored_on', filters.dateFrom);
+    }
+
+    if (filters?.dateTo) {
+        query = query.lte('authored_on', filters.dateTo);
+    }
+
+    if (filters?.search) {
+        const searchTerm = `%${filters.search.trim()}%`;
+        query = query.or(
+            `medication_display.ilike.${searchTerm},medication_code.ilike.${searchTerm}`
+        );
+    }
+
+    const { data, error, count } = await query;
+
+    if (error) {
+        console.error('Error in getPrescriptionsForTable:', error);
+        return { error: error.message };
+    }
+
+    return { data, count };
+}
+
+export async function getPrescriptionsByEncounter(encounterId: string) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) {
+        return { error: 'No autorizado' };
+    }
+
+    const { data, error } = await supabase
+        .from('medication_requests')
+        .select(`
+            *,
+            patient:patients(id, name_given, name_family, birth_date)
+        `)
+        .eq('encounter_id', encounterId)
+        .eq('prescriber_id', practitionerId)
+        .order('authored_on', { ascending: false });
+
+    if (error) {
+        console.error('Error in getPrescriptionsByEncounter:', error);
+        return { error: error.message };
+    }
+
+    return { data };
+}
+
+export async function getPrescriptionStats(clinicId?: string) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
 
@@ -622,13 +537,7 @@ export async function getPrescriptionsForTable(clinicId?: string) {
 
     let query = supabase
         .from('medication_requests')
-        .select(`
-            *,
-            patient:patients(id, name_given, name_family, birth_date),
-            prescriber:practitioners(name_given, name_family)
-        `)
-        .eq('prescriber_id', practitionerId)
-        .order('authored_on', { ascending: false });
+        .select('status', { count: 'exact', head: true });
 
     if (clinicId) {
         query = query.eq('clinic_id', clinicId);
@@ -637,18 +546,13 @@ export async function getPrescriptionsForTable(clinicId?: string) {
     const { data, error } = await query;
 
     if (error) {
-        console.error('Error in getPrescriptionsForTable:', error);
+        console.error('Error in getPrescriptionStats:', error);
         return { error: error.message };
     }
 
     return { data };
 }
 
-/**
- * searchMedications(query, limit?)
- * Search medications by name or generic_name (case-insensitive ILIKE).
- * Returns up to limit results (default 20).
- */
 export async function searchMedications(query: string, limit = 20) {
     const supabase = await createServerSupabaseClient();
 
