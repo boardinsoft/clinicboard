@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Calendar, Clock, Pill, User2, FileText, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,11 @@ import {
     PRESCRIPTION_STATUS_LABELS,
     PRESCRIPTION_STATUS_VARIANT,
 } from '@/lib/table-status';
+
+function getClinicSlug(pathname: string): string {
+    const parts = pathname.split('/').filter(Boolean);
+    return parts[0] || '';
+}
 
 interface PrescriptionForPreview {
     id: string;
@@ -48,8 +53,8 @@ function getDosageSummary(dosage: unknown): string {
 
 export default function PrescriptionTable({ prescriptions, toolbar, className }: PrescriptionTableProps) {
     const router = useRouter();
-    const params = useParams();
-    const slug = (params.clinicSlug as string) || '';
+    const pathname = usePathname();
+    const clinicSlug = getClinicSlug(pathname);
 
     if (prescriptions.length === 0) {
         return (
@@ -125,7 +130,7 @@ export default function PrescriptionTable({ prescriptions, toolbar, className }:
                         return (
                             <tr
                                 key={rx.id}
-                                onClick={() => router.push(`/${slug}/prescriptions/${rx.id}`)}
+                                onClick={() => router.push(`/${clinicSlug}/prescriptions/${rx.id}`)}
                                 className="group transition-colors cursor-pointer"
                             >
                                 <td className="whitespace-nowrap">

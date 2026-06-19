@@ -39,9 +39,7 @@ interface PatientTelecom {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getCI(p: Patient): string {
-  return Array.isArray(p.identifiers)
-    ? (p.identifiers as unknown as PatientIdentifier[])[0]?.value ?? '—'
-    : '—';
+  return p.national_id || '—';
 }
 
 function getPhone(p: Patient): string {

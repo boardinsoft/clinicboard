@@ -604,7 +604,10 @@ export type Database = {
           note: string | null
           patient_id: string
           prescriber_id: string
+          printed_at: string | null
+          printed_count: number | null
           status: Database["public"]["Enums"]["medication_status"] | null
+          valid_until: string | null
         }
         Insert: {
           authored_on?: string | null
@@ -621,7 +624,10 @@ export type Database = {
           note?: string | null
           patient_id: string
           prescriber_id: string
+          printed_at?: string | null
+          printed_count?: number | null
           status?: Database["public"]["Enums"]["medication_status"] | null
+          valid_until?: string | null
         }
         Update: {
           authored_on?: string | null
@@ -638,7 +644,10 @@ export type Database = {
           note?: string | null
           patient_id?: string
           prescriber_id?: string
+          printed_at?: string | null
+          printed_count?: number | null
           status?: Database["public"]["Enums"]["medication_status"] | null
+          valid_until?: string | null
         }
         Relationships: [
           {
@@ -683,9 +692,9 @@ export type Database = {
           fhir_id: string
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
-          identifiers: Json | null
           name_family: string
           name_given: string[]
+          national_id: string | null
           practitioner_id: string | null
           telecom: Json | null
           updated_at: string | null
@@ -701,9 +710,9 @@ export type Database = {
           fhir_id?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
-          identifiers?: Json | null
           name_family: string
           name_given: string[]
+          national_id?: string | null
           practitioner_id?: string | null
           telecom?: Json | null
           updated_at?: string | null
@@ -721,7 +730,7 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"] | null
           habits?: Json | null
           id?: string
-          identifiers?: Json | null
+          national_id?: string | null
           name_family?: string
           name_given?: string[]
           practitioner_id?: string | null
@@ -755,10 +764,13 @@ export type Database = {
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
           license_number: string | null
+          mpps_registration_number: string | null
           name_family: string
           name_given: string[]
+          national_id: string | null
           specialty: string | null
           telecom: Json | null
+          university: string | null
           updated_at: string | null
         }
         Insert: {
@@ -769,58 +781,73 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           license_number?: string | null
+          mpps_registration_number?: string | null
           name_family: string
           name_given: string[]
+          national_id?: string | null
           specialty?: string | null
           telecom?: Json | null
+          university?: string | null
           updated_at?: string | null
         }
         Update: {
-          active?: boolean | null
+active?: boolean | null
           auth_user_id?: string | null
           created_at?: string | null
           fhir_id?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           license_number?: string | null
+          mpps_registration_number?: string | null
           name_family?: string
           name_given?: string[]
+          national_id?: string | null
           specialty?: string | null
           telecom?: Json | null
+          university?: string | null
           updated_at?: string | null
         }
         Relationships: []
-      }
+      },
       clinics: {
         Row: {
           active: boolean | null
+          address: string | null
           created_at: string | null
           id: string
           name: string
           owner_practitioner_id: string | null
+          phone: string | null
+          rif: string | null
           slug: string | null
           updated_at: string | null
         }
         Insert: {
           active?: boolean | null
+          address?: string | null
           created_at?: string | null
           id?: string
           name: string
           owner_practitioner_id?: string | null
+          phone?: string | null
+          rif?: string | null
           slug?: string | null
           updated_at?: string | null
         }
-        Update: {
+Update: {
           active?: boolean | null
+          address?: string | null
           created_at?: string | null
           id?: string
           name?: string
           owner_practitioner_id?: string | null
+          phone?: string | null
+          rif?: string | null
           slug?: string | null
           updated_at?: string | null
         }
         Relationships: []
-      }
+      },
       clinic_practitioners: {
         Row: {
           active: boolean | null
@@ -888,7 +915,7 @@ export type Database = {
         Returns: {
           active: boolean
           id: string
-          identifiers: Json
+          national_id: string | null
           name_family: string
           name_given: string[]
         }[]

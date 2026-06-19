@@ -130,7 +130,7 @@ export default function PatientDetailView({ patient, conditions: initialConditio
         router.refresh();
     };
 
-    const docId = Array.isArray(patient.identifiers) ? (patient.identifiers as PatientIdentifier[])[0]?.value : undefined;
+    const docId = patient.national_id;
     const phone = Array.isArray(patient.telecom) ? (patient.telecom as PatientTelecom[]).find(t => t.system === 'phone')?.value : undefined;
     const email = Array.isArray(patient.telecom) ? (patient.telecom as PatientTelecom[]).find(t => t.system === 'email')?.value : undefined;
     const address = Array.isArray(patient.address) ? (patient.address as PatientAddress[])[0]?.text : undefined;

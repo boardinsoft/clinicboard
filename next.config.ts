@@ -26,6 +26,7 @@ const cspDirectives = [
 ].filter(Boolean).join('; ');
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ['@react-pdf/renderer'],
   async headers() {
     return [
       {

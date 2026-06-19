@@ -274,7 +274,6 @@ export async function startWalkInEncounter(payload: {
         old_status: null,
         new_status: 'arrived',
         notes: `Walk-in creado: ${apptDesc || 'Consulta por orden de llegada'}`,
-        change_reason: 'walk-in_created',
     }]);
 
     const encounterStatus = wfType === 'quick' ? 'in-progress' : 'arrived';

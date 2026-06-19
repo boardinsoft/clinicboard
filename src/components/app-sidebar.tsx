@@ -11,6 +11,7 @@ import {
   Notebook,
   History,
   FileText,
+  Settings,
   ChevronRight,
   PanelLeftClose,
   type LucideIcon,
@@ -85,6 +86,11 @@ const NAV_ITEMS: NavItem[] = [
       { title: 'Recetas activas', url: '/prescriptions?filter=active' },
     ],
   },
+  {
+    title: 'Configuración',
+    url: '/settings',
+    icon: Settings,
+  },
 ];
 
 const SIDEBAR_TOOLTIP_CONTENT = {
@@ -135,6 +141,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<'div'>) {
     if (isCollapsed && item.items?.length) {
       toggleSidebar();
       return;
+    }
+    if (!item.items?.length) {
+      handleNavClick(item.url, false);
     }
   };
 

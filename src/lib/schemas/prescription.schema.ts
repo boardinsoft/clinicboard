@@ -83,6 +83,7 @@ export const createPrescriptionFormSchema = z.object({
     items: z.array(medicationItemSchema).min(1, 'Agrega al menos un medicamento'),
     notes: z.string().optional(),
     intent: z.string().optional().default('order'),
+    valid_until: z.string().datetime().optional(),
 });
 
 export type CreatePrescriptionFormValues = z.infer<typeof createPrescriptionFormSchema>;

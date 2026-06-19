@@ -233,6 +233,7 @@ export async function createPrescriptions(formData: {
     items: MedicationItemInput[];
     notes?: string;
     intent?: string;
+    valid_until?: string;
 }) {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
@@ -248,11 +249,16 @@ export async function createPrescriptions(formData: {
         items: formData.items,
         notes: formData.notes,
         intent: formData.intent || 'order',
+        valid_until: formData.valid_until,
     });
 
     if (!validation.success) {
         return { error: z.flattenError(validation.error).fieldErrors };
     }
+
+    const validUntil = formData.valid_until
+        ? new Date(formData.valid_until)
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     const { data: encounter } = await supabase
         .from('encounters')
@@ -295,6 +301,7 @@ export async function createPrescriptions(formData: {
         return {
             patient_id: formData.patient_id,
             encounter_id: formData.encounter_id,
+            clinic_id: formData.clinic_id,
             prescriber_id: practitionerId,
             medication_code: item.medication_code,
             medication_display: item.medication_display,
@@ -302,6 +309,7 @@ export async function createPrescriptions(formData: {
             intent: formData.intent || 'order',
             dosage_instruction,
             authored_on: now,
+            valid_until: validUntil.toISOString(),
             note: formData.notes || null,
             fhir_id: crypto.randomUUID(),
         };
@@ -365,8 +373,8 @@ export async function getPrescriptionById(id: string) {
         .from('medication_requests')
         .select(`
             *,
-            patient:patients(id, name_given, name_family, birth_date, identifiers),
-            prescriber:practitioners(name_given, name_family, specialty, license_number),
+            patient:patients(id, name_given, name_family, birth_date, national_id),
+            prescriber:practitioners(id, name_given, name_family, specialty, license_number, national_id, mpps_registration_number, university),
             encounter:encounters(id, status, patient_id)
         `)
         .eq('id', id)
@@ -574,4 +582,102 @@ export async function searchMedications(query: string, limit = 20) {
     }
 
     return { data };
+}
+
+export async function getPrescriptionForPrint(id: string) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) {
+        return { error: 'No autorizado' };
+    }
+
+    const { data, error } = await supabase
+        .from('medication_requests')
+        .select(`
+            id,
+            medication_code,
+            medication_display,
+            dosage_instruction,
+            note,
+            status,
+            authored_on,
+            valid_until,
+            fhir_id,
+            printed_count,
+            clinic_id,
+            patient:patients(id, name_given, name_family, birth_date, national_id),
+            prescriber:practitioners(id, name_given, name_family, specialty, license_number, national_id, mpps_registration_number, university),
+            encounter:encounters(id, clinic_id)
+        `)
+        .eq('id', id)
+        .eq('prescriber_id', practitionerId)
+        .single();
+
+    if (error || !data) {
+        console.error('Error in getPrescriptionForPrint:', error);
+        return { error: error?.message || 'Receta no encontrada' };
+    }
+
+    const effectiveClinicId = data.clinic_id || data.encounter?.clinic_id;
+    let clinic = null;
+    if (effectiveClinicId) {
+        const { data: clinicData } = await supabase
+            .from('clinics')
+            .select('id, name, rif, address, phone')
+            .eq('id', effectiveClinicId)
+            .single();
+        clinic = clinicData;
+    }
+
+    return { data: { ...data, clinic } };
+}
+
+export async function markPrescriptionPrinted(prescriptionId: string) {
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) {
+        return { error: 'No autorizado' };
+    }
+
+    const { data: current } = await supabase
+        .from('medication_requests')
+        .select('printed_count, status')
+        .eq('id', prescriptionId)
+        .eq('prescriber_id', practitionerId)
+        .single();
+
+    if (!current) {
+        return { error: 'Receta no encontrada' };
+    }
+
+    const newCount = (current.printed_count || 0) + 1;
+    const now = new Date().toISOString();
+
+    const { error } = await supabase
+        .from('medication_requests')
+        .update({
+            printed_count: newCount,
+            printed_at: now,
+        })
+        .eq('id', prescriptionId);
+
+    if (error) {
+        console.error('Error in markPrescriptionPrinted:', error);
+        return { error: error.message };
+    }
+
+    await logPrescriptionAudit(
+        supabase,
+        prescriptionId,
+        'print',
+        current.status as MedicationRequestStatus,
+        current.status as MedicationRequestStatus,
+        practitionerId,
+        `PDF generado (impresión #${newCount})`
+    );
+
+    revalidatePath(`/prescriptions/${prescriptionId}`);
+    return { data: { printed_count: newCount, printed_at: now } };
 }

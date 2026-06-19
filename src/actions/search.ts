@@ -50,8 +50,8 @@ export async function searchGlobal(queryText: string, clinicSlug: string, contex
     // 1. Search Patients (Fuzzy name, Exact phone/email/identifier)
     const patientsQuery = supabase
         .from('patients')
-        .select('id, name_family, name_given, identifiers, telecom')
-        .or(`name_family.ilike.%${queryText}%,name_given.cs.{${queryText}},telecom->>value.ilike.%${queryText}%,identifiers->>value.ilike.%${queryText}%`)
+        .select('id, name_family, name_given, national_id, telecom')
+        .or(`name_family.ilike.%${queryText}%,name_given.cs.{${queryText}},telecom->>value.ilike.%${queryText}%,national_id.ilike.%${queryText}%`)
         .eq('practitioner_id', practitionerId)
         .limit(10);
 
@@ -120,7 +120,7 @@ export async function searchGlobal(queryText: string, clinicSlug: string, contex
                 id: p.id,
                 type: 'patient',
                 title: `${p.name_given.join(' ')} ${p.name_family}`,
-                subtitle: `Paciente • ${phone || (Array.isArray(p.identifiers) && p.identifiers.length > 0 ? (p.identifiers[0] as { value?: string })?.value : 'Sin ID')}`,
+                subtitle: `Paciente • ${phone || p.national_id || 'Sin ID'}`,
                 url: `/${clinicSlug}/patients/${p.id}`,
             });
         });

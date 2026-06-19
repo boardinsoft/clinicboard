@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { toast } from "sonner"
 
-interface PatientIdentifier { value?: string }
 interface PatientTelecom { system?: string; value?: string }
 interface PatientAddress { text?: string }
 
@@ -54,7 +53,7 @@ export default function EditPatientPage() {
                     familyName: data.name_family || "",
                     gender: (data.gender as PatientFormValues['gender']) || "unknown",
                     birthDate: data.birth_date || "",
-                    documentId: (data.identifiers as PatientIdentifier[] | null)?.[0]?.value || "",
+                    documentId: data.national_id || "",
                     phone: (data.telecom as PatientTelecom[] | null)?.find(t => t.system === "phone")?.value || "",
                     email: (data.telecom as PatientTelecom[] | null)?.find(t => t.system === "email")?.value || "",
                     address: (data.address as PatientAddress[] | null)?.[0]?.text || "",

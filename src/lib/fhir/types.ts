@@ -275,7 +275,7 @@ export interface Patient {
     birth_date?: string | null;
     telecom: ContactPoint[];
     address: Address[];
-    identifiers: Identifier[];
+    national_id?: string | null;
     extensions: Record<string, unknown>;
     encrypted_notes?: string | null;
     practitioner_id: string;

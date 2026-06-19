@@ -153,12 +153,7 @@ export function PatientSearchField({
                                             {p.name_family}, {p.name_given?.join(' ')}
                                         </span>
                                         <span className="text-[10px] text-muted-foreground font-mono">
-                                            {(() => {
-                                              const identifiers = typeof p.identifiers === 'string'
-                                                ? JSON.parse(p.identifiers as string)
-                                                : p.identifiers;
-                                              return Array.isArray(identifiers) ? identifiers[0]?.value || 'Sin CI' : 'Sin CI';
-                                            })()}
+                                            {p.national_id || 'Sin CI'}
                                         </span>
                                     </div>
                                 </button>

@@ -301,15 +301,10 @@ export default function AppointmentDetailSheet({
                                     <span className="opacity-30">•</span>
                                     <span>{calcAge(patient?.birth_date)}</span>
                                 </div>
-                                {patient?.identifiers && (
+                                {patient?.national_id && (
                                     <div className="flex items-center gap-1.5 mt-1.5 text-[10px] font-mono bg-background/50 px-2 py-0.5 rounded border border-border/40 self-start">
                                         <CreditCard className="w-3 h-3 text-muted-foreground" />
-                                        <span>{(() => {
-                                          const identifiers = typeof patient.identifiers === 'string'
-                                            ? JSON.parse(patient.identifiers as string)
-                                            : patient.identifiers;
-                                          return Array.isArray(identifiers) ? identifiers[0]?.value || 'S/D' : 'S/D';
-                                        })()}</span>
+                                        <span>{patient.national_id}</span>
                                     </div>
                                 )}
                             </div>

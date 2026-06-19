@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Pill, FileText, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Pill, FileText, AlertCircle, CalendarClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { createPrescriptions } from '@/actions/prescriptions';
+import { getPrescriptionColor } from '@/lib/ve-prescription';
 import type { MedicationItemInput } from '@/lib/schemas/prescription.schema';
 import MedicationCard from './MedicationCard';
 import AddMedicationDialog from './AddMedicationDialog';
@@ -44,6 +47,12 @@ function calcAge(birthDate: string | null): string | null {
     return `${age}a`;
 }
 
+function getDefaultValidUntil(days: number): string {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split('T')[0];
+}
+
 export default function PrescriptionCreator({
     encounterId,
     clinicSlug,
@@ -55,6 +64,7 @@ export default function PrescriptionCreator({
     const router = useRouter();
     const [items, setItems] = useState<MedicationItemInput[]>([]);
     const [notes, setNotes] = useState('');
+    const [validUntil, setValidUntil] = useState(getDefaultValidUntil(30));
     const [isAddingMedication, setIsAddingMedication] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -64,22 +74,22 @@ export default function PrescriptionCreator({
         ? `${patient.name_family}, ${(patient.name_given || []).join(' ')}`
         : '—';
     const patientAge = calcAge(patient?.birth_date || null);
-    const patientDocId = (() => {
-        if (!patient?.identifiers) return '—';
-        try {
-            const ids = patient.identifiers as Array<{ type?: string; value?: string }>;
-            const docId = ids.find(id => id.type === 'document_id' || id.type === 'CI');
-            return docId?.value || '—';
-        } catch {
-            return '—';
-        }
-    })();
+    const patientDocId = patient?.national_id || '—';
 
     const practitionerName = practitioner
         ? `${practitioner.name_family}, ${(practitioner.name_given || []).join(' ')}`
         : '—';
 
     const hasUnsavedChanges = items.length > 0 || notes.trim().length > 0;
+
+    useEffect(() => {
+        const hasAntibiotic = items.some(item =>
+            getPrescriptionColor(item.medication_code, item.medication_display) === 'green'
+        );
+        if (hasAntibiotic && items.length > 0) {
+            setValidUntil(getDefaultValidUntil(7));
+        }
+    }, [items]);
 
     const handleAddMedication = (medication: { code: string; display: string }) => {
         const newItem: MedicationItemInput = {
@@ -125,6 +135,7 @@ export default function PrescriptionCreator({
             items,
             notes,
             intent: 'order',
+            valid_until: new Date(validUntil).toISOString(),
         });
 
         setIsSaving(false);
@@ -161,6 +172,7 @@ export default function PrescriptionCreator({
             items,
             notes,
             intent: 'order',
+            valid_until: new Date(validUntil).toISOString(),
         });
 
         setIsSaving(false);
@@ -323,6 +335,53 @@ export default function PrescriptionCreator({
                     </div>
 
                     <PrescriptionNotesCard notes={notes} onChange={setNotes} />
+
+                    <div className="bg-n-1 rounded-lg border border-n-5/30 p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <CalendarClock className="w-4 h-4 text-b-8" />
+                            <h3 className="text-sm font-semibold text-n-11">Fecha de Expiración</h3>
+                            <Badge variant="pill-info" className="text-[10px]">Art. 5 #8</Badge>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-4">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="valid_until" className="text-[11px] font-medium text-n-10">
+                                        Fecha de expiración de la receta
+                                    </Label>
+                                    <Input
+                                        id="valid_until"
+                                        type="date"
+                                        value={validUntil}
+                                        onChange={(e) => setValidUntil(e.target.value)}
+                                        className="h-9 text-sm w-44"
+                                        min={new Date().toISOString().split('T')[0]}
+                                        max={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                                    />
+                                </div>
+                                <div className="flex gap-1.5">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-[10px]"
+                                        onClick={() => setValidUntil(getDefaultValidUntil(30))}
+                                    >
+                                        30 días
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-[10px]"
+                                        onClick={() => setValidUntil(getDefaultValidUntil(7))}
+                                    >
+                                        7 días
+                                    </Button>
+                                </div>
+                            </div>
+                            <p className="text-[10px] text-n-8">
+                                Los antibióticos tienen validez de 7 días. Los controlados vencen inmediatamente.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Printer, RotateCcw, Ban, CheckCircle, PauseCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Printer, RotateCcw, Ban, CheckCircle, PauseCircle, Loader2, CalendarClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -34,6 +34,7 @@ interface PrescriptionDetailClientProps {
     prescription: {
         id: string;
         authored_on: string | null;
+        valid_until: string | null;
         status: MedicationRequestStatus | null;
         medication_code: string;
         medication_display: string;
@@ -45,12 +46,17 @@ interface PrescriptionDetailClientProps {
             name_given: string[];
             name_family: string;
             birth_date: string | null;
+            national_id: string | null;
         } | null;
         prescriber?: {
+            id: string;
             name_given: string[];
             name_family: string;
             specialty: string | null;
             license_number: string | null;
+            national_id: string | null;
+            mpps_registration_number: string | null;
+            university: string | null;
         } | null;
         encounter?: {
             id: string;
@@ -93,6 +99,11 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'default' | 'destr
     'unknown': { label: 'Desconocido', variant: 'secondary' },
 };
 
+function isExpired(validUntil: string | null): boolean {
+    if (!validUntil) return false;
+    return new Date(validUntil) < new Date();
+}
+
 export default function PrescriptionDetailClient({ prescription, auditLog, clinicSlug }: PrescriptionDetailClientProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
@@ -133,7 +144,14 @@ export default function PrescriptionDetailClient({ prescription, auditLog, clini
     };
 
     const handlePrint = () => {
-        window.print();
+        setIsLoading(true);
+        try {
+            window.open(`/api/prescriptions/${prescription.id}/pdf`, '_blank');
+        } catch (err) {
+            toast.error('Error al abrir el PDF');
+        } finally {
+            setTimeout(() => setIsLoading(false), 1000);
+        }
     };
 
     return (
@@ -165,6 +183,17 @@ export default function PrescriptionDetailClient({ prescription, auditLog, clini
                                         {prescription.authored_on ? formatDate(prescription.authored_on) : '—'}
                                     </span>
                                 </div>
+                                {prescription.valid_until && (
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <CalendarClock className="w-3 h-3 text-n-8" />
+                                        <span className="text-[10px] text-n-8 mono">
+                                            Vence: {formatDate(prescription.valid_until)}
+                                        </span>
+                                        {isExpired(prescription.valid_until) && (
+                                            <Badge variant="destructive" className="text-[10px]">Vencida</Badge>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

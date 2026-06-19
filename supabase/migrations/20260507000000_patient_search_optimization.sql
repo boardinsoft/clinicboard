@@ -15,7 +15,7 @@ RETURNS TABLE(
   id uuid,
   name_given text[],
   name_family text,
-  identifiers jsonb,
+  national_id text,
   active boolean
 )
 LANGUAGE plpgsql AS $function$
@@ -25,7 +25,7 @@ BEGIN
     p.id,
     p.name_given,
     p.name_family,
-    p.identifiers,
+    p.national_id,
     p.active
   FROM patients p
   WHERE p.practitioner_id = p_id
@@ -38,8 +38,8 @@ BEGIN
         SELECT 1 FROM unnest(p.name_given) AS ng
         WHERE ng ILIKE '%' || search_term || '%'
       )
-      -- Search by identifier value (Cédula)
-      OR (p.identifiers::text ILIKE '%' || search_term || '%')
+      -- Search by national_id (Cédula)
+      OR (p.national_id ILIKE '%' || search_term || '%')
     )
   ORDER BY p.name_family ASC
   LIMIT 20;
@@ -55,10 +55,4 @@ CREATE INDEX IF NOT EXISTS idx_patients_prac_active
   ON patients(practitioner_id, active)
   WHERE active = true;
 
--- ============================================================
--- Index: GIN index on identifiers JSONB
--- Speeds up identifier value searches
--- ============================================================
 
-CREATE INDEX IF NOT EXISTS idx_patients_identifiers_gin
-  ON patients USING gin (identifiers);

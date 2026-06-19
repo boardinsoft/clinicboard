@@ -60,7 +60,7 @@ export async function createPatient(formData: {
             name_given: validation.data.name_given,
             gender: validation.data.gender,
             birth_date: validation.data.birth_date || null,
-            identifiers: validation.data.documentId ? [{ system: 'venezuela-ci', value: validation.data.documentId }] : [],
+            national_id: validation.data.documentId || null,
             telecom: buildTelecomArray(validation.data.phone, validation.data.email),
             address: validation.data.address ? [{ text: validation.data.address }] : [],
             active: true,
@@ -109,7 +109,7 @@ export async function updatePatient(id: string, formData: {
             name_given: validation.data.name_given,
             gender: validation.data.gender,
             birth_date: validation.data.birth_date || null,
-            identifiers: validation.data.documentId ? [{ system: 'venezuela-ci', value: validation.data.documentId }] : [],
+            national_id: validation.data.documentId || null,
             telecom: buildTelecomArray(validation.data.phone, validation.data.email),
             address: validation.data.address ? [{ text: validation.data.address }] : []
         })

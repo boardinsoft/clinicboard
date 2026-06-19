@@ -505,7 +505,7 @@ export default function HistoryPage() {
 
                 <PageHeader
                     title={patientName}
-                    description={selectedPatient ? `Expediente: ${(selectedPatient?.identifiers as Array<Record<string, string>> | null)?.[0]?.value || 'S/D'}` : 'Seleccione un paciente para comenzar el registro clínico.'}
+                    description={selectedPatient ? `Expediente: ${selectedPatient.national_id || 'S/D'}` : 'Seleccione un paciente para comenzar el registro clínico.'}
                     breadcrumbs={[
                         { label: 'Historia Clínica', href: '/history' },
                         ...(selectedPatient ? [{ label: patientName }] : [])

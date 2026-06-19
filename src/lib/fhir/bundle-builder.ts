@@ -62,8 +62,12 @@ function toAddresses(address: Json | null): Address[] {
 }
 
 function toIdentifiers(identifiers: Json | null): Identifier[] {
-    if (!identifiers || !Array.isArray(identifiers)) return [];
-    return identifiers as unknown as Identifier[];
+    return [];
+}
+
+function nationalIdToIdentifier(nationalId: string | null): Identifier | null {
+    if (!nationalId) return null;
+    return { system: 'https://clinicboard.app/identifiers/national-id', value: nationalId };
 }
 
 function toCodeableConcept(code: string, display: string): CodeableConcept {
@@ -120,7 +124,10 @@ function buildPatientResource(patient: Record<string, unknown>): FHIRPatient {
         gender: (patient.gender as FHIRPatient['gender']) || 'unknown',
         birthDate: patient.birth_date as string | undefined,
         address: toAddresses(patient.address as Json | null),
-        identifier: toIdentifiers(patient.identifiers as Json | null),
+        identifier: (() => {
+            const id = nationalIdToIdentifier(patient.national_id as string | null);
+            return id ? [id] : [];
+        })(),
         extensions: (patient.extensions as Record<string, unknown>) || {},
     };
 }

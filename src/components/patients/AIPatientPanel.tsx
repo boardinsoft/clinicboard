@@ -125,14 +125,11 @@ export default function AIPatientPanel({ patient, onClose }: AIPatientPanelProps
     const address = typeof patient.address === 'string'
       ? JSON.parse(patient.address as string)
       : patient.address;
-    const identifiers = typeof patient.identifiers === 'string'
-      ? JSON.parse(patient.identifiers as string)
-      : patient.identifiers;
 
     const phone = Array.isArray(telecom) ? telecom.find(t => t.system === 'phone')?.value : undefined;
     const email = Array.isArray(telecom) ? telecom.find(t => t.system === 'email')?.value : undefined;
     const addressText = Array.isArray(address) ? address[0]?.text : undefined;
-    const docId = Array.isArray(identifiers) ? identifiers[0]?.value : undefined;
+    const docId = patient.national_id;
     const patientFullName = `${patient.name_family}, ${patient.name_given?.join(' ')}`;
 
     // Máximo 3 consultas recientes

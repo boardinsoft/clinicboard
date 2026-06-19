@@ -515,7 +515,7 @@ export async function getAppointments(filters?: {
                 gender,
                 birth_date,
                 telecom,
-                identifiers
+                national_id
             )
         `)
         .eq('practitioner_id', practitionerId);
