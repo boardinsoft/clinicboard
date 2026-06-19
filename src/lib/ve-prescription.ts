@@ -77,6 +77,7 @@ export interface PrescriptionForPrint {
     authored_on: string | null;
     valid_until: string | null;
     fhir_id: string | null;
+    prescription_number: string | null;
     printed_count: number | null;
     patient?: {
         id: string;

@@ -220,7 +220,7 @@ export default function PrescriptionPDFDocument({ prescription }: PrescriptionPD
 
     return (
         <Document
-            title={`Receta ${prescription.fhir_id || prescription.id}`}
+            title={`Receta ${prescription.prescription_number || prescription.fhir_id || prescription.id}`}
             author={prescriberName}
             subject="Receta médica"
         >

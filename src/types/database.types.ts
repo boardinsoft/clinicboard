@@ -604,6 +604,7 @@ export type Database = {
           note: string | null
           patient_id: string
           prescriber_id: string
+          prescription_number: string | null
           printed_at: string | null
           printed_count: number | null
           status: Database["public"]["Enums"]["medication_status"] | null
@@ -624,6 +625,7 @@ export type Database = {
           note?: string | null
           patient_id: string
           prescriber_id: string
+          prescription_number?: string | null
           printed_at?: string | null
           printed_count?: number | null
           status?: Database["public"]["Enums"]["medication_status"] | null
@@ -644,6 +646,7 @@ export type Database = {
           note?: string | null
           patient_id?: string
           prescriber_id?: string
+          prescription_number?: string | null
           printed_at?: string | null
           printed_count?: number | null
           status?: Database["public"]["Enums"]["medication_status"] | null
@@ -901,6 +904,10 @@ Update: {
       [_ in never]: never
     }
     Functions: {
+      generate_prescription_number: {
+        Args: { p_clinic_id: string }
+        Returns: string
+      }
       search_patients_fuzzy: {
         Args: { p_id: string; search_term: string }
         Returns: {

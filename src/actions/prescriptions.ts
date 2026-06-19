@@ -289,6 +289,17 @@ export async function createPrescriptions(formData: {
     }
 
     const now = new Date().toISOString();
+
+    const { data: prescriptionNumberData, error: numberError } = await supabase
+        .rpc('generate_prescription_number', { p_clinic_id: formData.clinic_id });
+
+    if (numberError || !prescriptionNumberData) {
+        console.error('Error generating prescription number:', numberError);
+        return { error: 'No se pudo generar el número de receta.' };
+    }
+
+    const prescriptionNumber = prescriptionNumberData as string;
+
     const prescriptionsToInsert = formData.items.map((item) => {
         const dosage_instruction = [
             item.dose,
@@ -312,6 +323,7 @@ export async function createPrescriptions(formData: {
             valid_until: validUntil.toISOString(),
             note: formData.notes || null,
             fhir_id: crypto.randomUUID(),
+            prescription_number: prescriptionNumber,
         };
     });
 
@@ -604,6 +616,7 @@ export async function getPrescriptionForPrint(id: string) {
             authored_on,
             valid_until,
             fhir_id,
+            prescription_number,
             printed_count,
             clinic_id,
             patient:patients(id, name_given, name_family, birth_date, national_id),
