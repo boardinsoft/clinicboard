@@ -1130,7 +1130,7 @@ export type EncounterTimeoutStatus = {
   gracePeriodRemainingMinutes: number | null;
 };
 
-export type PrescriptionForPreview = Tables<'medication_requests'> & {
+export type PrescriptionForPreview = Database["public"]["Tables"]["medication_requests"]["Row"] & {
   patient?: {
     id: string;
     name_given: string[];

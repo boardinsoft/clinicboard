@@ -12,6 +12,7 @@ import {
     CheckCircle,
     Clock,
     Ban,
+    ArrowRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/PageLayout';
@@ -34,6 +35,19 @@ const STATUS_TABS: { value: MedicationRequestStatus | 'all'; label: string }[] =
 function getClinicSlug(pathname: string): string {
     const parts = pathname.split('/').filter(Boolean);
     return parts[0] || '';
+}
+
+function isExpiringSoon(validUntil: string | null): boolean {
+    if (!validUntil) return false;
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+    const expiry = new Date(validUntil).getTime();
+    const now = Date.now();
+    return expiry >= now && expiry - now <= threeDays;
+}
+
+function isExpired(validUntil: string | null): boolean {
+    if (!validUntil) return false;
+    return new Date(validUntil) < new Date();
 }
 
 export default function PrescriptionsListView() {
@@ -134,12 +148,9 @@ export default function PrescriptionsListView() {
         applyFilters(query, activeTab, currentPage);
     };
 
-    const activeCount = prescriptions.filter(r => r.status === 'active').length;
-    const draftCount = prescriptions.filter(r => r.status === 'draft').length;
-    const expiredCount = prescriptions.filter(r => {
-        if (!r.valid_until) return false;
-        return new Date(r.valid_until) < new Date();
-    }).length;
+    const expiredCount = prescriptions.filter(r => isExpired(r.valid_until)).length;
+    const expiringSoonCount = prescriptions.filter(r => isExpiringSoon(r.valid_until)).length;
+    const filteredTotal = prescriptions.length;
 
     return (
         <div className="flex flex-col h-full bg-background">
@@ -147,68 +158,12 @@ export default function PrescriptionsListView() {
                 title="Recetas"
                 description="Historial completo de recetas médicas registradas en el sistema."
                 actions={
-                    <>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors"
-                            onClick={handleRefresh}
-                        >
-                            <RefreshCw className={`w-4 h-4 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-                            Actualizar
-                        </Button>
-                    </>
-                }
-            >
-                <div className="flex flex-col gap-4 pt-2">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-n-2 border border-n-4 text-[11px]">
-                            <FileText className="w-3.5 h-3.5 text-n-8" />
-                            <span className="text-n-8 font-medium">Total:</span>
-                            <span className="font-bold text-n-12 tabular-nums">{total}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-s-success-bg border border-s-success-br text-[11px]">
-                            <CheckCircle className="w-3.5 h-3.5 text-s-success" />
-                            <span className="text-s-success font-medium">Activas:</span>
-                            <span className="font-bold text-s-success tabular-nums">{activeCount}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-n-2 border border-n-4 text-[11px]">
-                            <Clock className="w-3.5 h-3.5 text-n-8" />
-                            <span className="text-n-8 font-medium">Borradores:</span>
-                            <span className="font-bold text-n-12 tabular-nums">{draftCount}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-s-warning-bg border border-s-warning-br text-[11px]">
-                            <Ban className="w-3.5 h-3.5 text-s-warning" />
-                            <span className="text-s-warning font-medium">Vencidas:</span>
-                            <span className="font-bold text-s-warning tabular-nums">{expiredCount}</span>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-2 border-b border-transparent">
-                            {STATUS_TABS.map((tab) => (
-                                <button
-                                    key={tab.value}
-                                    onClick={() => handleTabChange(tab.value)}
-                                    className={`relative px-3 py-2 text-[12px] font-medium transition-colors ${
-                                        activeTab === tab.value
-                                            ? 'text-b-8'
-                                            : 'text-n-8 hover:text-n-12'
-                                    }`}
-                                >
-                                    {tab.label}
-                                    {activeTab === tab.value && (
-                                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-b-8 rounded-full" />
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="relative flex items-center gap-2 h-9 px-3 bg-n-2 border border-n-5 rounded-[6px] text-[13px] text-n-9 w-64">
+                    <div className="flex items-center gap-2">
+                        <div className="relative flex items-center h-9 px-3 bg-n-2 border border-n-5 rounded-[6px] w-72">
                             <Search className="w-4 h-4 shrink-0 text-n-8" strokeWidth={1.8} />
                             <input
                                 type="text"
-                                placeholder="Buscar por paciente, medicamento..."
+                                placeholder="Buscar por paciente o medicamento..."
                                 value={query}
                                 onChange={(e) => handleSearchChange(e.target.value)}
                                 className="flex-1 bg-transparent text-[13px] text-n-11 placeholder:text-n-8 outline-none min-w-0 h-9"
@@ -222,14 +177,121 @@ export default function PrescriptionsListView() {
                                 </button>
                             )}
                         </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors"
+                            onClick={handleRefresh}
+                        >
+                            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        </Button>
                     </div>
-                </div>
+                }
+            >
+                {activeTab === 'all' && (
+                    <div className="flex items-center gap-2 pt-1">
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-n-2 border border-n-4 text-[11px]">
+                            <FileText className="w-3.5 h-3.5 text-n-8" />
+                            <span className="text-n-8 font-medium">Total</span>
+                            <span className="font-bold text-n-12 tabular-nums">{total}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-s-success-bg border border-s-success-br text-[11px]">
+                            <CheckCircle className="w-3.5 h-3.5 text-s-success" />
+                            <span className="text-s-success font-medium">Activas</span>
+                            <span className="font-bold text-s-success tabular-nums">{prescriptions.filter(r => r.status === 'active').length}</span>
+                        </div>
+                        {expiredCount > 0 && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-s-danger-bg border border-s-danger-br text-[11px]">
+                                <Ban className="w-3.5 h-3.5 text-s-danger" />
+                                <span className="text-s-danger font-medium">Vencidas</span>
+                                <span className="font-bold text-s-danger tabular-nums">{expiredCount}</span>
+                            </div>
+                        )}
+                        {expiringSoonCount > 0 && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-s-warning-bg border border-s-warning-br text-[11px]">
+                                <Clock className="w-3.5 h-3.5 text-s-warning" />
+                                <span className="text-s-warning font-medium">Por vencer</span>
+                                <span className="font-bold text-s-warning tabular-nums">{expiringSoonCount}</span>
+                            </div>
+                        )}
+                        <div className="h-4 w-px bg-n-5/50 mx-1" />
+                        <div className="flex items-center gap-2 border-b border-transparent">
+                            {STATUS_TABS.map((tab) => {
+                                const count = prescriptions.filter(r => {
+                                    if (tab.value === 'all') return true;
+                                    return r.status === tab.value;
+                                }).length;
+                                const isActive = activeTab === tab.value;
+                                return (
+                                    <button
+                                        key={tab.value}
+                                        onClick={() => handleTabChange(tab.value)}
+                                        className={`relative px-3 py-1.5 text-[12px] font-medium transition-colors ${
+                                            isActive
+                                                ? 'text-b-8'
+                                                : 'text-n-8 hover:text-n-12'
+                                        }`}
+                                    >
+                                        {tab.label}
+                                        {count > 0 && (
+                                            <span className={`ml-1 tabular-nums ${isActive ? 'text-b-8' : 'text-n-6'}`}>
+                                                ({count})
+                                            </span>
+                                        )}
+                                        {isActive && (
+                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-b-8 rounded-full" />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab !== 'all' && (
+                    <div className="flex items-center justify-between pt-1">
+                        <div className="flex items-center gap-2 border-b border-transparent">
+                            {STATUS_TABS.map((tab) => {
+                                const count = prescriptions.filter(r => {
+                                    if (tab.value === 'all') return true;
+                                    return r.status === tab.value;
+                                }).length;
+                                const isActive = activeTab === tab.value;
+                                return (
+                                    <button
+                                        key={tab.value}
+                                        onClick={() => handleTabChange(tab.value)}
+                                        className={`relative px-3 py-1.5 text-[12px] font-medium transition-colors ${
+                                            isActive
+                                                ? 'text-b-8'
+                                                : 'text-n-8 hover:text-n-12'
+                                        }`}
+                                    >
+                                        {tab.label}
+                                        {count > 0 && (
+                                            <span className={`ml-1 tabular-nums ${isActive ? 'text-b-8' : 'text-n-6'}`}>
+                                                ({count})
+                                            </span>
+                                        )}
+                                        {isActive && (
+                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-b-8 rounded-full" />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <span className="text-[11px] text-n-8">
+                            {filteredTotal === 0 ? 'Sin resultados' : `${filteredTotal} ${filteredTotal === 1 ? 'receta' : 'recetas'}`}
+                        </span>
+                    </div>
+                )}
             </PageHeader>
 
             <div className="flex-1 overflow-hidden flex flex-col">
                 <PrescriptionTable
                     prescriptions={prescriptions}
                     isLoading={isLoading}
+                    clinicSlug={clinicSlug}
                 />
             </div>
 

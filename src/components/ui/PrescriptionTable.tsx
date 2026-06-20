@@ -13,6 +13,8 @@ import {
     Eye,
     Printer,
     Ban,
+    ArrowRight,
+    AlertTriangle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,6 +44,7 @@ interface PrescriptionForPreview {
     dosage_instruction: unknown | null;
     note: string | null;
     prescription_number: string | null;
+    valid_until: string | null;
     patient?: {
         id: string;
         name_given: string[];
@@ -59,7 +62,8 @@ interface PrescriptionForPreview {
 interface PrescriptionTableProps {
     prescriptions: PrescriptionForPreview[];
     isLoading?: boolean;
-    toolbar?: React.ReactNode;
+    clinicSlug?: string;
+    onClearFilters?: () => void;
     className?: string;
 }
 
@@ -92,10 +96,10 @@ function LoadingSkeleton() {
     );
 }
 
-export default function PrescriptionTable({ prescriptions, isLoading, toolbar, className }: PrescriptionTableProps) {
+export default function PrescriptionTable({ prescriptions, isLoading, clinicSlug: clinicSlugProp, onClearFilters, className }: PrescriptionTableProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const clinicSlug = getClinicSlug(pathname);
+    const clinicSlug = clinicSlugProp || getClinicSlug(pathname);
     const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
 
     if (isLoading) {
@@ -108,16 +112,25 @@ export default function PrescriptionTable({ prescriptions, isLoading, toolbar, c
 
     if (prescriptions.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-32 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center border border-dashed border-border">
-                    <Pill className="w-6 h-6 text-muted-foreground/30" />
+            <div className="flex flex-col items-center justify-center py-32 gap-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="w-16 h-16 rounded-full bg-n-2/80 flex items-center justify-center border border-dashed border-n-5">
+                    <Pill className="w-6 h-6 text-n-7" />
                 </div>
-                <div className="text-center space-y-1">
-                    <h3 className="text-sm font-bold text-foreground">No hay recetas registradas</h3>
+                <div className="text-center space-y-1.5">
+                    <h3 className="text-sm font-bold text-n-11">No hay recetas registradas</h3>
                     <p className="text-[12px] text-n-8 max-w-[280px] mx-auto">
                         Las recetas médicas se crean desde un encuentro clínico activo.
                     </p>
                 </div>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-[11px] border-n-5 text-n-11 hover:bg-n-3 gap-1.5"
+                    onClick={() => router.push(`/${clinicSlug}/history`)}
+                >
+                    Ver encuentros en curso
+                    <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
             </div>
         );
     }
@@ -175,6 +188,19 @@ export default function PrescriptionTable({ prescriptions, isLoading, toolbar, c
                             : '—';
                         const dosageSummary = getDosageSummary(rx.dosage_instruction);
 
+                        const isExpiringSoon = (() => {
+                            if (!rx.valid_until || rx.status !== 'active') return false;
+                            const threeDays = 3 * 24 * 60 * 60 * 1000;
+                            const expiry = new Date(rx.valid_until).getTime();
+                            const now = Date.now();
+                            return expiry >= now && expiry - now <= threeDays;
+                        })();
+
+                        const isExpiredRow = (() => {
+                            if (!rx.valid_until) return false;
+                            return new Date(rx.valid_until) < new Date();
+                        })();
+
                         return (
                             <tr
                                 key={rx.id}
@@ -182,7 +208,7 @@ export default function PrescriptionTable({ prescriptions, isLoading, toolbar, c
                                 className="group transition-colors cursor-pointer"
                             >
                                 <td className="text-center">
-                                    <span className="text-[10px] font-mono text-n-8 hover:text-b-8 transition-colors">
+                                    <span className="text-[11px] font-mono font-semibold text-n-9 group-hover:text-b-8 transition-colors">
                                         {rx.prescription_number || '—'}
                                     </span>
                                 </td>
@@ -225,9 +251,22 @@ export default function PrescriptionTable({ prescriptions, isLoading, toolbar, c
                                 </td>
 
                                 <td className="whitespace-nowrap">
-                                    <Badge variant={variant}>
-                                        {label}
-                                    </Badge>
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <Badge variant={variant}>
+                                            {label}
+                                        </Badge>
+                                        {isExpiringSoon && !isExpiredRow && (
+                                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-s-warning-bg border border-s-warning-br text-[9px] font-semibold text-s-warning">
+                                                <AlertTriangle className="w-2.5 h-2.5" />
+                                                Por vencer
+                                            </span>
+                                        )}
+                                        {isExpiredRow && (
+                                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-s-danger-bg border border-s-danger-br text-[9px] font-semibold text-s-danger">
+                                                Vencida
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
 
                                 <td className="hidden lg:table-cell max-w-[200px]">
