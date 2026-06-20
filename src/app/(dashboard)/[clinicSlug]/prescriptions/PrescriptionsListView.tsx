@@ -158,38 +158,18 @@ export default function PrescriptionsListView() {
                 title="Recetas"
                 description="Historial completo de recetas médicas registradas en el sistema."
                 actions={
-                    <div className="flex items-center gap-2">
-                        <div className="relative flex items-center h-9 px-3 bg-n-2 border border-n-5 rounded-[6px] w-72">
-                            <Search className="w-4 h-4 shrink-0 text-n-8" strokeWidth={1.8} />
-                            <input
-                                type="text"
-                                placeholder="Buscar por paciente o medicamento..."
-                                value={query}
-                                onChange={(e) => handleSearchChange(e.target.value)}
-                                className="flex-1 bg-transparent text-[13px] text-n-11 placeholder:text-n-8 outline-none min-w-0 h-9"
-                            />
-                            {query && (
-                                <button
-                                    onClick={() => handleSearchChange('')}
-                                    className="p-0.5 hover:bg-n-5 rounded transition-colors shrink-0"
-                                >
-                                    <X className="w-3 h-3 text-n-8" />
-                                </button>
-                            )}
-                        </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors"
-                            onClick={handleRefresh}
-                        >
-                            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                        </Button>
-                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors"
+                        onClick={handleRefresh}
+                    >
+                        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    </Button>
                 }
             >
                 {activeTab === 'all' && (
-                    <div className="flex items-center gap-2 pt-1">
+                    <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-n-2 border border-n-4 text-[11px]">
                             <FileText className="w-3.5 h-3.5 text-n-8" />
                             <span className="text-n-8 font-medium">Total</span>
@@ -198,7 +178,9 @@ export default function PrescriptionsListView() {
                         <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-s-success-bg border border-s-success-br text-[11px]">
                             <CheckCircle className="w-3.5 h-3.5 text-s-success" />
                             <span className="text-s-success font-medium">Activas</span>
-                            <span className="font-bold text-s-success tabular-nums">{prescriptions.filter(r => r.status === 'active').length}</span>
+                            <span className="font-bold text-s-success tabular-nums">
+                                {prescriptions.filter(r => r.status === 'active').length}
+                            </span>
                         </div>
                         {expiredCount > 0 && (
                             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-s-danger-bg border border-s-danger-br text-[11px]">
@@ -214,77 +196,73 @@ export default function PrescriptionsListView() {
                                 <span className="font-bold text-s-warning tabular-nums">{expiringSoonCount}</span>
                             </div>
                         )}
-                        <div className="h-4 w-px bg-n-5/50 mx-1" />
-                        <div className="flex items-center gap-2 border-b border-transparent">
-                            {STATUS_TABS.map((tab) => {
-                                const count = prescriptions.filter(r => {
-                                    if (tab.value === 'all') return true;
-                                    return r.status === tab.value;
-                                }).length;
-                                const isActive = activeTab === tab.value;
-                                return (
-                                    <button
-                                        key={tab.value}
-                                        onClick={() => handleTabChange(tab.value)}
-                                        className={`relative px-3 py-1.5 text-[12px] font-medium transition-colors ${
-                                            isActive
-                                                ? 'text-b-8'
-                                                : 'text-n-8 hover:text-n-12'
-                                        }`}
-                                    >
-                                        {tab.label}
-                                        {count > 0 && (
-                                            <span className={`ml-1 tabular-nums ${isActive ? 'text-b-8' : 'text-n-6'}`}>
-                                                ({count})
-                                            </span>
-                                        )}
-                                        {isActive && (
-                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-b-8 rounded-full" />
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
                     </div>
                 )}
 
-                {activeTab !== 'all' && (
-                    <div className="flex items-center justify-between pt-1">
-                        <div className="flex items-center gap-2 border-b border-transparent">
-                            {STATUS_TABS.map((tab) => {
-                                const count = prescriptions.filter(r => {
-                                    if (tab.value === 'all') return true;
-                                    return r.status === tab.value;
-                                }).length;
-                                const isActive = activeTab === tab.value;
-                                return (
-                                    <button
-                                        key={tab.value}
-                                        onClick={() => handleTabChange(tab.value)}
-                                        className={`relative px-3 py-1.5 text-[12px] font-medium transition-colors ${
-                                            isActive
-                                                ? 'text-b-8'
-                                                : 'text-n-8 hover:text-n-12'
-                                        }`}
-                                    >
-                                        {tab.label}
-                                        {count > 0 && (
-                                            <span className={`ml-1 tabular-nums ${isActive ? 'text-b-8' : 'text-n-6'}`}>
-                                                ({count})
-                                            </span>
-                                        )}
-                                        {isActive && (
-                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-b-8 rounded-full" />
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        <span className="text-[11px] text-n-8">
-                            {filteredTotal === 0 ? 'Sin resultados' : `${filteredTotal} ${filteredTotal === 1 ? 'receta' : 'recetas'}`}
-                        </span>
+                <div className="flex items-center justify-between pt-3">
+                    <div className="flex items-center h-8 bg-transparent">
+                        {STATUS_TABS.map((tab) => {
+                            const count = prescriptions.filter(r => {
+                                if (tab.value === 'all') return true;
+                                return r.status === tab.value;
+                            }).length;
+                            const isActive = activeTab === tab.value;
+                            return (
+                                <button
+                                    key={tab.value}
+                                    onClick={() => handleTabChange(tab.value)}
+                                    className={`
+                                        flex items-center h-full px-4 text-[13px] font-medium transition-all relative
+                                        ${isActive
+                                            ? 'text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary'
+                                            : 'text-muted-foreground/80 hover:text-foreground'
+                                        }
+                                    `}
+                                >
+                                    {tab.label}
+                                    {count > 0 && (
+                                        <span className={`ml-1.5 tabular-nums ${isActive ? 'text-foreground/60' : 'text-muted-foreground/60'}`}>
+                                            ({count})
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
-                )}
+
+                    <button
+                        onClick={() => {
+                            const input = document.querySelector<HTMLInputElement>('#prescription-search-input');
+                            input?.focus();
+                        }}
+                        className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 border border-n-5 rounded-[5px] text-[13px] text-n-9 hover:bg-n-3 hover:border-n-6 hover:text-n-11 outline-none transition-all"
+                    >
+                        <Search className="w-4 h-4 shrink-0" strokeWidth={1.8} />
+                        <span className="flex-1 text-left font-medium text-n-8">
+                            {query || 'Buscar…'}
+                        </span>
+                        <input
+                            id="prescription-search-input"
+                            type="text"
+                            value={query}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            className="sr-only"
+                            aria-label="Buscar recetas"
+                        />
+                        {query ? (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleSearchChange(''); }}
+                                className="p-0.5 hover:bg-n-5 rounded transition-colors shrink-0"
+                            >
+                                <X className="w-3 h-3 text-n-8" />
+                            </button>
+                        ) : (
+                            <span className="px-1.5 py-0.5 text-[10px] font-medium mono bg-background border border-n-5 rounded-[3px] text-n-9">
+                                ⌘K
+                            </span>
+                        )}
+                    </button>
+                </div>
             </PageHeader>
 
             <div className="flex-1 overflow-hidden flex flex-col">
@@ -297,9 +275,11 @@ export default function PrescriptionsListView() {
 
             <div className="flex items-center justify-between px-6 py-2.5 h-11 border-t border-border bg-background shrink-0">
                 <div className="flex items-center gap-4">
-                    <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-widest">
-                        Total: <span className="text-foreground">{total}</span> recetas
-                    </span>
+                    {activeTab !== 'all' && (
+                        <span className="text-[11px] text-muted-foreground font-medium">
+                            {filteredTotal === 0 ? 'Sin resultados' : `${filteredTotal} ${filteredTotal === 1 ? 'receta' : 'recetas'}`}
+                        </span>
+                    )}
                 </div>
                 <div className="flex items-center gap-4 text-[11px] font-medium text-muted-foreground">
                     <div className="flex items-center gap-1 bg-muted border border-border rounded-md px-2 py-1 shadow-xs">

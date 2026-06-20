@@ -83,7 +83,7 @@ function LoadingSkeleton() {
                     key={i}
                     className="flex items-center gap-4 px-4 py-3 border-b border-border/30 last:border-0"
                 >
-                    <Skeleton className="h-9 w-20 rounded" />
+                    <Skeleton className="h-9 w-36 rounded" />
                     <Skeleton className="h-4 w-32" />
                     <Skeleton className="h-4 w-40 hidden md:block" />
                     <Skeleton className="h-5 w-16 rounded-full" />
@@ -141,7 +141,9 @@ export default function PrescriptionTable({ prescriptions, isLoading, clinicSlug
                 <table className="table-clinic">
                     <thead className="sticky top-0 z-30">
                     <tr>
-                        <th className="w-12 text-center">#</th>
+                        <th className="w-36 text-left pl-4">
+                            <span className="text-[11px] uppercase tracking-wider font-medium text-n-8">N° Receta</span>
+                        </th>
                         <th>
                             <div className="flex items-center gap-1.5">
                                 <Calendar className="w-3 h-3" /> Fecha
@@ -207,8 +209,8 @@ export default function PrescriptionTable({ prescriptions, isLoading, clinicSlug
                                 onClick={() => router.push(`/${clinicSlug}/prescriptions/${rx.id}`)}
                                 className="group transition-colors cursor-pointer"
                             >
-                                <td className="text-center">
-                                    <span className="text-[11px] font-mono font-semibold text-n-9 group-hover:text-b-8 transition-colors">
+                                <td className="pl-4">
+                                    <span className="text-[12px] font-mono font-semibold text-n-10 group-hover:text-b-8 transition-colors">
                                         {rx.prescription_number || '—'}
                                     </span>
                                 </td>
