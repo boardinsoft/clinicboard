@@ -143,23 +143,20 @@ export default function PrescriptionsListView() {
         setActiveTab(status);
         setCurrentPage(page);
         fetchPrescriptions(q, status, page, 'initial');
-        fetchPrescriptions(q, 'all', 1, 'initial');
+        if (status !== 'all') {
+            fetchPrescriptions(q, 'all', 1, 'initial');
+        }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ─── Re-fetch when debounced filters change ───────────────────────────────
-    // Only fires when debouncedQuery/activeTab/currentPage actually change.
-    // fetchPrescriptions has stable identity so this doesn't re-fire on render.
     useEffect(() => {
         if (!isLoading) {
             fetchPrescriptions(debouncedQuery, activeTab, currentPage, 'refresh');
+            if (activeTab !== 'all') {
+                fetchPrescriptions(debouncedQuery, 'all', 1, 'refresh');
+            }
         }
     }, [debouncedQuery, activeTab, currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    // ─── Always refresh status counts when query changes ────────────────────
-    // Independent from tab: ensures counts reflect the current search.
-    useEffect(() => {
-        fetchPrescriptions(debouncedQuery, 'all', 1, 'refresh');
-    }, [debouncedQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ─── Handlers ─────────────────────────────────────────────────────────────
     const handleSearchChange = (value: string) => {
