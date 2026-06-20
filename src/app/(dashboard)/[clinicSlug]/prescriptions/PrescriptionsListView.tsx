@@ -129,9 +129,13 @@ export default function PrescriptionsListView() {
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ─── Re-fetch when debounced filters change ───────────────────────────────
+    // Only fires when debouncedQuery/activeTab/currentPage actually change.
+    // fetchPrescriptions has stable identity so this doesn't re-fire on render.
     useEffect(() => {
-        fetchPrescriptions(debouncedQuery, activeTab, currentPage, 'refresh');
-    }, [debouncedQuery, activeTab, currentPage, fetchPrescriptions]);
+        if (!isLoading) {
+            fetchPrescriptions(debouncedQuery, activeTab, currentPage, 'refresh');
+        }
+    }, [debouncedQuery, activeTab, currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ─── Handlers ─────────────────────────────────────────────────────────────
     const handleSearchChange = (value: string) => {
