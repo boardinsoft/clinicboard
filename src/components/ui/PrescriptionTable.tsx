@@ -61,9 +61,7 @@ interface PrescriptionForPreview {
 
 interface PrescriptionTableProps {
     prescriptions: PrescriptionForPreview[];
-    isLoading?: boolean;
     clinicSlug?: string;
-    onClearFilters?: () => void;
     className?: string;
 }
 
@@ -75,40 +73,11 @@ function getDosageSummary(dosage: unknown): string {
     return String(dosage);
 }
 
-function LoadingSkeleton() {
-    return (
-        <div className="flex flex-col">
-            {Array.from({ length: 8 }).map((_, i) => (
-                <div
-                    key={i}
-                    className="flex items-center gap-4 px-4 py-3 border-b border-border/30 last:border-0"
-                >
-                    <Skeleton className="h-9 w-36 rounded" />
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-4 w-40 hidden md:block" />
-                    <Skeleton className="h-5 w-16 rounded-full" />
-                    <Skeleton className="h-4 w-32 hidden lg:block" />
-                    <Skeleton className="h-4 w-24 hidden lg:block ml-auto" />
-                    <Skeleton className="h-8 w-8 rounded" />
-                </div>
-            ))}
-        </div>
-    );
-}
-
-export default function PrescriptionTable({ prescriptions, isLoading, clinicSlug: clinicSlugProp, onClearFilters, className }: PrescriptionTableProps) {
+export default function PrescriptionTable({ prescriptions, clinicSlug: clinicSlugProp, className }: PrescriptionTableProps) {
     const router = useRouter();
     const pathname = usePathname();
     const clinicSlug = clinicSlugProp || getClinicSlug(pathname);
     const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
-
-    if (isLoading) {
-        return (
-            <div className={`flex-1 flex flex-col min-h-0 bg-background overflow-hidden ${className ?? ''}`}>
-                <LoadingSkeleton />
-            </div>
-        );
-    }
 
     if (prescriptions.length === 0) {
         return (

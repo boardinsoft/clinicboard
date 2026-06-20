@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
     ChevronLeft,
@@ -12,10 +12,11 @@ import {
     CheckCircle,
     Clock,
     Ban,
-    ArrowRight,
+    Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/PageLayout';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { getPrescriptionsForTable } from '@/actions/prescriptions';
 import type { PrescriptionFilters } from '@/actions/prescriptions';
@@ -31,6 +32,7 @@ const STATUS_TABS: { value: MedicationRequestStatus | 'all'; label: string }[] =
     { value: 'completed', label: 'Completadas' },
     { value: 'cancelled', label: 'Canceladas' },
 ];
+const PAGE_SIZE = 20;
 
 function getClinicSlug(pathname: string): string {
     const parts = pathname.split('/').filter(Boolean);
@@ -41,8 +43,7 @@ function isExpiringSoon(validUntil: string | null): boolean {
     if (!validUntil) return false;
     const threeDays = 3 * 24 * 60 * 60 * 1000;
     const expiry = new Date(validUntil).getTime();
-    const now = Date.now();
-    return expiry >= now && expiry - now <= threeDays;
+    return expiry >= Date.now() && expiry - Date.now() <= threeDays;
 }
 
 function isExpired(validUntil: string | null): boolean {
@@ -58,22 +59,47 @@ export default function PrescriptionsListView() {
 
     const [prescriptions, setPrescriptions] = useState<PrescriptionForPreview[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [total, setTotal] = useState(0);
+
     const [query, setQuery] = useState('');
+    const [debouncedQuery, setDebouncedQuery] = useState('');
     const [activeTab, setActiveTab] = useState<MedicationRequestStatus | 'all'>(
         (searchParams.get('status') as MedicationRequestStatus | 'all') || 'all'
     );
     const [currentPage, setCurrentPage] = useState(1);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const pageSize = 20;
 
-    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const requestIdRef = useRef(0);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-    const fetchPrescriptions = useCallback(async (filters: PrescriptionFilters, loadingKey: 'initial' | 'refresh' = 'initial') => {
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+    // ─── Debounce: sync debouncedQuery from query ───────────────────────────
+    useEffect(() => {
+        const t = setTimeout(() => setDebouncedQuery(query), 250);
+        return () => clearTimeout(t);
+    }, [query]);
+
+    // ─── Fetch prescriptions (race-condition safe) ────────────────────────────
+    const fetchPrescriptions = useCallback(async (
+        search: string,
+        status: MedicationRequestStatus | 'all',
+        page: number,
+        loadingKey: 'initial' | 'refresh' = 'refresh'
+    ) => {
         if (loadingKey === 'initial') setIsLoading(true);
         else setIsRefreshing(true);
 
-        const result = await getPrescriptionsForTable(undefined, filters);
+        const myId = ++requestIdRef.current;
+
+        const result = await getPrescriptionsForTable(undefined, {
+            search: search || undefined,
+            status: status === 'all' ? 'all' : status,
+            page,
+            pageSize: PAGE_SIZE,
+        });
+
+        if (myId !== requestIdRef.current) return;
 
         if (loadingKey === 'initial') setIsLoading(false);
         else setIsRefreshing(false);
@@ -87,42 +113,32 @@ export default function PrescriptionsListView() {
         setTotal(result.count ?? 0);
     }, []);
 
-    const applyFilters = useCallback((search: string, status: MedicationRequestStatus | 'all', page: number) => {
-        fetchPrescriptions({
-            search: search || undefined,
-            status: status === 'all' ? 'all' : status,
-            page,
-            pageSize,
-        }, 'refresh');
-    }, [fetchPrescriptions]);
-
+    // ─── Sync from URL on mount ───────────────────────────────────────────────
     useEffect(() => {
         const q = searchParams.get('q') || '';
         const status = (searchParams.get('status') as MedicationRequestStatus | 'all') || 'all';
         const page = parseInt(searchParams.get('page') || '1');
         setQuery(q);
+        setDebouncedQuery(q);
         setActiveTab(status);
         setCurrentPage(page);
-        fetchPrescriptions({
-            search: q || undefined,
-            status: status === 'all' ? 'all' : status,
-            page,
-            pageSize,
-        });
+        fetchPrescriptions(q, status, page, 'initial');
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // ─── Re-fetch when debounced filters change ───────────────────────────────
+    useEffect(() => {
+        fetchPrescriptions(debouncedQuery, activeTab, currentPage, 'refresh');
+    }, [debouncedQuery, activeTab, currentPage, fetchPrescriptions]);
+
+    // ─── Handlers ─────────────────────────────────────────────────────────────
     const handleSearchChange = (value: string) => {
         setQuery(value);
         setCurrentPage(1);
         const params = new URLSearchParams(searchParams.toString());
-        if (value) {
-            params.set('q', value);
-        } else {
-            params.delete('q');
-        }
+        if (value) params.set('q', value);
+        else params.delete('q');
         params.set('page', '1');
-        router.push(`${pathname}?${params.toString()}`);
-        applyFilters(value, activeTab, 1);
+        router.replace(`${pathname}?${params.toString()}`);
     };
 
     const handleTabChange = (tab: MedicationRequestStatus | 'all') => {
@@ -131,8 +147,7 @@ export default function PrescriptionsListView() {
         const params = new URLSearchParams(searchParams.toString());
         params.set('status', tab);
         params.set('page', '1');
-        router.push(`${pathname}?${params.toString()}`);
-        applyFilters(query, tab, 1);
+        router.replace(`${pathname}?${params.toString()}`);
     };
 
     const handlePageChange = (newPage: number) => {
@@ -140,17 +155,30 @@ export default function PrescriptionsListView() {
         setCurrentPage(newPage);
         const params = new URLSearchParams(searchParams.toString());
         params.set('page', String(newPage));
-        router.push(`${pathname}?${params.toString()}`);
-        applyFilters(query, activeTab, newPage);
+        router.replace(`${pathname}?${params.toString()}`);
+    };
+
+    const handleClearSearch = () => {
+        setQuery('');
+        setDebouncedQuery('');
+        setCurrentPage(1);
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('q');
+        params.set('page', '1');
+        router.replace(`${pathname}?${params.toString()}`);
+        inputRef.current?.focus();
     };
 
     const handleRefresh = () => {
-        applyFilters(query, activeTab, currentPage);
+        fetchPrescriptions(debouncedQuery, activeTab, currentPage, 'refresh');
     };
 
+    // ─── Derived ─────────────────────────────────────────────────────────────
     const expiredCount = prescriptions.filter(r => isExpired(r.valid_until)).length;
     const expiringSoonCount = prescriptions.filter(r => isExpiringSoon(r.valid_until)).length;
     const filteredTotal = prescriptions.length;
+
+    const isPending = isRefreshing || (isLoading && prescriptions.length === 0);
 
     return (
         <div className="flex flex-col h-full bg-background">
@@ -163,6 +191,7 @@ export default function PrescriptionsListView() {
                         size="sm"
                         className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors"
                         onClick={handleRefresh}
+                        disabled={isRefreshing}
                     >
                         <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                     </Button>
@@ -231,9 +260,13 @@ export default function PrescriptionsListView() {
                     </div>
 
                     <div className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 border border-n-5 rounded-[5px] text-[13px] text-n-9 hover:bg-n-3 hover:border-n-6 hover:text-n-11 outline-none transition-all">
-                        <Search className="w-4 h-4 shrink-0" strokeWidth={1.8} />
+                        {isRefreshing ? (
+                            <Loader2 className="w-4 h-4 shrink-0 text-b-8 animate-spin" />
+                        ) : (
+                            <Search className="w-4 h-4 shrink-0" strokeWidth={1.8} />
+                        )}
                         <input
-                            id="prescription-search-input"
+                            ref={inputRef}
                             type="text"
                             placeholder="Buscar…"
                             value={query}
@@ -243,7 +276,7 @@ export default function PrescriptionsListView() {
                         />
                         {query ? (
                             <button
-                                onClick={() => handleSearchChange('')}
+                                onClick={handleClearSearch}
                                 className="p-0.5 hover:bg-n-5 rounded transition-colors shrink-0"
                             >
                                 <X className="w-3 h-3 text-n-8" />
@@ -257,12 +290,20 @@ export default function PrescriptionsListView() {
                 </div>
             </PageHeader>
 
-            <div className="flex-1 overflow-hidden flex flex-col">
-                <PrescriptionTable
-                    prescriptions={prescriptions}
-                    isLoading={isLoading}
-                    clinicSlug={clinicSlug}
-                />
+            <div className="flex-1 overflow-hidden flex flex-col relative">
+                {isPending ? (
+                    <TableSkeleton />
+                ) : (
+                    <PrescriptionTable
+                        prescriptions={prescriptions}
+                        clinicSlug={clinicSlug}
+                    />
+                )}
+                {isRefreshing && prescriptions.length > 0 && (
+                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-b-8/20 overflow-hidden">
+                        <div className="h-full bg-b-8 animate-pulse w-full" />
+                    </div>
+                )}
             </div>
 
             <div className="flex items-center justify-between px-6 py-2.5 h-11 border-t border-border bg-background shrink-0">
@@ -282,7 +323,7 @@ export default function PrescriptionsListView() {
                             variant="outline"
                             size="icon"
                             className="h-7 w-7 bg-background shadow-xs hover:bg-muted transition-all border-border"
-                            disabled={currentPage <= 1}
+                            disabled={currentPage <= 1 || isRefreshing}
                             onClick={() => handlePageChange(currentPage - 1)}
                         >
                             <ChevronLeft className="h-3.5 w-3.5" />
@@ -291,7 +332,7 @@ export default function PrescriptionsListView() {
                             variant="outline"
                             size="icon"
                             className="h-7 w-7 bg-background shadow-xs hover:bg-muted transition-all border-border"
-                            disabled={currentPage >= totalPages}
+                            disabled={currentPage >= totalPages || isRefreshing}
                             onClick={() => handlePageChange(currentPage + 1)}
                         >
                             <ChevronRight className="h-3.5 w-3.5" />
@@ -299,6 +340,69 @@ export default function PrescriptionsListView() {
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}
+
+function TableSkeleton() {
+    return (
+        <div className="flex-1 overflow-auto no-scrollbar animate-in fade-in duration-150">
+            <table className="table-clinic">
+                <thead className="sticky top-0 z-30">
+                    <tr>
+                        <th className="w-36 text-left pl-4">
+                            <span className="text-[11px] uppercase tracking-wider font-medium text-n-8">N° Receta</span>
+                        </th>
+                        <th>
+                            <span className="text-[11px] uppercase tracking-wider font-medium text-n-8 flex items-center gap-1.5">
+                                <span className="w-3 h-3" /> Fecha
+                            </span>
+                        </th>
+                        <th>
+                            <span className="text-[11px] uppercase tracking-wider font-medium text-n-8 flex items-center gap-1.5">
+                                <span className="w-3 h-3" /> Paciente
+                            </span>
+                        </th>
+                        <th className="hidden md:table-cell">
+                            <span className="text-[11px] uppercase tracking-wider font-medium text-n-8 flex items-center gap-1.5">
+                                <span className="w-3 h-3" /> Medicamento
+                            </span>
+                        </th>
+                        <th><span className="text-[11px] uppercase tracking-wider font-medium text-n-8">Estado</span></th>
+                        <th className="hidden lg:table-cell">
+                            <span className="text-[11px] uppercase tracking-wider font-medium text-n-8 flex items-center gap-1.5">
+                                <span className="w-3 h-3" /> Dosis
+                            </span>
+                        </th>
+                        <th className="hidden lg:table-cell text-right">
+                            <span className="text-[11px] uppercase tracking-wider font-medium text-n-8 flex items-center justify-end gap-1.5">
+                                <span className="w-3 h-3" /> Prescriptor
+                            </span>
+                        </th>
+                        <th className="w-10" />
+                    </tr>
+                </thead>
+                <tbody>
+                    {Array.from({ length: 10 }).map((_, i) => (
+                        <tr key={i} className="border-b border-border/30 last:border-0">
+                            <td className="pl-4"><Skeleton className="h-3 w-24 rounded" /></td>
+                            <td><Skeleton className="h-3 w-14 rounded" /></td>
+                            <td>
+                                <Skeleton className="h-3 w-28 rounded mb-1" />
+                                <Skeleton className="h-2 w-16 rounded" />
+                            </td>
+                            <td className="hidden md:table-cell">
+                                <Skeleton className="h-3 w-36 rounded mb-1" />
+                                <Skeleton className="h-2 w-20 rounded" />
+                            </td>
+                            <td><Skeleton className="h-5 w-16 rounded-full" /></td>
+                            <td className="hidden lg:table-cell"><Skeleton className="h-3 w-32 rounded" /></td>
+                            <td className="hidden lg:table-cell text-right"><Skeleton className="h-3 w-20 rounded ml-auto" /></td>
+                            <td><Skeleton className="h-6 w-6 rounded" /></td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 }
