@@ -480,8 +480,17 @@ export async function getPrescriptionsForTable(clinicId?: string, filters?: Pres
     let query = supabase
         .from('medication_requests')
         .select(`
-            *,
-            patient:patients(id, name_given, name_family, birth_date),
+            id,
+            prescription_number,
+            authored_on,
+            status,
+            medication_code,
+            medication_display,
+            dosage_instruction,
+            note,
+            valid_until,
+            printed_count,
+            patient:patients(id, name_given, name_family, birth_date, national_id),
             prescriber:practitioners(name_given, name_family)
         `, { count: 'exact' })
         .eq('prescriber_id', practitionerId)

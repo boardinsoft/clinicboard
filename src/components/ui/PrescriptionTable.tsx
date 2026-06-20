@@ -1,10 +1,27 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Calendar, Clock, Pill, User2, FileText, Search } from 'lucide-react';
+import {
+    Calendar,
+    Clock,
+    Pill,
+    User2,
+    FileText,
+    Stethoscope,
+    MoreVertical,
+    Eye,
+    Printer,
+    Ban,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, formatTime } from '@/lib/date-utils';
 import {
     PRESCRIPTION_STATUS_LABELS,
@@ -24,11 +41,13 @@ interface PrescriptionForPreview {
     medication_display: string;
     dosage_instruction: unknown | null;
     note: string | null;
+    prescription_number: string | null;
     patient?: {
         id: string;
         name_given: string[];
         name_family: string;
         birth_date: string | null;
+        national_id: string | null;
     } | null;
     prescriber?: {
         name_given: string[];
@@ -39,6 +58,7 @@ interface PrescriptionForPreview {
 
 interface PrescriptionTableProps {
     prescriptions: PrescriptionForPreview[];
+    isLoading?: boolean;
     toolbar?: React.ReactNode;
     className?: string;
 }
@@ -51,10 +71,40 @@ function getDosageSummary(dosage: unknown): string {
     return String(dosage);
 }
 
-export default function PrescriptionTable({ prescriptions, toolbar, className }: PrescriptionTableProps) {
+function LoadingSkeleton() {
+    return (
+        <div className="flex flex-col">
+            {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                    key={i}
+                    className="flex items-center gap-4 px-4 py-3 border-b border-border/30 last:border-0"
+                >
+                    <Skeleton className="h-9 w-20 rounded" />
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-40 hidden md:block" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                    <Skeleton className="h-4 w-32 hidden lg:block" />
+                    <Skeleton className="h-4 w-24 hidden lg:block ml-auto" />
+                    <Skeleton className="h-8 w-8 rounded" />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+export default function PrescriptionTable({ prescriptions, isLoading, toolbar, className }: PrescriptionTableProps) {
     const router = useRouter();
     const pathname = usePathname();
     const clinicSlug = getClinicSlug(pathname);
+    const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+
+    if (isLoading) {
+        return (
+            <div className={`flex-1 flex flex-col min-h-0 bg-background overflow-hidden ${className ?? ''}`}>
+                <LoadingSkeleton />
+            </div>
+        );
+    }
 
     if (prescriptions.length === 0) {
         return (
@@ -74,15 +124,11 @@ export default function PrescriptionTable({ prescriptions, toolbar, className }:
 
     return (
         <div className={`flex-1 flex flex-col min-h-0 bg-background overflow-hidden ${className ?? ''}`}>
-            {toolbar && (
-                <div className="shrink-0 flex items-center justify-between px-4 py-2 border-b border-border/40 bg-background">
-                    <div className="flex-1">{toolbar}</div>
-                </div>
-            )}
             <div className="overflow-x-auto min-h-0 flex-1 no-scrollbar">
                 <table className="table-clinic">
-                    <thead className="sticky top-0 z-30 shadow-xs">
+                    <thead className="sticky top-0 z-30">
                     <tr>
+                        <th className="w-12 text-center">#</th>
                         <th>
                             <div className="flex items-center gap-1.5">
                                 <Calendar className="w-3 h-3" /> Fecha
@@ -106,9 +152,10 @@ export default function PrescriptionTable({ prescriptions, toolbar, className }:
                         </th>
                         <th className="hidden lg:table-cell text-right">
                             <div className="flex items-center justify-end gap-1.5">
-                                <User2 className="w-3 h-3" /> Prescriptor
+                                <Stethoscope className="w-3 h-3" /> Prescriptor
                             </div>
                         </th>
+                        <th className="w-12"></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -122,6 +169,7 @@ export default function PrescriptionTable({ prescriptions, toolbar, className }:
                         const age = rx.patient?.birth_date
                             ? calcAge(rx.patient.birth_date)
                             : null;
+                        const patientNationalId = rx.patient?.national_id || null;
                         const prescriberName = rx.prescriber
                             ? `${rx.prescriber.name_family}, ${(rx.prescriber.name_given || []).join(' ')}`
                             : '—';
@@ -133,6 +181,12 @@ export default function PrescriptionTable({ prescriptions, toolbar, className }:
                                 onClick={() => router.push(`/${clinicSlug}/prescriptions/${rx.id}`)}
                                 className="group transition-colors cursor-pointer"
                             >
+                                <td className="text-center">
+                                    <span className="text-[10px] font-mono text-n-8 hover:text-b-8 transition-colors">
+                                        {rx.prescription_number || '—'}
+                                    </span>
+                                </td>
+
                                 <td className="whitespace-nowrap">
                                     <div className="text-xs font-bold text-foreground group-hover:text-b-8 transition-colors">
                                         {rx.authored_on ? formatDate(rx.authored_on) : '—'}
@@ -146,9 +200,17 @@ export default function PrescriptionTable({ prescriptions, toolbar, className }:
                                     <div className="table-name truncate max-w-[180px]">
                                         {patientName}
                                     </div>
-                                    {age && (
-                                        <div className="text-[10px] text-n-8 mt-0.5 mono">{age}</div>
-                                    )}
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                        {age && (
+                                            <span className="text-[10px] text-n-8 mono">{age}</span>
+                                        )}
+                                        {age && patientNationalId && (
+                                            <span className="text-[10px] text-n-6">·</span>
+                                        )}
+                                        {patientNationalId && (
+                                            <span className="text-[10px] text-n-8 mono">{patientNationalId}</span>
+                                        )}
+                                    </div>
                                 </td>
 
                                 <td className="hidden md:table-cell">
@@ -178,6 +240,68 @@ export default function PrescriptionTable({ prescriptions, toolbar, className }:
                                     <span className="text-[11px] text-n-8">
                                         {prescriberName}
                                     </span>
+                                </td>
+
+                                <td className="text-right">
+                                    <div className="flex items-center justify-end gap-1 pr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Popover
+                                            open={openPopoverId === rx.id}
+                                            onOpenChange={(open) => setOpenPopoverId(open ? rx.id : null)}
+                                        >
+                                            <PopoverTrigger asChild>
+                                                <button
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="p-1.5 hover:bg-n-3 rounded text-n-8 hover:text-n-12 transition-colors"
+                                                >
+                                                    <MoreVertical className="w-4 h-4" />
+                                                </button>
+                                            </PopoverTrigger>
+                                            <PopoverContent
+                                                className="w-44 p-1 bg-n-1 border border-n-5 shadow-lg"
+                                                align="end"
+                                                side="left"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <div className="flex flex-col">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            router.push(`/${clinicSlug}/prescriptions/${rx.id}`);
+                                                            setOpenPopoverId(null);
+                                                        }}
+                                                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-[6px] text-n-12 cursor-pointer hover:bg-n-3 transition-colors"
+                                                    >
+                                                        <Eye className="w-4 h-4 text-n-8" />
+                                                        Ver receta
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            window.open(`/api/prescriptions/${rx.id}/pdf`, '_blank');
+                                                            setOpenPopoverId(null);
+                                                        }}
+                                                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-[6px] text-n-12 cursor-pointer hover:bg-n-3 transition-colors"
+                                                    >
+                                                        <Printer className="w-4 h-4 text-n-8" />
+                                                        Imprimir PDF
+                                                    </button>
+                                                    {(rx.status === 'draft' || rx.status === 'on-hold') && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.push(`/${clinicSlug}/prescriptions/${rx.id}`);
+                                                                setOpenPopoverId(null);
+                                                            }}
+                                                            className="flex items-center gap-2 px-3 py-2 text-sm rounded-[6px] text-s-danger cursor-pointer hover:bg-s-danger/10 transition-colors"
+                                                        >
+                                                            <Ban className="w-4 h-4" />
+                                                            Cancelar
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
                                 </td>
                             </tr>
                         );

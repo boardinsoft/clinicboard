@@ -1136,6 +1136,7 @@ export type PrescriptionForPreview = Tables<'medication_requests'> & {
     name_given: string[];
     name_family: string;
     birth_date: string | null;
+    national_id: string | null;
   } | null;
   prescriber?: {
     name_given: string[];
