@@ -230,38 +230,30 @@ export default function PrescriptionsListView() {
                         })}
                     </div>
 
-                    <button
-                        onClick={() => {
-                            const input = document.querySelector<HTMLInputElement>('#prescription-search-input');
-                            input?.focus();
-                        }}
-                        className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 border border-n-5 rounded-[5px] text-[13px] text-n-9 hover:bg-n-3 hover:border-n-6 hover:text-n-11 outline-none transition-all"
-                    >
+                    <div className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 border border-n-5 rounded-[5px] text-[13px] text-n-9 hover:bg-n-3 hover:border-n-6 hover:text-n-11 outline-none transition-all">
                         <Search className="w-4 h-4 shrink-0" strokeWidth={1.8} />
-                        <span className="flex-1 text-left font-medium text-n-8">
-                            {query || 'Buscar…'}
-                        </span>
                         <input
                             id="prescription-search-input"
                             type="text"
+                            placeholder="Buscar…"
                             value={query}
                             onChange={(e) => handleSearchChange(e.target.value)}
-                            className="sr-only"
+                            className="flex-1 bg-transparent text-[13px] text-n-11 placeholder:text-n-8 outline-none min-w-0 h-8"
                             aria-label="Buscar recetas"
                         />
                         {query ? (
                             <button
-                                onClick={(e) => { e.stopPropagation(); handleSearchChange(''); }}
+                                onClick={() => handleSearchChange('')}
                                 className="p-0.5 hover:bg-n-5 rounded transition-colors shrink-0"
                             >
                                 <X className="w-3 h-3 text-n-8" />
                             </button>
                         ) : (
-                            <span className="px-1.5 py-0.5 text-[10px] font-medium mono bg-background border border-n-5 rounded-[3px] text-n-9">
+                            <span className="px-1.5 py-0.5 text-[10px] font-medium mono bg-background border border-n-5 rounded-[3px] text-n-9 shrink-0">
                                 ⌘K
                             </span>
                         )}
-                    </button>
+                    </div>
                 </div>
             </PageHeader>
 
