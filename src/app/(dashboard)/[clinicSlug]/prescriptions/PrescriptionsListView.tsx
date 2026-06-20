@@ -252,7 +252,7 @@ export default function PrescriptionsListView() {
                                     <TabsTrigger
                                         key={tab.value}
                                         value={tab.value}
-                                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md data-[state=active]:bg-b-8 data-[state=active]:text-white text-n-8 hover:text-n-12 hover:bg-n-3 transition-all duration-150"
+                                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md data-[state=active]:bg-b-8 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-b-9 text-n-8 hover:text-n-11 hover:bg-n-3 focus-visible:ring-2 focus-visible:ring-b-8 focus-visible:ring-offset-2 transition-all duration-150"
                                     >
                                         {tab.label}
                                         {count > 0 && (
