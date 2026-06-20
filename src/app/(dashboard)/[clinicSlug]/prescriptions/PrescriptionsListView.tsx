@@ -62,6 +62,16 @@ export default function PrescriptionsListView() {
     const [isLoading, setIsLoading] = useState(true);
     const [isFetching, setIsFetching] = useState(false);
     const [total, setTotal] = useState(0);
+    const [statusCounts, setStatusCounts] = useState<Record<MedicationRequestStatus | 'all', number>>({
+        all: 0,
+        active: 0,
+        draft: 0,
+        'on-hold': 0,
+        completed: 0,
+        cancelled: 0,
+        stopped: 0,
+        unknown: 0,
+    });
 
     const [query, setQuery] = useState('');
     const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -108,13 +118,19 @@ export default function PrescriptionsListView() {
         if (loadingKey === 'initial') setIsLoading(false);
         setIsFetching(false);
 
-        if (result.error) {
+        if ('error' in result) {
             toast.error('Error al cargar recetas', { description: result.error });
             return;
         }
 
         setPrescriptions((result.data || []) as PrescriptionForPreview[]);
         setTotal(result.count ?? 0);
+
+        if (status === 'all' && 'statusCounts' in result && result.statusCounts) {
+            setStatusCounts(result.statusCounts as Record<MedicationRequestStatus | 'all', number>);
+        } else if (status !== 'all') {
+            setStatusCounts(prev => ({ ...prev, [status]: result.count ?? 0 }));
+        }
     }, []);
 
     // ─── Sync from URL on mount ───────────────────────────────────────────────
@@ -127,6 +143,7 @@ export default function PrescriptionsListView() {
         setActiveTab(status);
         setCurrentPage(page);
         fetchPrescriptions(q, status, page, 'initial');
+        fetchPrescriptions(q, 'all', 1, 'initial');
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ─── Re-fetch when debounced filters change ───────────────────────────────
@@ -137,6 +154,12 @@ export default function PrescriptionsListView() {
             fetchPrescriptions(debouncedQuery, activeTab, currentPage, 'refresh');
         }
     }, [debouncedQuery, activeTab, currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ─── Always refresh status counts when query changes ────────────────────
+    // Independent from tab: ensures counts reflect the current search.
+    useEffect(() => {
+        fetchPrescriptions(debouncedQuery, 'all', 1, 'refresh');
+    }, [debouncedQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ─── Handlers ─────────────────────────────────────────────────────────────
     const handleSearchChange = (value: string) => {
@@ -244,19 +267,16 @@ export default function PrescriptionsListView() {
                     >
                         <TabsList className="w-full justify-start gap-1 bg-transparent p-0 h-auto border-0">
                             {STATUS_TABS.map((tab) => {
-                                const count = prescriptions.filter(r => {
-                                    if (tab.value === 'all') return true;
-                                    return r.status === tab.value;
-                                }).length;
+                                const count = statusCounts[tab.value] ?? 0;
                                 return (
                                     <TabsTrigger
                                         key={tab.value}
                                         value={tab.value}
-                                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md data-[state=active]:bg-b-8 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-b-9 text-n-8 hover:text-n-11 hover:bg-n-3 focus-visible:ring-2 focus-visible:ring-b-8 focus-visible:ring-offset-2 transition-all duration-150"
+                                        className="group flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md data-[state=active]:bg-b-8 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-b-9 text-n-8 hover:text-n-11 hover:bg-n-3 focus-visible:ring-2 focus-visible:ring-b-8 focus-visible:ring-offset-2 transition-all duration-150"
                                     >
                                         {tab.label}
                                         {count > 0 && (
-                                            <span className="tabular-nums data-[state=active]:text-white/60 text-n-8">
+                                            <span className="tabular-nums text-n-8 group-data-[state=active]:text-white/60">
                                                 ({count})
                                             </span>
                                         )}

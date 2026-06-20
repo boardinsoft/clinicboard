@@ -527,7 +527,44 @@ export async function getPrescriptionsForTable(clinicId?: string, filters?: Pres
         return { error: error.message };
     }
 
-    return { data, count };
+    const result: { data: typeof data; count: typeof count; statusCounts?: Record<string, number> } = { data, count };
+
+    if (!filters?.status || filters.status === 'all') {
+        const { count: allCount } = await supabase
+            .from('medication_requests')
+            .select('id', { count: 'exact', head: true })
+            .eq('prescriber_id', practitionerId);
+
+        const statusValues: MedicationRequestStatus[] = ['active', 'draft', 'on-hold', 'completed', 'cancelled', 'stopped', 'unknown'];
+        const countsResult: Record<string, number> = { all: allCount ?? 0 };
+
+        const countResponses = await Promise.all(statusValues.map(async (s) => {
+            let countQuery = supabase
+                .from('medication_requests')
+                .select('id', { count: 'exact', head: true })
+                .eq('prescriber_id', practitionerId)
+                .eq('status', s);
+
+            if (clinicId) countQuery = countQuery.eq('clinic_id', clinicId);
+            if (filters?.search) {
+                const searchTerm = `%${filters.search.trim()}%`;
+                countQuery = countQuery.or(
+                    `medication_display.ilike.${searchTerm},medication_code.ilike.${searchTerm}`
+                );
+            }
+
+            const { count: statusCount } = await countQuery;
+            return { s, count: statusCount ?? 0 };
+        }));
+
+        for (const { s, count: statusCount } of countResponses) {
+            countsResult[s] = statusCount;
+        }
+
+        result.statusCounts = countsResult as Record<MedicationRequestStatus | 'all', number>;
+    }
+
+    return result;
 }
 
 export async function getPrescriptionsByEncounter(encounterId: string) {
