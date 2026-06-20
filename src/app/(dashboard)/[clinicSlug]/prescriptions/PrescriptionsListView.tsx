@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/PageLayout';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { getPrescriptionsForTable } from '@/actions/prescriptions';
 import type { PrescriptionFilters } from '@/actions/prescriptions';
@@ -236,35 +237,34 @@ export default function PrescriptionsListView() {
                 )}
 
                 <div className="flex items-center justify-between pt-3">
-                    <div className="flex items-center h-8 bg-transparent">
-                        {STATUS_TABS.map((tab) => {
-                            const count = prescriptions.filter(r => {
-                                if (tab.value === 'all') return true;
-                                return r.status === tab.value;
-                            }).length;
-                            const isActive = activeTab === tab.value;
-                            return (
-                                <button
-                                    key={tab.value}
-                                    onClick={() => handleTabChange(tab.value)}
-                                    className={`
-                                        flex items-center h-full px-4 text-[13px] font-medium transition-all relative
-                                        ${isActive
-                                            ? 'text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary'
-                                            : 'text-muted-foreground/80 hover:text-foreground'
-                                        }
-                                    `}
-                                >
-                                    {tab.label}
-                                    {count > 0 && (
-                                        <span className={`ml-1.5 tabular-nums ${isActive ? 'text-foreground/60' : 'text-muted-foreground/60'}`}>
-                                            ({count})
-                                        </span>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
+                    <Tabs
+                        value={activeTab}
+                        onValueChange={(val) => handleTabChange(val as MedicationRequestStatus | 'all')}
+                        className="gap-0"
+                    >
+                        <TabsList className="w-full justify-start gap-1 bg-transparent p-0 h-auto border-0">
+                            {STATUS_TABS.map((tab) => {
+                                const count = prescriptions.filter(r => {
+                                    if (tab.value === 'all') return true;
+                                    return r.status === tab.value;
+                                }).length;
+                                return (
+                                    <TabsTrigger
+                                        key={tab.value}
+                                        value={tab.value}
+                                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md data-[state=active]:bg-b-8 data-[state=active]:text-white text-n-8 hover:text-n-12 hover:bg-n-3 transition-all duration-150"
+                                    >
+                                        {tab.label}
+                                        {count > 0 && (
+                                            <span className="tabular-nums data-[state=active]:text-white/60 text-n-8">
+                                                ({count})
+                                            </span>
+                                        )}
+                                    </TabsTrigger>
+                                );
+                            })}
+                        </TabsList>
+                    </Tabs>
 
                     <div className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 border border-n-5 rounded-[5px] text-[13px] text-n-9 hover:bg-n-3 hover:border-n-6 hover:text-n-11 outline-none transition-all">
                         {isFetching ? (
