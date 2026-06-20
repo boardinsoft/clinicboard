@@ -59,7 +59,7 @@ export default function PrescriptionsListView() {
 
     const [prescriptions, setPrescriptions] = useState<PrescriptionForPreview[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isFetching, setIsFetching] = useState(false);
     const [total, setTotal] = useState(0);
 
     const [query, setQuery] = useState('');
@@ -70,6 +70,7 @@ export default function PrescriptionsListView() {
     const [currentPage, setCurrentPage] = useState(1);
 
     const requestIdRef = useRef(0);
+    const fetchIdRef = useRef(0);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -87,10 +88,11 @@ export default function PrescriptionsListView() {
         page: number,
         loadingKey: 'initial' | 'refresh' = 'refresh'
     ) => {
-        if (loadingKey === 'initial') setIsLoading(true);
-        else setIsRefreshing(true);
-
         const myId = ++requestIdRef.current;
+        const fetchId = ++fetchIdRef.current;
+
+        if (loadingKey === 'initial') setIsLoading(true);
+        setIsFetching(true);
 
         const result = await getPrescriptionsForTable(undefined, {
             search: search || undefined,
@@ -100,9 +102,10 @@ export default function PrescriptionsListView() {
         });
 
         if (myId !== requestIdRef.current) return;
+        if (fetchId !== fetchIdRef.current) return;
 
         if (loadingKey === 'initial') setIsLoading(false);
-        else setIsRefreshing(false);
+        setIsFetching(false);
 
         if (result.error) {
             toast.error('Error al cargar recetas', { description: result.error });
@@ -178,7 +181,7 @@ export default function PrescriptionsListView() {
     const expiringSoonCount = prescriptions.filter(r => isExpiringSoon(r.valid_until)).length;
     const filteredTotal = prescriptions.length;
 
-    const isPending = isRefreshing || (isLoading && prescriptions.length === 0);
+    const isPending = isLoading || (isFetching && prescriptions.length === 0);
 
     return (
         <div className="flex flex-col h-full bg-background">
@@ -191,9 +194,9 @@ export default function PrescriptionsListView() {
                         size="sm"
                         className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors"
                         onClick={handleRefresh}
-                        disabled={isRefreshing}
+                        disabled={isFetching}
                     >
-                        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
                     </Button>
                 }
             >
@@ -260,7 +263,7 @@ export default function PrescriptionsListView() {
                     </div>
 
                     <div className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 border border-n-5 rounded-[5px] text-[13px] text-n-9 hover:bg-n-3 hover:border-n-6 hover:text-n-11 outline-none transition-all">
-                        {isRefreshing ? (
+                        {isFetching ? (
                             <Loader2 className="w-4 h-4 shrink-0 text-b-8 animate-spin" />
                         ) : (
                             <Search className="w-4 h-4 shrink-0" strokeWidth={1.8} />
@@ -299,7 +302,7 @@ export default function PrescriptionsListView() {
                         clinicSlug={clinicSlug}
                     />
                 )}
-                {isRefreshing && prescriptions.length > 0 && (
+                {isFetching && prescriptions.length > 0 && (
                     <div className="absolute top-0 left-0 right-0 h-0.5 bg-b-8/20 overflow-hidden">
                         <div className="h-full bg-b-8 animate-pulse w-full" />
                     </div>
@@ -323,7 +326,7 @@ export default function PrescriptionsListView() {
                             variant="outline"
                             size="icon"
                             className="h-7 w-7 bg-background shadow-xs hover:bg-muted transition-all border-border"
-                            disabled={currentPage <= 1 || isRefreshing}
+                            disabled={currentPage <= 1 || isFetching}
                             onClick={() => handlePageChange(currentPage - 1)}
                         >
                             <ChevronLeft className="h-3.5 w-3.5" />
@@ -332,7 +335,7 @@ export default function PrescriptionsListView() {
                             variant="outline"
                             size="icon"
                             className="h-7 w-7 bg-background shadow-xs hover:bg-muted transition-all border-border"
-                            disabled={currentPage >= totalPages || isRefreshing}
+                            disabled={currentPage >= totalPages || isFetching}
                             onClick={() => handlePageChange(currentPage + 1)}
                         >
                             <ChevronRight className="h-3.5 w-3.5" />
