@@ -138,12 +138,12 @@ export function AuditLogTimeline({ auditLog }: AuditLogTimelineProps) {
                                 )}
 
                                 <div className="flex items-center gap-1.5 mt-1">
-                                    <time
-                                        dateTime={entry.changed_at}
-                                        className="text-[10px] text-n-6 font-mono"
-                                        title={formatDate(entry.changed_at)}
-                                        aria-label={`${formatDate(entry.changed_at)} a las ${formatTime(entry.changed_at)}`}
-                                    >
+                                        <time
+                                            dateTime={entry.changed_at}
+                                            className="text-[10px] text-n-7 font-mono"
+                                            title={formatDate(entry.changed_at)}
+                                            aria-label={`${formatDate(entry.changed_at)} a las ${formatTime(entry.changed_at)}`}
+                                        >
                                         {formatRelativeTime(entry.changed_at)}
                                     </time>
                                     <span className="text-n-5" aria-hidden="true">·</span>

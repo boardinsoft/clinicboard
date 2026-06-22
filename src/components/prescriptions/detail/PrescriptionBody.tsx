@@ -194,7 +194,7 @@ export function PrescriptionBody({ prescription }: PrescriptionBodyProps) {
                             </div>
                         )}
                         {prescription.prescriber?.license_number && (
-                            <div className="text-[9px] text-n-6 font-mono mt-0.5">
+                            <div className="text-[9px] text-n-7 font-mono mt-0.5">
                                 Colegio Médico: {prescription.prescriber.license_number}
                             </div>
                         )}

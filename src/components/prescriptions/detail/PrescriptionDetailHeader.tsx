@@ -47,12 +47,12 @@ export function PrescriptionDetailHeader({
             </div>
             <div className="flex flex-col gap-1.5 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                    <h1
+                    <span
                         id="prescription-title"
                         className="text-base font-bold text-n-11 tracking-tight"
                     >
                         Receta médica
-                    </h1>
+                    </span>
                     <Badge variant={config.variant} className="text-[10px] font-semibold">
                         {config.label}
                     </Badge>

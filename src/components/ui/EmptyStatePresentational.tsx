@@ -27,7 +27,7 @@ export function EmptyStatePresentational({
       {...props}
     >
       <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-n-2 mb-4">
-        <Icon className="w-6 h-6 text-n-8" strokeWidth={1.5} />
+        <Icon className="w-6 h-6 text-n-8" strokeWidth={1.5} aria-hidden="true" />
       </div>
       <p className="text-sm font-semibold text-n-11 mb-1">{title}</p>
       <p className="text-xs text-n-8 max-w-[280px] leading-relaxed">{description}</p>

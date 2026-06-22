@@ -145,7 +145,6 @@ export default function PrescriptionDetailClient({
         <div className="flex flex-col h-full bg-background">
             <PageHeader
                 title="Receta médica"
-                description="Detalle y acciones de la prescripción."
                 actions={
                     <div className="flex items-center gap-2">
                         <Button
