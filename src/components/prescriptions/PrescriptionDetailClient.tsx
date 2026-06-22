@@ -17,7 +17,7 @@ import type { MedicationRequestStatus } from '@/lib/fhir/types';
 import {
     PrescriptionDetailHeader,
     PatientContextCard,
-    PrescriptionBody,
+    PrescriptionBodyScreen,
     StatusActions,
     CancelPrescriptionDialog,
     AuditLogTimeline,
@@ -199,8 +199,8 @@ export default function PrescriptionDetailClient({
                         />
                     </section>
 
-                    {/* Printed prescription (inline, read-only representation) */}
-                    <PrescriptionBody prescription={prescription} />
+                    {/* Prescription clinical card */}
+                    <PrescriptionBodyScreen prescription={prescription} />
 
                     {/* Status actions */}
                     <section
