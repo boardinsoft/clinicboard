@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Printer, RefreshCw } from 'lucide-react';
+import { Printer, RefreshCw, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/PageLayout';
 import { toast } from 'sonner';
@@ -20,7 +20,7 @@ import {
     PrescriptionBodyScreen,
     StatusActions,
     CancelPrescriptionDialog,
-    AuditLogTimeline,
+    PrescriptionHistorySheet,
 } from './detail';
 
 type LoadingAction = 'activate' | 'complete' | 'pause' | 'resume' | 'cancel';
@@ -93,6 +93,7 @@ export default function PrescriptionDetailClient({
     const router = useRouter();
     const [loadingAction, setLoadingAction] = useState<LoadingAction | null>(null);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
     const [liveStatusMsg, setLiveStatusMsg] = useState('');
     const liveRegionRef = useRef<HTMLDivElement>(null);
 
@@ -159,6 +160,21 @@ export default function PrescriptionDetailClient({
                                 className={`w-4 h-4 ${isLoading ? 'animate-spin motion-reduce:animate-none' : ''}`}
                                 aria-hidden="true"
                             />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors active:scale-95"
+                            onClick={() => setShowHistory(true)}
+                            aria-label="Ver historial de cambios"
+                        >
+                            <History className="w-4 h-4 mr-1.5" aria-hidden="true" strokeWidth={1.8} />
+                            <span className="text-[11px] font-medium">Historial</span>
+                            {auditLog.length > 0 && (
+                                <span className="ml-1 text-[10px] font-mono bg-n-2 border border-n-5/30 px-1.5 py-0.5 rounded-full tabular-nums">
+                                    {auditLog.length}
+                                </span>
+                            )}
                         </Button>
                         <Button
                             variant="outline"
@@ -232,7 +248,12 @@ export default function PrescriptionDetailClient({
                     </section>
 
                     {/* Audit log */}
-                    <AuditLogTimeline auditLog={auditLog} />
+                    <PrescriptionHistorySheet
+                        open={showHistory}
+                        onOpenChange={setShowHistory}
+                        prescriptionNumber={prescription.prescription_number}
+                        auditLog={auditLog}
+                    />
                 </div>
             </main>
 

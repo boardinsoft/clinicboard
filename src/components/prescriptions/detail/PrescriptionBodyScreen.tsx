@@ -54,18 +54,6 @@ export function PrescriptionBodyScreen({ prescription }: PrescriptionBodyScreenP
                 Detalles de la prescripción
             </h2>
 
-            {/* Prescription number */}
-            {prescription.prescription_number && (
-                <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-n-8 uppercase tracking-wider">
-                        Receta
-                    </span>
-                    <span className="text-[11px] font-mono font-bold text-b-8 bg-b-2 px-2 py-0.5 rounded border border-b-8/20">
-                        {prescription.prescription_number}
-                    </span>
-                </div>
-            )}
-
             {/* Medication card */}
                 <div className="bg-n-1 rounded-lg border border-n-5/30 p-6 space-y-5">
                 {/* Drug name + dose */}
