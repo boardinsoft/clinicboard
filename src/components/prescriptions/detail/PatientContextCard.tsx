@@ -52,7 +52,7 @@ export function PatientContextCard({ patient, prescriber, status }: PatientConte
                 className="w-10 h-10 rounded-full bg-b-2 flex items-center justify-center shrink-0 text-b-8 text-sm font-bold"
                 aria-hidden="true"
             >
-                {patient ? initials : <UserCircle className="w-5 h-5" />}
+                {patient ? initials : <UserCircle className="w-5 h-5" strokeWidth={1.8} />}
             </div>
             <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-n-11">{fullName}</p>
@@ -63,13 +63,13 @@ export function PatientContextCard({ patient, prescriber, status }: PatientConte
                             <span className="text-[10px] text-n-6" aria-hidden="true">·</span>
                         </>
                     )}
-                    <span className="text-[11px] text-n-8">
+                    <span className="text-[11px] text-n-9">
                         Dr. {prescriberName}
                     </span>
                     {patient?.national_id && (
                         <>
                             <span className="text-[10px] text-n-6" aria-hidden="true">·</span>
-                            <span className="text-[11px] font-mono text-n-8">
+                            <span className="text-[11px] font-mono text-n-9">
                                 {patient.national_id}
                             </span>
                         </>

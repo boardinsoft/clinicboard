@@ -57,7 +57,7 @@ export function PrescriptionBodyScreen({ prescription }: PrescriptionBodyScreenP
             {/* Prescription number */}
             {prescription.prescription_number && (
                 <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-n-8 uppercase tracking-widest">
+                    <span className="text-[11px] font-semibold text-n-8 uppercase tracking-wider">
                         Receta
                     </span>
                     <span className="text-[11px] font-mono font-bold text-b-8 bg-b-2 px-2 py-0.5 rounded border border-b-8/20">
@@ -67,14 +67,14 @@ export function PrescriptionBodyScreen({ prescription }: PrescriptionBodyScreenP
             )}
 
             {/* Medication card */}
-            <div className="bg-n-1 rounded-xl border border-n-5/30 p-6 space-y-5">
+                <div className="bg-n-1 rounded-lg border border-n-5/30 p-6 space-y-5">
                 {/* Drug name + dose */}
                 <div className="flex items-start gap-4">
                     <div
                         className="w-10 h-10 rounded-lg bg-b-2 flex items-center justify-center shrink-0 mt-0.5"
                         aria-hidden="true"
                     >
-                        <Pill className="w-5 h-5 text-b-8" />
+                        <Pill className="w-5 h-5 text-b-8" strokeWidth={1.8} />
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="text-lg font-bold text-n-11 leading-tight">
@@ -86,7 +86,7 @@ export function PrescriptionBodyScreen({ prescription }: PrescriptionBodyScreenP
                             </div>
                         )}
                         {prescription.medication_code && (
-                            <div className="text-[11px] font-mono text-n-7 mt-0.5">
+                            <div className="text-[11px] font-mono text-n-8 mt-0.5">
                                 {prescription.medication_code}
                             </div>
                         )}
@@ -102,7 +102,7 @@ export function PrescriptionBodyScreen({ prescription }: PrescriptionBodyScreenP
                     )}
                     {dosage.frequency && (
                         <Badge variant="pill-neutral" className="text-[10px] font-semibold gap-1.5">
-                            <Calendar className="w-3 h-3" aria-hidden="true" />
+                            <Calendar className="w-3 h-3" aria-hidden="true" strokeWidth={1.8} />
                             {getFrequencyLabel(dosage.frequency)}
                         </Badge>
                     )}
@@ -119,10 +119,11 @@ export function PrescriptionBodyScreen({ prescription }: PrescriptionBodyScreenP
                         role="alert"
                         className="ml-14 flex items-start gap-2.5 p-3 bg-s-warning-bg/70 rounded-lg border border-s-warning-br/40"
                     >
-                        <AlertTriangle
-                            className="w-4 h-4 text-s-warning shrink-0 mt-0.5"
-                            aria-hidden="true"
-                        />
+                            <AlertTriangle
+                                className="w-4 h-4 text-s-warning shrink-0 mt-0.5"
+                                aria-hidden="true"
+                                strokeWidth={1.8}
+                            />
                         <div>
                             <p className="text-[11px] font-bold text-s-warning uppercase tracking-wider mb-0.5">
                                 Indicación especial
@@ -137,11 +138,12 @@ export function PrescriptionBodyScreen({ prescription }: PrescriptionBodyScreenP
 
             {/* Additional notes */}
             {prescription.note && (
-                <div className="bg-n-1 rounded-xl border border-n-5/30 p-4">
+                <div className="bg-n-1 rounded-lg border border-n-5/30 p-4">
                     <div className="flex items-start gap-2.5">
                         <FileText
                             className="w-4 h-4 text-n-8 shrink-0 mt-0.5"
                             aria-hidden="true"
+                            strokeWidth={1.8}
                         />
                         <div>
                             <p className="text-[11px] font-bold text-n-8 uppercase tracking-wider mb-1">

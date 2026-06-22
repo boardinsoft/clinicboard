@@ -28,7 +28,7 @@ interface AuditLogTimelineProps {
     auditLog: AuditEntry[];
 }
 
-const ACTION_CONFIG: Record<string, { icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>; colorClass: string; label: string }> = {
+const ACTION_CONFIG: Record<string, { icon: React.ComponentType<Record<string, unknown>>; colorClass: string; label: string }> = {
     activate: { icon: CheckCircle, colorClass: 'text-s-success bg-s-success/10', label: 'Activada' },
     cancel:    { icon: Ban,        colorClass: 'text-s-danger  bg-s-danger/10',  label: 'Cancelada' },
     complete:  { icon: CheckCircle, colorClass: 'text-s-success bg-s-success/10', label: 'Completada' },
@@ -70,7 +70,7 @@ function formatRelativeTime(isoDate: string): string {
 }
 
 function getActionConfig(action: string) {
-    return ACTION_CONFIG[action] ?? { icon: History, colorClass: 'text-n-8 bg-n-3', label: action };
+    return ACTION_CONFIG[action] ?? { icon: History, colorClass: 'text-n-8 bg-n-3' as const, label: action };
 }
 
 export function AuditLogTimeline({ auditLog }: AuditLogTimelineProps) {
@@ -114,7 +114,7 @@ export function AuditLogTimeline({ auditLog }: AuditLogTimelineProps) {
                                 className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${config.colorClass}`}
                                 aria-hidden="true"
                             >
-                                <Icon className="w-4 h-4" />
+                                <Icon className="w-4 h-4" strokeWidth={1.8} />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">

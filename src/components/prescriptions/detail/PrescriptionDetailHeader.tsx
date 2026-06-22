@@ -63,13 +63,13 @@ export function PrescriptionDetailHeader({
                     )}
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-n-8 font-mono">
+                    <span className="text-[11px] text-n-9 font-mono">
                         {authoredOn ? formatDate(authoredOn) : '—'}
                     </span>
                     {validUntil && (
                         <div className="flex items-center gap-1">
-                            <CalendarClock className="w-3 h-3 text-n-8 shrink-0" aria-hidden="true" />
-                            <span className="text-[11px] text-n-8 font-mono">
+                            <CalendarClock className="w-3 h-3 text-n-9 shrink-0" aria-hidden="true" strokeWidth={1.8} />
+                            <span className="text-[11px] text-n-9 font-mono">
                                 Vence: {formatDate(validUntil)}
                             </span>
                             {isExpired(validUntil) && (
