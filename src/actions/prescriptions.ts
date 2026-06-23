@@ -385,7 +385,12 @@ export async function getPrescriptionById(id: string) {
         .from('medication_requests')
         .select(`
             *,
-            patient:patients(id, name_given, name_family, birth_date, national_id),
+            patient:patients(
+                id, name_given, name_family, birth_date, national_id,
+                gender, active,
+                allergies:allergy_intolerances(code_display, criticality),
+                conditions:conditions(code_display, clinical_status)
+            ),
             prescriber:practitioners(id, name_given, name_family, specialty, license_number, national_id, mpps_registration_number, university),
             encounter:encounters(id, status, patient_id)
         `)

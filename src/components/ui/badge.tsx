@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 //   • Pill — estados dinámicos con punto de color (success, warning, etc).
 // ──────────────────────────────────────────────────────────────────────────────
 const badgeVariants = cva(
-  "inline-flex items-center transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 whitespace-nowrap",
+  "inline-flex items-center transition-colors whitespace-nowrap",
   {
     variants: {
       variant: {

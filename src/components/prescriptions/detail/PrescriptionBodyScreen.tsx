@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { AlertTriangle, Pill, Calendar, FileText } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Pill, AlertTriangle } from 'lucide-react';
+import { FormFieldRow } from './FormFieldRow';
 import { FREQUENCIES, ROUTES } from '@/lib/schemas/prescription.schema';
 
 interface PrescriptionBodyScreenProps {
@@ -23,127 +23,133 @@ function getRouteLabel(value: string): string {
     return ROUTES.find(r => r.value === value)?.label || value;
 }
 
-function getDosageSummary(dosage: unknown): {
+function parseDosage(dosage: unknown): {
     dose: string;
     frequency: string;
     route: string;
     duration: string;
     instructions: string;
 } {
-    if (!dosage) return { dose: '', frequency: '', route: '', duration: '', instructions: '' };
-    const arr = Array.isArray(dosage) ? dosage : [];
-    const get = (prefix: string) => arr.find(s => s.startsWith(prefix))?.replace(prefix, '') || '';
-    return {
-        dose: get('500mg') || get('250mg') || arr[0] || '',
-        frequency: get('Cada ') || get('q') || '',
-        route: get('Vía: ') || '',
-        duration: get('Duración: ') || '',
-        instructions: arr.find(s => s.startsWith('Indicaciones: '))?.replace('Indicaciones: ', '') || '',
-    };
+    const empty = { dose: '', frequency: '', route: '', duration: '', instructions: '' };
+    if (!dosage) return empty;
+    if (!Array.isArray(dosage)) return empty;
+
+    const result = { ...empty };
+
+    for (const item of dosage) {
+        if (typeof item !== 'string') continue;
+
+        if (item.startsWith('Vía: ')) {
+            result.route = item.replace('Vía: ', '');
+        } else if (item.startsWith('Duración: ')) {
+            result.duration = item.replace('Duración: ', '');
+        } else if (item.startsWith('Indicaciones: ')) {
+            result.instructions = item.replace('Indicaciones: ', '');
+        } else if (/^\d/.test(item) && !result.dose) {
+            result.dose = item;
+        } else if (!result.frequency) {
+            result.frequency = item;
+        }
+    }
+
+    return result;
 }
 
 export function PrescriptionBodyScreen({ prescription }: PrescriptionBodyScreenProps) {
-    const dosage = getDosageSummary(prescription.dosage_instruction);
+    const { dose, frequency, route, duration, instructions } = parseDosage(prescription.dosage_instruction);
+
+    const frequencyLabel = frequency ? getFrequencyLabel(frequency) : '';
+    const routeLabel = route ? getRouteLabel(route) : '';
+
+    const hasInstructions = Boolean(instructions);
+    const hasNote = Boolean(prescription.note);
 
     return (
-        <section
-            aria-labelledby="prescription-body-title"
-            className="space-y-4"
-        >
+        <section aria-labelledby="prescription-body-title">
             <h2 id="prescription-body-title" className="sr-only">
                 Detalles de la prescripción
             </h2>
 
-            {/* Medication card */}
-                <div className="bg-n-1 rounded-lg border border-n-5/30 p-6 space-y-5">
-                {/* Drug name + dose */}
-                <div className="flex items-start gap-4">
-                    <div
-                        className="w-10 h-10 rounded-lg bg-b-2 flex items-center justify-center shrink-0 mt-0.5"
-                        aria-hidden="true"
-                    >
-                        <Pill className="w-5 h-5 text-b-8" strokeWidth={1.8} />
+            <div className="bg-n-1 rounded-lg border border-n-5/30">
+                {/* Integrated subheader */}
+                <div className="px-4 py-3 border-b border-n-5/30 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-md bg-b-2 flex items-center justify-center shrink-0">
+                        <Pill className="w-4 h-4 text-b-8" strokeWidth={1.8} aria-hidden="true" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                        <div className="text-lg font-bold text-n-11 leading-tight">
-                            {prescription.medication_display}
-                        </div>
-                        {dosage.dose && (
-                            <div className="text-[13px] font-mono text-n-8 mt-1">
-                                {dosage.dose}
-                            </div>
-                        )}
-                        {prescription.medication_code && (
-                            <div className="text-[11px] font-mono text-n-8 mt-0.5">
-                                {prescription.medication_code}
-                            </div>
-                        )}
+                    <div>
+                        <h3 className="text-sm font-bold text-n-11">Medicación e indicaciones</h3>
+                        <p className="text-[11px] text-n-8 mt-0.5">Datos del fármaco y régimen posológico</p>
                     </div>
                 </div>
 
-                {/* Dosage details */}
-                <div className="flex flex-wrap items-center gap-2 pl-14">
-                    {dosage.route && (
-                        <Badge variant="pill-info" className="text-[10px] font-semibold gap-1.5">
-                            <span className="font-mono">{getRouteLabel(dosage.route)}</span>
-                        </Badge>
-                    )}
-                    {dosage.frequency && (
-                        <Badge variant="pill-neutral" className="text-[10px] font-semibold gap-1.5">
-                            <Calendar className="w-3 h-3" aria-hidden="true" strokeWidth={1.8} />
-                            {getFrequencyLabel(dosage.frequency)}
-                        </Badge>
-                    )}
-                    {dosage.duration && (
-                        <Badge variant="pill-neutral" className="text-[10px] font-semibold">
-                            {dosage.duration}
-                        </Badge>
-                    )}
-                </div>
+                {/* Data rows */}
+                <div className="divide-y divide-n-5/30">
+                    <FormFieldRow
+                    label="Fármaco"
+                    description="Nombre del medicamento recetado"
+                    value={prescription.medication_display}
+                />
+                <FormFieldRow
+                    label="Código"
+                    description="Identificador del catálogo"
+                    value={prescription.medication_code}
+                    mono
+                />
+                <FormFieldRow
+                    label="Dosis"
+                    description="Cantidad por toma"
+                    value={dose}
+                    mono
+                />
+                <FormFieldRow
+                    label="Frecuencia"
+                    description="Intervalo de administración"
+                    value={frequencyLabel}
+                />
+                <FormFieldRow
+                    label="Vía"
+                    description="Ruta de administración"
+                    value={routeLabel}
+                />
+                <FormFieldRow
+                    label="Duración"
+                    description="Tiempo total del tratamiento"
+                    value={duration}
+                    mono
+                />
 
-                {/* Special instructions / warnings */}
-                {dosage.instructions && (
-                    <div
-                        role="alert"
-                        className="ml-14 flex items-start gap-2.5 p-3 bg-s-warning-bg/70 rounded-lg border border-s-warning-br/40"
-                    >
+                {hasInstructions && (
+                    <div className="px-5 py-4">
+                        <div
+                            role="alert"
+                            className="flex items-start gap-2.5 p-3 bg-s-warning-bg/70 rounded-lg border border-s-warning-br/40"
+                        >
                             <AlertTriangle
                                 className="w-4 h-4 text-s-warning shrink-0 mt-0.5"
                                 aria-hidden="true"
                                 strokeWidth={1.8}
                             />
-                        <div>
-                            <p className="text-[11px] font-bold text-s-warning uppercase tracking-wider mb-0.5">
-                                Indicación especial
-                            </p>
-                            <p className="text-[13px] text-n-11 leading-relaxed">
-                                {dosage.instructions}
-                            </p>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-bold text-s-warning uppercase tracking-wider mb-1">
+                                    Indicación especial
+                                </p>
+                                <p className="text-base font-medium text-n-11 leading-relaxed">
+                                    {instructions}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 )}
-            </div>
 
-            {/* Additional notes */}
-            {prescription.note && (
-                <div className="bg-n-1 rounded-lg border border-n-5/30 p-4">
-                    <div className="flex items-start gap-2.5">
-                        <FileText
-                            className="w-4 h-4 text-n-8 shrink-0 mt-0.5"
-                            aria-hidden="true"
-                            strokeWidth={1.8}
-                        />
-                        <div>
-                            <p className="text-[11px] font-bold text-n-8 uppercase tracking-wider mb-1">
-                                Notas de la prescripción
-                            </p>
-                            <p className="text-[13px] text-n-11 leading-relaxed">
-                                {prescription.note}
-                            </p>
-                        </div>
-                    </div>
+                {hasNote && (
+                    <FormFieldRow
+                        label="Notas"
+                        description="Notas adicionales del médico"
+                        value={prescription.note}
+                    />
+                )}
                 </div>
-            )}
+            </div>
         </section>
     );
 }

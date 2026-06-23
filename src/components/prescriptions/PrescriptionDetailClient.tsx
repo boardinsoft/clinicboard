@@ -2,16 +2,12 @@
 
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Printer, RefreshCw, History } from 'lucide-react';
+import { Printer, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/PageLayout';
 import { toast } from 'sonner';
 import {
-    activatePrescription,
     cancelPrescription,
-    completePrescription,
-    pausePrescription,
-    resumePrescription,
 } from '@/actions/prescriptions';
 import type { MedicationRequestStatus } from '@/lib/fhir/types';
 import {
@@ -64,6 +60,10 @@ interface PrescriptionDetailClientProps {
             name_family: string;
             birth_date: string | null;
             national_id: string | null;
+            gender: string | null;
+            active: boolean | null;
+            allergies: Array<{ code_display: string; criticality: string | null }> | null;
+            conditions: Array<{ code_display: string; clinical_status: string | null }> | null;
         } | null;
         prescriber?: {
             id: string;
@@ -136,31 +136,12 @@ export default function PrescriptionDetailClient({
         }
     };
 
-    const handleRefresh = () => {
-        router.refresh();
-    };
-
-    const isLoading = loadingAction !== null;
-
     return (
         <div className="flex flex-col h-full bg-background">
             <PageHeader
                 title="Receta médica"
                 actions={
                     <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors active:scale-95"
-                            onClick={handleRefresh}
-                            disabled={isLoading}
-                            aria-label="Actualizar datos de la receta"
-                        >
-                            <RefreshCw
-                                className={`w-4 h-4 ${isLoading ? 'animate-spin motion-reduce:animate-none' : ''}`}
-                                aria-hidden="true"
-                            />
-                        </Button>
                         <Button
                             variant="outline"
                             size="sm"
@@ -210,41 +191,36 @@ export default function PrescriptionDetailClient({
                         </h2>
                         <PatientContextCard
                             patient={prescription.patient}
-                            prescriber={prescription.prescriber}
-                            status={prescription.status}
+                            clinicSlug={clinicSlug}
                         />
                     </section>
 
                     {/* Prescription clinical card */}
-                    <PrescriptionBodyScreen prescription={prescription} />
+                    <section
+                        aria-labelledby="prescription-body-section-title"
+                        className="bg-n-2 rounded-xl"
+                    >
+                        <h2 id="prescription-body-section-title" className="sr-only">
+                            Datos de la prescripción
+                        </h2>
+                        <PrescriptionBodyScreen prescription={prescription} />
+                    </section>
 
                     {/* Status actions */}
                     <section
                         aria-labelledby="status-actions-section-title"
-                        className="space-y-4"
+                        className="bg-n-2 rounded-xl"
                     >
-                        <div className="flex items-center gap-2">
-                            <span
-                                className="w-1 h-5 rounded-full bg-b-8 shrink-0"
-                                aria-hidden="true"
-                            />
-                            <h2
-                                id="status-actions-section-title"
-                                className="text-sm font-semibold text-n-11"
-                            >
-                                Acciones de estado
-                            </h2>
-                        </div>
-
-                        <div className="p-4 bg-n-1 rounded-lg border border-n-5/30">
-                            <StatusActions
-                                prescriptionId={prescription.id}
-                                status={prescription.status ?? 'unknown'}
-                                onAction={handleAction}
-                                loadingAction={loadingAction}
-                                onCancelRequest={() => setShowCancelDialog(true)}
-                            />
-                        </div>
+                        <h2 id="status-actions-section-title" className="sr-only">
+                            Acciones de estado
+                        </h2>
+                        <StatusActions
+                            prescriptionId={prescription.id}
+                            status={prescription.status ?? 'unknown'}
+                            onAction={handleAction}
+                            loadingAction={loadingAction}
+                            onCancelRequest={() => setShowCancelDialog(true)}
+                        />
                     </section>
 
                     {/* Audit log */}
