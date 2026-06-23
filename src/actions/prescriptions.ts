@@ -18,6 +18,16 @@ const VALID_TRANSITIONS: Record<MedicationRequestStatus, MedicationRequestStatus
     'unknown': [],
 };
 
+const PRESCRIPTION_STATUS_LABELS: Record<MedicationRequestStatus, string> = {
+    draft: 'Borrador',
+    active: 'Activa',
+    'on-hold': 'Pausada',
+    completed: 'Completada',
+    cancelled: 'Cancelada',
+    stopped: 'Detenida',
+    unknown: 'Desconocido',
+};
+
 function canTransition(from: MedicationRequestStatus, to: MedicationRequestStatus): boolean {
     return VALID_TRANSITIONS[from]?.includes(to) ?? false;
 }
@@ -132,7 +142,8 @@ async function transitionPrescription(
 
     const currentStatus = prescription.status as MedicationRequestStatus;
     if (!canTransition(currentStatus, targetStatus)) {
-        return { error: `No se puede ${action} una receta con estado '${currentStatus}'.` };
+        const currentLabel = PRESCRIPTION_STATUS_LABELS[currentStatus] || currentStatus;
+        return { error: `No se puede ${action} una receta en estado '${currentLabel}'.` };
     }
 
     const { data, error } = await supabase
@@ -145,7 +156,7 @@ async function transitionPrescription(
 
     if (error) {
         console.error(`Error in ${action}Prescription:`, error);
-        return { error: error.message };
+        return { error: 'No se pudo actualizar el estado de la receta. Intenta de nuevo.' };
     }
 
     await logPrescriptionAudit(supabase, id, action, currentStatus, targetStatus, practitionerId, opts?.reason);
@@ -218,7 +229,7 @@ export async function createPrescription(formData: {
 
     if (error) {
         console.error('Error in createPrescription:', error);
-        return { error: error.message };
+        return { error: 'No se pudo crear la receta. Intenta de nuevo.' };
     }
 
     await logPrescriptionAudit(supabase, data.id, 'create', 'unknown', 'draft', practitionerId);
@@ -334,7 +345,7 @@ export async function createPrescriptions(formData: {
 
     if (error) {
         console.error('Error in createPrescriptions:', error);
-        return { error: error.message };
+        return { error: 'No se pudieron guardar las recetas. Intenta de nuevo.' };
     }
 
     for (const rx of data) {
@@ -400,7 +411,7 @@ export async function getPrescriptionById(id: string) {
 
     if (error) {
         console.error('Error in getPrescriptionById:', error);
-        return { error: error.message };
+        return { error: 'No se pudo cargar la receta. Intenta de nuevo.' };
     }
 
     return { data };
@@ -425,7 +436,7 @@ export async function getPrescriptionAuditLog(prescriptionId: string) {
 
     if (error) {
         console.error('Error in getPrescriptionAuditLog:', error);
-        return { error: error.message };
+        return { error: 'No se pudo cargar el historial de cambios. Intenta de nuevo.' };
     }
 
     return { data };
@@ -454,7 +465,7 @@ export async function getPrescriptionsByPatient(patientId: string, clinicId?: st
 
     if (error) {
         console.error('Error in getPrescriptionsByPatient:', error);
-        return { error: error.message };
+        return { error: 'No se pudieron cargar las recetas del paciente. Intenta de nuevo.' };
     }
 
     return { data };
@@ -529,7 +540,7 @@ export async function getPrescriptionsForTable(clinicId?: string, filters?: Pres
 
     if (error) {
         console.error('Error in getPrescriptionsForTable:', error);
-        return { error: error.message };
+        return { error: 'No se pudieron cargar las recetas. Intenta de nuevo.' };
     }
 
     const result: { data: typeof data; count: typeof count; statusCounts?: Record<string, number> } = { data, count };
@@ -592,7 +603,7 @@ export async function getPrescriptionsByEncounter(encounterId: string) {
 
     if (error) {
         console.error('Error in getPrescriptionsByEncounter:', error);
-        return { error: error.message };
+        return { error: 'No se pudieron cargar las recetas de la consulta. Intenta de nuevo.' };
     }
 
     return { data };
@@ -618,7 +629,7 @@ export async function getPrescriptionStats(clinicId?: string) {
 
     if (error) {
         console.error('Error in getPrescriptionStats:', error);
-        return { error: error.message };
+        return { error: 'No se pudieron cargar las estadísticas. Intenta de nuevo.' };
     }
 
     return { data };
@@ -641,7 +652,7 @@ export async function searchMedications(query: string, limit = 20) {
 
     if (error) {
         console.error('Error in searchMedications:', error);
-        return { error: error.message };
+        return { error: 'No se pudo buscar el medicamento. Intenta de nuevo.' };
     }
 
     return { data };
@@ -680,7 +691,7 @@ export async function getPrescriptionForPrint(id: string) {
 
     if (error || !data) {
         console.error('Error in getPrescriptionForPrint:', error);
-        return { error: error?.message || 'Receta no encontrada' };
+        return { error: 'No se pudo cargar la receta para imprimir. Intenta de nuevo.' };
     }
 
     const effectiveClinicId = data.clinic_id || data.encounter?.clinic_id;
@@ -729,7 +740,7 @@ export async function markPrescriptionPrinted(prescriptionId: string) {
 
     if (error) {
         console.error('Error in markPrescriptionPrinted:', error);
-        return { error: error.message };
+        return { error: 'No se pudo registrar la impresión. Intenta de nuevo.' };
     }
 
     await logPrescriptionAudit(

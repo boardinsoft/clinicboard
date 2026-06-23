@@ -29,6 +29,14 @@ const ACTION_LABELS: Record<LoadingAction, string> = {
     cancel: 'Receta cancelada',
 };
 
+const ACTION_ERROR_LABELS: Record<LoadingAction, string> = {
+    activate: 'No se pudo activar la receta',
+    complete: 'No se pudo completar la receta',
+    pause: 'No se pudo pausar la receta',
+    resume: 'No se pudo reanudar la receta',
+    cancel: 'No se pudo cancelar la receta',
+};
+
 interface AuditEntry {
     id: string;
     action: string;
@@ -104,7 +112,7 @@ export default function PrescriptionDetailClient({
         setLoadingAction(null);
 
         if (result.error) {
-            toast.error('Error', { description: result.error });
+            toast.error(ACTION_ERROR_LABELS[actionKey] ?? 'Error', { description: result.error });
         } else {
             const label = ACTION_LABELS[actionKey] ?? 'Acción ejecutada';
             toast.success(label);
@@ -120,7 +128,7 @@ export default function PrescriptionDetailClient({
         const result = await cancelPrescription(prescription.id, reason);
         setLoadingAction(null);
         if (result.error) {
-            toast.error('Error', { description: result.error });
+            toast.error(ACTION_ERROR_LABELS.cancel, { description: result.error });
         } else {
             toast.success('Receta cancelada');
             setLiveStatusMsg('Receta cancelada. La página se actualizará en breve.');
