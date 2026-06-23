@@ -230,7 +230,7 @@ export default function PrescriptionCreator({
                                     <Badge variant="pill-info" className="text-[10px]">
                                         #{encounterId.slice(0, 8)}
                                     </Badge>
-                                    <span className="text-[10px] text-n-8">En curso</span>
+                                    <span className="text-[10px] text-n-8">Sin activar</span>
                                 </div>
                             </div>
                         </div>
@@ -269,7 +269,7 @@ export default function PrescriptionCreator({
                             </div>
                         </div>
                         <Badge variant="pill-neutral" className="text-[10px] shrink-0">
-                            Paciente del encuentro
+                            Paciente en consulta
                         </Badge>
                     </div>
 
@@ -307,7 +307,7 @@ export default function PrescriptionCreator({
                                     onClick={() => setIsAddingMedication(true)}
                                 >
                                     <Pill className="w-3 h-3 mr-1" />
-                                    Agregar primero
+                                    Agregar el primero
                                 </Button>
                             </div>
                         ) : (

@@ -3,13 +3,13 @@ import { z } from 'zod';
 export const MedicationStatusEnum = z.enum(['draft', 'active', 'on-hold', 'cancelled', 'completed', 'stopped', 'unknown']);
 
 export const prescriptionSchema = z.object({
-    patient_id: z.string().uuid('Invalid patient ID (UUID required)'),
-    prescriber_id: z.string().uuid('Invalid prescriber ID (UUID required)'),
-    clinic_id: z.string().uuid('Invalid clinic ID (UUID required)'),
-    medication_code: z.string().min(1, 'Medication code (ATC/RXNorm) is required'),
-    medication_display: z.string().min(1, 'Medication name is required'),
+    patient_id: z.string().uuid('Identificador de paciente inválido'),
+    prescriber_id: z.string().uuid('Identificador de profesional inválido'),
+    clinic_id: z.string().uuid('Identificador de clínica inválido'),
+    medication_code: z.string().min(1, 'El código del medicamento es obligatorio'),
+    medication_display: z.string().min(1, 'El nombre del medicamento es obligatorio'),
     status: MedicationStatusEnum.optional().default('active'),
-    dosage_instruction: z.array(z.string()).min(1, 'At least one dosage instruction is required'),
+    dosage_instruction: z.array(z.string()).min(1, 'Agrega al menos una indicación de dosis'),
     note: z.string().optional(),
 });
 
@@ -77,9 +77,9 @@ export const medicationItemSchema = z.object({
 });
 
 export const createPrescriptionFormSchema = z.object({
-    encounter_id: z.string().uuid('Invalid encounter ID'),
-    patient_id: z.string().uuid('Invalid patient ID'),
-    clinic_id: z.string().uuid('Invalid clinic ID'),
+    encounter_id: z.string().uuid('Identificador de consulta inválido'),
+    patient_id: z.string().uuid('Identificador de paciente inválido'),
+    clinic_id: z.string().uuid('Identificador de clínica inválido'),
     items: z.array(medicationItemSchema).min(1, 'Agrega al menos un medicamento'),
     notes: z.string().optional(),
     intent: z.string().optional().default('order'),
