@@ -19,28 +19,19 @@ import {
     Loader2,
     AlertTriangle
 } from 'lucide-react';
-import { 
-    Sheet, 
-    SheetContent, 
-    SheetHeader, 
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
     SheetTitle,
     SheetDescription,
     SheetFooter
 } from '@/components/ui/sheet';
-import {
-    Label
-} from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Label } from '@/components/ui/label';
 import {
     Dialog,
     DialogContent,
@@ -49,10 +40,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { calcAge, getGenderLabel } from '@/lib/clinical';
@@ -74,6 +61,7 @@ import {
     isPastAppointment as checkIsPastAppointment
 } from '@/lib/appointments/appointment-rules';
 import type { Appointment, AppointmentStatus } from '@/lib/fhir/types';
+import ConfirmationDialog from './ConfirmationDialog';
 
 interface AppointmentDetailSheetProps {
     appointment: Appointment | null;
@@ -263,7 +251,7 @@ export default function AppointmentDetailSheet({
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className="sm:max-w-md flex flex-col p-0 gap-0">
-                <SheetHeader className="p-6 pb-2">
+                <SheetHeader className="p-6 pb-2 pr-14">
                     <div className="flex items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2">
                             <Badge variant={config.variant}>
@@ -310,39 +298,16 @@ export default function AppointmentDetailSheet({
                             </div>
                         </div>
 
-                        {/* Expiration warning section */}
+                        {/* Expiration warning section - informational only, actions are in footer */}
                         {showExpirationWarning && !rescheduleMode && (
-                            <div className="bg-s-warning-bg border border-s-warning-br rounded-xl p-4 space-y-3">
-                                <div className="flex items-start gap-3">
-                                    <AlertCircle className="w-5 h-5 text-s-warning shrink-0 mt-0.5" />
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-bold text-s-warning">Esta cita ya pasó su horario</p>
-                                        <p className="text-xs text-n-11 leading-tight">
-                                            La cita estaba programada para un momento en el pasado y no fue procesada.
-                                            Sugerimos reprogramarla o marcar la inasistencia.
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button 
-                                        size="sm" 
-                                        variant="outline" 
-                                        className="h-8 text-xs bg-background border-s-warning-br hover:bg-s-warning-bg/50 text-s-warning"
-                                        onClick={() => setRescheduleMode(true)}
-                                    >
-                                        <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
-                                        Reprogramar
-                                    </Button>
-                                    {isEligibleForNoShow(appointment.end_time) && (
-                                        <Button 
-                                            size="sm" 
-                                            variant="outline" 
-                                            className="h-8 text-xs bg-background border-s-danger-br hover:bg-s-danger-bg/50 text-s-danger"
-                                            onClick={() => handleAction(markNoShow, 'Paciente registrado como inasistente')}
-                                        >
-                                            Marcar Inasistencia
-                                        </Button>
-                                    )}
+                            <div className="bg-s-warning-bg border border-s-warning-br rounded-xl p-4 flex items-start gap-3">
+                                <AlertCircle className="w-5 h-5 text-s-warning shrink-0 mt-0.5" />
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold text-s-warning">Esta cita ya pasó su horario</p>
+                                    <p className="text-xs text-n-11 leading-tight">
+                                        La cita estaba programada para un momento en el pasado y no fue procesada.
+                                        Usa las acciones de abajo para reprogramarla o marcarla.
+                                    </p>
                                 </div>
                             </div>
                         )}
@@ -425,7 +390,7 @@ export default function AppointmentDetailSheet({
                     </div>
                 </ScrollArea>
 
-                <SheetFooter className="p-6 border-t bg-muted/20 sm:flex-col gap-3">
+                <SheetFooter className="flex-col p-6 border-t bg-background gap-3 sm:flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                     <div className="flex flex-col w-full gap-2.5">
                         {/* Contextual Actions Machine */}
                         
@@ -466,58 +431,78 @@ export default function AppointmentDetailSheet({
                         )}
 
                         {/* 2. Booked (Confirmed) -> Arrived or Cancel */}
-                        {appointment.status === 'booked' && (
-                            <>
-                                {isWithinCheckinWindow(appointment.start_time, appointment.end_time).allowed ? (
-                                    <Button 
-                                        className="w-full gap-2 bg-s-warning hover:bg-s-warning/90 shadow-lg shadow-s-warning/10"
-                                        onClick={() => handleAction(markArrived, 'Paciente marcado como llegó')}
-                                        disabled={isPending}
-                                    >
-                                        <User className="w-4 h-4" />
-                                        Marcar Llegada / En Sala
-                                    </Button>
-                                ) : isWithinCheckinWindow(appointment.start_time, appointment.end_time).reason === 'early' ? (
-                                    <div className="p-3 bg-b-1/20 border border-b-2/30 rounded-xl text-center">
-                                        <p className="text-[11px] font-semibold text-b-8 uppercase tracking-tight">
-                                            Llegada disponible en {formatDuration(isWithinCheckinWindow(appointment.start_time, appointment.end_time).minutesUntilOpen ?? 0)}
-                                        </p>
-                                    </div>
-                                ) : null}
-
-                                <div className="grid grid-cols-2 gap-2">
-                                    <Button 
-                                        variant="outline" 
-                                        className="w-full text-b-8 hover:bg-b-1/30 border-b-8/30"
-                                        onClick={() => setRescheduleMode(true)}
-                                        disabled={isPending}
-                                    >
-                                        <RotateCcw className="w-4 h-4 mr-2" />
-                                        Reprogramar
-                                    </Button>
-                                    {isEligibleForNoShow(appointment.end_time) && (
+                        {appointment.status === 'booked' && (() => {
+                            const window = isWithinCheckinWindow(appointment.start_time, appointment.end_time);
+                            const eligibleNoShow = isEligibleForNoShow(appointment.end_time);
+                            return (
+                                <>
+                                    {window.allowed ? (
                                         <Button 
-                                            variant="outline" 
-                                            className="w-full border-s-danger-br bg-s-danger-bg/50 text-s-danger"
-                                            onClick={() => handleAction(markNoShow, 'Paciente marcado como no asistió')}
+                                            className="w-full gap-2 bg-s-warning hover:bg-s-warning/90 text-n-11 shadow-lg shadow-s-warning/10"
+                                            onClick={() => handleAction(markArrived, 'Paciente marcado como llegó')}
                                             disabled={isPending}
                                         >
-                                            <AlertCircle className="w-4 h-4 mr-2" />
-                                            No se presentó
+                                            <User className="w-4 h-4" />
+                                            Marcar Llegada / En Sala
+                                        </Button>
+                                    ) : (
+                                        <Button 
+                                            className="w-full gap-2"
+                                            variant="outline"
+                                            disabled
+                                        >
+                                            <Clock className="w-4 h-4" />
+                                            {window.reason === 'early'
+                                                ? `Llegada disponible en ${formatDuration(window.minutesUntilOpen ?? 0)}`
+                                                : 'Cita fuera de ventana de atención'}
                                         </Button>
                                     )}
-                                </div>
-                                <Button 
-                                    variant="outline" 
-                                    className="w-full text-s-danger hover:bg-s-danger/10 border-s-danger/20"
-                                    onClick={() => setShowCancelAlert(true)}
-                                    disabled={isPending}
-                                >
-                                    <XCircle className="w-4 h-4 mr-2" />
-                                    Cancelar Cita
-                                </Button>
-                            </>
-                        )}
+
+                                    {eligibleNoShow ? (
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <Button 
+                                                variant="outline" 
+                                                className="w-full text-b-8 hover:bg-b-1/30 border-b-8/30"
+                                                onClick={() => setRescheduleMode(true)}
+                                                disabled={isPending}
+                                            >
+                                                <RotateCcw className="w-4 h-4 mr-2" />
+                                                Reprogramar
+                                            </Button>
+                                            <Button 
+                                                variant="outline" 
+                                                className="w-full border-s-danger-br bg-s-danger-bg/50 text-s-danger"
+                                                onClick={() => handleAction(markNoShow, 'Paciente marcado como no asistió')}
+                                                disabled={isPending}
+                                            >
+                                                <AlertCircle className="w-4 h-4 mr-2" />
+                                                No se presentó
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Button 
+                                            variant="outline" 
+                                            className="w-full text-b-8 hover:bg-b-1/30 border-b-8/30"
+                                            onClick={() => setRescheduleMode(true)}
+                                            disabled={isPending}
+                                        >
+                                            <RotateCcw className="w-4 h-4 mr-2" />
+                                            Reprogramar Cita
+                                        </Button>
+                                    )}
+
+                                    <Button 
+                                        variant="outline" 
+                                        className="w-full text-s-danger hover:bg-s-danger/10 border-s-danger/20"
+                                        onClick={() => setShowCancelAlert(true)}
+                                        disabled={isPending}
+                                    >
+                                        <XCircle className="w-4 h-4 mr-2" />
+                                        Cancelar Cita
+                                    </Button>
+                                </>
+                            );
+                        })()}
 
                         {/* 3. Arrived -> Fulfill (Start Consultation) */}
                         {appointment.status === 'arrived' && (
@@ -588,104 +573,44 @@ export default function AppointmentDetailSheet({
                 </SheetFooter>
 
                 {/* Confirm Cancellation Dialog */}
-                <Dialog open={showCancelAlert} onOpenChange={setShowCancelAlert}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                <XCircle className="w-5 h-5 text-destructive" />
-                                Cancelar Cita
-                            </DialogTitle>
-                            <DialogDescription>
-                                Estás a punto de cancelar esta cita. Esta acción liberará el horario pero no puede ser deshecha.
-                                Indica el motivo de la cancelación.
-                            </DialogDescription>
-                        </DialogHeader>
-                        
-                        <div className="py-4">
-                            <Label htmlFor="reason" className="text-xs font-semibold uppercase text-muted-foreground">
-                                Motivo de cancelación
-                            </Label>
-                            <Textarea
-                                id="reason"
-                                className="mt-2"
-                                placeholder="Ej: El paciente llamó para informar que no puede asistir por motivos personales..."
-                                value={cancelReason}
-                                onChange={(e) => setCancelReason(e.target.value)}
-                            />
-                        </div>
-
-                        <DialogFooter>
-                            <Button 
-                                variant="outline" 
-                                disabled={isPending}
-                                onClick={() => setShowCancelAlert(false)}
-                            >
-                                Volver
-                            </Button>
-                            <Button 
-                                variant="destructive" 
-                                onClick={handleCancelWithReason}
-                                disabled={isPending || cancelReason.trim().length < 3}
-                            >
-                                {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                Sí, Cancelar Cita
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                <ConfirmationDialog
+                    open={showCancelAlert}
+                    onOpenChange={setShowCancelAlert}
+                    title="Cancelar Cita"
+                    titleIcon={<XCircle className="w-5 h-5" />}
+                    description={<>Estás a punto de cancelar esta cita. Esta acción liberará el horario pero no puede ser deshecha. Indica el motivo de la cancelación.</>}
+                    confirmLabel="Sí, Cancelar Cita"
+                    destructive
+                    loading={isPending}
+                    disabled={cancelReason.trim().length < 3}
+                    showReasonField
+                    reasonValue={cancelReason}
+                    onReasonChange={setCancelReason}
+                    reasonLabel="Motivo de cancelación"
+                    reasonPlaceholder="Ej: El paciente llamó para informar que no puede asistir por motivos personales..."
+                    onConfirm={handleCancelWithReason}
+                />
 
                 {/* Consultation Start Alert */}
-                <AlertDialog open={showConsultationAlert} onOpenChange={(open) => {
-                    setShowConsultationAlert(open);
-                    if (!open) setConsultationDelayReason('');
-                }}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>¿Iniciar consulta clínica?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Estás a punto de iniciar una consulta médica con <strong>{patientName}</strong>.
-                                Esto cambiará el estado de la cita a Completada y comenzará un nuevo encuentro en la Historia Clínica.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-
-                        {isPastAppointment && (
-                            <div className="py-2 space-y-3">
-                                <Label className="text-xs font-semibold uppercase text-muted-foreground">
-                                    Motivo de retraso requerido
-                                </Label>
-                                <div className="flex flex-wrap gap-2">
-                                    {['Llegó tarde el paciente', 'Retraso en consulta anterior', 'Emergencia previa', 'Administrativo'].map(suggestion => (
-                                        <Badge 
-                                            key={suggestion} 
-                                            variant="secondary" 
-                                            className="cursor-pointer hover:bg-primary/20"
-                                            onClick={() => setConsultationDelayReason(suggestion)}
-                                        >
-                                            {suggestion}
-                                        </Badge>
-                                    ))}
-                                </div>
-                                <Textarea
-                                    placeholder="O escribe el motivo del retraso..."
-                                    value={consultationDelayReason}
-                                    onChange={(e) => setConsultationDelayReason(e.target.value)}
-                                    className="min-h-[80px]"
-                                />
-                            </div>
-                        )}
-
-                        <AlertDialogFooter>
-                            <AlertDialogCancel disabled={isPending}>Volver</AlertDialogCancel>
-                            <AlertDialogAction 
-                                onClick={handleStartConsultation}
-                                disabled={isPending || (isPastAppointment && consultationDelayReason.trim().length < 3)}
-                            >
-                                {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                Iniciar Consulta
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmationDialog
+                    open={showConsultationAlert}
+                    onOpenChange={(open) => {
+                        setShowConsultationAlert(open);
+                        if (!open) setConsultationDelayReason('');
+                    }}
+                    title="¿Iniciar consulta clínica?"
+                    description={<>Estás a punto de iniciar una consulta médica con <strong>{patientName}</strong>. Esto cambiará el estado de la cita a Completada y comenzará un nuevo encuentro en la Historia Clínica.</>}
+                    confirmLabel="Iniciar Consulta"
+                    loading={isPending}
+                    disabled={isPastAppointment && consultationDelayReason.trim().length < 3}
+                    showReasonField={isPastAppointment}
+                    reasonValue={consultationDelayReason}
+                    onReasonChange={setConsultationDelayReason}
+                    reasonLabel="Motivo de retraso requerido"
+                    reasonPlaceholder="O escribe el motivo del retraso..."
+                    reasonSuggestions={['Llegó tarde el paciente', 'Retraso en consulta anterior', 'Emergencia previa', 'Administrativo']}
+                    onConfirm={handleStartConsultation}
+                />
 
                 {/* Reschedule Dialog */}
                 <Dialog open={rescheduleMode} onOpenChange={setRescheduleMode}>

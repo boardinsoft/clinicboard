@@ -219,7 +219,7 @@ export default function SubjetivoSection({
                                             </Stepper>
                                         </div>
 
-                                        <div className="flex-1 overflow-y-auto p-5 bg-n-2 min-h-[360px]">
+                                        <div className="flex-1 min-h-0 overflow-y-auto p-5 bg-n-2">
                                             <WizardStepContent
                                                 stepKey={currentStepKey}
                                                 form={form}
@@ -230,7 +230,7 @@ export default function SubjetivoSection({
                                             />
                                         </div>
 
-                                        <div className="p-5 bg-n-1 border-t border-n-5/30 flex flex-row items-center justify-between">
+                                        <div className="shrink-0 p-5 bg-n-1 border-t border-n-5/30 flex flex-row items-center justify-between">
                                             <Button
                                                 type="button"
                                                 variant="ghost"

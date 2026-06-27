@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getPatients } from '@/actions/patients';
-import { Search, User, Loader2, CheckCircle2 } from 'lucide-react';
+import { User, Loader2, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { 
@@ -47,26 +47,15 @@ export function PatientSearchField({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Initial search and debounced search
+    // Debounced search — only triggers when user types
     useEffect(() => {
-        const search = async (searchTerm: string) => {
-            setIsSearching(true);
-            try {
-                const res = await getPatients(searchTerm);
-                setResults((res.data as unknown as Patient[]) || []);
-            } catch (err) {
-                console.error('Search error:', err);
-            } finally {
-                setIsSearching(false);
-            }
-        };
-
         if (debouncedQuery.length >= 2) {
-            search(debouncedQuery);
+            setIsSearching(true);
+            getPatients(debouncedQuery)
+                .then(res => setResults((res.data as unknown as Patient[]) || []))
+                .catch(err => console.error('Search error:', err))
+                .finally(() => setIsSearching(false));
             setIsOpen(true);
-        } else if (debouncedQuery.length === 0 && !selectedPatient) {
-            // Fetch initial 5 patients if query is empty and not selecting an existing one
-            search('');
         } else {
             setResults([]);
             if (!selectedPatient) setIsOpen(false);
@@ -96,12 +85,6 @@ export function PatientSearchField({
         setResults([]);
         setIsOpen(false);
         onChange('');
-        // Trigger initial search again
-        const refreshInitial = async () => {
-            const res = await getPatients('');
-            setResults((res.data as unknown as Patient[]) || []);
-        };
-        refreshInitial();
     };
 
     return (
@@ -114,7 +97,7 @@ export function PatientSearchField({
                     className="w-full"
                     value={query}
                     onFocus={() => {
-                        if (query.length === 0 || results.length > 0) setIsOpen(true);
+                        if (query.length === 0) setIsOpen(true);
                     }}
                     onChange={(e) => {
                         setQuery(e.target.value);
@@ -131,10 +114,10 @@ export function PatientSearchField({
             </div>
 
             {/* Results Dropdown */}
-            {isOpen && !selectedPatient && (query.length >= 2 || (query.length === 0 && results.length > 0)) && (
+            {isOpen && !selectedPatient && query.length >= 2 && (
                 <div className="absolute z-[100] w-full mt-1 bg-popover border rounded-md shadow-xl max-h-64 overflow-hidden flex flex-col">
                     <div className="p-2 border-b bg-muted/30 text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                        {query.length >= 2 ? `Resultados para "${query}"` : 'Pacientes Recientes'}
+                        Resultados para "{query}"
                     </div>
                     <div className="overflow-y-auto max-h-48">
                         {results.length > 0 ? (
@@ -158,7 +141,7 @@ export function PatientSearchField({
                                     </div>
                                 </button>
                             ))
-                        ) : !isSearching && query.length >= 2 ? (
+                        ) : !isSearching ? (
                             <div className="p-4 text-center text-sm text-muted-foreground">
                                 No se encontraron pacientes
                             </div>
