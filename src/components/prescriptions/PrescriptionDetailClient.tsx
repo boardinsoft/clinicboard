@@ -112,7 +112,7 @@ export default function PrescriptionDetailClient({
         setLoadingAction(null);
 
         if (result.error) {
-            toast.error(ACTION_ERROR_LABELS[actionKey] ?? 'Error', { description: result.error });
+            toast.error(ACTION_ERROR_LABELS[actionKey] ?? 'No se pudo completar la acción', { description: 'Intenta de nuevo en unos momentos' });
         } else {
             const label = ACTION_LABELS[actionKey] ?? 'Acción ejecutada';
             toast.success(label);
@@ -128,7 +128,7 @@ export default function PrescriptionDetailClient({
         const result = await cancelPrescription(prescription.id, reason);
         setLoadingAction(null);
         if (result.error) {
-            toast.error(ACTION_ERROR_LABELS.cancel, { description: result.error });
+            toast.error(ACTION_ERROR_LABELS.cancel, { description: 'Intenta de nuevo en unos momentos' });
         } else {
             toast.success('Receta cancelada');
             setLiveStatusMsg('Receta cancelada. La página se actualizará en breve.');
@@ -140,7 +140,7 @@ export default function PrescriptionDetailClient({
         try {
             window.open(`/api/prescriptions/${prescription.id}/pdf`, '_blank');
         } catch {
-            toast.error('Error al abrir el PDF');
+            toast.error('No se pudo abrir el PDF');
         }
     };
 

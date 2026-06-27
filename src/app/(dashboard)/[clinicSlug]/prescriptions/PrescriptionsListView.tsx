@@ -119,7 +119,7 @@ export default function PrescriptionsListView() {
         setIsFetching(false);
 
         if ('error' in result) {
-            toast.error('Error al cargar recetas', { description: result.error });
+            toast.error('No se pudieron cargar las recetas', { description: 'Revisa tu conexión e intenta de nuevo' });
             return;
         }
 
