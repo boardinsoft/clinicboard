@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DiagnosisSearch from '@/components/clinical/DiagnosisSearch';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 
 const KITS_OF_ORDERS = [
     {
@@ -192,7 +192,7 @@ export default function EvaluacionSection({
                                     const currentPlan = form.getValues('treatmentPlan');
                                     const newPlan = currentPlan ? `${currentPlan}\n\n=== ${kit.label} ===\n${kit.content}` : `=== ${kit.label} ===\n${kit.content}`;
                                     form.setValue('treatmentPlan', newPlan);
-                                    toast.success('Kit aplicado', { description: `Se ha insertado el kit: ${kit.label}` });
+                                    notify.success({ title: 'Kit aplicado', description: `Se ha insertado el kit: ${kit.label}` });
                                 }
                             }} disabled={!selectedPatient}>
                                 <SelectTrigger className="w-[240px] h-8 text-xs bg-b-8/5 border-n-5/30 text-b-8">

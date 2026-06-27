@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/PageLayout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { getPrescriptionsForTable } from '@/actions/prescriptions';
 import type { PrescriptionFilters } from '@/actions/prescriptions';
 import type { PrescriptionForPreview } from '@/types/database.types';
@@ -119,7 +119,7 @@ export default function PrescriptionsListView() {
         setIsFetching(false);
 
         if ('error' in result) {
-            toast.error('No se pudieron cargar las recetas', { description: 'Revisa tu conexión e intenta de nuevo' });
+            notify.error('No se pudieron cargar las recetas', { description: 'Revisa tu conexión e intenta de nuevo' });
             return;
         }
 

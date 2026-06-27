@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,12 +46,11 @@ export function ClinicSettingsForm({ clinic, clinicSlug }: ClinicSettingsFormPro
     setIsLoading(false);
 
     if (result.error) {
-      const errorMsg = typeof result.error === 'string' ? result.error : JSON.stringify(result.error);
-      toast.error('Error al guardar', { description: errorMsg });
+      notify.error({ title: 'No se pudo guardar la configuración', description: 'Intenta de nuevo en unos momentos' });
       return;
     }
 
-    toast.success('Configuración guardada');
+    notify.success({ title: 'Configuración guardada', description: 'Tus cambios ya están activos en el consultorio' });
     router.refresh();
   };
 

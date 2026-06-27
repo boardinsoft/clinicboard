@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -83,12 +83,11 @@ export function ProfileSettingsForm({ profile }: ProfileSettingsFormProps) {
     setIsLoading(false);
 
     if (result.error) {
-      const errorMsg = typeof result.error === 'string' ? result.error : JSON.stringify(result.error);
-      toast.error('Error al guardar', { description: errorMsg });
+      notify.error({ title: 'No se pudo actualizar tu perfil', description: 'Intenta de nuevo en unos momentos' });
       return;
     }
 
-    toast.success('Perfil actualizado');
+    notify.success({ title: 'Perfil actualizado', description: 'Los cambios se ven en tus próximas recetas y consultas' });
     router.refresh();
   };
 

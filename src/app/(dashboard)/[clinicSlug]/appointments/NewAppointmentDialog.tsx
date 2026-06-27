@@ -29,7 +29,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { Calendar, Clock, Loader2, Plus } from 'lucide-react';
 import { createAppointment } from '@/actions/appointments';
 import { appointmentSchema, type AppointmentSchemaType } from '@/lib/schemas/appointment.schema';
@@ -126,7 +126,7 @@ export default function NewAppointmentDialog({
             console.log('[onSubmit] checking activeClinic...');
             if (!activeClinic?.id) {
                 console.log('[onSubmit] No activeClinic found:', activeClinic);
-                toast.error('No se ha seleccionado una clínica');
+                notify.error({ title: 'Selecciona una clínica para continuar', description: 'Sin clínica no podemos agendar la cita' });
                 setIsSubmitting(false);
                 return;
             }
@@ -155,17 +155,17 @@ export default function NewAppointmentDialog({
                 if (isBlockingError) {
                     setAlertError(result.error as string);
                 } else {
-                    toast.error(errorMsg);
+                    notify.error({ title: 'No se pudo agendar la cita', description: 'Intenta de nuevo en unos momentos' });
                 }
                 console.error(result.error);
             } else {
-                toast.success('Cita agendada exitosamente');
+                notify.success({ title: 'Cita agendada', description: 'Te avisamos al correo del paciente' });
                 form.reset();
                 onCreated();
                 onOpenChange(false);
             }
         } catch (err) {
-            toast.error('Ocurrió un error inesperado');
+            notify.error({ title: 'Algo no salió como esperábamos', description: 'Intenta de nuevo en unos momentos' });
             console.error(err);
         } finally {
             setIsSubmitting(false);

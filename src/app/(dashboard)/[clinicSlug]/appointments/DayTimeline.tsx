@@ -17,7 +17,7 @@ import {
     cancelAppointment,
     startConsultationFromAppointment
 } from '@/actions/appointments';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 
 const START_HOUR = 8;
 const END_HOUR = 20;
@@ -116,9 +116,9 @@ export default function DayTimeline({ appointments, onEventClick, onRefresh }: D
         }
 
         if (result.error) {
-            toast.error(typeof result.error === 'string' ? result.error : 'Error');
+            notify.error({ title: 'No se pudo procesar la acción', description: 'Intenta de nuevo en unos momentos' });
         } else {
-            toast.success(ActionsLabels[action]);
+            notify.success({ title: ActionsLabels[action], description: 'La agenda se actualizó' });
             onRefresh?.();
         }
     };

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { createAllergy } from '@/actions/allergies';
 import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import type { AllergyIntolerance } from '@/types/database.types';
@@ -81,13 +81,11 @@ export function AddAllergyDialog({ patientId, open, onOpenChange, onSuccess }: A
             });
 
             if (result.error) {
-                toast.error('Error al agregar alergia', {
-                    description: typeof result.error === 'string' ? result.error : 'Verifica los datos ingresados.',
-                });
+                notify.error({ title: 'No se pudo registrar la alergia', description: 'Verifica los datos e intenta de nuevo' });
                 return;
             }
 
-            toast.success('Alergia registrada');
+            notify.success({ title: 'Alergia registrada', description: 'La alerta aparecerá en futuras recetas' });
             onSuccess(result.data as AllergyIntolerance);
             onOpenChange(false);
             form.reset();

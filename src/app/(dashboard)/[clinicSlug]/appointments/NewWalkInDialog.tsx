@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { createWalkInAppointment } from '@/actions/appointments';
 import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import { Loader2, Zap } from 'lucide-react';
@@ -67,7 +67,7 @@ export default function NewWalkInDialog({
 
     const onSubmit = async (values: WalkInFormValues) => {
         if (!values.patient_id) {
-            toast.error('Selecciona un paciente');
+            notify.error({ title: 'Selecciona un paciente', description: 'Búscalo en el listado o usa ⌘K' });
             return;
         }
 
@@ -81,26 +81,25 @@ export default function NewWalkInDialog({
             });
             
             if (result.error) {
-                const errorMsg = typeof result.error === 'string' ? result.error : 'Error al registrar llegada';
                 const isBlockingError = typeof result.error === 'string' && (
-                    result.error.includes('ya tiene una cita activa') || 
+                    result.error.includes('ya tiene una cita activa') ||
                     result.error.includes('ya tiene una cita agendada')
                 );
 
                 if (isBlockingError) {
                     setAlertError(result.error as string);
                 } else {
-                    toast.error(errorMsg);
+                    notify.error({ title: 'No se pudo registrar la llegada', description: 'Intenta de nuevo en unos momentos' });
                 }
                 console.error(result.error);
             } else {
-                toast.success('Paciente registrado en cola');
+                notify.success({ title: 'Paciente registrado en cola', description: 'Le avisaremos cuando sea su turno' });
                 form.reset();
                 onCreated();
                 onOpenChange(false);
             }
         } catch (err) {
-            toast.error('Ocurrió un error inesperado');
+            notify.error({ title: 'Algo no salió como esperábamos', description: 'Intenta de nuevo en unos momentos' });
             console.error(err);
         } finally {
             setIsSubmitting(false);

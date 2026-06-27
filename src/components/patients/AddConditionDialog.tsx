@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { createCondition } from '@/actions/conditions';
 import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import type { Condition } from '@/types/database.types';
@@ -59,13 +59,11 @@ export function AddConditionDialog({ patientId, open, onOpenChange, onSuccess }:
             });
 
             if (result.error) {
-                toast.error('Error al agregar condición', {
-                    description: typeof result.error === 'string' ? result.error : 'Verifica los datos ingresados.',
-                });
+                notify.error({ title: 'No se pudo agregar la condición', description: 'Verifica los datos e intenta de nuevo' });
                 return;
             }
 
-            toast.success('Condición agregada');
+            notify.success({ title: 'Condición agregada', description: 'El antecedente queda en la historia del paciente' });
             onSuccess(result.data as Condition);
             onOpenChange(false);
             form.reset();

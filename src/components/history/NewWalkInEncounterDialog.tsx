@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { startWalkInEncounter } from '@/actions/encounters';
 import { useActiveClinic } from '@/providers/ActiveClinicContext';
 import { Loader2, Stethoscope, Zap, ClipboardList } from 'lucide-react';
@@ -70,7 +70,7 @@ export default function NewWalkInEncounterDialog({
 
     const onSubmit = async (values: WalkInEncounterFormValues) => {
         if (!values.patient_id) {
-            toast.error('Selecciona un paciente');
+            notify.error({ title: 'Selecciona un paciente', description: 'Búscalo en el listado o usa ⌘K' });
             return;
         }
 
@@ -113,16 +113,16 @@ export default function NewWalkInEncounterDialog({
                 if (isBlockingError) {
                     setAlertError(errorMsg);
                 } else {
-                    toast.error(errorMsg, { description: details ?? undefined });
+                    notify.error({ title: 'No se pudo iniciar la consulta', description: 'Intenta de nuevo en unos momentos' });
                 }
             } else {
-                toast.success('Consulta iniciada');
+                notify.success({ title: 'Consulta iniciada', description: 'Te llevamos a la historia clínica del paciente' });
                 form.reset();
                 onSuccess(result.data!.encounter.id);
                 onOpenChange(false);
             }
         } catch (err) {
-            toast.error('Ocurrió un error inesperado');
+            notify.error({ title: 'Algo no salió como esperábamos', description: 'Intenta de nuevo en unos momentos' });
             console.error(err);
         } finally {
             setIsSubmitting(false);
@@ -157,15 +157,15 @@ export default function NewWalkInEncounterDialog({
                         });
 
                         if (result.error) {
-                            toast.error(typeof result.error === 'string' ? result.error : 'Error al iniciar la consulta');
+                            notify.error({ title: 'No se pudo iniciar la consulta', description: 'Intenta de nuevo en unos momentos' });
                         } else {
-                            toast.success('Consulta iniciada');
+notify.success({ title: 'Consulta iniciada', description: 'Te llevamos a la historia clínica del paciente' });
                             form.reset();
                             onSuccess(result.data!.encounter.id);
                             onOpenChange(false);
                         }
                     } catch (err) {
-                        toast.error('Ocurrió un error inesperado');
+notify.error({ title: 'Algo no salió como esperábamos', description: 'Intenta de nuevo en unos momentos' });
                     } finally {
                         setIsSubmitting(false);
                     }

@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import type { Appointment } from '@/lib/fhir/types';
 import { format } from 'date-fns';
 import { swapQueuePositions } from '@/actions/appointments';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 
 interface WalkInQueuePanelProps {
     appointments: Appointment[];
@@ -62,12 +62,12 @@ export default function WalkInQueuePanel({
             );
 
             if (result.error) {
-                toast.error('Error al reordenar la cola');
+                notify.error({ title: 'No se pudo reordenar la cola', description: 'Intenta de nuevo en unos momentos' });
             } else {
                 onRefresh();
             }
         } catch {
-            toast.error('Error de red');
+            notify.error({ title: 'No se pudo conectar', description: 'Revisa tu conexión a internet e intenta de nuevo' });
         }
     };
 

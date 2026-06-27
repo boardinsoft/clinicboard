@@ -32,7 +32,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { toast } from "sonner"
+import { notify } from '@/lib/notify'
 
 function getClinicSlug(pathname: string): string {
     const parts = pathname.split('/').filter(Boolean);
@@ -162,7 +162,7 @@ export function PatientForm({
         } catch (error: unknown) {
             console.error("Error submitting patient form:", error)
             const message = error instanceof Error ? error.message : "Ocurrió un error inesperado."
-            toast.error("Error", { description: message })
+            notify.error({ title: 'No se pudo guardar el paciente', description: 'Verifica los datos e intenta de nuevo' });
         }
     }
 

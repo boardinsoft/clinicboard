@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { createPrescriptions } from '@/actions/prescriptions';
 import { getPrescriptionColor } from '@/lib/ve-prescription';
 import type { MedicationItemInput } from '@/lib/schemas/prescription.schema';
@@ -117,12 +117,12 @@ export default function PrescriptionCreator({
 
     const handleSaveDraft = async () => {
         if (items.length === 0) {
-            toast.error('Agrega al menos un medicamento a la receta');
+            notify.error('Agrega al menos un medicamento a la receta');
             return;
         }
 
         if (!encounter.clinic_id) {
-            toast.error('Selecciona una clínica para la receta');
+            notify.error('Selecciona una clínica para la receta');
             return;
         }
 
@@ -141,22 +141,22 @@ export default function PrescriptionCreator({
         setIsSaving(false);
 
         if (result.error) {
-            toast.error('No se pudo guardar el borrador', { description: 'Intenta de nuevo en unos momentos' });
+            notify.error('No se pudo guardar el borrador', { description: 'Intenta de nuevo en unos momentos' });
             return;
         }
 
-        toast.success('Receta guardada como borrador');
+        notify.success('Receta guardada como borrador');
         router.push(`/${clinicSlug}/prescriptions`);
     };
 
     const handleSaveAndActivate = async () => {
         if (items.length === 0) {
-            toast.error('Agrega al menos un medicamento a la receta');
+            notify.error('Agrega al menos un medicamento a la receta');
             return;
         }
 
         if (!encounter.clinic_id) {
-            toast.error('Selecciona una clínica para la receta');
+            notify.error('Selecciona una clínica para la receta');
             return;
         }
 
@@ -175,7 +175,7 @@ export default function PrescriptionCreator({
         setIsSaving(false);
 
         if (result.error) {
-            toast.error('No se pudo crear la receta', { description: 'Intenta de nuevo en unos momentos' });
+            notify.error('No se pudo crear la receta', { description: 'Intenta de nuevo en unos momentos' });
             return;
         }
 
@@ -187,7 +187,7 @@ export default function PrescriptionCreator({
             }
         }
 
-        toast.success('Receta creada y activada');
+        notify.success('Receta creada y activada');
         router.push(`/${clinicSlug}/prescriptions`);
     };
 

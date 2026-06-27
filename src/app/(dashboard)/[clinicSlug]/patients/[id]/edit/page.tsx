@@ -7,7 +7,7 @@ import { updatePatient } from "@/actions/patients"
 import { PatientForm, PatientFormValues } from "@/components/patients/PatientForm"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { toast } from "sonner"
+import { notify } from '@/lib/notify'
 
 interface PatientTelecom { system?: string; value?: string }
 interface PatientAddress { text?: string }
@@ -64,7 +64,7 @@ export default function EditPatientPage() {
             } catch (error: unknown) {
                 console.error("Error fetching patient:", error)
                 const message = error instanceof Error ? error.message : "No se pudo cargar la información del paciente."
-                toast.error("Error al cargar", { description: message })
+                notify.error({ title: 'No se pudo cargar el paciente', description: 'Intenta de nuevo en unos momentos' });
             } finally {
                 setLoading(false)
             }
@@ -89,9 +89,7 @@ export default function EditPatientPage() {
             address: values.address || ""
         })
 
-        toast.success("Paciente actualizado", {
-            description: "Los cambios han sido guardados exitosamente."
-        })
+        notify.success({ title: 'Paciente actualizado', description: 'Los cambios quedan registrados en su historia' });
 
         router.push(`/${clinicSlug}/patients/${id}`)
 

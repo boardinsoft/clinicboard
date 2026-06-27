@@ -29,7 +29,7 @@ import { getEncounters } from '@/actions/encounters';
 import { archivePatient, reactivatePatient } from '@/actions/patients';
 import { usePatientStore } from '@/store/usePatientStore';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -123,10 +123,10 @@ export default function PatientDetailView({ patient, conditions: initialConditio
     const handleReactivate = async () => {
         const result = await reactivatePatient(patient.id);
         if (result.error) {
-            toast.error('Error al reactivar', { description: result.error });
+            notify.error({ title: 'No se pudo reactivar al paciente', description: 'Intenta de nuevo en unos momentos' });
             return;
         }
-        toast.success('Paciente reactivado');
+        notify.success({ title: 'Paciente reactivado', description: 'Vuelve a estar visible en tu listado' });
         router.refresh();
     };
 
@@ -449,10 +449,10 @@ export default function PatientDetailView({ patient, conditions: initialConditio
                                 const result = await archivePatient(patient.id);
                                 setArchiving(false);
                                 if (result.error) {
-                                    toast.error('Error al archivar', { description: result.error });
+                                    notify.error({ title: 'No se pudo archivar al paciente', description: 'Intenta de nuevo en unos momentos' });
                                     return;
                                 }
-                                toast.success('Paciente archivado');
+                                notify.success({ title: 'Paciente archivado', description: 'Ya no aparece en tu listado principal' });
                                 router.push(`/${clinicSlug}/patients`);
                             }}
                         >

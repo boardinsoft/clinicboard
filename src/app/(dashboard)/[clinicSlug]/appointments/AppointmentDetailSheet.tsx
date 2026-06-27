@@ -40,7 +40,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { cn } from '@/lib/utils';
 import { calcAge, getGenderLabel } from '@/lib/clinical';
 import { formatTime, formatDate, nowInVE, formatRelativeTime, formatDuration } from '@/lib/date-utils';
@@ -132,16 +132,16 @@ export default function AppointmentDetailSheet({
 
             if (result.error) {
                 console.error('Error reportado por servidor:', result.error);
-                toast.error(typeof result.error === 'string' ? result.error : 'Error al procesar la acción');
+                notify.error({ title: 'No se pudo procesar la acción', description: 'Intenta de nuevo en unos momentos' });
             } else {
                 console.log('Acción exitosa:', successMessage);
-                toast.success(successMessage);
+                notify.success({ title: successMessage, description: 'La cita se actualizó' });
                 onAction();
                 onOpenChange(false);
             }
         } catch (error) {
             console.error('Error de red o ejecución:', error);
-            toast.error('Error inesperado de conexión');
+            notify.error({ title: 'No se pudo conectar', description: 'Revisa tu conexión a internet e intenta de nuevo' });
         } finally {
             setIsPending(false);
         }
@@ -153,9 +153,9 @@ export default function AppointmentDetailSheet({
             const reason = isPastAppointment && consultationDelayReason.trim() ? consultationDelayReason : undefined;
             const result = await startConsultationFromAppointment(appointment.id, reason);
             if (result.error) {
-                toast.error(typeof result.error === 'string' ? result.error : 'Error al iniciar consulta');
+                notify.error({ title: 'No se pudo iniciar la consulta', description: 'Intenta de nuevo en unos momentos' });
             } else if (result.success) {
-                toast.success('Iniciando consulta...');
+                notify.success({ title: 'Iniciando consulta...', description: 'Te llevamos a la historia clínica' });
                 onAction();
                 onOpenChange(false);
                 // Redirigimos a la historia clínica con el encounterId (cuando Area 9 esté listo para editarlo)
@@ -164,7 +164,7 @@ export default function AppointmentDetailSheet({
             }
         } catch (error) {
             console.error('Error al iniciar consulta:', error);
-            toast.error('Error al redirigir');
+            notify.error({ title: 'No se pudo abrir la consulta', description: 'Intenta de nuevo en unos momentos' });
         } finally {
             setIsPending(false);
             setShowConsultationAlert(false);
@@ -177,16 +177,16 @@ export default function AppointmentDetailSheet({
         try {
             const result = await cancelAppointment(appointment.id, cancelReason);
             if (result.error) {
-                toast.error(typeof result.error === 'string' ? result.error : 'Error al cancelar la cita');
+                notify.error({ title: 'No se pudo cancelar la cita', description: 'Intenta de nuevo en unos momentos' });
             } else {
-                toast.success('Cita cancelada correctamente');
+                notify.success({ title: 'Cita cancelada', description: 'La cita ya no está en la agenda' });
                 onAction();
                 setShowCancelAlert(false);
                 setCancelReason('');
                 onOpenChange(false);
             }
         } catch {
-            toast.error('Error al cancelar la cita');
+            notify.error({ title: 'Algo no salió como esperábamos', description: 'Intenta de nuevo en unos momentos' });
         } finally {
             setIsPending(false);
         }
@@ -194,7 +194,7 @@ export default function AppointmentDetailSheet({
 
     const handleReschedule = async () => {
         if (!newDate || !newTime) {
-            toast.error('Selecciona una fecha y hora válida');
+            notify.error({ title: 'Selecciona una fecha y hora válida', description: 'Revisa los campos e intenta de nuevo' });
             return;
         }
 
@@ -231,16 +231,16 @@ export default function AppointmentDetailSheet({
             
             if (result.error) {
                 console.error('Error del servidor:', result.error);
-                toast.error(typeof result.error === 'string' ? result.error : 'Error al reprogramar en el servidor');
+                notify.error({ title: 'No se pudo reprogramar la cita', description: 'Intenta de nuevo en unos momentos' });
             } else {
-                toast.success('Cita reprogramada exitosamente');
+                notify.success({ title: 'Cita reprogramada', description: 'La nueva fecha quedó registrada' });
                 onAction();
                 setRescheduleMode(false);
                 onOpenChange(false);
             }
         } catch (error) {
             console.error('Excepción en handleReschedule:', error);
-            toast.error('Error inesperado al procesar la fecha o comunicación');
+            notify.error({ title: 'Algo no salió como esperábamos', description: 'Intenta de nuevo en unos momentos' });
         } finally {
             setIsPending(false);
         }

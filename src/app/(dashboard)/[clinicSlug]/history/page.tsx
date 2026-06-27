@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 // Shadcn UI Components
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { PageHeader, PageContainer } from '@/components/ui/PageLayout';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -283,9 +283,7 @@ export default function HistoryPage() {
 
     const onSave: SubmitHandler<EncounterFormValues> = async (values) => {
         if (!selectedPatient) {
-            toast.error('Selecciona un paciente', {
-                description: 'Usa ⌘K o el listado para elegir.'
-            });
+            notify.error({ title: 'Selecciona un paciente', description: 'Usa ⌘K o el listado para elegir.' });
             return;
         }
 
@@ -319,9 +317,7 @@ export default function HistoryPage() {
         const objective = `SIGNOS VITALES: ${JSON.stringify(values.vitals)} | HALLAZGOS FÍSICOS: ${abnormalFindings || 'Normal'} | EVOLUCIÓN: ${values.evolutionNote}`;
 
         if (!activeEncounterId) {
-            toast.error('Sin encuentro activo', {
-                description: 'Para registrar una consulta, inicia el encuentro desde la agenda de citas.'
-            });
+            notify.error({ title: 'Sin encuentro activo', description: 'Para registrar una consulta, inicia el encuentro desde la agenda de citas.' });
             setIsSaving(false);
             return;
         }
@@ -341,13 +337,9 @@ export default function HistoryPage() {
         setIsSaving(false);
 
         if (res.error) {
-            toast.error('Error al guardar borrador', {
-                description: 'No se pudieron guardar los cambios. Intenta de nuevo.'
-            });
+            notify.error({ title: 'No se pudo guardar el borrador', description: 'Intenta de nuevo en unos momentos' });
         } else {
-            toast.success('Borrador guardado', {
-                description: 'Los cambios se guardaron como borrador del encuentro.'
-            });
+            notify.success({ title: 'Borrador guardado', description: 'Los cambios quedan en este encuentro hasta que finalices' });
 
             const { data: encs } = await getEncounters(selectedPatient.id);
             setPastEncounters((encs || []) as EncounterWithClinicalNote[]);
@@ -360,11 +352,9 @@ export default function HistoryPage() {
         const res = await finalizeEncounter(activeEncounterId);
         setIsSaving(false);
         if (res.error) {
-            toast.error('Error al finalizar', { description: 'No se pudo cerrar el encuentro. Intenta de nuevo.' });
+            notify.error({ title: 'No se pudo finalizar el encuentro', description: 'Intenta de nuevo en unos momentos' });
         } else {
-            toast.success('Encuentro finalizado', {
-                description: 'El acto médico ha sido cerrado y firmado con éxito.'
-            });
+            notify.success({ title: 'Encuentro finalizado', description: 'El acto médico quedó cerrado y firmado' });
             if (selectedPatient) {
                 const { data: encs } = await getEncounters(selectedPatient.id);
                 setPastEncounters((encs || []) as EncounterWithClinicalNote[]);
