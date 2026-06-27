@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { createPatient } from "@/actions/patients"
 import { PatientForm, PatientFormValues } from "@/components/patients/PatientForm"
-import { toast } from "sonner"
+import { notify } from '@/lib/notify'
 
 function getClinicSlug(pathname: string): string {
     const parts = pathname.split('/').filter(Boolean);
@@ -34,16 +34,12 @@ export default function NewPatientPage() {
         })
 
         if (result.error) {
-            toast.error("Error al registrar", {
-                description: JSON.stringify(result.error) || "No se pudo guardar el paciente."
-            })
+            notify.error({ title: 'No se pudo registrar el paciente', description: 'Verifica los datos e intenta de nuevo' });
             setLoading(false)
             throw new Error(JSON.stringify(result.error))
         }
 
-        toast.success("Paciente registrado", {
-            description: `El paciente ${values.familyName} ha sido creado exitosamente.`
-        })
+        notify.success({ title: 'Paciente registrado', description: `${values.familyName} ya está en tu consultorio` });
 
         if (result.data?.id) {
             router.push(`/${clinicSlug}/patients/${result.data.id}`)

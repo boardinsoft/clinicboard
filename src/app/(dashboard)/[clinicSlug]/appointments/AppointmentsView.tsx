@@ -13,7 +13,7 @@ import { getAppointments, startConsultationFromAppointment } from '@/actions/app
 import { toISODate } from '@/lib/date-utils';
 import type { Appointment } from '@/lib/fhir/types';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { PageHeader, PageContainer } from '@/components/ui/PageLayout';
 import { useAppointmentsStore } from '@/store/useAppointmentsStore';
 import MonthlyCalendar from './MonthlyCalendar';
@@ -95,7 +95,7 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                     }
                 } catch (error) {
                     console.error("Error during appointment cleanup:", error);
-                    toast.error('Error al limpiar citas expiradas.');
+                    notify.error({ title: 'No se pudieron limpiar las citas expiradas', description: 'Intenta de nuevo en unos momentos' });
                 } finally {
                     setHasCleanedUp(true);
                 }
@@ -302,9 +302,9 @@ export default function AppointmentsView({ initialAppointments }: AppointmentsVi
                                 onStartConsultation={async (id) => {
                                     const result = await startConsultationFromAppointment(id);
                                     if (result.error) {
-                                        toast.error(typeof result.error === 'string' ? result.error : 'Error al iniciar consulta');
+                                        notify.error({ title: 'No se pudo iniciar la consulta', description: 'Intenta de nuevo en unos momentos' });
                                     } else if (result.success) {
-                                        toast.success('Consulta iniciada');
+                                        notify.success({ title: 'Consulta iniciada', description: 'Te llevamos a la historia clínica' });
                                         refreshData();
                                         router.push(`/history?patientId=${result.patientId}&encounterId=${result.encounterId || ''}`);
                                     }

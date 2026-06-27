@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { notify } from '@/lib/notify';
 
 interface AddendumRow {
     id: string;
@@ -53,16 +54,16 @@ export default function AddendaSection({
             const { createAddendum, getAddenda } = await import('@/actions/encounters');
             const res = await createAddendum(activeEncounterId, newAddendumContent);
             if (res.error) {
-                import('sonner').then(({ toast }) => toast.error('Error al guardar addenda', { description: 'No se pudo guardar la nota aclaratoria. Intenta de nuevo.' }));
+                notify.error({ title: 'No se pudo guardar la nota aclaratoria', description: 'Intenta de nuevo en unos momentos' });
             } else {
-                import('sonner').then(({ toast }) => toast.success('Addenda guardada correctamente'));
+                notify.success({ title: 'Addenda guardada', description: 'La nota quedó registrada en la historia del paciente' });
                 setNewAddendumContent('');
                 setIsAddingAddendum(false);
                 const list = await getAddenda(activeEncounterId);
                 setAddenda(list.data || []);
             }
         } catch {
-            import('sonner').then(({ toast }) => toast.error('Error inesperado'));
+            notify.error({ title: 'Algo no salió como esperábamos', description: 'Intenta de nuevo en unos momentos' });
         } finally {
             setIsSavingAddendum(false);
         }

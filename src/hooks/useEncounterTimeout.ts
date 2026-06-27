@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useCallback, useRef } from 'react';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { extendEncounterTimeout, getEncounterTimeStatus } from '@/actions/encounters';
 import { updateEncounterStatus } from '@/actions/encounters';
 import { usePatientStore } from '@/store/usePatientStore';
@@ -12,6 +12,50 @@ export function useEncounterTimeout() {
     const selectedEncounterForPreview = usePatientStore((s) => s.selectedEncounterForPreview);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+    const showTimeoutNotification = useCallback(
+        (phase: 'warning' | 'grace', params: {
+            encounterId: string;
+            elapsed?: number;
+            maxDuration?: number;
+            gracePeriodRemainingMinutes?: number;
+        }) => {
+            const title =
+                phase === 'warning'
+                    ? `⏱️ La consulta lleva ${params.elapsed} min (límite: ${params.maxDuration} min)`
+                    : `⏱️ La consulta será cancelada en ${params.gracePeriodRemainingMinutes} min`;
+
+            const toastId = `encounter-timeout-${params.encounterId}`;
+
+            notify.warning(title, {
+                duration: Infinity,
+                id: toastId,
+                action: {
+                    label: 'Extender 15 min',
+                    onClick: async () => {
+                        const result = await extendEncounterTimeout(params.encounterId);
+                        if (result.error) {
+                            notify.error({ title: 'No se pudo extender', description: 'Intenta de nuevo en unos momentos' });
+                        } else {
+                            notify.success({ title: 'Tiempo extendido 15 minutos', description: 'Tienes 15 minutos más para finalizar la consulta' });
+                        }
+                    },
+                },
+                cancel: {
+                    label: 'Cancelar consulta',
+                    onClick: async () => {
+                        const result = await updateEncounterStatus(params.encounterId, 'cancelled', 'timeout_manual');
+                        if (result.error) {
+                            notify.error({ title: 'No se pudo cancelar', description: 'Intenta de nuevo en unos momentos' });
+                        } else {
+                            notify.success({ title: 'Consulta cancelada', description: 'La consulta se cerró automáticamente' });
+                        }
+                    },
+                },
+            });
+        },
+        []
+    );
+
     const checkTimeout = useCallback(async () => {
         if (!selectedEncounterForPreview) return;
         if (selectedEncounterForPreview.status !== 'in-progress') return;
@@ -19,40 +63,14 @@ export function useEncounterTimeout() {
         const { data, error } = await getEncounterTimeStatus(selectedEncounterForPreview.id);
         if (error || !data) return;
 
-        if (data.isExpired && !data.isNotified) {
-            const encounterId = selectedEncounterForPreview.id;
-            const elapsed = data.elapsedMinutes;
-            const maxDuration = data.maxDurationMinutes;
+        const encounterId = selectedEncounterForPreview.id;
 
-            toast.warning(
-                `⏱️ La consulta lleva ${elapsed} min (límite: ${maxDuration} min)`,
-                {
-                    duration: Infinity,
-                    id: `encounter-timeout-${encounterId}`,
-                    action: {
-                        label: 'Extender 15 min',
-                        onClick: async () => {
-                            const result = await extendEncounterTimeout(encounterId);
-                            if (result.error) {
-                                toast.error('Error al extender', { description: result.error });
-                            } else {
-                                toast.success('Tiempo extendido 15 minutos');
-                            }
-                        },
-                    },
-                    cancel: {
-                        label: 'Cancelar consulta',
-                        onClick: async () => {
-                            const result = await updateEncounterStatus(encounterId, 'cancelled', 'timeout_manual');
-                            if (result.error) {
-                                toast.error('Error al cancelar', { description: result.error });
-                            } else {
-                                toast.success('Consulta cancelada');
-                            }
-                        },
-                    },
-                }
-            );
+        if (data.isExpired && !data.isNotified) {
+            showTimeoutNotification('warning', {
+                encounterId,
+                elapsed: data.elapsedMinutes,
+                maxDuration: data.maxDurationMinutes,
+            });
         }
 
         if (data.shouldAutoCancel && data.gracePeriodRemainingMinutes !== null && data.gracePeriodRemainingMinutes <= 0) {
@@ -60,38 +78,12 @@ export function useEncounterTimeout() {
         }
 
         if (data.shouldAutoCancel && data.isNotified) {
-            const encounterId = selectedEncounterForPreview.id;
-            toast.warning(
-                `⏱️ La consulta será cancelada en ${data.gracePeriodRemainingMinutes} min`,
-                {
-                    duration: Infinity,
-                    id: `encounter-timeout-${encounterId}`,
-                    action: {
-                        label: 'Extender 15 min',
-                        onClick: async () => {
-                            const result = await extendEncounterTimeout(encounterId);
-                            if (result.error) {
-                                toast.error('Error al extender', { description: result.error });
-                            } else {
-                                toast.success('Tiempo extendido 15 minutos');
-                            }
-                        },
-                    },
-                    cancel: {
-                        label: 'Cancelar consulta',
-                        onClick: async () => {
-                            const result = await updateEncounterStatus(encounterId, 'cancelled', 'timeout_manual');
-                            if (result.error) {
-                                toast.error('Error al cancelar', { description: result.error });
-                            } else {
-                                toast.success('Consulta cancelada');
-                            }
-                        },
-                    },
-                }
-            );
+            showTimeoutNotification('grace', {
+                encounterId,
+                gracePeriodRemainingMinutes: data.gracePeriodRemainingMinutes,
+            });
         }
-    }, [selectedEncounterForPreview]);
+    }, [selectedEncounterForPreview, showTimeoutNotification]);
 
     useEffect(() => {
         if (!selectedEncounterForPreview || selectedEncounterForPreview.status !== 'in-progress') {
