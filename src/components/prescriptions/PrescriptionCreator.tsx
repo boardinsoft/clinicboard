@@ -117,12 +117,12 @@ export default function PrescriptionCreator({
 
     const handleSaveDraft = async () => {
         if (items.length === 0) {
-            toast.error('Agrega al menos un medicamento');
+            toast.error('Agrega al menos un medicamento a la receta');
             return;
         }
 
         if (!encounter.clinic_id) {
-            toast.error('Clínica no especificada');
+            toast.error('Selecciona una clínica para la receta');
             return;
         }
 
@@ -141,10 +141,7 @@ export default function PrescriptionCreator({
         setIsSaving(false);
 
         if (result.error) {
-            const errorMsg = typeof result.error === 'string'
-                ? result.error
-                : JSON.stringify(result.error);
-            toast.error('Error al guardar', { description: errorMsg });
+            toast.error('No se pudo guardar el borrador', { description: 'Intenta de nuevo en unos momentos' });
             return;
         }
 
@@ -154,12 +151,12 @@ export default function PrescriptionCreator({
 
     const handleSaveAndActivate = async () => {
         if (items.length === 0) {
-            toast.error('Agrega al menos un medicamento');
+            toast.error('Agrega al menos un medicamento a la receta');
             return;
         }
 
         if (!encounter.clinic_id) {
-            toast.error('Clínica no especificada');
+            toast.error('Selecciona una clínica para la receta');
             return;
         }
 
@@ -178,10 +175,7 @@ export default function PrescriptionCreator({
         setIsSaving(false);
 
         if (result.error) {
-            const errorMsg = typeof result.error === 'string'
-                ? result.error
-                : JSON.stringify(result.error);
-            toast.error('Error al guardar', { description: errorMsg });
+            toast.error('No se pudo crear la receta', { description: 'Intenta de nuevo en unos momentos' });
             return;
         }
 
