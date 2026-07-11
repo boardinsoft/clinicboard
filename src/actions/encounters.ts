@@ -578,17 +578,30 @@ export async function getEncounterById(encounterId: string): Promise<{ data: Enc
  * Retorna encuentros del practitioner autenticado con filtros opcionales.
  * Para la vista tabla /history/all.
  */
-export async function getEncountersFiltered(filters?: {
+export type EncounterFilters = {
     search?: string;
     status?: string;
     date_from?: string;
     date_to?: string;
     clinicId?: string;
-}): Promise<{ data: EncounterWithClinicalNote[] }> {
+    page?: number;
+    pageSize?: number;
+};
+
+export async function getEncountersFiltered(filters?: EncounterFilters): Promise<{
+    data: EncounterWithClinicalNote[];
+    count?: number;
+    statusCounts?: Record<string, number>;
+}> {
     const supabase = await createServerSupabaseClient();
     const practitionerId = await getCurrentPractitionerId(supabase);
 
     if (!practitionerId) return { data: [] };
+
+    const page = filters?.page ?? 1;
+    const pageSize = filters?.pageSize ?? 20;
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
 
     let query = supabase
         .from('encounters')
@@ -598,16 +611,16 @@ export async function getEncountersFiltered(filters?: {
             practitioner:practitioners(name_given, name_family, specialty),
             clinical_note:clinical_notes(reason_code, subjective, plan, is_finalized),
             appointment:appointments(id, start_time, appointment_type, status)
-        `)
+        `, { count: 'exact' })
         .eq('practitioner_id', practitionerId)
         .order('start_time', { ascending: false })
-        .limit(50);
+        .range(from, to);
 
     if (filters?.clinicId) {
         query = query.eq('clinic_id', filters.clinicId);
     }
 
-    if (filters?.status) {
+    if (filters?.status && filters.status !== 'all') {
         query = query.eq('status', filters.status as Database['public']['Enums']['encounter_status']);
     }
     if (filters?.date_from) {
@@ -616,32 +629,60 @@ export async function getEncountersFiltered(filters?: {
     if (filters?.date_to) {
         query = query.lte('start_time', filters.date_to);
     }
+    if (filters?.search) {
+        const searchTerm = `%${filters.search.trim()}%`;
+        query = query.or(
+            `patient.name_family.ilike.${searchTerm},patient.name_given.ilike.${searchTerm},clinical_note.reason_code.text.ilike.${searchTerm}`
+        );
+    }
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
 
     if (error) {
         console.error('Error fetching filtered encounters:', error);
         return { data: [] };
     }
 
-    // Filtrado por search en memoria (nombre de paciente + motivo)
-    let results = (data || []) as EncounterWithClinicalNote[];
-    if (filters?.search) {
-        const q = filters.search.toLowerCase();
-        results = results.filter(enc => {
-            const patient = (enc as unknown as { patient?: { name_given: string[]; name_family: string } }).patient;
-            const note = enc.clinical_note;
-            const patientName = patient
-                ? `${(patient.name_given || []).join(' ')} ${patient.name_family}`.toLowerCase()
-                : '';
-            const reason = Array.isArray(note?.reason_code)
-                ? (note.reason_code as { text?: string }[]).map(r => r.text || '').join(' ').toLowerCase()
-                : '';
-            return patientName.includes(q) || reason.includes(q);
-        });
+    const result: { data: EncounterWithClinicalNote[]; count?: number; statusCounts?: Record<string, number> } = {
+        data: (data || []) as EncounterWithClinicalNote[],
+        count: count ?? 0,
+    };
+
+    if (!filters?.status || filters.status === 'all') {
+        const statusValues = ['planned', 'arrived', 'triaged', 'in-progress', 'onleave', 'finished', 'cancelled'] as const;
+        const countsResult: Record<string, number> = { all: count ?? 0 };
+
+        const countResponses = await Promise.all(
+            statusValues.map(async (s) => {
+                let countQuery = supabase
+                    .from('encounters')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('practitioner_id', practitionerId)
+                    .eq('status', s);
+
+                if (filters?.clinicId) countQuery = countQuery.eq('clinic_id', filters.clinicId);
+                if (filters?.date_from) countQuery = countQuery.gte('start_time', filters.date_from);
+                if (filters?.date_to) countQuery = countQuery.lte('start_time', filters.date_to);
+                if (filters?.search) {
+                    const searchTerm = `%${filters.search.trim()}%`;
+                    countQuery = countQuery.or(
+                        `patient.name_family.ilike.${searchTerm},patient.name_given.ilike.${searchTerm},clinical_note.reason_code.text.ilike.${searchTerm}`
+                    );
+                }
+
+                const { count: statusCount } = await countQuery;
+                return { s, count: statusCount ?? 0 };
+            })
+        );
+
+        for (const { s, count: statusCount } of countResponses) {
+            countsResult[s] = statusCount;
+        }
+
+        result.statusCounts = countsResult;
     }
 
-    return { data: results };
+    return result;
 }
 
 /**

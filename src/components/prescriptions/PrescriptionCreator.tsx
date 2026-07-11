@@ -117,12 +117,12 @@ export default function PrescriptionCreator({
 
     const handleSaveDraft = async () => {
         if (items.length === 0) {
-            notify.error('Agrega al menos un medicamento a la receta');
+            notify.error({ title: 'Agrega al menos un medicamento a la receta' });
             return;
         }
 
         if (!encounter.clinic_id) {
-            notify.error('Selecciona una clínica para la receta');
+            notify.error({ title: 'Selecciona una clínica para la receta' });
             return;
         }
 
@@ -141,22 +141,22 @@ export default function PrescriptionCreator({
         setIsSaving(false);
 
         if (result.error) {
-            notify.error('No se pudo guardar el borrador', { description: 'Intenta de nuevo en unos momentos' });
+            notify.error({ title: 'No se pudo guardar el borrador', description: 'Intenta de nuevo en unos momentos' });
             return;
         }
 
-        notify.success('Receta guardada como borrador');
+        notify.success({ title: 'Receta guardada como borrador' });
         router.push(`/${clinicSlug}/prescriptions`);
     };
 
     const handleSaveAndActivate = async () => {
         if (items.length === 0) {
-            notify.error('Agrega al menos un medicamento a la receta');
+            notify.error({ title: 'Agrega al menos un medicamento a la receta' });
             return;
         }
 
         if (!encounter.clinic_id) {
-            notify.error('Selecciona una clínica para la receta');
+            notify.error({ title: 'Selecciona una clínica para la receta' });
             return;
         }
 
@@ -175,7 +175,7 @@ export default function PrescriptionCreator({
         setIsSaving(false);
 
         if (result.error) {
-            notify.error('No se pudo crear la receta', { description: 'Intenta de nuevo en unos momentos' });
+            notify.error({ title: 'No se pudo crear la receta', description: 'Intenta de nuevo en unos momentos' });
             return;
         }
 
@@ -187,7 +187,7 @@ export default function PrescriptionCreator({
             }
         }
 
-        notify.success('Receta creada y activada');
+        notify.success({ title: 'Receta creada y activada' });
         router.push(`/${clinicSlug}/prescriptions`);
     };
 

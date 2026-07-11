@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import { notify } from '@/lib/notify';
 import { extendEncounterTimeout, getEncounterTimeStatus } from '@/actions/encounters';
 import { updateEncounterStatus } from '@/actions/encounters';
@@ -26,7 +27,7 @@ export function useEncounterTimeout() {
 
             const toastId = `encounter-timeout-${params.encounterId}`;
 
-            notify.warning(title, {
+            toast.warning(title, {
                 duration: Infinity,
                 id: toastId,
                 action: {
@@ -45,7 +46,7 @@ export function useEncounterTimeout() {
                     onClick: async () => {
                         const result = await updateEncounterStatus(params.encounterId, 'cancelled', 'timeout_manual');
                         if (result.error) {
-                            notify.error({ title: 'No se pudo cancelar', description: 'Intenta de nuevo en unos momentos' });
+                            notify.error({ title: 'No se pudo cancelar', description: 'La consulta se cerró automáticamente' });
                         } else {
                             notify.success({ title: 'Consulta cancelada', description: 'La consulta se cerró automáticamente' });
                         }
@@ -80,7 +81,7 @@ export function useEncounterTimeout() {
         if (data.shouldAutoCancel && data.isNotified) {
             showTimeoutNotification('grace', {
                 encounterId,
-                gracePeriodRemainingMinutes: data.gracePeriodRemainingMinutes,
+                gracePeriodRemainingMinutes: data.gracePeriodRemainingMinutes ?? undefined,
             });
         }
     }, [selectedEncounterForPreview, showTimeoutNotification]);
