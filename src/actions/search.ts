@@ -232,9 +232,11 @@ export async function searchPatientIds(queryText: string): Promise<string[]> {
 
     let ids: string[] = (directMatches || []).map((p: { id: string }) => p.id);
 
-    // 2. Fuzzy fallback: pg_trgm similarity on full name (family + given)
+    // 2. Fuzzy + partial name parts fallback:
+    // search_patients_name_parts busca con ILIKE% en family/given
+    // Y similarity para errores tipográficos
     if (ids.length === 0) {
-        const { data: fuzzyMatches } = await (supabase as any).rpc('search_patients_fuzzy', {
+        const { data: fuzzyMatches } = await (supabase as any).rpc('search_patients_name_parts', {
             search_term: trimmed,
             p_id: practitionerId,
         });
