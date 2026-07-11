@@ -13,7 +13,7 @@ import {
     Eye,
     Printer,
     Ban,
-    ArrowRight,
+
     AlertTriangle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -81,25 +81,16 @@ export default function PrescriptionTable({ prescriptions, clinicSlug: clinicSlu
 
     if (prescriptions.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-32 gap-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col items-center justify-center py-32 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="w-16 h-16 rounded-full bg-n-2/80 flex items-center justify-center border border-dashed border-n-5">
                     <Pill className="w-6 h-6 text-n-7" />
                 </div>
                 <div className="text-center space-y-1.5">
-                    <h3 className="text-sm font-bold text-n-11">No hay recetas registradas</h3>
+                    <h3 className="text-sm font-bold text-n-11">Sin recetas aún</h3>
                     <p className="text-[12px] text-n-8 max-w-[280px] mx-auto">
                         Las recetas médicas se crean desde un encuentro clínico activo.
                     </p>
                 </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-[11px] border-n-5 text-n-11 hover:bg-n-3 gap-1.5"
-                    onClick={() => router.push(`/${clinicSlug}/history`)}
-                >
-                    Ver encuentros en curso
-                    <ArrowRight className="w-3.5 h-3.5" />
-                </Button>
             </div>
         );
     }

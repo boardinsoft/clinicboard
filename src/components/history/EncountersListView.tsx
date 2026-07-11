@@ -1,18 +1,18 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname, useParams } from 'next/navigation';
 import {
     ChevronLeft,
     ChevronRight,
     Search,
     X,
     RefreshCw,
-    FileText,
-    CheckCircle,
-    Clock,
-    Ban,
     Loader2,
+    Calendar,
+    Clock,
+    User2,
+    Stethoscope,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/PageLayout';
@@ -32,71 +32,56 @@ import {
     FilterClearAll,
 } from '@/components/ui/FiltersDropdown';
 import { notify } from '@/lib/notify';
-import { getPrescriptionsForTable } from '@/actions/prescriptions';
-import type { PrescriptionForPreview } from '@/types/database.types';
-import type { MedicationRequestStatus } from '@/lib/fhir/types';
-import PrescriptionTable from '@/components/ui/PrescriptionTable';
+import { getEncountersFiltered } from '@/actions/encounters';
+import type { EncounterForPreview } from '@/types/database.types';
+import type { EncounterFilters } from '@/actions/encounters';
+import HistoryTable from '@/components/ui/HistoryTable';
+import NewWalkInEncounterDialog from '@/components/history/NewWalkInEncounterDialog';
 
-const STATUS_OPTIONS: { value: MedicationRequestStatus | 'all'; label: string }[] = [
+const STATUS_TABS: { value: string; label: string }[] = [
     { value: 'all', label: 'Todas' },
-    { value: 'active', label: 'Activas' },
-    { value: 'draft', label: 'Borradores' },
-    { value: 'on-hold', label: 'Pausadas' },
-    { value: 'completed', label: 'Completadas' },
+    { value: 'in-progress', label: 'En curso' },
+    { value: 'finished', label: 'Finalizadas' },
+    { value: 'planned', label: 'Planificadas' },
     { value: 'cancelled', label: 'Canceladas' },
 ];
 const PAGE_SIZE = 20;
 
-function getClinicSlug(pathname: string): string {
-    const parts = pathname.split('/').filter(Boolean);
-    return parts[0] || '';
-}
-
-function isExpiringSoon(validUntil: string | null): boolean {
-    if (!validUntil) return false;
-    const threeDays = 3 * 24 * 60 * 60 * 1000;
-    const expiry = new Date(validUntil).getTime();
-    return expiry >= Date.now() && expiry - Date.now() <= threeDays;
-}
-
-function isExpired(validUntil: string | null): boolean {
-    if (!validUntil) return false;
-    return new Date(validUntil) < new Date();
-}
-
-export default function PrescriptionsListView() {
+export default function EncountersListView() {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const clinicSlug = getClinicSlug(pathname);
 
-    const [prescriptions, setPrescriptions] = useState<PrescriptionForPreview[]>([]);
+    const [encounters, setEncounters] = useState<EncounterForPreview[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isFetching, setIsFetching] = useState(false);
     const [total, setTotal] = useState(0);
-    const [statusCounts, setStatusCounts] = useState<Record<MedicationRequestStatus | 'all', number>>({
+    const [statusCounts, setStatusCounts] = useState<Record<string, number>>({
         all: 0,
-        active: 0,
-        draft: 0,
-        'on-hold': 0,
-        completed: 0,
+        'in-progress': 0,
+        finished: 0,
+        planned: 0,
         cancelled: 0,
-        stopped: 0,
-        unknown: 0,
     });
 
     const [query, setQuery] = useState('');
     const [debouncedQuery, setDebouncedQuery] = useState('');
-    const [activeTab, setActiveTab] = useState<MedicationRequestStatus | 'all'>(
-        (searchParams.get('status') as MedicationRequestStatus | 'all') || 'all'
-    );
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
+    const [activeTab, setActiveTab] = useState(
+        searchParams.get('status') || 'all'
+    );
+    const [currentPage, setCurrentPage] = useState(
+        parseInt(searchParams.get('page') || '1')
+    );
 
     const requestIdRef = useRef(0);
     const fetchIdRef = useRef(0);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    const params = useParams();
+    const slug = (params.clinicSlug as string) || '';
+    const [isWalkInDialogOpen, setIsWalkInDialogOpen] = useState(false);
 
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -105,9 +90,9 @@ export default function PrescriptionsListView() {
         return () => clearTimeout(t);
     }, [query]);
 
-    const fetchPrescriptions = useCallback(async (
+    const fetchEncounters = useCallback(async (
         search: string,
-        status: MedicationRequestStatus | 'all',
+        status: string,
         page: number,
         from?: string,
         to?: string,
@@ -119,14 +104,16 @@ export default function PrescriptionsListView() {
         if (loadingKey === 'initial') setIsLoading(true);
         setIsFetching(true);
 
-        const result = await getPrescriptionsForTable(undefined, {
+        const filters: EncounterFilters = {
             search: search || undefined,
-            status: status === 'all' ? 'all' : status,
+            status: status === 'all' ? undefined : status,
             page,
             pageSize: PAGE_SIZE,
-            dateFrom: from || undefined,
-            dateTo: to || undefined,
-        });
+            date_from: from || undefined,
+            date_to: to || undefined,
+        };
+
+        const result = await getEncountersFiltered(filters);
 
         if (myId !== requestIdRef.current) return;
         if (fetchId !== fetchIdRef.current) return;
@@ -135,15 +122,15 @@ export default function PrescriptionsListView() {
         setIsFetching(false);
 
         if ('error' in result) {
-            notify.error({ title: 'No se pudieron cargar las recetas', description: 'Revisa tu conexión e intenta de nuevo' });
+            notify.error({ title: 'No se pudieron cargar las consultas', description: 'Revisa tu conexión e intenta de nuevo' });
             return;
         }
 
-        setPrescriptions((result.data || []) as PrescriptionForPreview[]);
+        setEncounters((result.data || []) as EncounterForPreview[]);
         setTotal(result.count ?? 0);
 
-        if (status === 'all' && 'statusCounts' in result && result.statusCounts) {
-            setStatusCounts(result.statusCounts as Record<MedicationRequestStatus | 'all', number>);
+        if (status === 'all' && result.statusCounts) {
+            setStatusCounts(result.statusCounts as Record<string, number>);
         } else if (status !== 'all') {
             setStatusCounts(prev => ({ ...prev, [status]: result.count ?? 0 }));
         }
@@ -151,31 +138,27 @@ export default function PrescriptionsListView() {
 
     useEffect(() => {
         const q = searchParams.get('q') || '';
-        const status = (searchParams.get('status') as MedicationRequestStatus | 'all') || 'all';
+        const status = searchParams.get('status') || 'all';
         const page = parseInt(searchParams.get('page') || '1');
-        const from = searchParams.get('date_from') || '';
-        const to = searchParams.get('date_to') || '';
         setQuery(q);
         setDebouncedQuery(q);
         setActiveTab(status);
         setCurrentPage(page);
-        setDateFrom(from);
-        setDateTo(to);
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchPrescriptions(q, status, page, from || undefined, to || undefined, 'initial');
+        fetchEncounters(q, status, page, undefined, undefined, 'initial');
         if (status !== 'all') {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchPrescriptions(q, 'all', 1, from || undefined, to || undefined, 'initial');
+            fetchEncounters(q, 'all', 1, undefined, undefined, 'initial');
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (!isLoading) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchPrescriptions(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh');
+            fetchEncounters(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh');
             if (activeTab !== 'all') {
                 // eslint-disable-next-line react-hooks/set-state-in-effect
-                fetchPrescriptions(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh');
+                fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh');
             }
         }
     }, [debouncedQuery, activeTab, currentPage, dateFrom, dateTo]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -191,7 +174,7 @@ export default function PrescriptionsListView() {
     };
 
     const handleStatusFilterChange = (status: string) => {
-        setActiveTab(status as MedicationRequestStatus | 'all');
+        setActiveTab(status);
         setCurrentPage(1);
         const params = new URLSearchParams(searchParams.toString());
         if (status !== 'all') params.set('status', status);
@@ -261,12 +244,8 @@ export default function PrescriptionsListView() {
     };
 
     const handleRefresh = () => {
-        fetchPrescriptions(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh');
+        fetchEncounters(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh');
     };
-
-    const expiredCount = prescriptions.filter(r => isExpired(r.valid_until)).length;
-    const expiringSoonCount = prescriptions.filter(r => isExpiringSoon(r.valid_until)).length;
-    const filteredTotal = prescriptions.length;
 
     const activeFilterCount =
         (activeTab !== 'all' ? 1 : 0) +
@@ -275,45 +254,14 @@ export default function PrescriptionsListView() {
 
     const hasFilters = query !== '' || dateFrom !== '' || dateTo !== '' || activeTab !== 'all';
 
-    const isPending = isLoading || (isFetching && prescriptions.length === 0);
+    const isPending = isLoading || (isFetching && encounters.length === 0);
 
     return (
         <div className="flex flex-col h-full bg-background">
             <PageHeader
-                title="Recetas"
-                description="Historial completo de recetas médicas registradas en el sistema."
+                title="Todas las consultas"
+                description="Historial completo de encuentros clínicos registrados en el sistema."
             />
-
-            {prescriptions.length > 0 && (
-                <div className="flex items-center gap-2 px-6 py-2.5 border-b border-border/40 bg-background shrink-0">
-                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-n-2 border border-n-4 text-[11px]">
-                        <FileText className="w-3.5 h-3.5 text-n-8" />
-                        <span className="text-n-8 font-medium">Total</span>
-                        <span className="font-bold text-n-12 tabular-nums">{total}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-s-success-bg border border-s-success-br text-[11px]">
-                        <CheckCircle className="w-3.5 h-3.5 text-s-success" />
-                        <span className="text-s-success font-medium">Activas</span>
-                        <span className="font-bold text-s-success tabular-nums">
-                            {prescriptions.filter(r => r.status === 'active').length}
-                        </span>
-                    </div>
-                    {expiredCount > 0 && (
-                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-s-danger-bg border border-s-danger-br text-[11px]">
-                            <Ban className="w-3.5 h-3.5 text-s-danger" />
-                            <span className="text-s-danger font-medium">Vencidas</span>
-                            <span className="font-bold text-s-danger tabular-nums">{expiredCount}</span>
-                        </div>
-                    )}
-                    {expiringSoonCount > 0 && (
-                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-s-warning-bg border border-s-warning-br text-[11px]">
-                            <Clock className="w-3.5 h-3.5 text-s-warning" />
-                            <span className="text-s-warning font-medium">Por vencer</span>
-                            <span className="font-bold text-s-warning tabular-nums">{expiringSoonCount}</span>
-                        </div>
-                    )}
-                </div>
-            )}
 
             <div className="flex items-center gap-2 px-6 py-2.5 border-b border-border/40 bg-muted/30 shrink-0">
                 <FiltersDropdown activeCount={activeFilterCount}>
@@ -322,7 +270,7 @@ export default function PrescriptionsListView() {
                             value={activeTab}
                             onValueChange={handleStatusFilterChange}
                         >
-                            {STATUS_OPTIONS.map(opt => (
+                            {STATUS_TABS.map(opt => (
                                 <DropdownMenuRadioItem
                                     key={opt.value}
                                     value={opt.value}
@@ -348,8 +296,8 @@ export default function PrescriptionsListView() {
                             onDateFromChange={handleDateFromChange}
                             onDateToChange={handleDateToChange}
                             onClear={handleClearDates}
-                            fromLabel="Desde (receta)"
-                            toLabel="Hasta (receta)"
+                            fromLabel="Desde"
+                            toLabel="Hasta"
                         />
                     </FilterSection>
 
@@ -372,11 +320,11 @@ export default function PrescriptionsListView() {
                     <input
                         ref={inputRef}
                         type="text"
-                        placeholder="Buscar…"
+                        placeholder="Buscar paciente o motivo…"
                         value={query}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="flex-1 bg-transparent text-[13px] text-n-11 placeholder:text-n-8 outline-none min-w-0 h-8"
-                        aria-label="Buscar recetas"
+                        aria-label="Buscar consultas"
                     />
                     {query ? (
                         <button
@@ -401,18 +349,27 @@ export default function PrescriptionsListView() {
                 >
                     <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
                 </Button>
+
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 px-2 gap-1 text-b-8 hover:bg-b-1 shrink-0"
+                    onClick={() => setIsWalkInDialogOpen(true)}
+                >
+                    <Stethoscope className="w-3.5 h-3.5" />
+                    <span className="text-xs font-medium">+ Consulta</span>
+                </Button>
             </div>
 
             <div className="flex-1 overflow-hidden flex flex-col relative">
                 {isPending ? (
                     <TableSkeleton />
                 ) : (
-                    <PrescriptionTable
-                        prescriptions={prescriptions}
-                        clinicSlug={clinicSlug}
+                    <HistoryTable
+                        encounters={encounters}
                     />
                 )}
-                {isFetching && prescriptions.length > 0 && (
+                {isFetching && encounters.length > 0 && (
                     <div className="absolute top-0 left-0 right-0 h-0.5 bg-b-8/20 overflow-hidden">
                         <div className="h-full bg-b-8 animate-pulse w-full" />
                     </div>
@@ -423,12 +380,20 @@ export default function PrescriptionsListView() {
                 <div className="flex items-center gap-4">
                     {activeTab !== 'all' && (
                         <span className="text-[11px] text-muted-foreground font-medium">
-                            {filteredTotal === 0 ? 'Sin resultados' : `${filteredTotal} ${filteredTotal === 1 ? 'receta' : 'recetas'}`}
+                            {encounters.length === 0 ? 'Sin resultados' : `${encounters.length} ${encounters.length === 1 ? 'consulta' : 'consultas'}`}
                         </span>
                     )}
                     {hasFilters && activeTab === 'all' && (
                         <button
-                            onClick={handleClearAllFilters}
+                            onClick={() => {
+                                setQuery('');
+                                setDebouncedQuery('');
+                                setDateFrom('');
+                                setDateTo('');
+                                setActiveTab('all');
+                                setCurrentPage(1);
+                                router.replace(pathname);
+                            }}
                             className="text-[11px] text-b-8 hover:text-b-9 font-medium transition-colors"
                         >
                             Limpiar filtros
@@ -461,6 +426,12 @@ export default function PrescriptionsListView() {
                     </div>
                 </div>
             </div>
+
+            <NewWalkInEncounterDialog
+                open={isWalkInDialogOpen}
+                onOpenChange={setIsWalkInDialogOpen}
+                onSuccess={(encounterId) => router.push(`/${slug}/history?encounterId=${encounterId}`)}
+            />
         </div>
     );
 }
@@ -471,55 +442,44 @@ function TableSkeleton() {
             <table className="table-clinic">
                 <thead className="sticky top-0 z-30">
                     <tr>
-                        <th className="w-36 text-left pl-4">
-                            <span className="text-[11px] uppercase tracking-wider font-medium text-n-8">N° Receta</span>
-                        </th>
                         <th>
                             <span className="text-[11px] uppercase tracking-wider font-medium text-n-8 flex items-center gap-1.5">
-                                <span className="w-3 h-3" /> Fecha
+                                <Calendar className="w-3 h-3" /> Fecha
                             </span>
                         </th>
                         <th>
                             <span className="text-[11px] uppercase tracking-wider font-medium text-n-8 flex items-center gap-1.5">
-                                <span className="w-3 h-3" /> Paciente
+                                <User2 className="w-3 h-3" /> Paciente
                             </span>
                         </th>
                         <th className="hidden md:table-cell">
                             <span className="text-[11px] uppercase tracking-wider font-medium text-n-8 flex items-center gap-1.5">
-                                <span className="w-3 h-3" /> Medicamento
+                                <Stethoscope className="w-3 h-3" /> Tipo
                             </span>
                         </th>
                         <th><span className="text-[11px] uppercase tracking-wider font-medium text-n-8">Estado</span></th>
-                        <th className="hidden lg:table-cell">
-                            <span className="text-[11px] uppercase tracking-wider font-medium text-n-8 flex items-center gap-1.5">
-                                <span className="w-3 h-3" /> Dosis
-                            </span>
-                        </th>
+                        <th className="hidden md:table-cell"><span className="text-[11px] uppercase tracking-wider font-medium text-n-8">Origen</span></th>
+                        <th className="hidden lg:table-cell"><span className="text-[11px] uppercase tracking-wider font-medium text-n-8">Motivo</span></th>
                         <th className="hidden lg:table-cell text-right">
                             <span className="text-[11px] uppercase tracking-wider font-medium text-n-8 flex items-center justify-end gap-1.5">
-                                <span className="w-3 h-3" /> Prescriptor
+                                <Clock className="w-3 h-3" /> Duración
                             </span>
                         </th>
-                        <th className="w-10" />
                     </tr>
                 </thead>
                 <tbody>
                     {Array.from({ length: 10 }).map((_, i) => (
                         <tr key={i} className="border-b border-border/30 last:border-0">
-                            <td className="pl-4"><Skeleton className="h-3 w-24 rounded" /></td>
-                            <td><Skeleton className="h-3 w-14 rounded" /></td>
+                            <td><Skeleton className="h-3 w-20 rounded" /></td>
                             <td>
                                 <Skeleton className="h-3 w-28 rounded mb-1" />
-                                <Skeleton className="h-2 w-16 rounded" />
+                                <Skeleton className="h-2 w-12 rounded" />
                             </td>
-                            <td className="hidden md:table-cell">
-                                <Skeleton className="h-3 w-36 rounded mb-1" />
-                                <Skeleton className="h-2 w-20 rounded" />
-                            </td>
-                            <td><Skeleton className="h-5 w-16 rounded-full" /></td>
-                            <td className="hidden lg:table-cell"><Skeleton className="h-3 w-32 rounded" /></td>
-                            <td className="hidden lg:table-cell text-right"><Skeleton className="h-3 w-20 rounded ml-auto" /></td>
-                            <td><Skeleton className="h-6 w-6 rounded" /></td>
+                            <td className="hidden md:table-cell"><Skeleton className="h-4 w-16 rounded" /></td>
+                            <td><Skeleton className="h-5 w-20 rounded-full" /></td>
+                            <td className="hidden md:table-cell"><Skeleton className="h-3 w-14 rounded" /></td>
+                            <td className="hidden lg:table-cell"><Skeleton className="h-3 w-36 rounded" /></td>
+                            <td className="hidden lg:table-cell text-right"><Skeleton className="h-3 w-12 rounded ml-auto" /></td>
                         </tr>
                     ))}
                 </tbody>

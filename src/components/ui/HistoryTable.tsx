@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Calendar, Clock, User2, Stethoscope, Search, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { formatDate, formatTime } from '@/lib/date-utils';
 import { formatDuration } from '@/lib/date-utils';
 import { calcAge } from '@/lib/clinical';
@@ -14,11 +13,9 @@ import {
     CLASS_LABELS,
 } from '@/lib/table-status';
 import type { EncounterForPreview } from '@/types/database.types';
-import NewWalkInEncounterDialog from '@/components/history/NewWalkInEncounterDialog';
 
 interface HistoryTableProps {
     encounters: EncounterForPreview[];
-    toolbar?: React.ReactNode;
     className?: string;
 }
 
@@ -30,60 +27,29 @@ function calcDuration(start: string, end: string | null): string {
     return formatDuration(mins);
 }
 
-export default function HistoryTable({ encounters, toolbar, className }: HistoryTableProps) {
+export default function HistoryTable({ encounters, className }: HistoryTableProps) {
     const router = useRouter();
     const params = useParams();
     const slug = (params.clinicSlug as string) || '';
-    const [isWalkInDialogOpen, setIsWalkInDialogOpen] = useState(false);
 
     if (encounters.length === 0) {
         return (
-            <>
-                <div className="flex flex-col items-center justify-center py-32 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center border border-dashed border-border">
-                        <Search className="w-6 h-6 text-muted-foreground/30" />
-                    </div>
-                    <div className="text-center space-y-1">
-                        <h3 className="text-sm font-bold text-foreground">No hay consultas registradas</h3>
-                        <p className="text-[12px] text-n-8 max-w-[280px] mx-auto">
-                            Aún no se han registrado encuentros clínicos para este periodo.
-                        </p>
-                    </div>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-2 h-8"
-                        onClick={() => setIsWalkInDialogOpen(true)}
-                    >
-                        <Stethoscope className="w-3.5 h-3.5 mr-2" />
-                        Nueva Consulta sin Cita
-                    </Button>
+            <div className="flex flex-col items-center justify-center py-32 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center border border-dashed border-border">
+                    <Search className="w-6 h-6 text-muted-foreground/30" />
                 </div>
-                <NewWalkInEncounterDialog
-                    open={isWalkInDialogOpen}
-                    onOpenChange={setIsWalkInDialogOpen}
-                    onSuccess={(encounterId) => router.push(`/${slug}/history?encounterId=${encounterId}`)}
-                />
-            </>
+                <div className="text-center space-y-1">
+                    <h3 className="text-sm font-bold text-foreground">Sin consultas aún</h3>
+                    <p className="text-[12px] text-n-8 max-w-[280px] mx-auto">
+                        Aún no se han registrado encuentros clínicos para este periodo.
+                    </p>
+                </div>
+            </div>
         );
     }
 
     return (
         <div className={`flex-1 flex flex-col min-h-0 bg-background overflow-hidden ${className ?? ''}`}>
-            {(toolbar || true) && (
-                <div className="shrink-0 flex items-center justify-between px-4 py-2 border-b border-border/40 bg-background">
-                    <div className="flex-1">{toolbar}</div>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2 gap-1 text-b-8 hover:bg-b-1"
-                        onClick={() => setIsWalkInDialogOpen(true)}
-                    >
-                        <Stethoscope className="w-3.5 h-3.5" />
-                        <span className="text-xs font-medium">+ Consulta</span>
-                    </Button>
-                </div>
-            )}
             <div className="overflow-x-auto min-h-0 flex-1 no-scrollbar">
                 <table className="table-clinic">
                     <thead className="sticky top-0 z-30 shadow-xs">
@@ -205,11 +171,6 @@ export default function HistoryTable({ encounters, toolbar, className }: History
                     </tbody>
                 </table>
             </div>
-            <NewWalkInEncounterDialog
-                open={isWalkInDialogOpen}
-                onOpenChange={setIsWalkInDialogOpen}
-                onSuccess={(encounterId) => router.push(`/${slug}/history?encounterId=${encounterId}`)}
-            />
         </div>
     );
 }
