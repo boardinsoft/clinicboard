@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { prescriptionSchema, createPrescriptionFormSchema } from '@/lib/schemas/prescription.schema';
 import { MedicationRequestStatus } from '@/lib/fhir/types';
 import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
+import { searchPatientIds } from '@/actions/search';
 import type { MedicationItemInput } from '@/lib/schemas/prescription.schema';
 
 const VALID_TRANSITIONS: Record<MedicationRequestStatus, MedicationRequestStatus[]> = {
@@ -488,6 +489,10 @@ export async function getPrescriptionsForTable(clinicId?: string, filters?: Pres
         return { error: 'No autorizado' };
     }
 
+    const patientIds = filters?.search
+        ? await searchPatientIds(filters.search)
+        : null;
+
     const page = filters?.page ?? 1;
     const pageSize = filters?.pageSize ?? 50;
     const from = (page - 1) * pageSize;
@@ -534,6 +539,11 @@ export async function getPrescriptionsForTable(clinicId?: string, filters?: Pres
         query = query.or(
             `medication_display.ilike.${searchTerm},medication_code.ilike.${searchTerm}`
         );
+        if (patientIds && patientIds.length > 0) {
+            query = query.in('patient_id', patientIds);
+        } else {
+            query = query.eq('id', '00000000-0000-0000-0000-000000000000');
+        }
     }
 
     const { data, error, count } = await query;
@@ -567,6 +577,11 @@ export async function getPrescriptionsForTable(clinicId?: string, filters?: Pres
                 countQuery = countQuery.or(
                     `medication_display.ilike.${searchTerm},medication_code.ilike.${searchTerm}`
                 );
+                if (patientIds && patientIds.length > 0) {
+                    countQuery = countQuery.in('patient_id', patientIds);
+                } else {
+                    countQuery = countQuery.eq('id', '00000000-0000-0000-0000-000000000000');
+                }
             }
 
             const { count: statusCount } = await countQuery;

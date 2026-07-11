@@ -243,6 +243,17 @@ export default function EncountersListView() {
         router.replace(pathname);
     };
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                inputRef.current?.focus();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     const handleRefresh = () => {
         fetchEncounters(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh');
     };
@@ -320,7 +331,7 @@ export default function EncountersListView() {
                     <input
                         ref={inputRef}
                         type="text"
-                        placeholder="Buscar paciente o motivo…"
+                        placeholder="Buscar paciente, motivo o nota…"
                         value={query}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="flex-1 bg-transparent text-[13px] text-n-11 placeholder:text-n-8 outline-none min-w-0 h-8"

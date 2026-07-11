@@ -260,6 +260,17 @@ export default function PrescriptionsListView() {
         router.replace(pathname);
     };
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                inputRef.current?.focus();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     const handleRefresh = () => {
         fetchPrescriptions(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh');
     };
@@ -372,7 +383,7 @@ export default function PrescriptionsListView() {
                     <input
                         ref={inputRef}
                         type="text"
-                        placeholder="Buscar…"
+                        placeholder="Buscar paciente o medicamento…"
                         value={query}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="flex-1 bg-transparent text-[13px] text-n-11 placeholder:text-n-8 outline-none min-w-0 h-8"

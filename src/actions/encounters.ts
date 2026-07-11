@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { encounterSchema } from '@/lib/schemas/encounter.schema';
 import { EncounterStatus, VitalSigns } from '@/lib/fhir/types';
 import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
+import { searchPatientIds, searchClinicalNoteEncounterIds } from '@/actions/search';
 import type { Json, EncounterWithClinicalNote, Database } from '@/types/database.types';
 
 const ENCOUNTER_STATUS_LABELS: Record<EncounterStatus, string> = {
@@ -598,6 +599,36 @@ export async function getEncountersFiltered(filters?: EncounterFilters): Promise
 
     if (!practitionerId) return { data: [] };
 
+    let searchEncounterIds: string[] | null = null;
+    if (filters?.search) {
+        const [patientIds, noteEncounterIds] = await Promise.all([
+            searchPatientIds(filters.search),
+            searchClinicalNoteEncounterIds(filters.search),
+        ]);
+
+        if ((!patientIds || patientIds.length === 0) && (!noteEncounterIds || noteEncounterIds.length === 0)) {
+            // No matches at all → force empty result
+            searchEncounterIds = ['00000000-0000-0000-0000-000000000000'];
+        } else {
+            // Combine: encounters that match the patient OR the clinical note
+            // - If patientIds has results, get all encounter IDs for those patients
+            // - Add noteEncounterIds
+            // - Dedupe
+            const combinedIds = new Set<string>(noteEncounterIds || []);
+
+            if (patientIds && patientIds.length > 0) {
+                const { data: patientEncounters } = await supabase
+                    .from('encounters')
+                    .select('id')
+                    .eq('practitioner_id', practitionerId)
+                    .in('patient_id', patientIds);
+                (patientEncounters || []).forEach((e: { id: string }) => combinedIds.add(e.id));
+            }
+
+            searchEncounterIds = Array.from(combinedIds);
+        }
+    }
+
     const page = filters?.page ?? 1;
     const pageSize = filters?.pageSize ?? 20;
     const from = (page - 1) * pageSize;
@@ -629,11 +660,13 @@ export async function getEncountersFiltered(filters?: EncounterFilters): Promise
     if (filters?.date_to) {
         query = query.lte('start_time', filters.date_to);
     }
-    if (filters?.search) {
-        const searchTerm = `%${filters.search.trim()}%`;
-        query = query.or(
-            `patient.name_family.ilike.${searchTerm},patient.name_given.ilike.${searchTerm},clinical_note.reason_code.text.ilike.${searchTerm}`
-        );
+    if (searchEncounterIds) {
+        if (searchEncounterIds.length === 1 && searchEncounterIds[0] === '00000000-0000-0000-0000-000000000000') {
+            // Force empty result
+            query = query.eq('id', '00000000-0000-0000-0000-000000000000');
+        } else {
+            query = query.in('id', searchEncounterIds);
+        }
     }
 
     const { data, error, count } = await query;
@@ -663,11 +696,12 @@ export async function getEncountersFiltered(filters?: EncounterFilters): Promise
                 if (filters?.clinicId) countQuery = countQuery.eq('clinic_id', filters.clinicId);
                 if (filters?.date_from) countQuery = countQuery.gte('start_time', filters.date_from);
                 if (filters?.date_to) countQuery = countQuery.lte('start_time', filters.date_to);
-                if (filters?.search) {
-                    const searchTerm = `%${filters.search.trim()}%`;
-                    countQuery = countQuery.or(
-                        `patient.name_family.ilike.${searchTerm},patient.name_given.ilike.${searchTerm},clinical_note.reason_code.text.ilike.${searchTerm}`
-                    );
+                if (searchEncounterIds) {
+                    if (searchEncounterIds.length === 1 && searchEncounterIds[0] === '00000000-0000-0000-0000-000000000000') {
+                        countQuery = countQuery.eq('id', '00000000-0000-0000-0000-000000000000');
+                    } else {
+                        countQuery = countQuery.in('id', searchEncounterIds);
+                    }
                 }
 
                 const { count: statusCount } = await countQuery;

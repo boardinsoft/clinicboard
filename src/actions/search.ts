@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getCurrentPractitionerId } from '@/lib/supabase/auth-utils';
 
 export interface SearchResult {
     id: string;
@@ -196,4 +197,84 @@ export async function searchGlobal(queryText: string, clinicSlug: string, contex
         }));
 
     return groupedResults;
+}
+
+/**
+ * searchPatientIds(queryText)
+ * Devuelve IDs de pacientes que coinciden con el término de búsqueda.
+ * Usa la misma lógica de `searchGlobal` (ilike en name_family + cs en name_given + ilike en telecom/national_id)
+ * con fallback a `search_patients_fuzzy` (pg_trgm similarity) si no hay coincidencias directas.
+ *
+ * Usado por las tablas de /history/all y /prescriptions para filtrar por paciente
+ * sin tener que depender de la sintaxis .or() con columnas join (que no soporta `cs`).
+ */
+export async function searchPatientIds(queryText: string): Promise<string[]> {
+    if (!queryText || queryText.trim().length < 2) return [];
+
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) return [];
+
+    const trimmed = queryText.trim();
+
+    // 1. Direct match: same logic as searchGlobal (patients table, not a join)
+    const { data: directMatches, error: directError } = await supabase
+        .from('patients')
+        .select('id')
+        .or(`name_family.ilike.%${trimmed}%,name_given.cs.{${trimmed}},telecom->>value.ilike.%${trimmed}%,national_id.ilike.%${trimmed}%`)
+        .eq('practitioner_id', practitionerId)
+        .limit(50);
+
+    if (directError) {
+        console.error('[searchPatientIds] direct match error:', directError);
+    }
+
+    let ids: string[] = (directMatches || []).map((p: { id: string }) => p.id);
+
+    // 2. Fuzzy fallback: pg_trgm similarity on full name (family + given)
+    if (ids.length === 0) {
+        const { data: fuzzyMatches } = await (supabase as any).rpc('search_patients_fuzzy', {
+            search_term: trimmed,
+            p_id: practitionerId,
+        });
+        if (fuzzyMatches && Array.isArray(fuzzyMatches)) {
+            ids = (fuzzyMatches as Array<{ id: string }>).map((p) => p.id);
+        }
+    }
+
+    return ids;
+}
+
+/**
+ * searchClinicalNoteEncounterIds(queryText)
+ * Devuelve IDs de encounters cuya nota clínica coincide con el término de búsqueda.
+ * Usa la RPC `search_clinical_notes_fuzzy` (pg_trgm similarity) que busca en
+ * `subjective`, `plan` y `evolution_note` de clinical_notes.
+ *
+ * Usado por /history/all para que la búsqueda incluya contenido de las notas
+ * SOAP (no solo nombre del paciente).
+ */
+export async function searchClinicalNoteEncounterIds(queryText: string): Promise<string[]> {
+    if (!queryText || queryText.trim().length < 2) return [];
+
+    const supabase = await createServerSupabaseClient();
+    const practitionerId = await getCurrentPractitionerId(supabase);
+
+    if (!practitionerId) return [];
+
+    const trimmed = queryText.trim();
+
+    const { data: matches, error } = await (supabase as any).rpc('search_clinical_notes_fuzzy', {
+        search_term: trimmed,
+        p_practitioner_id: practitionerId,
+    });
+
+    if (error) {
+        console.error('[searchClinicalNoteEncounterIds] RPC error:', error);
+        return [];
+    }
+
+    if (!matches || !Array.isArray(matches)) return [];
+    return (matches as Array<{ encounter_id: string }>).map((m) => m.encounter_id);
 }
