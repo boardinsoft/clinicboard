@@ -101,7 +101,11 @@ export default function PrescriptionsListView() {
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
     useEffect(() => {
-        const t = setTimeout(() => setDebouncedQuery(query), 250);
+        if (query === '') {
+            setDebouncedQuery('');
+            return;
+        }
+        const t = setTimeout(() => setDebouncedQuery(query), 150);
         return () => clearTimeout(t);
     }, [query]);
 
@@ -128,8 +132,14 @@ export default function PrescriptionsListView() {
             dateTo: to || undefined,
         });
 
-        if (myId !== requestIdRef.current) return;
-        if (fetchId !== fetchIdRef.current) return;
+        if (myId !== requestIdRef.current) {
+            setIsFetching(false);
+            return;
+        }
+        if (fetchId !== fetchIdRef.current) {
+            setIsFetching(false);
+            return;
+        }
 
         if (loadingKey === 'initial') setIsLoading(false);
         setIsFetching(false);
@@ -217,6 +227,10 @@ export default function PrescriptionsListView() {
         params.set('page', '1');
         router.replace(`${pathname}?${params.toString()}`);
         inputRef.current?.focus();
+        fetchPrescriptions('', activeTab, 1, dateFrom || undefined, dateTo || undefined, 'refresh');
+        if (activeTab !== 'all') {
+            fetchPrescriptions('', 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh');
+        }
     };
 
     const handleDateFromChange = (value: string) => {

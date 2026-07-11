@@ -86,7 +86,11 @@ export default function EncountersListView() {
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
     useEffect(() => {
-        const t = setTimeout(() => setDebouncedQuery(query), 250);
+        if (query === '') {
+            setDebouncedQuery('');
+            return;
+        }
+        const t = setTimeout(() => setDebouncedQuery(query), 150);
         return () => clearTimeout(t);
     }, [query]);
 
@@ -115,8 +119,14 @@ export default function EncountersListView() {
 
         const result = await getEncountersFiltered(filters);
 
-        if (myId !== requestIdRef.current) return;
-        if (fetchId !== fetchIdRef.current) return;
+        if (myId !== requestIdRef.current) {
+            setIsFetching(false);
+            return;
+        }
+        if (fetchId !== fetchIdRef.current) {
+            setIsFetching(false);
+            return;
+        }
 
         if (loadingKey === 'initial') setIsLoading(false);
         setIsFetching(false);
@@ -200,6 +210,10 @@ export default function EncountersListView() {
         params.set('page', '1');
         router.replace(`${pathname}?${params.toString()}`);
         inputRef.current?.focus();
+        fetchEncounters('', activeTab, 1, dateFrom || undefined, dateTo || undefined, 'refresh');
+        if (activeTab !== 'all') {
+            fetchEncounters('', 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh');
+        }
     };
 
     const handleDateFromChange = (value: string) => {
