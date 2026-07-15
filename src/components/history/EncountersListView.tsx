@@ -198,13 +198,18 @@ export default function EncountersListView() {
     };
 
     const handleStatusFilterChange = (status: string) => {
+        const newPage = 1;
         setActiveTab(status);
-        setCurrentPage(1);
+        setCurrentPage(newPage);
         const params = new URLSearchParams(searchParams.toString());
         if (status !== 'all') params.set('status', status);
         else params.delete('status');
         params.set('page', '1');
         router.replace(`${pathname}?${params.toString()}`);
+        fetchEncounters(debouncedQuery, status, newPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
+        if (status !== 'all') {
+            fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
+        }
     };
 
     const handlePageChange = (newPage: number) => {
@@ -232,34 +237,49 @@ export default function EncountersListView() {
     };
 
     const handleDateFromChange = (value: string) => {
+        const newPage = 1;
         setDateFrom(value);
-        setCurrentPage(1);
+        setCurrentPage(newPage);
         const params = new URLSearchParams(searchParams.toString());
         if (value) params.set('date_from', value);
         else params.delete('date_from');
         params.set('page', '1');
         router.replace(`${pathname}?${params.toString()}`);
+        fetchEncounters(debouncedQuery, activeTab, newPage, value || undefined, dateTo || undefined, 'refresh', 'data');
+        if (activeTab !== 'all') {
+            fetchEncounters(debouncedQuery, 'all', 1, value || undefined, dateTo || undefined, 'refresh', 'counts');
+        }
     };
 
     const handleDateToChange = (value: string) => {
+        const newPage = 1;
         setDateTo(value);
-        setCurrentPage(1);
+        setCurrentPage(newPage);
         const params = new URLSearchParams(searchParams.toString());
         if (value) params.set('date_to', value);
         else params.delete('date_to');
         params.set('page', '1');
         router.replace(`${pathname}?${params.toString()}`);
+        fetchEncounters(debouncedQuery, activeTab, newPage, dateFrom || undefined, value || undefined, 'refresh', 'data');
+        if (activeTab !== 'all') {
+            fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, value || undefined, 'refresh', 'counts');
+        }
     };
 
     const handleClearDates = () => {
+        const newPage = 1;
         setDateFrom('');
         setDateTo('');
-        setCurrentPage(1);
+        setCurrentPage(newPage);
         const params = new URLSearchParams(searchParams.toString());
         params.delete('date_from');
         params.delete('date_to');
         params.set('page', '1');
         router.replace(`${pathname}?${params.toString()}`);
+        fetchEncounters(debouncedQuery, activeTab, newPage, undefined, undefined, 'refresh', 'data');
+        if (activeTab !== 'all') {
+            fetchEncounters(debouncedQuery, 'all', 1, undefined, undefined, 'refresh', 'counts');
+        }
     };
 
     const handleClearAllFilters = () => {
@@ -270,6 +290,7 @@ export default function EncountersListView() {
         setDateTo('');
         setCurrentPage(1);
         router.replace(pathname);
+        fetchEncounters('', 'all', 1, undefined, undefined, 'refresh', 'data');
     };
 
     const handleRefresh = () => {
