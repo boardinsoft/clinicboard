@@ -68,7 +68,8 @@ export default function EncountersListView() {
     const [searchInput, setSearchInput] = useState(searchParams.get('q') || '');
     const inputRef = useRef<HTMLInputElement>(null);
     const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const requestIdRef = useRef(0);
+    const dataRequestIdRef = useRef(0);
+    const countsRequestIdRef = useRef(0);
 
     const params = useParams();
     const slug = (params.clinicSlug as string) || '';
@@ -81,11 +82,21 @@ export default function EncountersListView() {
 
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-    const fetchEncounters = useCallback(async (search: string, filterStatus: string, currentPage: number, from: string, to: string) => {
-        const myId = ++requestIdRef.current;
-        const wasInitial = isLoading && encounters.length === 0 && total === 0;
+    const fetchEncounters = useCallback(async (
+        search: string,
+        filterStatus: string,
+        currentPage: number,
+        from: string,
+        to: string,
+        purpose: 'data' | 'counts' = 'data'
+    ) => {
+        const myId = purpose === 'data' ? ++dataRequestIdRef.current : ++countsRequestIdRef.current;
+        const isLatest = () => purpose === 'data'
+            ? myId === dataRequestIdRef.current
+            : myId === countsRequestIdRef.current;
+        const wasInitial = purpose === 'data' && isLoading && encounters.length === 0 && total === 0;
         if (wasInitial) setIsLoading(true);
-        setIsFetching(true);
+        if (purpose === 'data') setIsFetching(true);
 
         try {
             const filters: EncounterFilters = {
@@ -99,17 +110,21 @@ export default function EncountersListView() {
 
             const result = await getEncountersFiltered(filters);
 
-            if (myId !== requestIdRef.current) return;
+            if (!isLatest()) return;
 
             if ('error' in result) {
-                notify.error({ title: 'No se pudieron cargar las consultas', description: 'Revisa tu conexión e intenta de nuevo' });
-                setEncounters([]);
-                setTotal(0);
+                if (purpose === 'data') {
+                    notify.error({ title: 'No se pudieron cargar las consultas', description: 'Revisa tu conexión e intenta de nuevo' });
+                    setEncounters([]);
+                    setTotal(0);
+                }
                 return;
             }
 
-            setEncounters((result.data || []) as EncounterForPreview[]);
-            setTotal(result.count ?? 0);
+            if (purpose === 'data') {
+                setEncounters((result.data || []) as EncounterForPreview[]);
+                setTotal(result.count ?? 0);
+            }
 
             if (filterStatus === 'all' && result.statusCounts) {
                 setStatusCounts(result.statusCounts as Record<string, number>);
@@ -117,9 +132,9 @@ export default function EncountersListView() {
                 setStatusCounts(prev => ({ ...prev, [filterStatus]: result.count ?? 0 }));
             }
         } finally {
-            if (myId === requestIdRef.current) {
+            if (isLatest()) {
                 if (wasInitial) setIsLoading(false);
-                setIsFetching(false);
+                if (purpose === 'data') setIsFetching(false);
             }
         }
     }, [isLoading, encounters.length, total]);
@@ -127,9 +142,9 @@ export default function EncountersListView() {
     useEffect(() => {
         const q = searchParams.get('q') || '';
         setSearchInput(q);
-        fetchEncounters(q, status, page, dateFrom, dateTo);
+        fetchEncounters(q, status, page, dateFrom, dateTo, 'data');
         if (status !== 'all') {
-            fetchEncounters(q, 'all', 1, dateFrom, dateTo);
+            fetchEncounters(q, 'all', 1, dateFrom, dateTo, 'counts');
         }
     }, [searchParams.toString()]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -190,9 +205,9 @@ export default function EncountersListView() {
 
     const handleRefresh = () => {
         const q = searchParams.get('q') || '';
-        fetchEncounters(q, status, page, dateFrom, dateTo);
+        fetchEncounters(q, status, page, dateFrom, dateTo, 'data');
         if (status !== 'all') {
-            fetchEncounters(q, 'all', 1, dateFrom, dateTo);
+            fetchEncounters(q, 'all', 1, dateFrom, dateTo, 'counts');
         }
     };
 

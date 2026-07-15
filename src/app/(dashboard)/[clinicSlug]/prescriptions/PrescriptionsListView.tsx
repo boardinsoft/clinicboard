@@ -89,7 +89,8 @@ export default function PrescriptionsListView() {
     const [searchInput, setSearchInput] = useState(searchParams.get('q') || '');
     const inputRef = useRef<HTMLInputElement>(null);
     const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const requestIdRef = useRef(0);
+    const dataRequestIdRef = useRef(0);
+    const countsRequestIdRef = useRef(0);
 
     const status = (searchParams.get('status') as MedicationRequestStatus | 'all') || 'all';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1') || 1);
@@ -98,11 +99,21 @@ export default function PrescriptionsListView() {
 
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-    const fetchPrescriptions = useCallback(async (search: string, filterStatus: MedicationRequestStatus | 'all', currentPage: number, from: string, to: string) => {
-        const myId = ++requestIdRef.current;
-        const wasInitial = isLoading && prescriptions.length === 0 && total === 0;
+    const fetchPrescriptions = useCallback(async (
+        search: string,
+        filterStatus: MedicationRequestStatus | 'all',
+        currentPage: number,
+        from: string,
+        to: string,
+        purpose: 'data' | 'counts' = 'data'
+    ) => {
+        const myId = purpose === 'data' ? ++dataRequestIdRef.current : ++countsRequestIdRef.current;
+        const isLatest = () => purpose === 'data'
+            ? myId === dataRequestIdRef.current
+            : myId === countsRequestIdRef.current;
+        const wasInitial = purpose === 'data' && isLoading && prescriptions.length === 0 && total === 0;
         if (wasInitial) setIsLoading(true);
-        setIsFetching(true);
+        if (purpose === 'data') setIsFetching(true);
 
         try {
             const result = await getPrescriptionsForTable(undefined, {
@@ -114,17 +125,21 @@ export default function PrescriptionsListView() {
                 dateTo: to || undefined,
             });
 
-            if (myId !== requestIdRef.current) return;
+            if (!isLatest()) return;
 
             if ('error' in result) {
-                notify.error({ title: 'No se pudieron cargar las recetas', description: 'Revisa tu conexión e intenta de nuevo' });
-                setPrescriptions([]);
-                setTotal(0);
+                if (purpose === 'data') {
+                    notify.error({ title: 'No se pudieron cargar las recetas', description: 'Revisa tu conexión e intenta de nuevo' });
+                    setPrescriptions([]);
+                    setTotal(0);
+                }
                 return;
             }
 
-            setPrescriptions((result.data || []) as PrescriptionForPreview[]);
-            setTotal(result.count ?? 0);
+            if (purpose === 'data') {
+                setPrescriptions((result.data || []) as PrescriptionForPreview[]);
+                setTotal(result.count ?? 0);
+            }
 
             if (filterStatus === 'all' && 'statusCounts' in result && result.statusCounts) {
                 setStatusCounts(result.statusCounts as Record<MedicationRequestStatus | 'all', number>);
@@ -132,9 +147,9 @@ export default function PrescriptionsListView() {
                 setStatusCounts(prev => ({ ...prev, [filterStatus]: result.count ?? 0 }));
             }
         } finally {
-            if (myId === requestIdRef.current) {
+            if (isLatest()) {
                 if (wasInitial) setIsLoading(false);
-                setIsFetching(false);
+                if (purpose === 'data') setIsFetching(false);
             }
         }
     }, [isLoading, prescriptions.length, total]);
@@ -142,9 +157,9 @@ export default function PrescriptionsListView() {
     useEffect(() => {
         const q = searchParams.get('q') || '';
         setSearchInput(q);
-        fetchPrescriptions(q, status, page, dateFrom, dateTo);
+        fetchPrescriptions(q, status, page, dateFrom, dateTo, 'data');
         if (status !== 'all') {
-            fetchPrescriptions(q, 'all', 1, dateFrom, dateTo);
+            fetchPrescriptions(q, 'all', 1, dateFrom, dateTo, 'counts');
         }
     }, [searchParams.toString()]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -205,9 +220,9 @@ export default function PrescriptionsListView() {
 
     const handleRefresh = () => {
         const q = searchParams.get('q') || '';
-        fetchPrescriptions(q, status, page, dateFrom, dateTo);
+        fetchPrescriptions(q, status, page, dateFrom, dateTo, 'data');
         if (status !== 'all') {
-            fetchPrescriptions(q, 'all', 1, dateFrom, dateTo);
+            fetchPrescriptions(q, 'all', 1, dateFrom, dateTo, 'counts');
         }
     };
 
