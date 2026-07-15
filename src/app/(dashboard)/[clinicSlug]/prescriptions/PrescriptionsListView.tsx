@@ -341,7 +341,7 @@ export default function PrescriptionsListView() {
             )}
 
             <div className="flex items-center gap-2 px-6 py-2.5 border-b border-border/40 bg-muted/30 shrink-0">
-                <FiltersDropdown activeCount={activeFilterCount}>
+                <FiltersDropdown activeCount={activeFilterCount} align="center" side="top">
                     <FilterSection label="Estado">
                         <DropdownMenuRadioGroup
                             value={activeTab}

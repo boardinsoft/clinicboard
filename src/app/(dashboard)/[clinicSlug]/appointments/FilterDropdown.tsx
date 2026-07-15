@@ -66,7 +66,7 @@ export default function FilterDropdown({ appointments }: FilterDropdownProps) {
                     <ChevronDown className={cn("w-3 h-3 transition-transform", open && "rotate-180")} />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-72 p-0" sideOffset={4}>
+            <PopoverContent align="center" className="w-72 p-0" sideOffset={4} side="top">
                 <div className="flex flex-col">
                     {/* Patient Search - More prominent */}
                     <div className="px-4 py-3.5 border-b border-n-5">
