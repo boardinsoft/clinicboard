@@ -131,7 +131,7 @@ export default function EncountersListView() {
         if (status !== 'all') {
             fetchEncounters(q, 'all', 1, dateFrom, dateTo);
         }
-    }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [searchParams.toString()]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const updateUrl = (updates: Record<string, string | null>, resetPage = true) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -189,7 +189,11 @@ export default function EncountersListView() {
     };
 
     const handleRefresh = () => {
-        router.replace(`${pathname}?${searchParams.toString()}`);
+        const q = searchParams.get('q') || '';
+        fetchEncounters(q, status, page, dateFrom, dateTo);
+        if (status !== 'all') {
+            fetchEncounters(q, 'all', 1, dateFrom, dateTo);
+        }
     };
 
     useEffect(() => {
