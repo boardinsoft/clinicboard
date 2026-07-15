@@ -531,7 +531,8 @@ export async function getPrescriptionsForTable(clinicId?: string, filters?: Pres
     }
 
     if (filters?.dateTo) {
-        query = query.lte('authored_on', filters.dateTo);
+        const endOfDay = `${filters.dateTo}T23:59:59.999Z`;
+        query = query.lte('authored_on', endOfDay);
     }
 
     if (filters?.search) {

@@ -160,7 +160,8 @@ export default function PrescriptionsListView() {
     useEffect(() => {
         const q = searchParams.get('q') || '';
         const status = (searchParams.get('status') as MedicationRequestStatus | 'all') || 'all';
-        const page = parseInt(searchParams.get('page') || '1');
+        const rawPage = parseInt(searchParams.get('page') || '1');
+        const page = Math.max(1, isNaN(rawPage) ? 1 : rawPage);
         const from = searchParams.get('date_from') || '';
         const to = searchParams.get('date_to') || '';
         setQuery(q);
@@ -178,13 +179,34 @@ export default function PrescriptionsListView() {
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
-        if (!isLoading) {
+        const q = searchParams.get('q') || '';
+        const status = (searchParams.get('status') as MedicationRequestStatus | 'all') || 'all';
+        const rawPage = parseInt(searchParams.get('page') || '1');
+        const page = Math.max(1, isNaN(rawPage) ? 1 : rawPage);
+        const from = searchParams.get('date_from') || '';
+        const to = searchParams.get('date_to') || '';
+        if (q !== query || status !== activeTab || page !== currentPage || from !== dateFrom || to !== dateTo) {
+            setQuery(q);
+            setDebouncedQuery(q);
+            setActiveTab(status);
+            setCurrentPage(page);
+            setDateFrom(from);
+            setDateTo(to);
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchPrescriptions(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
-            if (activeTab !== 'all') {
+            fetchPrescriptions(q, status, page, from || undefined, to || undefined, 'refresh', 'data');
+            if (status !== 'all') {
                 // eslint-disable-next-line react-hooks/set-state-in-effect
-                fetchPrescriptions(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
+                fetchPrescriptions(q, 'all', 1, from || undefined, to || undefined, 'refresh', 'counts');
             }
+        }
+    }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchPrescriptions(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
+        if (activeTab !== 'all') {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            fetchPrescriptions(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
         }
     }, [debouncedQuery, activeTab, currentPage, dateFrom, dateTo]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -209,10 +231,11 @@ export default function PrescriptionsListView() {
     };
 
     const handlePageChange = (newPage: number) => {
-        if (newPage < 1 || newPage > totalPages) return;
-        setCurrentPage(newPage);
+        const clamped = Math.max(1, Math.min(totalPages, newPage));
+        if (clamped < 1 || clamped > totalPages) return;
+        setCurrentPage(clamped);
         const params = new URLSearchParams(searchParams.toString());
-        params.set('page', String(newPage));
+        params.set('page', String(clamped));
         router.replace(`${pathname}?${params.toString()}`);
     };
 
@@ -447,12 +470,12 @@ export default function PrescriptionsListView() {
 
             <div className="flex items-center justify-between px-6 py-2.5 h-11 border-t border-border bg-background shrink-0">
                 <div className="flex items-center gap-4">
-                    {activeTab !== 'all' && (
+                    {(hasFilters || activeTab !== 'all') && (
                         <span className="text-[11px] text-muted-foreground font-medium">
                             {filteredTotal === 0 ? 'Sin resultados' : `${filteredTotal} ${filteredTotal === 1 ? 'receta' : 'recetas'}`}
                         </span>
                     )}
-                    {hasFilters && activeTab === 'all' && (
+                    {hasFilters && (
                         <button
                             onClick={handleClearAllFilters}
                             className="text-[11px] text-b-8 hover:text-b-9 font-medium transition-colors"

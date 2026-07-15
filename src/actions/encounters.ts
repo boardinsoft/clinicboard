@@ -658,7 +658,8 @@ export async function getEncountersFiltered(filters?: EncounterFilters): Promise
         query = query.gte('start_time', filters.date_from);
     }
     if (filters?.date_to) {
-        query = query.lte('start_time', filters.date_to);
+        const endOfDay = `${filters.date_to}T23:59:59.999Z`;
+        query = query.lte('start_time', endOfDay);
     }
     if (searchEncounterIds) {
         if (searchEncounterIds.length === 1 && searchEncounterIds[0] === '00000000-0000-0000-0000-000000000000') {
@@ -695,7 +696,10 @@ export async function getEncountersFiltered(filters?: EncounterFilters): Promise
 
                 if (filters?.clinicId) countQuery = countQuery.eq('clinic_id', filters.clinicId);
                 if (filters?.date_from) countQuery = countQuery.gte('start_time', filters.date_from);
-                if (filters?.date_to) countQuery = countQuery.lte('start_time', filters.date_to);
+                if (filters?.date_to) {
+                    const endOfDay = `${filters.date_to}T23:59:59.999Z`;
+                    countQuery = countQuery.lte('start_time', endOfDay);
+                }
                 if (searchEncounterIds) {
                     if (searchEncounterIds.length === 1 && searchEncounterIds[0] === '00000000-0000-0000-0000-000000000000') {
                         countQuery = countQuery.eq('id', '00000000-0000-0000-0000-000000000000');

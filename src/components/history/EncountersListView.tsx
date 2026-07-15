@@ -147,7 +147,8 @@ export default function EncountersListView() {
     useEffect(() => {
         const q = searchParams.get('q') || '';
         const status = searchParams.get('status') || 'all';
-        const page = parseInt(searchParams.get('page') || '1');
+        const rawPage = parseInt(searchParams.get('page') || '1');
+        const page = Math.max(1, isNaN(rawPage) ? 1 : rawPage);
         setQuery(q);
         setDebouncedQuery(q);
         setActiveTab(status);
@@ -161,13 +162,30 @@ export default function EncountersListView() {
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
-        if (!isLoading) {
+        const q = searchParams.get('q') || '';
+        const status = searchParams.get('status') || 'all';
+        const rawPage = parseInt(searchParams.get('page') || '1');
+        const page = Math.max(1, isNaN(rawPage) ? 1 : rawPage);
+        if (q !== query || status !== activeTab || page !== currentPage) {
+            setQuery(q);
+            setDebouncedQuery(q);
+            setActiveTab(status);
+            setCurrentPage(page);
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchEncounters(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
-            if (activeTab !== 'all') {
+            fetchEncounters(q, status, page, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
+            if (status !== 'all') {
                 // eslint-disable-next-line react-hooks/set-state-in-effect
-                fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
+                fetchEncounters(q, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
             }
+        }
+    }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchEncounters(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
+        if (activeTab !== 'all') {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
         }
     }, [debouncedQuery, activeTab, currentPage, dateFrom, dateTo]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -192,10 +210,11 @@ export default function EncountersListView() {
     };
 
     const handlePageChange = (newPage: number) => {
-        if (newPage < 1 || newPage > totalPages) return;
-        setCurrentPage(newPage);
+        const clamped = Math.max(1, Math.min(totalPages, newPage));
+        if (clamped < 1 || clamped > totalPages) return;
+        setCurrentPage(clamped);
         const params = new URLSearchParams(searchParams.toString());
-        params.set('page', String(newPage));
+        params.set('page', String(clamped));
         router.replace(`${pathname}?${params.toString()}`);
     };
 
@@ -404,12 +423,12 @@ export default function EncountersListView() {
 
             <div className="flex items-center justify-between px-6 py-2.5 h-11 border-t border-border bg-background shrink-0">
                 <div className="flex items-center gap-4">
-                    {activeTab !== 'all' && (
+                    {(hasFilters || activeTab !== 'all') && (
                         <span className="text-[11px] text-muted-foreground font-medium">
                             {encounters.length === 0 ? 'Sin resultados' : `${encounters.length} ${encounters.length === 1 ? 'consulta' : 'consultas'}`}
                         </span>
                     )}
-                    {hasFilters && activeTab === 'all' && (
+                    {hasFilters && (
                         <button
                             onClick={() => {
                                 setQuery('');
