@@ -288,7 +288,29 @@ export default function EncountersListView() {
                 description="Historial completo de encuentros clínicos registrados en el sistema."
             />
 
-            <div className="flex items-center gap-2 px-6 py-2.5 border-b border-border/40 bg-muted/30 shrink-0">
+            <div className="flex items-center justify-between gap-2 px-6 py-2.5 border-b border-border/40 bg-muted/30 shrink-0">
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors shrink-0"
+                        onClick={handleRefresh}
+                        disabled={isFetching}
+                    >
+                        <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+                    </Button>
+
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 px-2 gap-1 text-b-8 hover:bg-b-1 shrink-0"
+                        onClick={() => setIsWalkInDialogOpen(true)}
+                    >
+                        <Stethoscope className="w-3.5 h-3.5" />
+                        <span className="text-xs font-medium">+ Consulta</span>
+                    </Button>
+                </div>
+
                 <FiltersDropdown activeCount={activeFilterCount} align="center" side="top">
                     <FilterSection label="Estado">
                         <DropdownMenuRadioGroup
@@ -364,26 +386,6 @@ export default function EncountersListView() {
                         </span>
                     )}
                 </div>
-
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors shrink-0"
-                    onClick={handleRefresh}
-                    disabled={isFetching}
-                >
-                    <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-                </Button>
-
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-9 px-2 gap-1 text-b-8 hover:bg-b-1 shrink-0"
-                    onClick={() => setIsWalkInDialogOpen(true)}
-                >
-                    <Stethoscope className="w-3.5 h-3.5" />
-                    <span className="text-xs font-medium">+ Consulta</span>
-                </Button>
             </div>
 
             <div className="flex-1 overflow-hidden flex flex-col relative">

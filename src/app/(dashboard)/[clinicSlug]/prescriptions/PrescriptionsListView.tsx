@@ -340,7 +340,19 @@ export default function PrescriptionsListView() {
                 </div>
             )}
 
-            <div className="flex items-center gap-2 px-6 py-2.5 border-b border-border/40 bg-muted/30 shrink-0">
+            <div className="flex items-center justify-between gap-2 px-6 py-2.5 border-b border-border/40 bg-muted/30 shrink-0">
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors shrink-0"
+                        onClick={handleRefresh}
+                        disabled={isFetching}
+                    >
+                        <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+                    </Button>
+                </div>
+
                 <FiltersDropdown activeCount={activeFilterCount} align="center" side="top">
                     <FilterSection label="Estado">
                         <DropdownMenuRadioGroup
@@ -416,16 +428,6 @@ export default function PrescriptionsListView() {
                         </span>
                     )}
                 </div>
-
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors shrink-0"
-                    onClick={handleRefresh}
-                    disabled={isFetching}
-                >
-                    <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-                </Button>
             </div>
 
             <div className="flex-1 overflow-hidden flex flex-col relative">
