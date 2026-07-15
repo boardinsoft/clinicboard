@@ -46,6 +46,7 @@ const STATUS_TABS: { value: string; label: string }[] = [
     { value: 'cancelled', label: 'Canceladas' },
 ];
 const PAGE_SIZE = 20;
+const SEARCH_DEBOUNCE_MS = 200;
 
 export default function EncountersListView() {
     const router = useRouter();
@@ -64,54 +65,33 @@ export default function EncountersListView() {
         cancelled: 0,
     });
 
-    const [query, setQuery] = useState('');
-    const [debouncedQuery, setDebouncedQuery] = useState('');
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
-    const [activeTab, setActiveTab] = useState(
-        searchParams.get('status') || 'all'
-    );
-    const [currentPage, setCurrentPage] = useState(
-        parseInt(searchParams.get('page') || '1')
-    );
-
-    const requestIdRef = useRef(0);
+    const [searchInput, setSearchInput] = useState(searchParams.get('q') || '');
     const inputRef = useRef<HTMLInputElement>(null);
+    const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const requestIdRef = useRef(0);
 
     const params = useParams();
     const slug = (params.clinicSlug as string) || '';
     const [isWalkInDialogOpen, setIsWalkInDialogOpen] = useState(false);
 
+    const status = searchParams.get('status') || 'all';
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1') || 1);
+    const dateFrom = searchParams.get('date_from') || '';
+    const dateTo = searchParams.get('date_to') || '';
+
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-    useEffect(() => {
-        if (query === '') {
-            setDebouncedQuery('');
-            return;
-        }
-        const t = setTimeout(() => setDebouncedQuery(query), 200);
-        return () => clearTimeout(t);
-    }, [query]);
-
-    const fetchEncounters = useCallback(async (
-        search: string,
-        status: string,
-        page: number,
-        from?: string,
-        to?: string,
-        loadingKey: 'initial' | 'refresh' = 'refresh',
-        purpose: 'data' | 'counts' = 'data'
-    ) => {
+    const fetchEncounters = useCallback(async (search: string, filterStatus: string, currentPage: number, from: string, to: string) => {
         const myId = ++requestIdRef.current;
-
-        if (loadingKey === 'initial') setIsLoading(true);
+        const wasInitial = isLoading && encounters.length === 0 && total === 0;
+        if (wasInitial) setIsLoading(true);
         setIsFetching(true);
 
         try {
             const filters: EncounterFilters = {
                 search: search || undefined,
-                status: status === 'all' ? undefined : status,
-                page,
+                status: filterStatus === 'all' ? undefined : filterStatus,
+                page: currentPage,
                 pageSize: PAGE_SIZE,
                 date_from: from || undefined,
                 date_to: to || undefined,
@@ -128,186 +108,99 @@ export default function EncountersListView() {
                 return;
             }
 
-            if (purpose === 'data') {
-                setEncounters((result.data || []) as EncounterForPreview[]);
-                setTotal(result.count ?? 0);
-            }
+            setEncounters((result.data || []) as EncounterForPreview[]);
+            setTotal(result.count ?? 0);
 
-            if (status === 'all' && result.statusCounts) {
+            if (filterStatus === 'all' && result.statusCounts) {
                 setStatusCounts(result.statusCounts as Record<string, number>);
-            } else if (status !== 'all') {
-                setStatusCounts(prev => ({ ...prev, [status]: result.count ?? 0 }));
+            } else if (filterStatus !== 'all') {
+                setStatusCounts(prev => ({ ...prev, [filterStatus]: result.count ?? 0 }));
             }
         } finally {
-            if (loadingKey === 'initial') setIsLoading(false);
-            if (myId === requestIdRef.current) setIsFetching(false);
+            if (myId === requestIdRef.current) {
+                if (wasInitial) setIsLoading(false);
+                setIsFetching(false);
+            }
         }
-    }, []);
+    }, [isLoading, encounters.length, total]);
 
     useEffect(() => {
         const q = searchParams.get('q') || '';
-        const status = searchParams.get('status') || 'all';
-        const rawPage = parseInt(searchParams.get('page') || '1');
-        const page = Math.max(1, isNaN(rawPage) ? 1 : rawPage);
-        setQuery(q);
-        setDebouncedQuery(q);
-        setActiveTab(status);
-        setCurrentPage(page);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchEncounters(q, status, page, undefined, undefined, 'initial', 'data');
+        setSearchInput(q);
+        fetchEncounters(q, status, page, dateFrom, dateTo);
         if (status !== 'all') {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchEncounters(q, 'all', 1, undefined, undefined, 'initial', 'counts');
-        }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-    useEffect(() => {
-        const q = searchParams.get('q') || '';
-        const status = searchParams.get('status') || 'all';
-        const rawPage = parseInt(searchParams.get('page') || '1');
-        const page = Math.max(1, isNaN(rawPage) ? 1 : rawPage);
-        const from = searchParams.get('date_from') || '';
-        const to = searchParams.get('date_to') || '';
-        if (q !== query || status !== activeTab || page !== currentPage || from !== dateFrom || to !== dateTo) {
-            setQuery(q);
-            setDebouncedQuery(q);
-            setActiveTab(status);
-            setCurrentPage(page);
-            setDateFrom(from);
-            setDateTo(to);
+            fetchEncounters(q, 'all', 1, dateFrom, dateTo);
         }
     }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchEncounters(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
-        if (activeTab !== 'all') {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
-        }
-    }, [debouncedQuery, activeTab, currentPage, dateFrom, dateTo]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    const handleSearchChange = (value: string) => {
-        setQuery(value);
-        setCurrentPage(1);
+    const updateUrl = (updates: Record<string, string | null>, resetPage = true) => {
         const params = new URLSearchParams(searchParams.toString());
-        if (value) params.set('q', value);
-        else params.delete('q');
-        params.set('page', '1');
+        for (const [key, value] of Object.entries(updates)) {
+            if (value === null || value === '') params.delete(key);
+            else params.set(key, value);
+        }
+        if (resetPage && !('page' in updates)) params.set('page', '1');
         router.replace(`${pathname}?${params.toString()}`);
     };
 
-    const handleStatusFilterChange = (status: string) => {
-        const newPage = 1;
-        setActiveTab(status);
-        setCurrentPage(newPage);
-        const params = new URLSearchParams(searchParams.toString());
-        if (status !== 'all') params.set('status', status);
-        else params.delete('status');
-        params.set('page', '1');
-        router.replace(`${pathname}?${params.toString()}`);
-        fetchEncounters(debouncedQuery, status, newPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
-        if (status !== 'all') {
-            fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
+    const handleSearchChange = (value: string) => {
+        setSearchInput(value);
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        if (value.length === 0 || value.length >= 2) {
+            searchTimeoutRef.current = setTimeout(() => {
+                updateUrl({ q: value || null });
+            }, SEARCH_DEBOUNCE_MS);
         }
+    };
+
+    const handleStatusFilterChange = (newStatus: string) => {
+        updateUrl({ status: newStatus === 'all' ? null : newStatus });
+    };
+
+    const handleDateFromChange = (value: string) => {
+        updateUrl({ date_from: value || null });
+    };
+
+    const handleDateToChange = (value: string) => {
+        updateUrl({ date_to: value || null });
+    };
+
+    const handleClearDates = () => {
+        updateUrl({ date_from: null, date_to: null });
+    };
+
+    const handleClearSearch = () => {
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        setSearchInput('');
+        updateUrl({ q: null });
+        inputRef.current?.focus();
+    };
+
+    const handleClearAllFilters = () => {
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        setSearchInput('');
+        router.replace(pathname);
     };
 
     const handlePageChange = (newPage: number) => {
         const clamped = Math.max(1, Math.min(totalPages, newPage));
         if (clamped < 1 || clamped > totalPages) return;
-        setCurrentPage(clamped);
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('page', String(clamped));
-        router.replace(`${pathname}?${params.toString()}`);
-    };
-
-    const handleClearSearch = () => {
-        setQuery('');
-        setDebouncedQuery('');
-        setCurrentPage(1);
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete('q');
-        params.set('page', '1');
-        router.replace(`${pathname}?${params.toString()}`);
-        inputRef.current?.focus();
-        fetchEncounters('', activeTab, 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
-        if (activeTab !== 'all') {
-            fetchEncounters('', 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
-        }
-    };
-
-    const handleDateFromChange = (value: string) => {
-        const newPage = 1;
-        setDateFrom(value);
-        setCurrentPage(newPage);
-        const params = new URLSearchParams(searchParams.toString());
-        if (value) params.set('date_from', value);
-        else params.delete('date_from');
-        params.set('page', '1');
-        router.replace(`${pathname}?${params.toString()}`);
-        fetchEncounters(debouncedQuery, activeTab, newPage, value || undefined, dateTo || undefined, 'refresh', 'data');
-        if (activeTab !== 'all') {
-            fetchEncounters(debouncedQuery, 'all', 1, value || undefined, dateTo || undefined, 'refresh', 'counts');
-        }
-    };
-
-    const handleDateToChange = (value: string) => {
-        const newPage = 1;
-        setDateTo(value);
-        setCurrentPage(newPage);
-        const params = new URLSearchParams(searchParams.toString());
-        if (value) params.set('date_to', value);
-        else params.delete('date_to');
-        params.set('page', '1');
-        router.replace(`${pathname}?${params.toString()}`);
-        fetchEncounters(debouncedQuery, activeTab, newPage, dateFrom || undefined, value || undefined, 'refresh', 'data');
-        if (activeTab !== 'all') {
-            fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, value || undefined, 'refresh', 'counts');
-        }
-    };
-
-    const handleClearDates = () => {
-        const newPage = 1;
-        setDateFrom('');
-        setDateTo('');
-        setCurrentPage(newPage);
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete('date_from');
-        params.delete('date_to');
-        params.set('page', '1');
-        router.replace(`${pathname}?${params.toString()}`);
-        fetchEncounters(debouncedQuery, activeTab, newPage, undefined, undefined, 'refresh', 'data');
-        if (activeTab !== 'all') {
-            fetchEncounters(debouncedQuery, 'all', 1, undefined, undefined, 'refresh', 'counts');
-        }
-    };
-
-    const handleClearAllFilters = () => {
-        setQuery('');
-        setDebouncedQuery('');
-        setActiveTab('all');
-        setDateFrom('');
-        setDateTo('');
-        setCurrentPage(1);
-        router.replace(pathname);
-        fetchEncounters('', 'all', 1, undefined, undefined, 'refresh', 'data');
+        updateUrl({ page: String(clamped) }, false);
     };
 
     const handleRefresh = () => {
-        fetchEncounters(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
-        if (activeTab !== 'all') {
-            fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
-        }
+        router.replace(`${pathname}?${searchParams.toString()}`);
     };
 
-    const activeFilterCount =
-        (query !== '' ? 1 : 0) +
-        (activeTab !== 'all' ? 1 : 0) +
-        (dateFrom !== '' ? 1 : 0) +
-        (dateTo !== '' ? 1 : 0);
+    useEffect(() => {
+        return () => {
+            if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        };
+    }, []);
 
-    const hasFilters = query !== '' || dateFrom !== '' || dateTo !== '' || activeTab !== 'all';
-
+    const query = searchParams.get('q') || '';
+    const hasFilters = query !== '' || dateFrom !== '' || dateTo !== '' || status !== 'all';
+    const activeFilterCount = (query !== '' ? 1 : 0) + (status !== 'all' ? 1 : 0) + (dateFrom !== '' ? 1 : 0) + (dateTo !== '' ? 1 : 0);
     const isPending = isLoading || (isFetching && encounters.length === 0);
 
     return (
@@ -328,12 +221,12 @@ export default function EncountersListView() {
                         ref={inputRef}
                         type="text"
                         placeholder="Buscar paciente, motivo o nota…"
-                        value={query}
+                        value={searchInput}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="flex-1 bg-transparent text-[13px] text-n-11 placeholder:text-n-8 outline-none min-w-0 h-8"
                         aria-label="Buscar consultas"
                     />
-                    {query ? (
+                    {searchInput ? (
                         <button
                             onClick={handleClearSearch}
                             aria-label="Limpiar búsqueda"
@@ -341,8 +234,6 @@ export default function EncountersListView() {
                         >
                             <X className="w-3 h-3 text-n-8" />
                         </button>
-                    ) : query.length > 0 && query.length < 2 ? (
-                        <span className="text-[10px] text-n-8 shrink-0">2+ chars</span>
                     ) : (
                         <span className="px-1.5 py-0.5 text-[10px] font-medium mono bg-background border border-n-5 rounded-[3px] text-n-9 shrink-0">
                             ⌘K
@@ -363,7 +254,7 @@ export default function EncountersListView() {
                 <FiltersDropdown activeCount={activeFilterCount} align="center" side="top">
                     <FilterSection label="Estado">
                         <DropdownMenuRadioGroup
-                            value={activeTab}
+                            value={status}
                             onValueChange={handleStatusFilterChange}
                         >
                             {STATUS_TABS.map(opt => (
@@ -435,22 +326,14 @@ export default function EncountersListView() {
 
             <div className="flex items-center justify-between px-6 py-2.5 h-11 border-t border-border bg-background shrink-0">
                 <div className="flex items-center gap-4">
-                    {(hasFilters || activeTab !== 'all') && (
+                    {(hasFilters || status !== 'all') && (
                         <span className="text-[11px] text-muted-foreground font-medium">
                             {encounters.length === 0 ? 'Sin resultados' : `${encounters.length} ${encounters.length === 1 ? 'consulta' : 'consultas'}`}
                         </span>
                     )}
                     {hasFilters && (
                         <button
-                            onClick={() => {
-                                setQuery('');
-                                setDebouncedQuery('');
-                                setDateFrom('');
-                                setDateTo('');
-                                setActiveTab('all');
-                                setCurrentPage(1);
-                                router.replace(pathname);
-                            }}
+                            onClick={handleClearAllFilters}
                             className="text-[11px] text-b-8 hover:text-b-9 font-medium transition-colors"
                         >
                             Limpiar filtros
@@ -459,15 +342,15 @@ export default function EncountersListView() {
                 </div>
                 <div className="flex items-center gap-4 text-[11px] font-medium text-muted-foreground">
                     <div className="flex items-center gap-1 bg-muted border border-border rounded-md px-2 py-1 shadow-xs">
-                        <span>Página <span className="text-foreground">{currentPage}</span> de <span className="text-foreground">{totalPages}</span></span>
+                        <span>Página <span className="text-foreground">{page}</span> de <span className="text-foreground">{totalPages}</span></span>
                     </div>
                     <div className="flex items-center gap-1">
                         <Button
                             variant="outline"
                             size="icon"
                             className="h-7 w-7 bg-background shadow-xs hover:bg-muted transition-all border-border"
-                            disabled={currentPage <= 1 || isFetching}
-                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={page <= 1 || isFetching}
+                            onClick={() => handlePageChange(page - 1)}
                         >
                             <ChevronLeft className="h-3.5 w-3.5" />
                         </Button>
@@ -475,8 +358,8 @@ export default function EncountersListView() {
                             variant="outline"
                             size="icon"
                             className="h-7 w-7 bg-background shadow-xs hover:bg-muted transition-all border-border"
-                            disabled={currentPage >= totalPages || isFetching}
-                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={page >= totalPages || isFetching}
+                            onClick={() => handlePageChange(page + 1)}
                         >
                             <ChevronRight className="h-3.5 w-3.5" />
                         </Button>
