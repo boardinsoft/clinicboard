@@ -104,7 +104,7 @@ export default function PrescriptionsListView() {
             setDebouncedQuery('');
             return;
         }
-        const t = setTimeout(() => setDebouncedQuery(query), 150);
+        const t = setTimeout(() => setDebouncedQuery(query), 200);
         return () => clearTimeout(t);
     }, [query]);
 
@@ -287,24 +287,12 @@ export default function PrescriptionsListView() {
 
     const handleClearAllFilters = () => {
         setQuery('');
-        setDebouncedQuery('');
         setActiveTab('all');
         setDateFrom('');
         setDateTo('');
         setCurrentPage(1);
         router.replace(pathname);
     };
-
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-                e.preventDefault();
-                inputRef.current?.focus();
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
-    }, []);
 
     const handleRefresh = () => {
         fetchPrescriptions(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
@@ -318,6 +306,7 @@ export default function PrescriptionsListView() {
     const filteredTotal = prescriptions.length;
 
     const activeFilterCount =
+        (query !== '' ? 1 : 0) +
         (activeTab !== 'all' ? 1 : 0) +
         (dateFrom !== '' ? 1 : 0) +
         (dateTo !== '' ? 1 : 0);
@@ -388,6 +377,8 @@ export default function PrescriptionsListView() {
                         >
                             <X className="w-3 h-3 text-n-8" />
                         </button>
+                    ) : query.length > 0 && query.length < 2 ? (
+                        <span className="text-[10px] text-n-8 shrink-0">2+ chars</span>
                     ) : (
                         <span className="px-1.5 py-0.5 text-[10px] font-medium mono bg-background border border-n-5 rounded-[3px] text-n-9 shrink-0">
                             ⌘K
