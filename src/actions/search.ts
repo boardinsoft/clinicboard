@@ -236,12 +236,13 @@ export async function searchPatientIds(queryText: string): Promise<string[]> {
     // search_patients_name_parts busca con ILIKE% en family/given
     // Y similarity para errores tipográficos
     if (ids.length === 0) {
-        const { data: fuzzyMatches } = await (supabase as any).rpc('search_patients_name_parts', {
+        const { data: namePartsMatches } = await (supabase as any).rpc('search_patients_name_parts', {
             search_term: trimmed,
             p_id: practitionerId,
         });
-        if (fuzzyMatches && Array.isArray(fuzzyMatches)) {
-            ids = (fuzzyMatches as Array<{ id: string }>).map((p) => p.id);
+
+        if (namePartsMatches && Array.isArray(namePartsMatches) && namePartsMatches.length > 0) {
+            ids = (namePartsMatches as Array<{ id: string }>).map((p) => p.id);
         }
     }
 
