@@ -328,16 +328,6 @@ export default function EncountersListView() {
                     <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
                 </Button>
 
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-9 px-2 gap-1 text-b-8 hover:bg-b-1 shrink-0"
-                    onClick={() => setIsWalkInDialogOpen(true)}
-                >
-                    <Stethoscope className="w-3.5 h-3.5" />
-                    <span className="text-xs font-medium">+ Consulta</span>
-                </Button>
-
                 <FiltersDropdown activeCount={activeFilterCount} align="center" side="top">
                     <FilterSection label="Estado">
                         <DropdownMenuRadioGroup
@@ -384,6 +374,16 @@ export default function EncountersListView() {
                         </>
                     )}
                 </FiltersDropdown>
+
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 px-2 gap-1 text-b-8 hover:bg-b-1 shrink-0"
+                    onClick={() => setIsWalkInDialogOpen(true)}
+                >
+                    <Stethoscope className="w-3.5 h-3.5" />
+                    <span className="text-xs font-medium">+ Consulta</span>
+                </Button>
             </div>
 
             <div className="flex-1 overflow-hidden flex flex-col relative">
