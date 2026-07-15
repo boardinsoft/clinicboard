@@ -81,7 +81,11 @@ export default function PrescriptionTable({ prescriptions, clinicSlug: clinicSlu
 
     if (prescriptions.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-32 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div
+                role="status"
+                aria-live="polite"
+                className="flex flex-col items-center justify-center py-32 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
                 <div className="w-16 h-16 rounded-full bg-n-2/80 flex items-center justify-center border border-dashed border-n-5">
                     <Pill className="w-6 h-6 text-n-7" />
                 </div>
@@ -166,7 +170,15 @@ export default function PrescriptionTable({ prescriptions, clinicSlug: clinicSlu
                         return (
                             <tr
                                 key={rx.id}
+                                role="button"
+                                tabIndex={0}
                                 onClick={() => router.push(`/${clinicSlug}/prescriptions/${rx.id}`)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        router.push(`/${clinicSlug}/prescriptions/${rx.id}`);
+                                    }
+                                }}
                                 className="group transition-colors cursor-pointer"
                             >
                                 <td className="pl-4">
@@ -253,6 +265,7 @@ export default function PrescriptionTable({ prescriptions, clinicSlug: clinicSlu
                                                 <button
                                                     onClick={(e) => e.stopPropagation()}
                                                     className="p-1.5 hover:bg-n-3 rounded text-n-8 hover:text-n-12 transition-colors"
+                                                    aria-label="Más acciones"
                                                 >
                                                     <MoreVertical className="w-4 h-4" />
                                                 </button>

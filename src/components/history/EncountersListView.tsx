@@ -327,6 +327,7 @@ export default function EncountersListView() {
                     {query ? (
                         <button
                             onClick={handleClearSearch}
+                            aria-label="Limpiar búsqueda"
                             className="p-0.5 hover:bg-n-5 rounded transition-colors shrink-0"
                         >
                             <X className="w-3 h-3 text-n-8" />

@@ -34,7 +34,11 @@ export default function HistoryTable({ encounters, className }: HistoryTableProp
 
     if (encounters.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-32 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div
+                role="status"
+                aria-live="polite"
+                className="flex flex-col items-center justify-center py-32 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
                 <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center border border-dashed border-border">
                     <Search className="w-6 h-6 text-muted-foreground/30" />
                 </div>
@@ -102,11 +106,23 @@ export default function HistoryTable({ encounters, className }: HistoryTableProp
                         return (
                             <tr
                                 key={enc.id}
+                                role="button"
+                                tabIndex={0}
                                 onClick={() => {
                                     if (enc.status === 'finished') {
                                         router.push(`/${slug}/history/encounters/${enc.id}`);
                                     } else {
                                         router.push(`/${slug}/history?encounterId=${enc.id}`);
+                                    }
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        if (enc.status === 'finished') {
+                                            router.push(`/${slug}/history/encounters/${enc.id}`);
+                                        } else {
+                                            router.push(`/${slug}/history?encounterId=${enc.id}`);
+                                        }
                                     }
                                 }}
                                 className="group transition-colors cursor-pointer"
