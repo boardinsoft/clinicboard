@@ -340,18 +340,45 @@ export default function PrescriptionsListView() {
                 </div>
             )}
 
-            <div className="flex items-center justify-between gap-2 px-6 py-2.5 border-b border-border/40 bg-muted/30 shrink-0">
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors shrink-0"
-                        onClick={handleRefresh}
-                        disabled={isFetching}
-                    >
-                        <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-                    </Button>
+            <div className="flex items-center gap-2 px-6 py-2.5 border-b border-border/40 bg-muted/30 shrink-0">
+                <div className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 border border-n-5 rounded-[5px] text-[13px] text-n-9 hover:bg-n-3 hover:border-n-6 hover:text-n-11 outline-none transition-all">
+                    {isFetching ? (
+                        <Loader2 className="w-4 h-4 shrink-0 text-b-8 animate-spin" />
+                    ) : (
+                        <Search className="w-4 h-4 shrink-0" strokeWidth={1.8} />
+                    )}
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        placeholder="Buscar paciente o medicamento…"
+                        value={query}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                        className="flex-1 bg-transparent text-[13px] text-n-11 placeholder:text-n-8 outline-none min-w-0 h-8"
+                        aria-label="Buscar recetas"
+                    />
+                    {query ? (
+                        <button
+                            onClick={handleClearSearch}
+                            className="p-0.5 hover:bg-n-5 rounded transition-colors shrink-0"
+                        >
+                            <X className="w-3 h-3 text-n-8" />
+                        </button>
+                    ) : (
+                        <span className="px-1.5 py-0.5 text-[10px] font-medium mono bg-background border border-n-5 rounded-[3px] text-n-9 shrink-0">
+                            ⌘K
+                        </span>
+                    )}
                 </div>
+
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 px-3 border-n-5 text-n-12 hover:bg-n-3 transition-colors shrink-0"
+                    onClick={handleRefresh}
+                    disabled={isFetching}
+                >
+                    <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+                </Button>
 
                 <FiltersDropdown activeCount={activeFilterCount} align="center" side="top">
                     <FilterSection label="Estado">
@@ -399,35 +426,6 @@ export default function PrescriptionsListView() {
                         </>
                     )}
                 </FiltersDropdown>
-
-                <div className="flex items-center gap-2 h-8 px-3 min-w-[200px] bg-n-2 border border-n-5 rounded-[5px] text-[13px] text-n-9 hover:bg-n-3 hover:border-n-6 hover:text-n-11 outline-none transition-all">
-                    {isFetching ? (
-                        <Loader2 className="w-4 h-4 shrink-0 text-b-8 animate-spin" />
-                    ) : (
-                        <Search className="w-4 h-4 shrink-0" strokeWidth={1.8} />
-                    )}
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        placeholder="Buscar paciente o medicamento…"
-                        value={query}
-                        onChange={(e) => handleSearchChange(e.target.value)}
-                        className="flex-1 bg-transparent text-[13px] text-n-11 placeholder:text-n-8 outline-none min-w-0 h-8"
-                        aria-label="Buscar recetas"
-                    />
-                    {query ? (
-                        <button
-                            onClick={handleClearSearch}
-                            className="p-0.5 hover:bg-n-5 rounded transition-colors shrink-0"
-                        >
-                            <X className="w-3 h-3 text-n-8" />
-                        </button>
-                    ) : (
-                        <span className="px-1.5 py-0.5 text-[10px] font-medium mono bg-background border border-n-5 rounded-[3px] text-n-9 shrink-0">
-                            ⌘K
-                        </span>
-                    )}
-                </div>
             </div>
 
             <div className="flex-1 overflow-hidden flex flex-col relative">
