@@ -166,17 +166,15 @@ export default function EncountersListView() {
         const status = searchParams.get('status') || 'all';
         const rawPage = parseInt(searchParams.get('page') || '1');
         const page = Math.max(1, isNaN(rawPage) ? 1 : rawPage);
-        if (q !== query || status !== activeTab || page !== currentPage) {
+        const from = searchParams.get('date_from') || '';
+        const to = searchParams.get('date_to') || '';
+        if (q !== query || status !== activeTab || page !== currentPage || from !== dateFrom || to !== dateTo) {
             setQuery(q);
             setDebouncedQuery(q);
             setActiveTab(status);
             setCurrentPage(page);
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchEncounters(q, status, page, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
-            if (status !== 'all') {
-                // eslint-disable-next-line react-hooks/set-state-in-effect
-                fetchEncounters(q, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
-            }
+            setDateFrom(from);
+            setDateTo(to);
         }
     }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 

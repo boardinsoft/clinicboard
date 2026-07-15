@@ -192,12 +192,6 @@ export default function PrescriptionsListView() {
             setCurrentPage(page);
             setDateFrom(from);
             setDateTo(to);
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchPrescriptions(q, status, page, from || undefined, to || undefined, 'refresh', 'data');
-            if (status !== 'all') {
-                // eslint-disable-next-line react-hooks/set-state-in-effect
-                fetchPrescriptions(q, 'all', 1, from || undefined, to || undefined, 'refresh', 'counts');
-            }
         }
     }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
