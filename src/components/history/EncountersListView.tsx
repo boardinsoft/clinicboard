@@ -76,7 +76,6 @@ export default function EncountersListView() {
     );
 
     const requestIdRef = useRef(0);
-    const fetchIdRef = useRef(0);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const params = useParams();
@@ -100,49 +99,48 @@ export default function EncountersListView() {
         page: number,
         from?: string,
         to?: string,
-        loadingKey: 'initial' | 'refresh' = 'refresh'
+        loadingKey: 'initial' | 'refresh' = 'refresh',
+        purpose: 'data' | 'counts' = 'data'
     ) => {
         const myId = ++requestIdRef.current;
-        const fetchId = ++fetchIdRef.current;
 
         if (loadingKey === 'initial') setIsLoading(true);
         setIsFetching(true);
 
-        const filters: EncounterFilters = {
-            search: search || undefined,
-            status: status === 'all' ? undefined : status,
-            page,
-            pageSize: PAGE_SIZE,
-            date_from: from || undefined,
-            date_to: to || undefined,
-        };
+        try {
+            const filters: EncounterFilters = {
+                search: search || undefined,
+                status: status === 'all' ? undefined : status,
+                page,
+                pageSize: PAGE_SIZE,
+                date_from: from || undefined,
+                date_to: to || undefined,
+            };
 
-        const result = await getEncountersFiltered(filters);
+            const result = await getEncountersFiltered(filters);
 
-        if (myId !== requestIdRef.current) {
-            setIsFetching(false);
-            return;
-        }
-        if (fetchId !== fetchIdRef.current) {
-            setIsFetching(false);
-            return;
-        }
+            if (myId !== requestIdRef.current) return;
 
-        if (loadingKey === 'initial') setIsLoading(false);
-        setIsFetching(false);
+            if ('error' in result) {
+                notify.error({ title: 'No se pudieron cargar las consultas', description: 'Revisa tu conexión e intenta de nuevo' });
+                setEncounters([]);
+                setTotal(0);
+                return;
+            }
 
-        if ('error' in result) {
-            notify.error({ title: 'No se pudieron cargar las consultas', description: 'Revisa tu conexión e intenta de nuevo' });
-            return;
-        }
+            if (purpose === 'data') {
+                setEncounters((result.data || []) as EncounterForPreview[]);
+                setTotal(result.count ?? 0);
+            }
 
-        setEncounters((result.data || []) as EncounterForPreview[]);
-        setTotal(result.count ?? 0);
-
-        if (status === 'all' && result.statusCounts) {
-            setStatusCounts(result.statusCounts as Record<string, number>);
-        } else if (status !== 'all') {
-            setStatusCounts(prev => ({ ...prev, [status]: result.count ?? 0 }));
+            if (status === 'all' && result.statusCounts) {
+                setStatusCounts(result.statusCounts as Record<string, number>);
+            } else if (status !== 'all') {
+                setStatusCounts(prev => ({ ...prev, [status]: result.count ?? 0 }));
+            }
+        } finally {
+            if (loadingKey === 'initial') setIsLoading(false);
+            if (myId === requestIdRef.current) setIsFetching(false);
         }
     }, []);
 
@@ -155,20 +153,20 @@ export default function EncountersListView() {
         setActiveTab(status);
         setCurrentPage(page);
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchEncounters(q, status, page, undefined, undefined, 'initial');
+        fetchEncounters(q, status, page, undefined, undefined, 'initial', 'data');
         if (status !== 'all') {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchEncounters(q, 'all', 1, undefined, undefined, 'initial');
+            fetchEncounters(q, 'all', 1, undefined, undefined, 'initial', 'counts');
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (!isLoading) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchEncounters(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh');
+            fetchEncounters(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
             if (activeTab !== 'all') {
                 // eslint-disable-next-line react-hooks/set-state-in-effect
-                fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh');
+                fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
             }
         }
     }, [debouncedQuery, activeTab, currentPage, dateFrom, dateTo]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -210,9 +208,9 @@ export default function EncountersListView() {
         params.set('page', '1');
         router.replace(`${pathname}?${params.toString()}`);
         inputRef.current?.focus();
-        fetchEncounters('', activeTab, 1, dateFrom || undefined, dateTo || undefined, 'refresh');
+        fetchEncounters('', activeTab, 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
         if (activeTab !== 'all') {
-            fetchEncounters('', 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh');
+            fetchEncounters('', 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
         }
     };
 
@@ -269,7 +267,10 @@ export default function EncountersListView() {
     }, []);
 
     const handleRefresh = () => {
-        fetchEncounters(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh');
+        fetchEncounters(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
+        if (activeTab !== 'all') {
+            fetchEncounters(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
+        }
     };
 
     const activeFilterCount =

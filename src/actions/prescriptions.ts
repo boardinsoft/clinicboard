@@ -541,8 +541,6 @@ export async function getPrescriptionsForTable(clinicId?: string, filters?: Pres
         );
         if (patientIds && patientIds.length > 0) {
             query = query.in('patient_id', patientIds);
-        } else {
-            query = query.eq('id', '00000000-0000-0000-0000-000000000000');
         }
     }
 
@@ -579,8 +577,6 @@ export async function getPrescriptionsForTable(clinicId?: string, filters?: Pres
                 );
                 if (patientIds && patientIds.length > 0) {
                     countQuery = countQuery.in('patient_id', patientIds);
-                } else {
-                    countQuery = countQuery.eq('id', '00000000-0000-0000-0000-000000000000');
                 }
             }
 

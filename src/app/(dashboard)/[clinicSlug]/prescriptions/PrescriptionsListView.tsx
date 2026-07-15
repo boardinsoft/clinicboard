@@ -95,7 +95,6 @@ export default function PrescriptionsListView() {
     const [currentPage, setCurrentPage] = useState(1);
 
     const requestIdRef = useRef(0);
-    const fetchIdRef = useRef(0);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -115,47 +114,46 @@ export default function PrescriptionsListView() {
         page: number,
         from?: string,
         to?: string,
-        loadingKey: 'initial' | 'refresh' = 'refresh'
+        loadingKey: 'initial' | 'refresh' = 'refresh',
+        purpose: 'data' | 'counts' = 'data'
     ) => {
         const myId = ++requestIdRef.current;
-        const fetchId = ++fetchIdRef.current;
 
         if (loadingKey === 'initial') setIsLoading(true);
         setIsFetching(true);
 
-        const result = await getPrescriptionsForTable(undefined, {
-            search: search || undefined,
-            status: status === 'all' ? 'all' : status,
-            page,
-            pageSize: PAGE_SIZE,
-            dateFrom: from || undefined,
-            dateTo: to || undefined,
-        });
+        try {
+            const result = await getPrescriptionsForTable(undefined, {
+                search: search || undefined,
+                status: status === 'all' ? 'all' : status,
+                page,
+                pageSize: PAGE_SIZE,
+                dateFrom: from || undefined,
+                dateTo: to || undefined,
+            });
 
-        if (myId !== requestIdRef.current) {
-            setIsFetching(false);
-            return;
-        }
-        if (fetchId !== fetchIdRef.current) {
-            setIsFetching(false);
-            return;
-        }
+            if (myId !== requestIdRef.current) return;
 
-        if (loadingKey === 'initial') setIsLoading(false);
-        setIsFetching(false);
+            if ('error' in result) {
+                notify.error({ title: 'No se pudieron cargar las recetas', description: 'Revisa tu conexión e intenta de nuevo' });
+                setPrescriptions([]);
+                setTotal(0);
+                return;
+            }
 
-        if ('error' in result) {
-            notify.error({ title: 'No se pudieron cargar las recetas', description: 'Revisa tu conexión e intenta de nuevo' });
-            return;
-        }
+            if (purpose === 'data') {
+                setPrescriptions((result.data || []) as PrescriptionForPreview[]);
+                setTotal(result.count ?? 0);
+            }
 
-        setPrescriptions((result.data || []) as PrescriptionForPreview[]);
-        setTotal(result.count ?? 0);
-
-        if (status === 'all' && 'statusCounts' in result && result.statusCounts) {
-            setStatusCounts(result.statusCounts as Record<MedicationRequestStatus | 'all', number>);
-        } else if (status !== 'all') {
-            setStatusCounts(prev => ({ ...prev, [status]: result.count ?? 0 }));
+            if (status === 'all' && 'statusCounts' in result && result.statusCounts) {
+                setStatusCounts(result.statusCounts as Record<MedicationRequestStatus | 'all', number>);
+            } else if (status !== 'all') {
+                setStatusCounts(prev => ({ ...prev, [status]: result.count ?? 0 }));
+            }
+        } finally {
+            if (loadingKey === 'initial') setIsLoading(false);
+            if (myId === requestIdRef.current) setIsFetching(false);
         }
     }, []);
 
@@ -172,20 +170,20 @@ export default function PrescriptionsListView() {
         setDateFrom(from);
         setDateTo(to);
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchPrescriptions(q, status, page, from || undefined, to || undefined, 'initial');
+        fetchPrescriptions(q, status, page, from || undefined, to || undefined, 'initial', 'data');
         if (status !== 'all') {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchPrescriptions(q, 'all', 1, from || undefined, to || undefined, 'initial');
+            fetchPrescriptions(q, 'all', 1, from || undefined, to || undefined, 'initial', 'counts');
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (!isLoading) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            fetchPrescriptions(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh');
+            fetchPrescriptions(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
             if (activeTab !== 'all') {
                 // eslint-disable-next-line react-hooks/set-state-in-effect
-                fetchPrescriptions(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh');
+                fetchPrescriptions(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
             }
         }
     }, [debouncedQuery, activeTab, currentPage, dateFrom, dateTo]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -227,9 +225,9 @@ export default function PrescriptionsListView() {
         params.set('page', '1');
         router.replace(`${pathname}?${params.toString()}`);
         inputRef.current?.focus();
-        fetchPrescriptions('', activeTab, 1, dateFrom || undefined, dateTo || undefined, 'refresh');
+        fetchPrescriptions('', activeTab, 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
         if (activeTab !== 'all') {
-            fetchPrescriptions('', 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh');
+            fetchPrescriptions('', 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
         }
     };
 
@@ -286,7 +284,10 @@ export default function PrescriptionsListView() {
     }, []);
 
     const handleRefresh = () => {
-        fetchPrescriptions(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh');
+        fetchPrescriptions(debouncedQuery, activeTab, currentPage, dateFrom || undefined, dateTo || undefined, 'refresh', 'data');
+        if (activeTab !== 'all') {
+            fetchPrescriptions(debouncedQuery, 'all', 1, dateFrom || undefined, dateTo || undefined, 'refresh', 'counts');
+        }
     };
 
     const expiredCount = prescriptions.filter(r => isExpired(r.valid_until)).length;
