@@ -555,38 +555,24 @@ export async function getPrescriptionsForTable(clinicId?: string, filters?: Pres
     const result: { data: typeof data; count: typeof count; statusCounts?: Record<string, number> } = { data, count };
 
     if (!filters?.status || filters.status === 'all') {
-        const { count: allCount } = await supabase
-            .from('medication_requests')
-            .select('id', { count: 'exact', head: true })
-            .eq('prescriber_id', practitionerId);
+        const countsResult: Record<string, number> = { all: count ?? 0 };
 
-        const statusValues: MedicationRequestStatus[] = ['active', 'draft', 'on-hold', 'completed', 'cancelled', 'stopped', 'unknown'];
-        const countsResult: Record<string, number> = { all: allCount ?? 0 };
+        const dateToArg = filters?.dateTo ? `${filters.dateTo}T23:59:59.999Z` : null;
 
-        const countResponses = await Promise.all(statusValues.map(async (s) => {
-            let countQuery = supabase
-                .from('medication_requests')
-                .select('id', { count: 'exact', head: true })
-                .eq('prescriber_id', practitionerId)
-                .eq('status', s);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: countRows, error: countError } = await (supabase as any).rpc('get_prescription_status_counts', {
+            p_prescriber_id: practitionerId,
+            p_clinic_id: clinicId ?? null,
+            p_date_from: filters?.dateFrom ?? null,
+            p_date_to: dateToArg,
+            p_search_medication_display: filters?.search?.trim() ?? null,
+            p_search_patient_ids: (patientIds && patientIds.length > 0) ? patientIds : null,
+        });
 
-            if (clinicId) countQuery = countQuery.eq('clinic_id', clinicId);
-            if (filters?.search) {
-                const searchTerm = `%${filters.search.trim()}%`;
-                countQuery = countQuery.or(
-                    `medication_display.ilike.${searchTerm},medication_code.ilike.${searchTerm}`
-                );
-                if (patientIds && patientIds.length > 0) {
-                    countQuery = countQuery.in('patient_id', patientIds);
-                }
+        if (!countError && countRows && Array.isArray(countRows)) {
+            for (const row of countRows as Array<{ status: string; count: number }>) {
+                countsResult[row.status] = row.count;
             }
-
-            const { count: statusCount } = await countQuery;
-            return { s, count: statusCount ?? 0 };
-        }));
-
-        for (const { s, count: statusCount } of countResponses) {
-            countsResult[s] = statusCount;
         }
 
         result.statusCounts = countsResult as Record<MedicationRequestStatus | 'all', number>;

@@ -683,38 +683,27 @@ export async function getEncountersFiltered(filters?: EncounterFilters): Promise
     };
 
     if (!filters?.status || filters.status === 'all') {
-        const statusValues = ['planned', 'arrived', 'triaged', 'in-progress', 'onleave', 'finished', 'cancelled'] as const;
         const countsResult: Record<string, number> = { all: count ?? 0 };
 
-        const countResponses = await Promise.all(
-            statusValues.map(async (s) => {
-                let countQuery = supabase
-                    .from('encounters')
-                    .select('id', { count: 'exact', head: true })
-                    .eq('practitioner_id', practitionerId)
-                    .eq('status', s);
+        const dateToArg = filters?.date_to ? `${filters.date_to}T23:59:59.999Z` : null;
+        const encounterIdsArg = searchEncounterIds && !(
+            searchEncounterIds.length === 1 &&
+            searchEncounterIds[0] === '00000000-0000-0000-0000-000000000000'
+        ) ? searchEncounterIds : [];
 
-                if (filters?.clinicId) countQuery = countQuery.eq('clinic_id', filters.clinicId);
-                if (filters?.date_from) countQuery = countQuery.gte('start_time', filters.date_from);
-                if (filters?.date_to) {
-                    const endOfDay = `${filters.date_to}T23:59:59.999Z`;
-                    countQuery = countQuery.lte('start_time', endOfDay);
-                }
-                if (searchEncounterIds) {
-                    if (searchEncounterIds.length === 1 && searchEncounterIds[0] === '00000000-0000-0000-0000-000000000000') {
-                        countQuery = countQuery.eq('id', '00000000-0000-0000-0000-000000000000');
-                    } else {
-                        countQuery = countQuery.in('id', searchEncounterIds);
-                    }
-                }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: countRows, error: countError } = await (supabase as any).rpc('get_encounter_status_counts', {
+            p_practitioner_id: practitionerId,
+            p_clinic_id: filters?.clinicId ?? null,
+            p_date_from: filters?.date_from ?? null,
+            p_date_to: dateToArg,
+            p_search_encounter_ids: encounterIdsArg.length > 0 ? encounterIdsArg : null,
+        });
 
-                const { count: statusCount } = await countQuery;
-                return { s, count: statusCount ?? 0 };
-            })
-        );
-
-        for (const { s, count: statusCount } of countResponses) {
-            countsResult[s] = statusCount;
+        if (!countError && countRows && Array.isArray(countRows)) {
+            for (const row of countRows as Array<{ status: string; count: number }>) {
+                countsResult[row.status] = row.count;
+            }
         }
 
         result.statusCounts = countsResult;
